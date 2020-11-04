@@ -10,7 +10,7 @@ define([
         });
 
         $(document).ready(function () {
-            $('div.product-options-wrapper').click(() => {
+            $('div.product-options-wrapper').on('change',() => {
                 let sku = selectedProduct();
 
                 if(sku !== ''){
@@ -24,24 +24,31 @@ define([
         }
 
         function selectedProduct() {
-            let selected_options = {};
 
-            let options = $('div.swatch-attribute');
-
-            options.each((index, value) => {
-                let attribute_id = $(value).attr('attribute-id');
-                let option_selected = $(value).attr('option-selected');
-                if (!attribute_id || !option_selected) {
-                    return '';
+            if ($('div.swatch-attribute').length === 0 ){
+                if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value !== ''){
+                    let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value;
+                    const productConfig1 = $('#product_addtocart_form').data('mageConfigurable').options.spConfig;
+                    return productConfig1.skus[productId1];
                 }
-                selected_options[attribute_id] = option_selected;
-            });
+            }else{
+                let selected_options = {};
+                let options = $('div.swatch-attribute');
+                options.each((index, value) => {
+                    let attribute_id = $(value).attr('attribute-id');
+                    let option_selected = $(value).attr('option-selected');
+                    if (!attribute_id || !option_selected) {
+                        return '';
+                    }
+                    selected_options[attribute_id] = option_selected;
+                });
 
-            const productConfig = $('[data-role=swatch-options]').data('mageSwatchRenderer').options.jsonConfig;
+                const productConfig = $('[data-role=swatch-options]').data('mageSwatchRenderer').options.jsonConfig;
 
-            for (let [productId, attributes] of Object.entries(productConfig.index)) {
-                if (match(attributes, selected_options)) {
-                    return productConfig.skus[productId];
+                for (let [productId, attributes] of Object.entries(productConfig.index)) {
+                    if (match(attributes, selected_options)) {
+                        return productConfig.skus[productId];
+                    }
                 }
             }
         }

@@ -89,7 +89,7 @@ class ContractsRequest
             $res = $this->jsonSerializer->unserialize($response->getBody());
             $this->logger->error('Contract Request Fail', $res);
 
-        } elseif ($response->getStatus() === 201) {
+        } elseif ($response->getStatus() === 201 || $response->getStatus() === 202) {
             $res = $this->jsonSerializer->unserialize($response->getBody());
             $contractId = $res['id'];
             $this->logger->info(__('Contract #%1 request successful', $contractId));
@@ -126,7 +126,7 @@ class ContractsRequest
 
     private function processRefundResponse(\Zend_Http_Response $response): bool
     {
-        if ($response->getStatus() === 202) {
+        if ($response->getStatus() === 201 || $response->getStatus() === 202) {
             $this->logger->info('Refund Request Success');
             return true;
         }

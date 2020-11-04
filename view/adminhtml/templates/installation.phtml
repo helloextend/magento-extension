@@ -1,6 +1,6 @@
 <?php
-/** @var $block Magento\Framework\View\Element\Template */
-/** @var $viewModel Extend\Warranty\ViewModel\Installation */
+/** @var $viewModel Extend\Warranty\ViewModel\Installation
+ */
 $viewModel = $block->getData('viewModel');
 if ($viewModel) {
     $viewModel->prepareBlockData();
@@ -8,15 +8,15 @@ if ($viewModel) {
 ?>
 <?php if (isset($viewModel) && $viewModel->getExtendEnable()) : ?>
     <script src="<?= $viewModel->getJsMode() ?>"></script>
-
     <script>
         Extend.config(<?= $viewModel->getJsonConfig() ?>);
     </script>
 <?php endif; ?>
 
 <script>
-    var BASE_URL = '<?= $block->escapeUrl($block->getBaseUrl()) ?>';
+    var BASE_URL = '<?= /* @noEscape */ $block->getUrl('*') ?>';
+    var FORM_KEY = '<?= /* @noEscape */ $block->getFormKey() ?>';
     var require = {
-        "baseUrl": "<?= /* @escapeNotVerified */ $block->getViewFileUrl('/') ?>"
+        "baseUrl": "<?= /* @noEscape */ $block->getViewFileUrl('/') ?>"
     };
 </script>

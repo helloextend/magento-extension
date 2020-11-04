@@ -51,31 +51,50 @@ class Refund extends Action
 
     public function execute()
     {
-        $response = $this->resultFactory
-            ->create(ResultFactory::TYPE_JSON);
+        $response = $this->resultFactory->create(ResultFactory::TYPE_JSON);
 
         if (!$this->extendHelper->isExtendEnabled() || !$this->extendHelper->isRefundEnabled()) {
             $response->setData(
                 [
                     'error' => 'Extend module or refunds are not enabled'
-                ]);
+                ]
+            );
             $response->setHttpResponseCode(403); //Forbidden error
             return $response;
         }
 
-        $contractId = (string)$this->getRequest()->getPost('contractId');
+        $contractId = $this->getRequest()->getPost('contractId');
+        $response_log = [];
+        $noErrors = true;
+
+        foreach ($contractId as $_contractId) {
+            $refundResponse = $this->contractsRequest->refund($_contractId);
+            // Responses log
+            $response_log[] = [
+                "contract_id" => $_contractId,
+                "response" => $refundResponse
+            ];
+
+            //At least one error
+            if ($refundResponse == false) {
+                $noErrors = false;
+            }
+        }
+
         $itemId = (string)$this->getRequest()->getPost('itemId');
+        $item = $this->orderItemRepository->get($itemId);
+        $options = $item->getProductOptions();
 
-        $res = $this->contractsRequest->refund($contractId);
-
-        if ($res) {
-            $item = $this->orderItemRepository->get($itemId);
-            $options = $item->getProductOptions();
+        if ($noErrors) {
             $options['refund'] = true;
+            $options['refund_responses_log'] = $response_log;
             $item->setProductOptions($options);
             $item->save();
             $response->setHttpResponseCode(200);
         } else {
+            $options['refund_responses_log'] = $response_log;
+            $item->setProductOptions($options);
+            $item->save();
             $response->setHttpResponseCode(500);
         }
 

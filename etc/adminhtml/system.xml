@@ -24,7 +24,7 @@
                     <frontend_model>Extend\Warranty\Block\System\Config\AccountLink</frontend_model>
                     <comment>
                         <![CDATA[
-                            or <a href="https://merchants.extend.com/settings" class="extend-account-link"> I already have an Extend account, I'm ready to edit my settings</a>
+                            or <a href="https://merchants.extend.com" class="extend-account-link"> I already have an Extend account, I'm ready to edit my settings</a>
                         ]]>
                     </comment>
                 </field>
@@ -58,7 +58,7 @@
                     <label>Store ID</label>
                     <comment>
                         <![CDATA[
-                            Unique identifier for your store on the Extend platform. Go to <a href="https://stage.merchants.helloextend.com/dashboard/settings">your Extend merchant dashboard</a>
+                            Unique identifier for your store on the Extend platform. Go to <a href="https://merchants.extend.com">your Extend merchant dashboard</a>
                             to find your StoreID and then paste of type it here.
                         ]]>
                     </comment>
@@ -68,7 +68,7 @@
                     <comment>
                         <![CDATA[
                             Access token which is required for all API communications between your Magento store and
-                            the Extend platform. You can view and manage your API Key on <a href="https://stage.merchants.helloextend.com/dashboard/settings">your Extend merchant dashboard</a>.
+                            the Extend platform. You can view and manage your API Key on <a href="https://merchants.extend.com">your Extend merchant dashboard</a>.
                         ]]>
                     </comment>
                 </field>
@@ -76,7 +76,7 @@
                     <label>SandBox Store ID</label>
                     <comment>
                         <![CDATA[
-                                Unique identifier for your store on the Extend platform. Go to <a href="https://stage.merchants.helloextend.com/dashboard/settings">your Extend merchant dashboard</a>
+                                Unique identifier for your store on the Extend platform. Go to <a href="https://demo.merchants.extend.com">your Extend merchant dashboard</a>
                                 to find your StoreID and then paste of type it here.
                             ]]>
                     </comment>
@@ -86,7 +86,7 @@
                     <comment>
                         <![CDATA[
                                 Access token which is required for all API communications between your Magento store and
-                                the Extend platform. You can view and manage your API Key on <a href="https://stage.merchants.helloextend.com/dashboard/settings">your Extend merchant dashboard</a>.
+                                the Extend platform. You can view and manage your API Key on <a href="https://demo.merchants.extend.com">your Extend merchant dashboard</a>.
                             ]]>
                     </comment>
                 </field>

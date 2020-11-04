@@ -70,7 +70,7 @@ class Installation implements ArgumentInterface
 
     public function prepareBlockData()
     {
-        if ($this->data->isExtendEnabled() && $this->connection->testConnection()) {
+        if ($this->data->isExtendEnabled()) {
             $this->enable = true;
             $keys = $this->keys->getKeys();
             $this->storeId = $keys['store_id'];

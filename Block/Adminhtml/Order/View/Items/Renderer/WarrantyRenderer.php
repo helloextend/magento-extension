@@ -86,9 +86,11 @@ class WarrantyRenderer extends DefaultRenderer
 
     private function getDataInit($item)
     {
+        $contractID = json_decode($item->getContractId()) === NULL ? json_encode([$item->getContractId()]) : $item->getContractId();
+
         return '{"refundWarranty": {"url": "' . $this->getUrl('extend/contract/refund') .
-            '", "contractId": "' . $item->getContractId() .
-            '", "itemId": "' . $item->getId() . '" }}';
+            '", "contractId": ' . $contractID .
+            ', "itemId": "' . $item->getId() . '" }}';
     }
 
     public function getHtmlId()

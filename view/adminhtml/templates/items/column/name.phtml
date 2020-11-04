@@ -1,0 +1,67 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+// phpcs:disable Magento2.Templates.ThisInTemplate
+?>
+<?php
+/* @var $block \Magento\Sales\Block\Adminhtml\Items\Column\Name */
+?>
+
+
+
+<?php if ($_item = $block->getItem()) : ?>
+    <div id="order_item_<?= (int) $_item->getId() ?>_title"
+         class="product-title">
+        <?= $block->escapeHtml($_item->getName()) ?>
+    </div>
+    <div class="product-sku-block">
+        <span><?= $block->escapeHtml(__('SKU'))?>:</span> <?= /* @noEscape */ implode('<br />', $this->helper(\Magento\Catalog\Helper\Data::class)->splitSku($block->escapeHtml($block->getSku()))) ?>
+    </div>
+
+    <?php if($_item->getProductType() == "warranty"): ?>
+        <?php
+        $_productOptions = $_item->getProductOptions();
+        $_planId = isset($_productOptions["warranty_id"]) ? $_productOptions["warranty_id"] : '';
+        $_contractID = json_decode($_item->getContractId()) === NULL ? [$_item->getContractId()] : json_decode($_item->getContractId(), true);
+        ?>
+        <div class="product-warranty-block">
+            <br /><span><?= $block->escapeHtml(__('Contract ID'))?>: </span><?= implode(", ", $_contractID); ?>
+            <br /><span><?= $block->escapeHtml(__('Plan ID'))?>: </span><?= $_planId ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($block->getOrderOptions()) : ?>
+        <dl class="item-options">
+            <?php foreach ($block->getOrderOptions() as $_option) : ?>
+                <dt><?= $block->escapeHtml($_option['label']) ?>:</dt>
+                <dd>
+                    <?php if (isset($_option['custom_view']) && $_option['custom_view']) : ?>
+                        <?= /* @noEscape */ $block->getCustomizedOptionValue($_option) ?>
+                    <?php else : ?>
+                        <?php $_option = $block->getFormattedOption($_option['value']); ?>
+                        <?= $block->escapeHtml($_option['value']) ?>
+                        <?php if (isset($_option['remainder']) && $_option['remainder']) : ?>
+                            <?php $dots = 'dots' . uniqid(); ?>
+                            <span id="<?= /* @noEscape */ $dots; ?>"> ...</span>
+                        <?php  $id = 'id' . uniqid(); ?>
+                            <span id="<?= /* @noEscape */ $id; ?>"><?= $block->escapeHtml($_option['remainder']) ?></span>
+                            <script>
+                                require(['prototype'], function(){
+                                    $('<?= /* @noEscape */ $id; ?>').hide();
+                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseover', function(){$('<?= /* @noEscape */ $id; ?>').show();});
+                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseover', function(){$('<?= /* @noEscape */ $dots; ?>').hide();});
+                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseout',  function(){$('<?= /* @noEscape */ $id; ?>').hide();});
+                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseout',  function(){$('<?= /* @noEscape */ $dots; ?>').show();});
+                                });
+                            </script>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </dd>
+            <?php endforeach; ?>
+        </dl>
+    <?php endif; ?>
+    <?= $block->escapeHtml($_item->getDescription()) ?>
+<?php endif; ?>

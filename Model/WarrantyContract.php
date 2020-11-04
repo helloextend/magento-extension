@@ -48,7 +48,22 @@ class WarrantyContract
             $contracts = $this->contractBuilder->prepareInfo($order, $warranties);
 
             foreach ($contracts as $key => $contract) {
-                $contractId = $this->contractsRequest->create($contract);
+                //validate qty of contracts required
+                if ($contract['product']['qty']>1) {
+                    $contractIds = [];
+                    $tempcontract = $contract;
+                    unset($tempcontract['product']['qty']);
+                    for ($x=1; $x<=$contract['product']['qty']; $x++) {
+                        $contractIds[$x]= $this->contractsRequest->create($contract);
+                        //array_push($contractIds,$this->contractsRequest->create($contract));
+                    }
+                    unset($tempcontract);
+                    $contractId=json_encode($contractIds);
+                    unset($contractIds);
+                } else {
+                    $contractId = json_encode(array('1'=>$this->contractsRequest->create($contract)));
+                }
+
                 if (!empty($contractId)) {
                     $items = $order->getAllItems();
                     if (isset($items[$key]) && empty($items[$key]->getContractId())) {
@@ -60,7 +75,9 @@ class WarrantyContract
 
                         $items[$key]->setProductOptions($options);
 
-                        $items[$key]->save();
+                        if ($order->getId()) {
+                            $items[$key]->save();
+                        }
                     }
                 }
             }

@@ -26,6 +26,11 @@
                     </argument>
                 </arguments>
             </block>
+            <referenceBlock name="column_name">
+                <action method="setTemplate">
+                    <argument name="template" xsi:type="string">Extend_Warranty::items/column/name.phtml</argument>
+                </action>
+            </referenceBlock>
         </referenceContainer>
     </body>
 </page>

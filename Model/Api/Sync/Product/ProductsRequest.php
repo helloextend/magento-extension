@@ -67,7 +67,7 @@ class ProductsRequest
 
         $res = $this->jsonSerializer->unserialize($response->getBody());
 
-        if ($response->getStatus() === 201) {
+        if ($response->getStatus() === 201 || $response->getStatus() === 202) {
             $this->logger->info('Synced ' . count($data) . ' products in batch ' . $batch);
             foreach ($res as $name => $section) {
                 $info = array_column($section, 'referenceId');
