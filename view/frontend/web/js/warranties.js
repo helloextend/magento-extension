@@ -28,7 +28,9 @@ define([
             if ($('div.swatch-attribute').length === 0 ){
                 if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value !== ''){
                     let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value;
-                    const productConfig1 = $('#product_addtocart_form').data('mageConfigurable').options.spConfig;
+                    //Firebear compatibility
+                    //const productConfig1 = $('#product_addtocart_form').data('mageConfigurable').options.spConfig;
+                    const productConfig1 = $('#product_addtocart_form').data('firebearConfig_icp').options.spConfig;
                     return productConfig1.skus[productId1];
                 }
             }else{
