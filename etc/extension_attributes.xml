@@ -3,5 +3,9 @@
     <extension_attributes for="Magento\Sales\Api\Data\OrderItemInterface">
         <attribute code="contract_id" type="string" />
         <attribute code="product_options" type="string" />
+        <attribute code="warranty_id" type="string" />
+        <attribute code="associated_product" type="string" />
+        <attribute code="term" type="string" />
+        <attribute code="refund" type="string" />
     </extension_attributes>
 </config>

@@ -8,8 +8,6 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Model\ResourceModel\Order\Collection;
 use Magento\Sales\Api\Data\OrderItemSearchResultInterface;
 
-
-
 class OrderRepository
 {
 
@@ -49,8 +47,15 @@ class OrderRepository
         $productOptions = $orderItem->getProductOptions();
         $extensionAttributes = $orderItem->getExtensionAttributes();
         $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
-        $extensionAttributes->setContractId($contractId);
         $extensionAttributes->setProductOptions(json_encode($productOptions));
+
+        if ($contractId) {
+            $extensionAttributes->setContractId($contractId);
+            $extensionAttributes->setWarrantyId($productOptions['warranty_id']);
+            $extensionAttributes->setAssociatedProduct($productOptions['associated_product']);
+            $extensionAttributes->setTerm($productOptions['warranty_term']);
+            $extensionAttributes->setRefund($productOptions['refund']);
+        }
         $orderItem->setExtensionAttributes($extensionAttributes);
 
         return $orderItem;
@@ -75,8 +80,16 @@ class OrderRepository
             $productOptions = $orderItem->getProductOptions();
             $extensionAttributes = $orderItem->getExtensionAttributes();
             $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
-            $extensionAttributes->setContractId($contractId);
             $extensionAttributes->setProductOptions(json_encode($productOptions));
+
+            if ($contractId) {
+                $extensionAttributes->setContractId($contractId);
+                $extensionAttributes->setWarrantyId($productOptions['warranty_id']);
+                $extensionAttributes->setAssociatedProduct($productOptions['associated_product']);
+                $extensionAttributes->setTerm($productOptions['warranty_term']);
+                $extensionAttributes->setRefund($productOptions['refund']);
+            }
+
             $orderItem->setExtensionAttributes($extensionAttributes);
         }
 
