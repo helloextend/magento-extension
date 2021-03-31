@@ -58,7 +58,7 @@ $ php bin/magento cache:clean
 ## Install via Composer
 To install/update the extension with Composer, the following commands must be executed:
 ```zsh
-$ composer config repositories.extend git “https://github.com/helloextend/magento-extension/”
+$ composer config repositories.extend git https://github.com/helloextend/magento-extension/
 $ composer require extend/module-warranty:dev-client/mpex
 $ php bin/magento setup:upgrade
 ```
