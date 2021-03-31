@@ -59,8 +59,13 @@ $ php bin/magento cache:clean
 To install/update the extension with Composer, the following commands must be executed:
 ```zsh
 $ composer config repositories.extend git “https://github.com/helloextend/magento-extension/”
-$ composer require extend/module-warranty:dev-master
+$ composer require extend/module-warranty:dev-client/mpex
 $ php bin/magento setup:upgrade
+```
+
+If you have version compatibility problems or requirements when installing via composer it would help to execute the command with:
+```zsh
+$ COMPOSER_MEMORY_LIMIT=-1 composer require extend/module-warranty:dev-client/mpex --ignore-platform-reqs
 ```
 
 Please contact your Merchant Services Manager for the M2 extension user guide or if you have any additional questions.

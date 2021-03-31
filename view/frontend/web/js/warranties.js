@@ -68,11 +68,13 @@ define([
 
             let sku = params.productSku !== '' ? params.productSku : selectedProduct();
 
+            /* MPEX Compatibility */
             if (plan) {
                 addWarranty(plan, sku);
-                $('#product_addtocart_form').submit();
+                //$('#product_addtocart_form').submit();
             } else {
-                Extend.modal.open({
+                $("input[name^='warranty']").remove();
+                /* Extend.modal.open({
                     referenceId: sku,
                     onClose: function (plan) {
                         if (plan) {
@@ -82,7 +84,7 @@ define([
                         }
                         $('#product_addtocart_form').submit();
                     }
-                });
+                }); */
             }
 
         });
