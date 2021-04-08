@@ -4,9 +4,23 @@ define([
 ], function ($, _) {
 
     return function (params) {
-
+        /*VK compatibility
         Extend.buttons.render('#extend-offer', {
             referenceId: params.productSku
+        });*/
+        Extend.buttons.render('#extend-offer', {referenceId: params.productSku}, function(){
+            //select extend iframe
+            var iframe = document.querySelector('#extend-offer iframe')
+            //if we have an iframe we will select that iframes document
+            var extendDocument = iframe ? iframe.contentWindow.document : null;
+            //if we have a document, we will select all of the buttons, and then we can style those buttons accordingly
+            var offerBtns = extendDocument ? extendDocument.querySelectorAll('.btn-offer') : null;
+            if(offerBtns){
+              offerBtns.forEach(function(btn) {
+                //if you are overriding any existing styling be sure to use !important
+                btn.style = "padding:0.3rem"
+              })
+            }
         });
 
         $(document).ready(function () {
@@ -72,7 +86,10 @@ define([
                 addWarranty(plan, sku);
                 $('#product_addtocart_form').submit();
             } else {
-                Extend.modal.open({
+                /*VK compatibility*/
+                $("input[name^='warranty']").remove();
+
+                /*Extend.modal.open({
                     referenceId: sku,
                     onClose: function (plan) {
                         if (plan) {
@@ -82,7 +99,7 @@ define([
                         }
                         $('#product_addtocart_form').submit();
                     }
-                });
+                });*/
             }
 
         });
