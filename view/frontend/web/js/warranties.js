@@ -8,7 +8,7 @@ define([
         // Extend.buttons.render('#extend-offer', {
         //     referenceId: params.productSku
         // });
-        if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value === ''){
+        if (Object.keys($('#product_addtocart_form').data()).indexOf('mageConfigurable') > 0){
             Extend.buttons.render('#extend-offer', {referenceId: params.productSku}, function(){
                 //select extend iframe
                 var iframe = document.querySelector('#extend-offer iframe')
