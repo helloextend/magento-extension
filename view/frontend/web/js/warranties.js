@@ -70,10 +70,8 @@ define([
         function renderWarranties(productSku){
             // const component = Extend.buttons.instance('#extend-offer');
             // component.setActiveProduct(productSku);
-            const component = Extend.buttons.instance('#extend-offer');
-            // if(component){
-            //     component.destro();
-            // }
+            // const component = Extend.buttons.instance('#extend-offer');
+
             Extend.buttons.render('#extend-offer', {referenceId: productSku}, function(){
                 //select extend iframe
                 var iframe = document.querySelector('#extend-offer iframe')
