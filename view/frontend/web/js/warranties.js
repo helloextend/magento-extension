@@ -4,7 +4,7 @@ define([
 ], function ($, _) {
 
     return function (params) {
-        
+        /*VK compatibility START*/
         // Extend.buttons.render('#extend-offer', {
         //     referenceId: params.productSku
         // });
@@ -22,6 +22,8 @@ define([
                 })
             }
         });
+        /*VK compatibility END*/
+
 
         $(document).ready(function () {
             $('div.product-options-wrapper').on('change',() => {
@@ -100,6 +102,7 @@ define([
                         $('#product_addtocart_form').submit();
                     }
                 });*/
+                /*VK compatibility END*/
             }
 
         });
