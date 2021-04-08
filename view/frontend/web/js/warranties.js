@@ -9,7 +9,9 @@ define([
         //     referenceId: params.productSku
         // });
         var offers = Extend.getOffer(params.productSku);
-        console.log(offers.valueOf()['_value']);
+        var offersArray = Object.values(offers);
+        var plans = offersArray[2].plans;
+        console.log(plans);
         // if(offers._value.plans.adh.length > 0 || offers._value.plan.base.length > 0){
         //     Extend.buttons.render('#extend-offer', {referenceId: params.productSku}, function(){
         //         //select extend iframe
