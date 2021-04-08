@@ -18,7 +18,7 @@ define([
             if(offerBtns){
               offerBtns.forEach(function(btn) {
                 //if you are overriding any existing styling be sure to use !important
-                btn.style = "padding:0.3rem"
+                btn.style = "padding: 0.3rem !important"
               })
             }
         });
