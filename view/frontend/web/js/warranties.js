@@ -8,26 +8,22 @@ define([
         // Extend.buttons.render('#extend-offer', {
         //     referenceId: params.productSku
         // });
-        var offers = Extend.getOffer(params.productSku);
-        var offersArray = Object.values(offers);
-        var plans = offersArray[2].plans;
-        console.log(plans);
-        // if(offers._value.plans.adh.length > 0 || offers._value.plan.base.length > 0){
-        //     Extend.buttons.render('#extend-offer', {referenceId: params.productSku}, function(){
-        //         //select extend iframe
-        //         var iframe = document.querySelector('#extend-offer iframe')
-        //         //if we have an iframe we will select that iframes document
-        //         var extendDocument = iframe ? iframe.contentWindow.document : null;
-        //         //if we have a document, we will select all of the buttons, and then we can style those buttons accordingly
-        //         var offerBtns = extendDocument ? extendDocument.querySelectorAll('.btn-offer') : null;
-        //         if(offerBtns){
-        //             offerBtns.forEach(function(btn) {
-        //                 //if you are overriding any existing styling be sure to use !important
-        //                 btn.style = "padding: 0.3rem !important"
-        //             })
-        //         }
-        //     });
-        // }
+        if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value === ''){
+            Extend.buttons.render('#extend-offer', {referenceId: params.productSku}, function(){
+                //select extend iframe
+                var iframe = document.querySelector('#extend-offer iframe')
+                //if we have an iframe we will select that iframes document
+                var extendDocument = iframe ? iframe.contentWindow.document : null;
+                //if we have a document, we will select all of the buttons, and then we can style those buttons accordingly
+                var offerBtns = extendDocument ? extendDocument.querySelectorAll('.btn-offer') : null;
+                if(offerBtns){
+                    offerBtns.forEach(function(btn) {
+                        //if you are overriding any existing styling be sure to use !important
+                        btn.style = "padding: 0.3rem !important"
+                    })
+                }
+            });
+        }
 
         $(document).ready(function () {
             $('div.product-options-wrapper').on('change',() => {
