@@ -110,14 +110,10 @@ class Connector implements ConnectorInterface
         $this->uri = rtrim($this->uri);
         $endpoint = ltrim($endpoint);
 
+        $_uri = "{$this->uri}/{$endpoint}";
+
         $this->client
-            ->setUri(
-                $this->urlBuilder
-                    ->setUri(
-                        "{$this->uri}/{$endpoint}"
-                    )
-                    ->build()
-            )
+            ->setUri($this->urlBuilder->setUri($_uri)->build())
             ->setMethod($method);
 
         if (
@@ -130,9 +126,14 @@ class Connector implements ConnectorInterface
                     'application/json'
                 );
         }
+        return $this->client->request();
+    }
 
-        $response = $this->client->request();
-
-        return $response;
+    public function simpleCall(string $endpoint): string
+    {
+        $endpoint = ltrim($endpoint);
+        return file_get_contents(
+            $this->urlBuilder->setUri($endpoint)->build()
+        );
     }
 }
