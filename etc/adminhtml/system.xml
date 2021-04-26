@@ -137,6 +137,10 @@
                     <label>Enable Refunds</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="enableLeads" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable Leads</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
             </group>
 
             <group id="advance_config" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
