@@ -5,22 +5,27 @@ namespace Extend\Warranty\Helper\Api;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Module\ModuleListInterface;
 
 class Data extends AbstractHelper
 {
     CONST BASEPATH = 'warranty/authentication/';
-
     CONST ENABLE_PATH = 'warranty/enableExtend/';
+    CONST MODULE_NAME = 'Extend_Warranty';
 
     protected $scopeConfig;
+
+    protected $moduleList;
 
     public function __construct
     (
         Context $context,
-        ScopeConfigInterface $config
+        ScopeConfigInterface $config,
+        ModuleListInterface $moduleList
     )
     {
         $this->scopeConfig = $config;
+        $this->moduleList = $moduleList;
         parent::__construct($context);
     }
 
@@ -61,5 +66,9 @@ class Data extends AbstractHelper
     public function isLeadEnabled() {
         $path = self::ENABLE_PATH . 'enableLeads';
         return $this->scopeConfig->isSetFlag($path);
+    }
+
+    public function getVersion() {
+        return $this->moduleList->getOne(self::MODULE_NAME)['setup_version'];
     }
 }
