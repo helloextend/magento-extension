@@ -19,6 +19,7 @@ use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\App\Area;
+use Magento\Framework\Exception\LocalizedException;
 
 class InstallData implements InstallDataInterface
 {
@@ -86,7 +87,12 @@ class InstallData implements InstallDataInterface
 
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
-        $this->state->setAreaCode(Area::AREA_ADMINHTML);
+        try {
+            $this->state->setAreaCode(Area::AREA_ADMINHTML);
+        } catch (LocalizedException $e) {
+            //Intentionally Left Empty
+        }
+        // $this->state->setAreaCode(Area::AREA_ADMINHTML);
 
         $setup->startSetup();
         $eavSetup = $this->eavSetupFactory->create();
