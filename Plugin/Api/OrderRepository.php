@@ -9,7 +9,6 @@ use Magento\Sales\Model\ResourceModel\Order\Collection;
 use Magento\Sales\Api\Data\OrderItemSearchResultInterface;
 
 
-
 class OrderRepository
 {
 
@@ -22,13 +21,14 @@ class OrderRepository
      * @var OrderItemExtensionFactory
      */
     protected $extensionFactory;
-
     /**
      * OrderRepositoryPlugin constructor
      *
      * @param OrderExtensionFactory $extensionFactory
      */
-    public function __construct(OrderItemExtensionFactory $extensionFactory)
+    public function __construct(
+        OrderItemExtensionFactory $extensionFactory
+    )
     {
         $this->extensionFactory = $extensionFactory;
     }
@@ -46,11 +46,18 @@ class OrderRepository
         //contract_id
         $contractId = $orderItem->getData(self::CONTRACT_ID);
         //product_options
-        $productOptions = $orderItem->getProductOptions();
+        $productOptions = $orderItem->getProductOptions();      
         $extensionAttributes = $orderItem->getExtensionAttributes();
         $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
-        $extensionAttributes->setContractId($contractId);
         $extensionAttributes->setProductOptions(json_encode($productOptions));
+
+        if ($contractId) {
+            $extensionAttributes->setContractId($contractId);
+            $extensionAttributes->setWarrantyId($productOptions['warranty_id']);
+            $extensionAttributes->setAssociatedProduct($productOptions['associated_product']);
+            $extensionAttributes->setTerm($productOptions['warranty_term']);
+            $extensionAttributes->setRefund($productOptions['refund']);
+        }
         $orderItem->setExtensionAttributes($extensionAttributes);
 
         return $orderItem;
@@ -75,8 +82,16 @@ class OrderRepository
             $productOptions = $orderItem->getProductOptions();
             $extensionAttributes = $orderItem->getExtensionAttributes();
             $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
-            $extensionAttributes->setContractId($contractId);
             $extensionAttributes->setProductOptions(json_encode($productOptions));
+
+            if ($contractId) {
+                $extensionAttributes->setContractId($contractId);
+                $extensionAttributes->setWarrantyId($productOptions['warranty_id']);
+                $extensionAttributes->setAssociatedProduct($productOptions['associated_product']);
+                $extensionAttributes->setTerm($productOptions['warranty_term']);
+                $extensionAttributes->setRefund($productOptions['refund']);
+            }
+
             $orderItem->setExtensionAttributes($extensionAttributes);
         }
 
