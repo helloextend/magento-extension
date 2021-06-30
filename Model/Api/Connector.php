@@ -89,7 +89,7 @@ class Connector implements ConnectorInterface
 
         $this->client
             ->setHeaders([
-                'Accept' => ' application/json; version=2020-08-01',
+                'Accept' => ' application/json; version=2021-04-01',
                 'Content-Type' => ' application/json',
                 'X-Extend-Access-Token' => $accessKeys['api_key']
             ]);
