@@ -2,10 +2,10 @@
 
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="extend_warranty">
-        <job name="sync_products" instance="Extend\Warranty\Cron\Sync" method="execute">
+        <job name="extend_sync_products" instance="Extend\Warranty\Cron\Sync" method="execute">
             <schedule>0 0 * * *</schedule>
         </job>
-        <job name="sync_contracts" instance="Extend\Warranty\Cron\Contracts" method="execute">
+        <job name="extend_sync_contracts" instance="Extend\Warranty\Cron\Contracts" method="execute">
             <schedule>0 */1 * * *</schedule>
         </job>
     </group>

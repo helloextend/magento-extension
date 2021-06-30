@@ -9,8 +9,8 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 class Data extends AbstractHelper
 {
     CONST BASEPATH = 'warranty/authentication/';
-
     CONST ENABLE_PATH = 'warranty/enableExtend/';
+    CONST PRODUCTS_PATH = 'warranty/products/';
 
     protected $scopeConfig;
 
@@ -55,6 +55,11 @@ class Data extends AbstractHelper
 
     public function isRefundEnabled() {
         $path = self::ENABLE_PATH. 'enableRefunds';
+        return $this->scopeConfig->isSetFlag($path);
+    }
+
+    public function isProductSyncByCronJobEnabled() {
+        $path = self::PRODUCTS_PATH . 'enable_cronjob';
         return $this->scopeConfig->isSetFlag($path);
     }
 }
