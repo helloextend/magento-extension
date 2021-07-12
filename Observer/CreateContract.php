@@ -82,15 +82,15 @@ class CreateContract implements ObserverInterface
      */
     public function execute(Observer $observer): void
     {
-        if ($this->dataHelper->isWarrantyContractEnabled()) {
+        if ($this->dataHelper->isExtendEnabled() && $this->dataHelper->isWarrantyContractEnabled()) {
             $event = $observer->getEvent();
             $invoice = $event->getInvoice();
 
             $warranties = [];
-            foreach ($invoice->getAllItems() as $key => $item) {
-                $product = $this->getProduct((int)$item->getProductId());
+            foreach ($invoice->getAllItems() as $key => $invoiceItem) {
+                $product = $this->getProduct((int)$invoiceItem->getProductId());
                 if ($product && $product->getTypeId() === WarrantyType::TYPE_CODE) {
-                    $warranties[$key] = $item;
+                    $warranties[$key] = $invoiceItem->getOrderItem();
                 }
             }
 
