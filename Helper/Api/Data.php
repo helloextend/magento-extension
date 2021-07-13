@@ -109,4 +109,16 @@ class Data extends AbstractHelper
 
         return $this->scopeConfig->isSetFlag($path);
     }
+
+    /**
+     * Check if a refund should be created automatically when credit memo is created
+     *
+     * @return bool
+     */
+    public function isAutoRefundEnabled(): bool
+    {
+        $path = self::ENABLE_PATH. 'auto_refund_enabled';
+
+        return $this->scopeConfig->isSetFlag($path);
+    }
 }

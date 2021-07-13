@@ -147,6 +147,14 @@
                     <label>Enable Refunds</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="auto_refund_enabled" translate="label comment" type="select" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Create Refund Automatically</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Process a refund request automatically when credit memo is created</comment>
+                    <depends>
+                        <field id="enableRefunds">1</field>
+                    </depends>
+                </field>
                 <field id="warranty_contract_enabled" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
                     <label>Create Warranty Contract</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+ -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Magento\Catalog\Block\Adminhtml\Product"
                 type="Extend\Warranty\Block\Adminhtml\Product" />
@@ -113,6 +123,26 @@
     <type name="Extend\Warranty\Controller\Cart\Add">
         <arguments>
             <argument name="addWarrantyLogger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="ApiLogHandler" type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/extend/api.log</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="ApiLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="info" xsi:type="object">ApiLogHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest">
+        <arguments>
+            <argument name="logger" xsi:type="object">ApiLogger</argument>
         </arguments>
     </type>
 </config>
