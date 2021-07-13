@@ -1,63 +1,120 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+declare(strict_types=1);
 
 namespace Extend\Warranty\Observer;
 
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Framework\Event\Observer;
 use Extend\Warranty\Model\Product\Type as WarrantyType;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Sales\Api\Data\OrderInterface;
 use Extend\Warranty\Model\WarrantyContract;
-use Magento\Quote\Api\CartRepositoryInterface;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Magento\Framework\Exception\LocalizedException;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class CreateContract
+ */
 class CreateContract implements ObserverInterface
 {
-    protected $productRepository;
-    protected $warrantyContract;
-    protected $quoteRepository;
-    protected $logger;
+    /**
+     * Product Repository Interface
+     *
+     * @var ProductRepositoryInterface
+     */
+    private $productRepository;
 
-    public function __construct
-    (
+    /**
+     * Warranty Contract
+     *
+     * @var WarrantyContract
+     */
+    private $warrantyContract;
+
+    /**
+     * DataHelper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
+
+    /**
+     * LoggerInterface
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * CreateContract constructor
+     *
+     * @param ProductRepositoryInterface $productRepository
+     * @param WarrantyContract $warrantyContract
+     * @param LoggerInterface $logger
+     * @param DataHelper $dataHelper
+     */
+    public function __construct (
         ProductRepositoryInterface $productRepository,
         WarrantyContract $warrantyContract,
-        CartRepositoryInterface $quoteRepository,
+        DataHelper $dataHelper,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->productRepository = $productRepository;
         $this->warrantyContract = $warrantyContract;
-        $this->quoteRepository = $quoteRepository;
+        $this->dataHelper = $dataHelper;
         $this->logger = $logger;
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
-     * @return void
+     * Create warranty contract for order item if item is invoiced
+     *
+     * @param Observer $observer
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer): void
     {
-        $invoice = $observer->getEvent()->getInvoice();
-        /** @var OrderInterface $order */
-        $order = $invoice->getOrder();
+        if ($this->dataHelper->isExtendEnabled() && $this->dataHelper->isWarrantyContractEnabled()) {
+            $event = $observer->getEvent();
+            $invoice = $event->getInvoice();
 
-        $warranties = [];
-
-        $flag = 0;
-
-        foreach ($order->getAllItems() as $key => $item) {
-            /** @var \Magento\Sales\Model\Order\Item $item */
-            if ($item->getProductType() == WarrantyType::TYPE_CODE) {
-                if (!$flag) {
-                    $flag = 1;
+            $warranties = [];
+            foreach ($invoice->getAllItems() as $key => $invoiceItem) {
+                $product = $this->getProduct((int)$invoiceItem->getProductId());
+                if ($product && $product->getTypeId() === WarrantyType::TYPE_CODE) {
+                    $warranties[$key] = $invoiceItem->getOrderItem();
                 }
-                $warranties[$key] = $item;
+            }
+
+            if (!empty($warranties)) {
+                $order = $invoice->getOrder();
+                $this->warrantyContract->createContract($order, $warranties);
             }
         }
+    }
 
-        if ($flag) {
-            $this->warrantyContract->createContract($order, $warranties);
+    /**
+     * Get product
+     *
+     * @param int $productId
+     * @return ProductInterface|null
+     */
+    private function getProduct(int $productId): ?ProductInterface
+    {
+        try {
+            $product = $this->productRepository->getById($productId);
+        } catch (LocalizedException $exception) {
+            $product = null;
         }
+
+        return $product;
     }
 }
