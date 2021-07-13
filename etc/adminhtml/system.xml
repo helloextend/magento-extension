@@ -120,6 +120,16 @@
                 <field id="syncbutton" translate="label" type="button" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                     <frontend_model>Extend\Warranty\Block\System\Config\Products\Button</frontend_model>
                 </field>
+
+                <field id="enable_cronjob" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable Synchronization by Cronjob</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                                Products can be synchronized automatically (Every day at 00:00) using this functionality.
+                            ]]>
+                    </comment>
+                </field>
             </group>
 
             <group id="enableExtend" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -151,6 +161,10 @@
                     <label>Create Warranty Contract</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Create warranty contract for order item if item is invoiced</comment>
+                </field>
+                <field id="enableLeads" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable Leads</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
 

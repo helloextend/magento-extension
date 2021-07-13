@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace Extend\Warranty\Helper\Api;
 
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Module\ModuleListInterface;
 
 /**
  * Class Data
@@ -24,6 +26,19 @@ class Data extends AbstractHelper
      */
     const BASEPATH = 'warranty/authentication/';
     const ENABLE_PATH = 'warranty/enableExtend/';
+
+    CONST PRODUCTS_PATH = 'warranty/products/';
+    CONST MODULE_NAME = 'Extend_Warranty';
+
+    protected $moduleList;
+
+    public function __construct(
+        Context $context,
+        ModuleListInterface $moduleList
+    ) {
+        $this->moduleList = $moduleList;
+        parent::__construct($context);
+    }
 
     /**
      * Get value
@@ -108,5 +123,22 @@ class Data extends AbstractHelper
         $path = self::ENABLE_PATH. 'warranty_contract_enabled';
 
         return $this->scopeConfig->isSetFlag($path);
+    }
+
+    public function isProductSyncByCronJobEnabled()
+    {
+        $path = self::PRODUCTS_PATH . 'enable_cronjob';
+        return $this->scopeConfig->isSetFlag($path);
+    }
+
+    public function isLeadEnabled()
+    {
+        $path = self::ENABLE_PATH . 'enableLeads';
+        return $this->scopeConfig->isSetFlag($path);
+    }
+
+    public function getVersion()
+    {
+        return $this->moduleList->getOne(self::MODULE_NAME)['setup_version'];
     }
 }

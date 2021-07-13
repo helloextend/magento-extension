@@ -1,9 +1,19 @@
+<?php
+$helper = $this->helper('Extend\Warranty\Helper\Api\Data');
+$moduleVersion = $helper->getVersion();
+?>
+
 <div class="extend__intro">
     <img id="extend-logo" src="<?= $this->getViewFileUrl('Extend_Warranty::images/Extend_logo_slogan.svg'); ?>" alt="Logo Image">
     <div class="extend__info">
-        <p id="extend-intro">Extend generates new revenue for your store, increases overall purchase
+        <p id="extend-intro">
+            Extend generates new revenue for your store, increases overall purchase
             conversions, and provides customers with streamlined product protection and peace of mind.</p>
         <p><a href="https://extend.com/merchants">Learn more</a></p>
+        <?php if (!empty($moduleVersion)): ?>
+            <br />
+            <strong>Ver. <?= $moduleVersion ?></strong>
+        <?php endif; ?>
     </div>
     <img id="extend-mobile" src="<?= $this->getViewFileUrl('Extend_Warranty::images/mobile-offer.svg'); ?>" alt="Mobile Image">
 </div>
