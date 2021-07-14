@@ -16,4 +16,7 @@
     <event name="sales_order_creditmemo_refund">
         <observer name="extend_warranty_request_refund_observer" instance="Extend\Warranty\Observer\RequestRefundObserver" />
     </event>
+    <event name="sales_order_place_after">
+        <observer name="create_warranty_lead" instance="Extend\Warranty\Observer\CreateLead"/>
+    </event>
 </config>

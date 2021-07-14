@@ -14,6 +14,8 @@ namespace Extend\Warranty\Helper\Api;
 
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Module\ModuleListInterface;
 
 /**
  * Class Data
@@ -28,6 +30,19 @@ class Data extends AbstractHelper
     const WARRANTY_CONTRACT_ENABLED_XML_PATH = 'warranty/enableExtend/warranty_contract_enabled';
     const AUTO_REFUND_ENABLED_XML_PATH = 'warranty/enableExtend/auto_refund_enabled';
     const LOGGING_ENABLED_XML_PATH = 'warranty/enableExtend/logging_enabled';
+
+    CONST PRODUCTS_PATH = 'warranty/products/';
+    CONST MODULE_NAME = 'Extend_Warranty';
+
+    protected $moduleList;
+
+    public function __construct(
+        Context $context,
+        ModuleListInterface $moduleList
+    ) {
+        $this->moduleList = $moduleList;
+        parent::__construct($context);
+    }
 
     /**
      * Get value
@@ -145,5 +160,22 @@ class Data extends AbstractHelper
             ScopeInterface::SCOPE_WEBSITES,
             $websiteId
         );
+    }
+
+    public function isProductSyncByCronJobEnabled()
+    {
+        $path = self::PRODUCTS_PATH . 'enable_cronjob';
+        return $this->scopeConfig->isSetFlag($path);
+    }
+
+    public function isLeadEnabled()
+    {
+        $path = self::ENABLE_PATH . 'enableLeads';
+        return $this->scopeConfig->isSetFlag($path);
+    }
+
+    public function getVersion()
+    {
+        return $this->moduleList->getOne(self::MODULE_NAME)['setup_version'];
     }
 }
