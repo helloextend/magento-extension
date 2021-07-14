@@ -160,6 +160,10 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Create warranty contract for order item if item is invoiced</comment>
                 </field>
+                <field id="logging_enabled" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Enable Logging</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
             </group>
 
             <group id="advance_config" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">

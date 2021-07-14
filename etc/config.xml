@@ -18,6 +18,7 @@
             <enableExtend>
                 <warranty_contract_enabled>1</warranty_contract_enabled>
                 <auto_refund_enabled>1</auto_refund_enabled>
+                <logging_enabled>1</logging_enabled>
             </enableExtend>
         </warranty>
     </default>

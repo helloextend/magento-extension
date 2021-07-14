@@ -126,23 +126,23 @@
         </arguments>
     </type>
 
-    <virtualType name="ApiLogHandler" type="Magento\Framework\Logger\Handler\Base">
+    <virtualType name="ExtendLogHandler" type="Magento\Framework\Logger\Handler\Base">
         <arguments>
-            <argument name="fileName" xsi:type="string">/var/log/extend/api.log</argument>
+            <argument name="fileName" xsi:type="string">/var/log/extend.log</argument>
         </arguments>
     </virtualType>
 
-    <virtualType name="ApiLogger" type="Magento\Framework\Logger\Monolog">
+    <virtualType name="ExtendLogger" type="Extend\Warranty\Model\Logger">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="info" xsi:type="object">ApiLogHandler</item>
+                <item name="info" xsi:type="object">ExtendLogHandler</item>
             </argument>
         </arguments>
     </virtualType>
 
     <type name="Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest">
         <arguments>
-            <argument name="logger" xsi:type="object">ApiLogger</argument>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
         </arguments>
     </type>
 </config>

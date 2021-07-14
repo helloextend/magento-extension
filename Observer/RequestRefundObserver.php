@@ -173,7 +173,7 @@ class RequestRefundObserver implements ObserverInterface
      * @param Item $orderItem
      * @return array
      */
-    private function getContractIds(Item $orderItem): array
+    protected function getContractIds(Item $orderItem): array
     {
         try {
             $value = $orderItem->getData(Data::CONTRACT_ID);
@@ -192,7 +192,7 @@ class RequestRefundObserver implements ObserverInterface
      * @param array $productOptions
      * @return Item
      */
-    private function updateOrderItemOptions(Item $orderItem, array $productOptions): Item
+    protected function updateOrderItemOptions(Item $orderItem, array $productOptions): Item
     {
         $options = $orderItem->getProductOptions();
         $refundResponsesLog = $options['refund_responses_log'] ?? [];
