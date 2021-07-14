@@ -87,10 +87,11 @@ class CreateContract implements ObserverInterface
             $invoice = $event->getInvoice();
 
             $warranties = [];
-            foreach ($invoice->getAllItems() as $key => $invoiceItem) {
+            foreach ($invoice->getAllItems() as $invoiceItem) {
                 $product = $this->getProduct((int)$invoiceItem->getProductId());
                 if ($product && $product->getTypeId() === WarrantyType::TYPE_CODE) {
-                    $warranties[$key] = $invoiceItem->getOrderItem();
+                    $orderItem = $invoiceItem->getOrderItem();
+                    $warranties[$orderItem->getId()] = $orderItem;
                 }
             }
 

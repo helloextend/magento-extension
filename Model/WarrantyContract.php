@@ -1,91 +1,129 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Model;
 
-use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Sales\Model\Order;
+use Extend\Warranty\Helper\Data;
 use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest;
-use Extend\Warranty\Model\Api\Request\ContractBuilder;
-use Magento\Sales\Api\Data\OrderInterface;
+use Extend\Warranty\Model\Api\Request\ContractBuilder as ContractPayloadBuilder;
+use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\Exception\LocalizedException;
 
+/**
+ * Class WarrantyContract
+ */
 class WarrantyContract
 {
     /**
+     * Contracts Request
+     *
      * @var ContractsRequest
      */
-    protected $contractsRequest;
+    private $contractsRequest;
 
     /**
-     * @var ContractBuilder
+     * Contract Payload Builder
+     *
+     * @var ContractPayloadBuilder
      */
-    protected $contractBuilder;
+    private $contractPayloadBuilder;
 
     /**
+     * Json Serializer
+     *
+     * @var Json
+     */
+    private $jsonSerializer;
+
+    /**
+     * Order Item Repository Interface
+     *
+     * @var OrderItemRepositoryInterface
+     */
+    private $orderItemRepository;
+
+    /**
+     * Logger Interface
+     *
      * @var LoggerInterface
      */
-    protected $logger;
+    private $logger;
 
-    public function __construct
-    (
+    /**
+     * WarrantyContract constructor
+     *
+     * @param ContractsRequest $contractsRequest
+     * @param ContractPayloadBuilder $contractPayloadBuilder
+     * @param Json $jsonSerializer
+     * @param OrderItemRepositoryInterface $orderItemRepository
+     * @param LoggerInterface $logger
+     */
+    public function __construct(
         ContractsRequest $contractsRequest,
-        ContractBuilder $contractBuilder,
+        ContractPayloadBuilder $contractPayloadBuilder,
+        Json $jsonSerializer,
+        OrderItemRepositoryInterface $orderItemRepository,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->contractsRequest = $contractsRequest;
-        $this->contractBuilder = $contractBuilder;
+        $this->contractPayloadBuilder = $contractPayloadBuilder;
+        $this->jsonSerializer = $jsonSerializer;
+        $this->orderItemRepository = $orderItemRepository;
         $this->logger = $logger;
     }
 
     /**
-     * @param OrderInterface $order
-     * @param $warranties
+     * Create a warranty contract
+     *
+     * @param Order $order
+     * @param array $warranties
      */
-    public function createContract($order, $warranties)
+    public function createContract(Order $order, array $warranties): void
     {
-
         try {
-            $contracts = $this->contractBuilder->prepareInfo($order, $warranties);
+            $contracts = $this->contractPayloadBuilder->prepareInfo($order, $warranties);
 
             foreach ($contracts as $key => $contract) {
-                //validate qty of contracts required
-                if ($contract['product']['qty']>1) {
+                if (isset($contract['product']['qty'])) {
                     $contractIds = [];
-                    $tempcontract = $contract;
-                    unset($tempcontract['product']['qty']);
-                    for ($x=1; $x<=$contract['product']['qty']; $x++) {
-                        $contractIds[$x]= $this->contractsRequest->create($contract);
-                        //array_push($contractIds,$this->contractsRequest->create($contract));
+                    $qty = $contract['product']['qty'];
+
+                    for ($i = 1; $i <= $qty; $i++) {
+                        $contractId = $this->contractsRequest->create($contract);
+                        if ($contractId) {
+                            $contractIds[$i] = $contractId;
+                        }
                     }
-                    unset($tempcontract);
-                    $contractId=json_encode($contractIds);
-                    unset($contractIds);
-                } else {
-                    $contractId = json_encode(array('1'=>$this->contractsRequest->create($contract)));
-                }
 
-                if (!empty($contractId)) {
-                    $items = $order->getAllItems();
-                    if (isset($items[$key]) && empty($items[$key]->getContractId())) {
-                        $items[$key]->setContractId($contractId);
+                    if (!empty($contractIds)) {
+                        $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
 
-                        $options = $items[$key]->getProductOptions();
+                        foreach ($order->getAllItems() as $orderItem) {
+                            $orderItemId = (int)$orderItem->getId();
+                            if ($orderItemId === $key && !$orderItem->getData(Data::CONTRACT_ID)) {
+                                $orderItem->setData(Data::CONTRACT_ID, $contractIdsJson);
+                                $options = $orderItem->getProductOptions();
+                                $options['refund'] = false;
+                                $orderItem->setProductOptions($options);
 
-                        $options = array_merge($options, ['refund' => false]);
-
-                        $items[$key]->setProductOptions($options);
-
-                        if ($order->getId()) {
-                            $items[$key]->save();
+                                $this->orderItemRepository->save($orderItem);
+                            }
                         }
                     }
                 }
             }
-
-        } catch (NoSuchEntityException $exception) {
-            $this->logger->error('Error while creating warranty contract');
+        } catch (LocalizedException $exception) {
+            $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
         }
-
     }
-
 }

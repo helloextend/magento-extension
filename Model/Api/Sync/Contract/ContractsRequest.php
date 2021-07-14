@@ -1,181 +1,193 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Model\Api\Sync\Contract;
 
 use Extend\Warranty\Api\ConnectorInterface;
-use Extend\Warranty\Model\Keys;
-use Extend\Warranty\Api\Data\UrlBuilderInterface;
-use Extend\Warranty\Helper\Api\Data as Config;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Psr\Log\LoggerInterface;
+use Zend_Http_Client;
+use Zend_Http_Response;
 
+/**
+ * Class ContractsRequest
+ */
 class ContractsRequest
 {
-    const ENDPOINT_URI = 'contracts';
-
     /**
-     * @var Keys
+     * Create a warranty contract
      */
-    protected $keys;
+    const CREATE_CONTRACT_ENDPOINT = 'contracts/';
 
     /**
-     * @var UrlBuilderInterface
+     * Cancel a warranty contract and request a refund
      */
-    protected $urlBuilder;
+    const REFUND_CONTRACT_ENDPOINT = 'contracts/%s/refund';
 
     /**
+     * Response status codes
+     */
+    const STATUS_CODE_SUCCESS = 201;
+
+    /**
+     * Connector Interface
+     *
      * @var ConnectorInterface
      */
-    protected $connector;
+    private $connector;
 
     /**
-     * @var Config
-     */
-    protected $config;
-
-    /**
+     * Json Serializer
+     *
      * @var Json
      */
-    protected $jsonSerializer;
+    private $jsonSerializer;
 
     /**
+     * Logger Interface
+     *
      * @var LoggerInterface
      */
-    protected $logger;
+    private $logger;
 
+    /**
+     * ContractsRequest constructor
+     *
+     * @param ConnectorInterface $connector
+     * @param Json $jsonSerializer
+     * @param LoggerInterface $logger
+     */
     public function __construct(
-        Keys $keys,
-        UrlBuilderInterface $urlBuilder,
         ConnectorInterface $connector,
-        Config $config,
         Json $jsonSerializer,
         LoggerInterface $logger
-    )
-    {
-        $this->keys = $keys;
-        $this->urlBuilder = $urlBuilder;
+    ) {
         $this->connector = $connector;
-        $this->config = $config;
         $this->jsonSerializer = $jsonSerializer;
         $this->logger = $logger;
     }
 
-    public function create($contract): string
+    /**
+     * Create a warranty contract
+     *
+     * @param array $contractData
+     * @return string
+     */
+    public function create(array $contractData): string
     {
-        return $this->createRequest($contract);
-    }
-
-    private function createRequest($contract): string
-    {
+        $contractId = '';
         try {
-            $response = $this->connector
-                ->call(
-                    self::ENDPOINT_URI,
-                    \Zend_Http_Client::POST,
-                    $contract
-                );
+            $response = $this->connector->call(
+                self::CREATE_CONTRACT_ENDPOINT,
+                Zend_Http_Client::POST,
+                $contractData
+            );
+            $responseBody = $this->processResponse($response);
 
-            return $this->processCreateResponse($response);
-
-        } catch (\Zend_Http_Client_Exception $e) {
-            $this->logger->error($e->getMessage(), ['exception' => $e]);
-            return '';
-        }
-    }
-
-    private function processCreateResponse(\Zend_Http_Response $response): string
-    {
-        if ($response->isError()) {
-            $res = $this->jsonSerializer->unserialize($response->getBody());
-            $this->logger->error('Contract Request Fail', $res);
-
-        } elseif ($response->getStatus() === 201 || $response->getStatus() === 202) {
-            $res = $this->jsonSerializer->unserialize($response->getBody());
-            $contractId = $res['id'];
-            $this->logger->info(__('Contract #%1 request successful', $contractId));
-            return $contractId;
-        }
-
-        return '';
-    }
-
-
-    public function refund($contractId): bool
-    {
-        return $this->refundRequest($contractId);
-    }
-
-    private function refundRequest($contractId): bool
-    {
-        try {
-            $endpoint = self::ENDPOINT_URI . "/{$contractId}/refund";
-
-            $response = $this->connector
-                ->call(
-                    $endpoint,
-                    \Zend_Http_Client::POST
-                );
-
-            return $this->processRefundResponse($response);
-
-        } catch (\Zend_Http_Client_Exception $e) {
-            $this->logger->error($e->getMessage(), ['exception' => $e]);
-            return false;
-        }
-    }
-
-    private function processRefundResponse(\Zend_Http_Response $response): bool
-    {
-        if ($response->getStatus() === 201 || $response->getStatus() === 202) {
-            $this->logger->info('Refund Request Success');
-            return true;
-        }
-
-        //Refund Already Accepted
-        try {
-            $body = json_decode($response->getBody(), true);
-            if ($body["message"] == "The contract has already been refunded") {
-                $this->logger->info('Refund Request already processed');
-                return true;
-            }
-        } catch(\Exception $e) {
-            $this->logger->error($e->getMessage(), ['exception' => $e]);
-            return false;
-        }
-
-        $res = $this->jsonSerializer->unserialize($response->getBody());
-        $this->logger->error('Refund Request Fail', $res);
-        return false;
-    }
-
-    private function validateRefundRequest($contractId)
-    {
-        try {
-            $endpoint = self::ENDPOINT_URI . "/{$contractId}/refund?commit=false";
-
-            $response = $this->connector
-                ->call(
-                    $endpoint,
-                    \Zend_Http_Client::POST
-                );
-
-            $body = json_decode($response->getBody(), true);
-            if (!empty($body)) {
-                return $body;
+            $contractId = $responseBody['id'] ?? '';
+            if ($contractId) {
+                $this->logger->info('Contract is created successfully. ContractID: ' . $contractId);
             } else {
-                return false;
+                $this->logger->error('Contract creation is failed.');
+            }
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
+        }
+
+        return $contractId;
+    }
+
+    /**
+     * Cancel a warranty contract and request a refund
+     *
+     * @param string $contractId
+     * @return bool
+     */
+    public function refund(string $contractId): bool
+    {
+        $endpoint = sprintf(self::REFUND_CONTRACT_ENDPOINT, $contractId);
+        $isRefundRequested = false;
+
+        try {
+            $response = $this->connector->call($endpoint, Zend_Http_Client::POST);
+            $this->processResponse($response);
+
+            if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
+                $isRefundRequested = true;
+                $this->logger->info('Refund is requested successfully. ContractID: ' . $contractId);
+            } else {
+                $this->logger->error('Refund request is failed. ContractID: ' . $contractId);
+            }
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
+        }
+
+        return $isRefundRequested;
+    }
+
+    /**
+     * Get preview of the cancellation, including the amount that would be refunded
+     *
+     * @param string $contractId
+     * @return array
+     */
+    public function validateRefund(string $contractId): array
+    {
+        $endpoint = sprintf(self::REFUND_CONTRACT_ENDPOINT, $contractId) . '?commit=false';
+
+        try {
+            $response = $this->connector->call($endpoint, Zend_Http_Client::POST);
+            $responseBody = $this->processResponse($response);
+
+            if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
+                $this->logger->info('Refund is validated successfully. ContractID: ' . $contractId);
+            } else {
+                $responseBody = [];
+                $this->logger->error('Refund validation is failed. ContractID: ' . $contractId);
+            }
+        } catch (LocalizedException $exception) {
+            $responseBody = [];
+            $this->logger->error($exception->getMessage());
+        }
+
+        return $responseBody;
+    }
+
+    /**
+     * Process response
+     *
+     * @param Zend_Http_Response $response
+     * @return array
+     */
+    protected function processResponse(Zend_Http_Response $response): array
+    {
+        $responseBody = [];
+        $responseBodyJson = $response->getBody();
+
+        if ($responseBodyJson) {
+            $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
+
+            if (isset($responseBody['customer'])) {
+                $depersonalizedBody = $responseBody;
+                $depersonalizedBody['customer'] = [];
+                $rawBody = $this->jsonSerializer->serialize($depersonalizedBody);
+            } else {
+                $rawBody = $response->getRawBody();
             }
 
-
-        } catch (\Zend_Http_Client_Exception $e) {
-            $this->logger->error($e->getMessage(), ['exception' => $e]);
-            return false;
+            $this->logger->info('Response: ' . $response->getHeadersAsString() . PHP_EOL . $rawBody);
+        } else {
+            $this->logger->error('Response body is empty.');
         }
-    }
 
-    public function validateRefund($contractId)
-    {
-        return $this->validateRefundRequest($contractId);
+        return $responseBody;
     }
-
 }
