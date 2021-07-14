@@ -167,14 +167,23 @@ class ContractsRequest
      * @param Zend_Http_Response $response
      * @return array
      */
-    private function processResponse(Zend_Http_Response $response): array
+    protected function processResponse(Zend_Http_Response $response): array
     {
         $responseBody = [];
         $responseBodyJson = $response->getBody();
 
         if ($responseBodyJson) {
             $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
-            $this->logger->info('Response: ' . $response->asString());
+
+            if (isset($responseBody['customer'])) {
+                $depersonalizedBody = $responseBody;
+                $depersonalizedBody['customer'] = [];
+                $rawBody = $this->jsonSerializer->serialize($depersonalizedBody);
+            } else {
+                $rawBody = $response->getRawBody();
+            }
+
+            $this->logger->info('Response: ' . $response->getHeadersAsString() . PHP_EOL . $rawBody);
         } else {
             $this->logger->error('Response body is empty.');
         }
