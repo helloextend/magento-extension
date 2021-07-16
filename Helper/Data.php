@@ -1,14 +1,43 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Helper;
 
+use Extend\Warranty\Model\Product\Type;
+
+/**
+ * Class Data
+ */
 class Data
 {
-    const NOT_ALLOWED_TYPES = [\Extend\Warranty\Model\Product\Type::TYPE_CODE];
+    /**
+     * `Contact ID` field
+     */
+    const CONTRACT_ID = 'contract_id';
 
+    /**
+     * List of not allowed product types
+     */
+    const NOT_ALLOWED_TYPES = [
+        Type::TYPE_CODE,
+    ];
+
+    /**
+     * Format price
+     *
+     * @param $price
+     * @return float
+     */
     public function formatPrice($price): float
     {
-        if  (empty($price)) {
+        if (empty($price)) {
             return 0;
         }
 
@@ -24,6 +53,12 @@ class Data
         return (float) $formattedPrice;
     }
 
+    /**
+     * Remove format price
+     *
+     * @param int $price
+     * @return float
+     */
     public function removeFormatPrice(int $price): float
     {
         $price = (string)$price;
