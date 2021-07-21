@@ -5,15 +5,17 @@ define([
 
     return function (params) {
 
-        Extend.buttons.render('#extend-offer', {
-            referenceId: params.productSku
-        });
+        if (params.productSku !== '') {
+            Extend.buttons.render('#extend-offer', {
+                referenceId: params.productSku
+            });
+        }
 
         $(document).ready(function () {
-            $('div.product-options-wrapper').on('change',() => {
+            $('div.product-options-wrapper').on('change', () => {
                 let sku = selectedProduct();
 
-                if(sku !== ''){
+                if (sku !== '') {
                     renderWarranties(sku);
                 }
             });
@@ -25,13 +27,13 @@ define([
 
         function selectedProduct() {
 
-            if ($('div.swatch-attribute').length === 0 ){
-                if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value !== ''){
+            if ($('div.swatch-attribute').length === 0) {
+                if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value !== '') {
                     let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value;
                     const productConfig1 = $('#product_addtocart_form').data('mageConfigurable').options.spConfig;
                     return productConfig1.skus[productId1];
                 }
-            }else{
+            } else {
                 let selected_options = {};
                 let options = $('div.swatch-attribute');
                 options.each((index, value) => {
@@ -53,9 +55,19 @@ define([
             }
         }
 
-        function renderWarranties(productSku){
-            const component = Extend.buttons.instance('#extend-offer');
-            component.setActiveProduct(productSku);
+        function renderWarranties(productSku) {
+            if (Extend.buttons.instance('#extend-offer') === null) {
+
+                if (productSku !== '') {
+                    Extend.buttons.render('#extend-offer', {
+                        referenceId: productSku
+                    });
+                }
+
+            } else {
+                const component = Extend.buttons.instance('#extend-offer');
+                component.setActiveProduct(productSku);
+            }
         }
 
         $('#product-addtocart-button').click((event) => {
@@ -76,7 +88,7 @@ define([
                     referenceId: sku,
                     onClose: function (plan) {
                         if (plan) {
-                            addWarranty(plan,sku)
+                            addWarranty(plan, sku)
                         } else {
                             $("input[name^='warranty']").remove();
                         }
@@ -87,7 +99,7 @@ define([
 
         });
 
-        function addWarranty(plan, sku){
+        function addWarranty(plan, sku) {
 
             $.each(plan, (attribute, value) => {
                 $('<input />').attr('type', 'hidden')
