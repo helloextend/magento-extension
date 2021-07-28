@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Customer:etc/sections.xsd">
+
+    <action name="checkout/cart/add">
+        <section name="extend-tracking" />
+    </action>
+    <action name="checkout/cart/delete">
+        <section name="extend-tracking" />
+    </action>
+    <action name="checkout/sidebar/removeItem">
+        <section name="extend-tracking" />
+    </action>
+
+</config>
