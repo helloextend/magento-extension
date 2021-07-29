@@ -51,13 +51,14 @@ class OrderRepository
         $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
         $extensionAttributes->setProductOptions(json_encode($productOptions));
 
-        if ($contractId) {
+//     Commenting contractId condition to accomodate creating contracts in Netsuite
+//         if ($contractId) {
             $extensionAttributes->setContractId($contractId);
             $extensionAttributes->setWarrantyId($productOptions['warranty_id']);
             $extensionAttributes->setAssociatedProduct($productOptions['associated_product']);
             $extensionAttributes->setTerm($productOptions['warranty_term']);
             $extensionAttributes->setRefund($productOptions['refund']);
-        }
+//         }
         $orderItem->setExtensionAttributes($extensionAttributes);
 
         return $orderItem;
@@ -84,13 +85,14 @@ class OrderRepository
             $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
             $extensionAttributes->setProductOptions(json_encode($productOptions));
 
-            if ($contractId) {
+            //     Commenting contractId condition to accomodate creating contracts in Netsuite
+//             if ($contractId) {
                 $extensionAttributes->setContractId($contractId);
                 $extensionAttributes->setWarrantyId($productOptions['warranty_id']);
                 $extensionAttributes->setAssociatedProduct($productOptions['associated_product']);
                 $extensionAttributes->setTerm($productOptions['warranty_term']);
                 $extensionAttributes->setRefund($productOptions['refund']);
-            }
+//             }
 
             $orderItem->setExtensionAttributes($extensionAttributes);
         }
