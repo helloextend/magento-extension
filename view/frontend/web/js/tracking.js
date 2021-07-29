@@ -38,6 +38,20 @@ define([
                                             });
                                         }
                                         break;
+                                    case 'trackOfferAddedToCart':
+                                        if (typeof window.Extend.trackOfferAddedToCart === 'function') {
+                                            window.Extend.trackOfferAddedToCart({
+                                                'productId': event.productId,
+                                                'productQuantity': parseInt(event.productQuantity),
+                                                'warrantyQuantity': parseInt(event.warrantyQuantity),
+                                                'planId': event.planId,
+                                                'offerType': {
+                                                    'area': event.area,
+                                                    'component': event.component
+                                                }
+                                            });
+                                        }
+                                        break;
                                 }
                             }
                         }
