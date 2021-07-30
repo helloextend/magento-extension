@@ -112,19 +112,17 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
             $this->_messageManager->addErrorMessage('Oops! There was an error adding the protection plan product.');
             return;
         }
-        /** @var \Magento\Catalog\Model\Product $product */
-        $product = $observer->getData('product');
-        if (!$product instanceof \Magento\Catalog\Model\Product) {
+        if (!$this->_trackingHelper->isTrackingEnabled()) {
             return;
         }
         $trackingData = [
             'eventName'        => 'trackOfferAddedToCart',
-            'productId'        => $product->getData('sku'),
+            'productId'        => $warrantyData['product'] ?? '',
             'productQuantity'  => $qty,
             'warrantyQuantity' => $qty,
             'planId'           => $warrantyData['planId'] ?? '',
             'area'             => 'product_page',
-            'component'        => 'buttons',
+            'component'        => $warrantyData['component'] ?? 'buttons',
         ];
         $this->_trackingHelper->setTrackingData($trackingData);
     }

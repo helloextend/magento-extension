@@ -14,63 +14,87 @@ define([
 ], function ($, sectionConfig, customerData) {
     'use strict';
 
-    /**
-     * Events listener
-     */
-    $(document).on('ajaxComplete', function(event, xhr, settings) {
-
-        if (settings.type.match(/post|put|delete/i)) {
-            var sections = sectionConfig.getAffectedSections(settings.url);
-            if (sections && $.inArray('extend-tracking', sections) !== -1) {
-                let eventData = customerData.get('extend-tracking');
-                eventData.subscribe(function(events) {
-                    if (events) {
-                        let data = events.data;
-                        if (data.length > 0 && window.Extend) {
-                            for (let i = 0; i < data.length; i++) {
-                                let event = data[i];
-                                switch (event.eventName) {
-                                    case 'trackProductAddedToCart':
-                                        if (typeof window.Extend.trackProductAddedToCart === 'function') {
-                                            window.Extend.trackProductAddedToCart({
-                                                'productId': event.productId,
-                                                'productQuantity': parseInt(event.productQuantity)
-                                            });
-                                        }
-                                        break;
-                                    case 'trackOfferAddedToCart':
-                                        if (typeof window.Extend.trackOfferAddedToCart === 'function') {
-                                            window.Extend.trackOfferAddedToCart({
-                                                'productId': event.productId,
-                                                'productQuantity': parseInt(event.productQuantity),
-                                                'warrantyQuantity': parseInt(event.warrantyQuantity),
-                                                'planId': event.planId,
-                                                'offerType': {
-                                                    'area': event.area,
-                                                    'component': event.component
-                                                }
-                                            });
-                                        }
-                                        break;
+    $(document).ready(function() {
+        let eventData = customerData.get('extend-tracking');
+        eventData.subscribe(function(events) {
+            if (events && events.data) {
+                let data = events.data;
+                if (data.length > 0 && window.Extend) {
+                    for (let i = 0; i < data.length; i++) {
+                        let event = data[i];
+                        switch (event.eventName) {
+                            case 'trackProductAddedToCart':
+                                if (typeof window.Extend.trackProductAddedToCart === 'function') {
+                                    window.Extend.trackProductAddedToCart({
+                                        'productId': event.productId,
+                                        'productQuantity': parseInt(event.productQuantity)
+                                    });
                                 }
-                            }
+                                break;
+                            case 'trackOfferAddedToCart':
+                                if (typeof window.Extend.trackOfferAddedToCart === 'function') {
+                                    window.Extend.trackOfferAddedToCart({
+                                        'productId': event.productId,
+                                        'productQuantity': parseInt(event.productQuantity),
+                                        'warrantyQuantity': parseInt(event.warrantyQuantity),
+                                        'planId': event.planId,
+                                        'offerType': {
+                                            'area': event.area,
+                                            'component': event.component
+                                        }
+                                    });
+                                }
+                                break;
+                            case 'trackProductRemovedFromCart':
+                                if (typeof window.Extend.trackProductRemovedFromCart === 'function') {
+                                    window.Extend.trackProductRemovedFromCart({
+                                        'productId': event.productId
+                                    });
+                                }
+                                break;
+                            case 'trackOfferRemovedFromCart':
+                                if (typeof window.Extend.trackOfferRemovedFromCart === 'function') {
+                                    window.Extend.trackOfferRemovedFromCart({
+                                        'productId': event.productId,
+                                        'planId': event.planId
+                                    });
+                                }
+                                break;
+                            case 'trackProductUpdated':
+                                if (typeof window.Extend.trackProductUpdated === 'function') {
+                                    window.Extend.trackProductUpdated({
+                                        'productId': event.productId,
+                                        'updates': {
+                                            'productQuantity': parseInt(event.productQuantity)
+                                        }
+                                    });
+                                }
+                                break;
+                            case 'trackOfferUpdated':
+                                if (typeof window.Extend.trackOfferUpdated === 'function') {
+                                    window.Extend.trackOfferUpdated({
+                                        'productId': event.productId,
+                                        'planId': event.planId,
+                                        'updates': {
+                                            'warrantyQuantity': parseInt(event.warrantyQuantity),
+                                            'productQuantity': parseInt(event.productQuantity)
+                                        }
+                                    });
+                                }
+                                break;
                         }
                     }
-                });
+                    customerData.set('extend-tracking', {});
+                }
             }
-        }
+        });
     });
 
-    /**
-     * Events listener
-     */
     $(document).on('submit', function(event) {
-        var sections;
-
         if (event.target.method.match(/post|put|delete/i)) {
-            sections = sectionConfig.getAffectedSections(event.target.action);
-            if (sections) {
-                alert(sections);
+            let sections = sectionConfig.getAffectedSections(event.target.action);
+            if (sections && $.inArray('extend-tracking', sections) !== -1) {
+                customerData.invalidate(['extend-tracking']);
             }
         }
     });

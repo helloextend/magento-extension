@@ -15,10 +15,25 @@
     <action name="checkout/cart/add">
         <section name="extend-tracking" />
     </action>
+    <action name="warranty/cart/add">
+        <section name="extend-tracking" />
+    </action>
     <action name="checkout/cart/delete">
         <section name="extend-tracking" />
     </action>
+    <action name="checkout/cart/updateItemQty">
+        <section name="extend-tracking" />
+    </action>
+    <action name="checkout/cart/updateItemOptions">
+        <section name="extend-tracking" />
+    </action>
     <action name="checkout/sidebar/removeItem">
+        <section name="extend-tracking" />
+    </action>
+    <action name="checkout/sidebar/updateItemQty">
+        <section name="extend-tracking" />
+    </action>
+    <action name="checkout/sidebar/updateItemOptions">
         <section name="extend-tracking" />
     </action>
 
