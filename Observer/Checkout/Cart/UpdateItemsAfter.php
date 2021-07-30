@@ -57,8 +57,6 @@ class UpdateItemsAfter implements \Magento\Framework\Event\ObserverInterface
             if ($qty == $origQty) {
                 continue;
             }
-            /** @var \Magento\Catalog\Model\Product $product */
-            $product = $quoteItem->getProduct();
             if ($quoteItem->getProductType() === \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
                 //send tracking update for the warranty offer
                 $planId = (string)$quoteItem->getOptionByCode('warranty_id')->getValue();
@@ -66,7 +64,7 @@ class UpdateItemsAfter implements \Magento\Framework\Event\ObserverInterface
                 $item = $this->_trackingHelper->getQuoteItemForWarrantyItem($quoteItem);
                 $trackingData = [
                     'eventName'        => 'trackOfferUpdated',
-                    'productId'        => $product->getData('sku'),
+                    'productId'        => $quoteItem->getSku(),
                     'planId'           => $planId,
                     'warrantyQuantity' => $qty,
                     'productQuantity'  => (int)$item->getQty(),
@@ -76,7 +74,7 @@ class UpdateItemsAfter implements \Magento\Framework\Event\ObserverInterface
                 //there is no associated warranty item, just send tracking for the product update
                 $trackingData = [
                     'eventName'       => 'trackProductUpdated',
-                    'productId'       => $product->getData('sku'),
+                    'productId'       => $quoteItem->getSku(),
                     'productQuantity' => $qty,
                 ];
                 $this->_trackingHelper->setTrackingData($trackingData);

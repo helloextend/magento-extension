@@ -51,7 +51,7 @@ class Add implements \Magento\Framework\Event\ObserverInterface
         $qty = (int)$request->getPost('qty', 1);
         $trackingData = [
             'eventName'       => 'trackProductAddedToCart',
-            'productId'       => $product->getData('sku'),
+            'productId'       => $product->getSku(),
             'productQuantity' => $qty,
         ];
         $this->_trackingHelper->setTrackingData($trackingData);

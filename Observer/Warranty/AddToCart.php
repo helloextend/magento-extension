@@ -93,7 +93,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         $searchResults = $this->_productRepository->getList($searchCriteria);
         /** @var \Magento\Catalog\Model\Product[] $results */
         $results = $searchResults->getItems();
-        /** @var  $warranty */
+        /** @var \Magento\Catalog\Model\Product $warranty */
         $warranty = reset($results);
         if (!$warranty) {
             $this->_messageManager->addErrorMessage('Oops! There was an error adding the protection plan product.');

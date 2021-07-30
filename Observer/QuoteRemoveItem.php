@@ -58,9 +58,7 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
         $warrantyItem = $this->_trackingHelper->getWarrantyItemForQuoteItem($quoteItem);
         if (!$warrantyItem && $this->_trackingHelper->isTrackingEnabled()) {
             //there is no associated warranty item. Just track the product removal
-            /** @var \Magento\Catalog\Model\Product $product */
-            $product = $quoteItem->getProduct();
-            $sku = $product->getData('sku');
+            $sku = $quoteItem->getSku();
             $trackingData = [
                 'eventName' => 'trackProductRemovedFromCart',
                 'productId' => $sku,

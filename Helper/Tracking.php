@@ -100,7 +100,6 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @todo need to validate the logic in this
      * @param \Magento\Quote\Model\Quote\Item $quoteItem
      * @return false|\Magento\Quote\Model\Quote\Item
      */
@@ -112,7 +111,7 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
         $quote = $quoteItem->getQuote();
         foreach ($quote->getAllItems() as $item) {
             /** @var \Magento\Quote\Model\Quote\Item $item */
-            if ($item->getData('sku') == $productSku
+            if ($item->getSku() == $productSku
                 && ($item->getProductType() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE
                     || is_null($item->getOptionByCode('parent_product_id')))
             )
@@ -125,15 +124,12 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @todo need to validate the logic in this for configurable products
      * @param \Magento\Quote\Model\Quote\Item $quoteItem
      * @return false|\Magento\Quote\Model\Quote\Item
      */
     public function getWarrantyItemForQuoteItem(\Magento\Quote\Model\Quote\Item $quoteItem)
     {
-        /** @var \Magento\Catalog\Model\Product $product */
-        $product = $quoteItem->getProduct();
-        $sku = $product->getData('sku');
+        $sku = $quoteItem->getSku();
         /** @var \Magento\Quote\Model\Quote $quote */
         $quote = $quoteItem->getQuote();
         foreach ($quote->getAllItems() as $item) {
