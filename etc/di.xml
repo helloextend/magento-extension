@@ -122,7 +122,7 @@
 
     <type name="Extend\Warranty\Controller\Cart\Add">
         <arguments>
-            <argument name="addWarrantyLogger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
+            <argument name="logger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
         </arguments>
     </type>
 
