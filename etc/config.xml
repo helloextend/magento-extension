@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 /**
  * Extend Warranty
@@ -8,8 +8,10 @@
  * @package     Warranty
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
- -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+
     <default>
         <warranty>
             <products>
@@ -21,6 +23,10 @@
                 <auto_refund_enabled>1</auto_refund_enabled>
                 <logging_enabled>1</logging_enabled>
             </enableExtend>
+            <tracking>
+                <enabled>1</enabled>
+            </tracking>
         </warranty>
     </default>
+
 </config>

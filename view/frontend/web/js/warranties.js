@@ -78,13 +78,23 @@ define([
 
             if (plan) {
                 addWarranty(plan, sku);
+                //add hidden field for tracking
+                $('<input />').attr('type', 'hidden')
+                    .attr('name', 'warranty["component"]')
+                    .attr('value', 'buttons')
+                    .appendTo('#product_addtocart_form');
                 $('#product_addtocart_form').submit();
             } else {
                 Extend.modal.open({
                     referenceId: sku,
                     onClose: function (plan) {
                         if (plan) {
-                            addWarranty(plan,sku)
+                            addWarranty(plan, sku);
+                            //add hidden field for tracking
+                            $('<input />').attr('type', 'hidden')
+                                .attr('name', 'warranty[component]')
+                                .attr('value', 'modal')
+                                .appendTo('#product_addtocart_form');
                         } else {
                             $("input[name^='warranty']").remove();
                         }
@@ -95,20 +105,17 @@ define([
 
         });
 
-        function addWarranty(plan, sku){
-
+        function addWarranty(plan, sku) {
             $.each(plan, (attribute, value) => {
                 $('<input />').attr('type', 'hidden')
                     .attr('name', 'warranty[' + attribute + ']')
                     .attr('value', value)
                     .appendTo('#product_addtocart_form');
             });
-
             $('<input />').attr('type', 'hidden')
                 .attr('name', 'warranty[product]')
                 .attr('value', sku)
                 .appendTo('#product_addtocart_form');
         }
-
     };
 });
