@@ -1,4 +1,14 @@
 <?xml version="1.0"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+ -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Api/etc/extension_attributes.xsd">
     <extension_attributes for="Magento\Sales\Api\Data\OrderItemInterface">
         <attribute code="contract_id" type="string" />
@@ -6,6 +16,6 @@
         <attribute code="warranty_id" type="string" />
         <attribute code="associated_product" type="string" />
         <attribute code="term" type="string" />
-        <attribute code="refund" type="string" />
+        <attribute code="refund" type="boolean" />
     </extension_attributes>
 </config>
