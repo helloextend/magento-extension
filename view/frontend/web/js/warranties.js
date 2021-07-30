@@ -1,3 +1,11 @@
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 define([
     'jquery',
     'underscore'
@@ -35,8 +43,8 @@ define([
                 let selected_options = {};
                 let options = $('div.swatch-attribute');
                 options.each((index, value) => {
-                    let attribute_id = $(value).attr('attribute-id');
-                    let option_selected = $(value).attr('option-selected');
+                    let attribute_id = $(value).attr('data-attribute-id');
+                    let option_selected = $(value).attr('data-option-selected');
                     if (!attribute_id || !option_selected) {
                         return '';
                     }
