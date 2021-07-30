@@ -21,6 +21,13 @@
                 <argument name="template" xsi:type="string">Extend_Warranty::installation.phtml</argument>
             </action>
         </referenceBlock>
+
+        <referenceContainer name="content">
+            <block name="extend.tracking.success"
+                   class="Extend\Warranty\Block\Tracking"
+                   ifconfig="warranty/tracking/enabled"
+                   template="Extend_Warranty::success.phtml" />
+        </referenceContainer>
     </body>
 
 </page>

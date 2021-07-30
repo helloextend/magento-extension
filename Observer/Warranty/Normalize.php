@@ -113,7 +113,7 @@ class Normalize implements \Magento\Framework\Event\ObserverInterface
                             try {
                                 $warrantyItem->save();
                                 $hasChanges = true;
-                                if (!$this->_trackingHelper->isTrackingEnabled()) {
+                                if ($this->_trackingHelper->isTrackingEnabled()) {
                                     $planId = (string)$warrantyItem->getOptionByCode('warranty_id')->getValue();
                                     $trackingData = [
                                         'eventName'        => 'trackOfferUpdated',

@@ -21,7 +21,7 @@
     <action name="checkout/cart/delete">
         <section name="extend-tracking" />
     </action>
-    <action name="checkout/cart/updateItemQty">
+    <action name="checkout/cart/updatePost">
         <section name="extend-tracking" />
     </action>
     <action name="checkout/cart/updateItemOptions">

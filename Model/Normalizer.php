@@ -62,7 +62,7 @@ class Normalizer
                         if ($item->getQty() > 0) {
                             //update warranty qty
                             $warrantyItem->setQty($item->getQty());
-                            if (!$this->_trackingHelper->isTrackingEnabled()) {
+                            if ($this->_trackingHelper->isTrackingEnabled()) {
                                 $planId = (string)$warrantyItem->getOptionByCode('warranty_id')->getValue();
                                 $trackingData = [
                                     'eventName'        => 'trackOfferUpdated',

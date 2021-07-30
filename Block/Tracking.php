@@ -21,20 +21,40 @@ class Tracking extends \Magento\Framework\View\Element\Template
     private $_trackingHelper;
 
     /**
+     * @var \Magento\Checkout\Model\Session
+     */
+    private $_checkoutSession;
+
+    /**
      * Tracking constructor.
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Extend\Warranty\Helper\Tracking $trackingHelper
+     * @param \Magento\Checkout\Model\Session $checkoutSession
      */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
-        \Extend\Warranty\Helper\Tracking $trackingHelper
+        \Extend\Warranty\Helper\Tracking $trackingHelper,
+        \Magento\Checkout\Model\Session $checkoutSession
     )
     {
         $this->_trackingHelper = $trackingHelper;
+        $this->_checkoutSession = $checkoutSession;
 
         parent::__construct(
             $context
         );
+    }
+
+    /**
+     * @return string
+     */
+    public function getCartTotal()
+    {
+        /** @var \Magento\Sales\Model\Order $order */
+        $order = $this->_checkoutSession->getLastRealOrder();
+        $grandTotal = (float)$order->getGrandTotal();
+
+        return $grandTotal;
     }
 
     /**
