@@ -71,6 +71,18 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
         //the removal will dispatch this event again where the offer removal will be tracked above
         /** @var \Magento\Quote\Model\Quote $quote */
         $quote = $quoteItem->getQuote();
-        $quote->removeItem($warrantyItem->getItemId());
+
+        $removeWarranty = true;
+        $items = $quote->getAllItems();
+        foreach ($items as $item) {
+            if ($item->getSku() === $quoteItem->getSku()) {
+                $removeWarranty = false;
+                break;
+            }
+        }
+
+        if ($removeWarranty) {
+            $quote->removeItem($warrantyItem->getItemId());
+        }
     }
 }
