@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace Extend\Warranty\Observer;
 
-use Extend\Warranty\Helper\Data;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest as ApiContractModel;
 use Magento\Framework\Event\Observer;
@@ -21,8 +20,8 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\Math\FloatComparator;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
-use Magento\Sales\Model\Order\Item;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -129,8 +128,11 @@ class RequestRefundObserver implements ObserverInterface
 
                 if (!empty($contractIds)) {
                     $options['refund_responses_log'] = [];
+                    $qtyRefunded = $creditmemoItem->getQty();
 
-                    foreach ($contractIds as $key => $contractId) {
+                    $refundedContractIds = array_slice($contractIds, 0, $qtyRefunded);
+
+                    foreach ($refundedContractIds as $key => $contractId) {
                         $refundData = $this->apiContractModel->validateRefund($contractId);
 
                         if (
@@ -155,6 +157,8 @@ class RequestRefundObserver implements ObserverInterface
 
                     if (!empty($options['refund_responses_log'])) {
                         try {
+                            $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+                            $orderItem->setContractId($contractIdsJson);
                             $options['refund'] = empty($contractIds);
                             $orderItem = $this->updateOrderItemOptions($orderItem, $options);
                             $this->orderItemRepository->save($orderItem);
@@ -170,14 +174,14 @@ class RequestRefundObserver implements ObserverInterface
     /**
      * Get contract IDs
      *
-     * @param Item $orderItem
+     * @param OrderItemInterface $orderItem
      * @return array
      */
-    protected function getContractIds(Item $orderItem): array
+    protected function getContractIds(OrderItemInterface $orderItem): array
     {
         try {
-            $value = $orderItem->getData(Data::CONTRACT_ID);
-            $contractIds = $value ? $this->jsonSerializer->unserialize($value) : [];
+            $contractIdsJson = $orderItem->getContractId();
+            $contractIds = $contractIdsJson ? $this->jsonSerializer->unserialize($contractIdsJson) : [];
         } catch (LocalizedException $exception) {
             $contractIds = [];
         }
@@ -188,11 +192,11 @@ class RequestRefundObserver implements ObserverInterface
     /**
      * Update order item options
      *
-     * @param Item $orderItem
+     * @param OrderItemInterface $orderItem
      * @param array $productOptions
-     * @return Item
+     * @return OrderItemInterface
      */
-    protected function updateOrderItemOptions(Item $orderItem, array $productOptions): Item
+    protected function updateOrderItemOptions(OrderItemInterface $orderItem, array $productOptions): OrderItemInterface
     {
         $options = $orderItem->getProductOptions();
         $refundResponsesLog = $options['refund_responses_log'] ?? [];

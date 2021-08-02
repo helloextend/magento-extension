@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace Extend\Warranty\Observer;
 
-use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Framework\Event\Observer;
 use Extend\Warranty\Model\Product\Type as WarrantyType;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Catalog\Api\ProductRepositoryInterface;
 use Extend\Warranty\Model\WarrantyContract;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Exception\LocalizedException;
@@ -27,13 +25,6 @@ use Psr\Log\LoggerInterface;
  */
 class CreateContract implements ObserverInterface
 {
-    /**
-     * Product Repository Interface
-     *
-     * @var ProductRepositoryInterface
-     */
-    private $productRepository;
-
     /**
      * Warranty Contract
      *
@@ -58,18 +49,15 @@ class CreateContract implements ObserverInterface
     /**
      * CreateContract constructor
      *
-     * @param ProductRepositoryInterface $productRepository
      * @param WarrantyContract $warrantyContract
-     * @param LoggerInterface $logger
      * @param DataHelper $dataHelper
+     * @param LoggerInterface $logger
      */
     public function __construct (
-        ProductRepositoryInterface $productRepository,
         WarrantyContract $warrantyContract,
         DataHelper $dataHelper,
         LoggerInterface $logger
     ) {
-        $this->productRepository = $productRepository;
         $this->warrantyContract = $warrantyContract;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
@@ -85,37 +73,20 @@ class CreateContract implements ObserverInterface
         if ($this->dataHelper->isExtendEnabled() && $this->dataHelper->isWarrantyContractEnabled()) {
             $event = $observer->getEvent();
             $invoice = $event->getInvoice();
+            $order = $invoice->getOrder();
 
-            $warranties = [];
             foreach ($invoice->getAllItems() as $invoiceItem) {
-                $product = $this->getProduct((int)$invoiceItem->getProductId());
-                if ($product && $product->getTypeId() === WarrantyType::TYPE_CODE) {
-                    $orderItem = $invoiceItem->getOrderItem();
-                    $warranties[$orderItem->getId()] = $orderItem;
+                $orderItem = $invoiceItem->getOrderItem();
+
+                if ($orderItem->getProductType() === WarrantyType::TYPE_CODE) {
+                    $qtyInvoiced = intval($invoiceItem->getQty());
+                    try {
+                        $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+                    } catch (LocalizedException $exception) {
+                        $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
+                    }
                 }
             }
-
-            if (!empty($warranties)) {
-                $order = $invoice->getOrder();
-                $this->warrantyContract->createContract($order, $warranties);
-            }
         }
-    }
-
-    /**
-     * Get product
-     *
-     * @param int $productId
-     * @return ProductInterface|null
-     */
-    private function getProduct(int $productId): ?ProductInterface
-    {
-        try {
-            $product = $this->productRepository->getById($productId);
-        } catch (LocalizedException $exception) {
-            $product = null;
-        }
-
-        return $product;
     }
 }
