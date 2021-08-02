@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 /**
  * Extend Warranty
@@ -9,8 +9,12 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
     <type name="Magento\Sales\Api\OrderItemRepositoryInterface">
-        <plugin name="orderItemUpdate" type="Extend\Warranty\Plugin\Api\OrderItemRepositoryInterfacePlugin" />
+        <plugin name="extend_warranty_plugin_api_order_item_repository_interface_plugin"
+                type="Extend\Warranty\Plugin\Api\OrderItemRepositoryInterfacePlugin" />
     </type>
+
 </config>
