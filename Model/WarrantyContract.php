@@ -8,16 +8,19 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
+declare(strict_types=1);
+
 namespace Extend\Warranty\Model;
 
-use Magento\Sales\Model\Order;
-use Extend\Warranty\Helper\Data;
-use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
+use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest as ApiContractModel;
 use Extend\Warranty\Model\Api\Request\ContractBuilder as ContractPayloadBuilder;
-use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class WarrantyContract
@@ -25,11 +28,11 @@ use Magento\Framework\Exception\LocalizedException;
 class WarrantyContract
 {
     /**
-     * Contracts Request
+     * API Contract Model
      *
-     * @var ContractsRequest
+     * @var ApiContractModel
      */
-    private $contractsRequest;
+    private $apiContractModel;
 
     /**
      * Contract Payload Builder
@@ -41,7 +44,7 @@ class WarrantyContract
     /**
      * Json Serializer
      *
-     * @var Json
+     * @var JsonSerializer
      */
     private $jsonSerializer;
 
@@ -62,20 +65,20 @@ class WarrantyContract
     /**
      * WarrantyContract constructor
      *
-     * @param ContractsRequest $contractsRequest
+     * @param ApiContractModel $apiContractModel
      * @param ContractPayloadBuilder $contractPayloadBuilder
-     * @param Json $jsonSerializer
+     * @param JsonSerializer $jsonSerializer
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param LoggerInterface $logger
      */
     public function __construct(
-        ContractsRequest $contractsRequest,
+        ApiContractModel $apiContractModel,
         ContractPayloadBuilder $contractPayloadBuilder,
-        Json $jsonSerializer,
+        JsonSerializer $jsonSerializer,
         OrderItemRepositoryInterface $orderItemRepository,
         LoggerInterface $logger
     ) {
-        $this->contractsRequest = $contractsRequest;
+        $this->apiContractModel = $apiContractModel;
         $this->contractPayloadBuilder = $contractPayloadBuilder;
         $this->jsonSerializer = $jsonSerializer;
         $this->orderItemRepository = $orderItemRepository;
@@ -85,45 +88,69 @@ class WarrantyContract
     /**
      * Create a warranty contract
      *
-     * @param Order $order
-     * @param array $warranties
+     * @param OrderInterface $order
+     * @param OrderItemInterface $orderItem
+     * @param int $qtyInvoiced
+     * @return string
+     * @throws NoSuchEntityException
      */
-    public function createContract(Order $order, array $warranties): void
+    public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced): string
     {
-        try {
-            $contracts = $this->contractPayloadBuilder->prepareInfo($order, $warranties);
+        $result = ContractCreate::STATUS_FAILED;
 
-            foreach ($contracts as $key => $contract) {
-                if (isset($contract['product']['qty'])) {
-                    $contractIds = [];
-                    $qty = $contract['product']['qty'];
+        $contractPayload = $this->contractPayloadBuilder->preparePayload($order, $orderItem);
 
-                    for ($i = 1; $i <= $qty; $i++) {
-                        $contractId = $this->contractsRequest->create($contract);
-                        if ($contractId) {
-                            $contractIds[$i] = $contractId;
-                        }
-                    }
+        if (!empty($contractPayload)) {
+            $newContractIds = [];
+            $qty = 1;
+            do {
+                $contractId = $this->apiContractModel->create($contractPayload);
+                if ($contractId) {
+                    $timePrefix = uniqid();
+                    $newContractIds[$timePrefix] = $contractId;
+                }
+                $qty++;
+            } while ($qty <= $qtyInvoiced);
 
-                    if (!empty($contractIds)) {
-                        $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+            if (!empty($newContractIds)) {
+                $contractIds = array_merge(
+                    $this->getContractIds($orderItem),
+                    $newContractIds
+                );
+                $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+                $orderItem->setContractId($contractIdsJson);
 
-                        foreach ($order->getAllItems() as $orderItem) {
-                            $orderItemId = (int)$orderItem->getId();
-                            if ($orderItemId === $key && !$orderItem->getData(Data::CONTRACT_ID)) {
-                                $orderItem->setData(Data::CONTRACT_ID, $contractIdsJson);
-                                $options = $orderItem->getProductOptions();
-                                $options['refund'] = false;
-                                $orderItem->setProductOptions($options);
+                $options = $orderItem->getProductOptions();
+                $options['refund'] = false;
+                $orderItem->setProductOptions($options);
 
-                                $this->orderItemRepository->save($orderItem);
-                            }
-                        }
-                    }
+                try {
+                    $this->orderItemRepository->save($orderItem);
+                    $result = count($newContractIds) === $qtyInvoiced ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;
+                } catch (LocalizedException $exception) {
+                    $this->logger->error($exception->getMessage());
                 }
             }
-        } catch (LocalizedException $exception) {
-            $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
         }
+
+        return $result;
+    }
+
+    /**
+     * Get warranty contract IDs
+     *
+     * @param OrderItemInterface $orderItem
+     * @return array
+     */
+    protected function getContractIds(OrderItemInterface $orderItem): array
+    {
+        try {
+            $contractIdsJson = $orderItem->getContractId();
+            $contractIds = $contractIdsJson ? $this->jsonSerializer->unserialize($contractIdsJson) : [];
+        } catch (LocalizedException $exception) {
+            $contractIds = [];
+        }
+
+        return $contractIds;
     }
 }
