@@ -1,6 +1,20 @@
-<?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
     <type name="Magento\Sales\Api\OrderItemRepositoryInterface">
-        <plugin name="orderInformationUpdate" type="Extend\Warranty\Plugin\Api\OrderRepository" />
+        <plugin name="extend_warranty_plugin_api_order_item_repository_interface_plugin"
+                type="Extend\Warranty\Plugin\Api\OrderItemRepositoryInterfacePlugin" />
     </type>
+
 </config>
