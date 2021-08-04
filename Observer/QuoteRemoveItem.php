@@ -9,6 +9,9 @@
  */
 namespace Extend\Warranty\Observer;
 
+use Extend\Warranty\Helper\Tracking;
+use Psr\Log\LoggerInterface;
+
 /**
  * Class QuoteRemoveItem
  * @package Extend\Warranty\Observer
@@ -21,14 +24,24 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
     protected $_trackingHelper;
 
     /**
-     * QuoteRemoveItem constructor.
-     * @param \Extend\Warranty\Helper\Tracking $trackingHelper
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * QuoteRemoveItem constructor
+     *
+     * @param Tracking $trackingHelper
+     * @param LoggerInterface $logger
      */
     public function __construct(
-        \Extend\Warranty\Helper\Tracking $trackingHelper
-    )
-    {
+        Tracking $trackingHelper,
+        LoggerInterface $logger
+    ) {
         $this->_trackingHelper = $trackingHelper;
+        $this->logger = $logger;
     }
 
     /**
@@ -74,15 +87,27 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
 
         $removeWarranty = true;
         $items = $quote->getAllItems();
+        $visibleItems = $quote->getAllVisibleItems();
+
+        $debugQuoteData = 'Quote ID: ' . $quote->getId()
+            . '. Items Count: ' . count($items)
+            . '. Visible Items Count: ' . count($visibleItems);
+        $this->logger->info($debugQuoteData);
+        $this->logger->info('Removed Item ID: ' .  $quoteItem->getId() . '. Product SKU: ' . $quoteItem->getSku());
+
         foreach ($items as $item) {
+            $this->logger->info('Item ID: ' .  $item->getId() . '. Product SKU: ' . $item->getSku() . '. Product Name: ' . $item->getName());
             if ($item->getSku() === $quoteItem->getSku()) {
                 $removeWarranty = false;
+                $this->logger->info('Warranty for ' . $quoteItem->getSku() . ' shouldn\'t be removed.');
                 break;
             }
         }
 
-        if ($removeWarranty) {
+        if ($warrantyItem && $removeWarranty) {
+            $warrantyItemId = $warrantyItem->getItemId();
             $quote->removeItem($warrantyItem->getItemId());
+            $this->logger->info('Warranty ' . $warrantyItemId . ' has been removed.');
         }
     }
 }
