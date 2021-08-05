@@ -9,7 +9,9 @@
  */
 namespace Extend\Warranty\Observer\Warranty;
 
-/**
+use Magento\Framework\DataObject;
+
+    /**
  * Class AddToCart
  * @package Extend\Warranty\Observer\Warranty
  */
@@ -102,8 +104,13 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         }
         $warrantyData['qty'] = $qty;
         try {
-            $cart->addProduct($warranty->getId(), $warrantyData);
-            $cart->getQuote()->removeAllAddresses();
+
+            $warrantyRequest = new DataObject();
+            $warrantyRequest->setData($warrantyData);
+
+            $quote = $cart->getQuote();
+            $quote->addProduct($warranty, $warrantyRequest);
+            //$cart->getQuote()->removeAllAddresses();
             /** @noinspection PhpUndefinedMethodInspection */
             $cart->getQuote()->setTotalsCollectedFlag(false);
             $cart->save();
