@@ -81,7 +81,7 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
             }
         }
 
-        if ($removeWarranty) {
+        if ($warrantyItem && $removeWarranty) {
             $quote->removeItem($warrantyItem->getItemId());
         }
     }

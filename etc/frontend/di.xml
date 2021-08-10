@@ -26,4 +26,9 @@
         </arguments>
     </type>
 
+    <type name="Magento\ConfigurableProduct\Model\Quote\Item\CartItemProcessor">
+        <plugin name="ExtendWarrantyCartItemProcessorPlugin"
+                type="Extend\Warranty\Plugin\ConfigurableProduct\Model\Quote\Item\CartItemProcessorPlugin"
+                sortOrder="10" />
+    </type>
 </config>
