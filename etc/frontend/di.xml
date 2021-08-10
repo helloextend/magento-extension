@@ -26,9 +26,9 @@
         </arguments>
     </type>
 
-    <type name="Extend\Warranty\Observer\QuoteRemoveItem">
-        <arguments>
-            <argument name="logger" xsi:type="object">ExtendLogger</argument>
-        </arguments>
+    <type name="Magento\ConfigurableProduct\Model\Quote\Item\CartItemProcessor">
+        <plugin name="ExtendWarrantyCartItemProcessorPlugin"
+                type="Extend\Warranty\Plugin\ConfigurableProduct\Model\Quote\Item\CartItemProcessorPlugin"
+                sortOrder="10" />
     </type>
 </config>
