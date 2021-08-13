@@ -37,11 +37,21 @@ class RemoveWarranties implements ObserverInterface
             $quote = $this->cart->getQuote();
             $items = $quote->getAllItems();
 
+            $removeWarranty = true;
             foreach ($items as $item) {
-                if ($item->getProductType() === WarrantyType::TYPE_CODE &&
-                    $item->getOptionByCode('associated_product')->getValue() === $sku) {
+                if ($item->getSku() === $sku) {
+                    $removeWarranty = false;
+                    break;
+                }
+            }
 
-                    $quote->removeItem($item->getItemId());
+            if ($removeWarranty) {
+                foreach ($items as $item) {
+                    if ($item->getProductType() === WarrantyType::TYPE_CODE &&
+                        $item->getOptionByCode('associated_product')->getValue() === $sku) {
+
+                        $quote->removeItem($item->getItemId());
+                    }
                 }
             }
         }
