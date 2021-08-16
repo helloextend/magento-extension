@@ -1,6 +1,15 @@
 <?php
-$helper = $this->helper('Extend\Warranty\Helper\Api\Data');
-$moduleVersion = $helper->getVersion();
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+/** @var Extend\Warranty\Block\System\Config\Intro $block */
+$moduleVersion = $block->getModuleVersion();
 ?>
 
 <div class="extend__intro">

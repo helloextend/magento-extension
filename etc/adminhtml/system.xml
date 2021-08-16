@@ -11,26 +11,26 @@
  -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
-        <tab id="extend" translate="label">
+        <tab id="extend" translate="label" sortOrder="10">
             <label>Extend</label>
         </tab>
-        <section id="warranty" type="text" translate="label" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="30">
+        <section id="warranty" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
             <tab>extend</tab>
             <label>Extend Protection Plans</label>
             <resource>Extend_Warranty::warranty</resource>
 
-            <group id="extend_info" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+            <group id="extend_info" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <frontend_model>Extend\Warranty\Block\System\Config\Intro</frontend_model>
             </group>
-            <group id="account" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+
+            <group id="account" translate="label comment" sortOrder="20"  showInDefault="1" showInWebsite="1" showInStore="0">
                 <attribute type="expanded">1</attribute>
                 <fieldset_css>complex</fieldset_css>
                 <comment>
                     You can get up and running with Extend in a few simple steps. Get started now by creating your
                     Extend account!
                 </comment>
-
-                <field id="accountbutton" translate="label" type="button" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="accountbutton" translate="label comment" type="button" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <frontend_model>Extend\Warranty\Block\System\Config\AccountLink</frontend_model>
                     <comment>
                         <![CDATA[
@@ -38,7 +38,7 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="help" translate="label" type="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="help" translate="label comment" type="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                     <comment>
                         <![CDATA[
                             For more information or help, contact <a href="mailto:support@extend.com">support@extend.com</a>.
@@ -47,7 +47,34 @@
                 </field>
             </group>
 
-            <group id="authentication" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+            <group id="enableExtend" translate="label comment" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                <attribute type="expanded">1</attribute>
+                <fieldset_css>complex</fieldset_css>
+                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable Extend</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                                To enable or disable protection plan offers on specific products,
+                                please go to <a href="https://merchants.extend.com">your Extend merchant dashboard</a>.
+                            ]]>
+                    </comment>
+                </field>
+                <field id="enableBalance" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Balanced Cart</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="enableLeads" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable Leads</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="logging_enabled" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Enable Logging</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+
+            <group id="authentication" translate="label comment" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Authentication</label>
                 <comment>
                     In order for the Extend extension to communicate with the Extend platform on your stores's
@@ -102,7 +129,82 @@
                 </field>
             </group>
 
-            <group id="products" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+            <group id="contracts" translate="label comment" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Contracts</label>
+                <depends>
+                    <field id="warranty/enableExtend/enable">1</field>
+                </depends>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Create Warranty Contract</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If enabled, a warranty contract is created during invoice. If not, warranty contracts will be created by cron.</comment>
+                </field>
+                <group id="cron" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Cron Settings</label>
+                    <depends>
+                        <field id="warranty/contracts/enabled">0</field>
+                    </depends>
+                    <field id="time" translate="label comment" type="time" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Start Time</label>
+                        <backend_model>Extend\Warranty\Model\Config\Backend\ContractCreationCronSchedule</backend_model>
+                    </field>
+                    <field id="frequency" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                        <label>Frequency</label>
+                        <comment>
+                            If "Every Minute" value is selected, please set minutes in "Start Time" field. Cron will run at every N minute.
+                            If "Every Hour" value is selected, please set hours in "Start Time" field. Cron will run past every N hour.
+                        </comment>
+                        <source_model>Extend\Warranty\Model\Config\Source\Frequency</source_model>
+                        <backend_model>Extend\Warranty\Model\Config\Backend\ContractCreationCronSchedule</backend_model>
+                    </field>
+                    <field id="batch_size" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                        <label>Batch Size</label>
+                        <source_model>Extend\Warranty\Model\Config\Source\BatchSize</source_model>
+                        <config_path>warranty/contracts/batch_size</config_path>
+                    </field>
+                    <field id="storage_period" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                        <label>Storage Period, Days</label>
+                        <comment>Period of time in days after which purchased warranties processed by cron job will be purged.</comment>
+                        <validate>validate-zero-or-greater validate-digits</validate>
+                        <config_path>warranty/contracts/storage_period</config_path>
+                    </field>
+                </group>
+                <field id="refund_enabled" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Refunds</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>warranty/enableExtend/enableRefunds</config_path>
+                </field>
+                <field id="auto_refund_enabled" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Create Refund Automatically</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Process a refund request automatically when credit memo is created.</comment>
+                    <depends>
+                        <field id="refund_enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="offers" translate="label comment" sortOrder="60"  showInDefault="1" showInWebsite="0" showInStore="1">
+                <label>Offers</label>
+                <depends>
+                    <field id="warranty/enableExtend/enable">1</field>
+                </depends>
+                <field id="shopping_cart_enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Display Cart Offers</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>warranty/enableExtend/enableCartOffers</config_path>
+                </field>
+                <field id="pdp_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Product Detail Page (PDP) Offers</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="interstitial_cart_enabled" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Interstitial Cart Offers</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+
+            <group id="products" translate="label comment" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Sync Products</label>
                 <comment>
                     It's important to keep your product catalog synced with Extend, so we can serve accurate
@@ -110,78 +212,27 @@
                     catalog to the Extend platform in batches. If you have a small number of SKUs this will take just
                     seconds, but if your catalog is very large it could take few minutes.
                 </comment>
-                <field id="batch_size" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <depends>
+                    <field id="warranty/enableExtend/enable">1</field>
+                </depends>
+                <field id="batch_size" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Batch Size</label>
                     <source_model>Extend\Warranty\Model\Config\Source\BatchSize</source_model>
                     <comment>
                         Save the configuration and flush the cache before running the sync process.
                     </comment>
                 </field>
-                <field id="syncbutton" translate="label" type="button" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="syncbutton" translate="label comment" type="button" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
                     <frontend_model>Extend\Warranty\Block\System\Config\Products\Button</frontend_model>
                 </field>
-
-                <field id="enable_cronjob" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Enable Synchronization by Cronjob</label>
+                <field id="cron_sync_enabled" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Synchronization by Cron</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[
-                                Products can be synchronized automatically (Every day at 00:00) using this functionality.
-                            ]]>
-                    </comment>
+                    <comment>Products can be synchronized automatically (every day at 00:00) using this functionality.</comment>
                 </field>
             </group>
 
-            <group id="enableExtend" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
-                <attribute type="expanded">1</attribute>
-                <fieldset_css>complex</fieldset_css>
-                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Enable Extend</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[
-                                To enable or disable protection plan offers on specific products,
-                                please go to <a href="https://merchants.extend.com">your Extend merchant dashboard</a>.
-                            ]]>
-                    </comment>
-                </field>
-                <field id="enableBalance" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Balanced Cart</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="enableCartOffers" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Display Cart Offers</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="enableRefunds" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Enable Refunds</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="auto_refund_enabled" translate="label comment" type="select" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
-                    <label>Create Refund Automatically</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Process a refund request automatically when credit memo is created</comment>
-                    <depends>
-                        <field id="enableRefunds">1</field>
-                    </depends>
-                </field>
-                <field id="warranty_contract_enabled" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
-                    <label>Create Warranty Contract</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Create warranty contract for order item if item is invoiced</comment>
-                </field>
-                <field id="enableLeads" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Enable Leads</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="logging_enabled" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
-                    <label>Enable Logging</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-            </group>
-
-            <group id="tracking" translate="label" type="text" sortOrder="45"
-                   showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="tracking" translate="label comment" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
                 <depends>
                     <field id="warranty/enableExtend/enable">1</field>
                 </depends>
@@ -194,7 +245,7 @@
                 </field>
             </group>
 
-            <group id="advance_config" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+            <group id="advance_config" translate="label comment" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Advanced Configuration</label>
                 <comment>
                     There are a number of other configurations you can control through your Extend merchant dashboard,
@@ -202,7 +253,7 @@
                     customizing your offer branding, viewing the status of protection plan matching for
                     your products, and more!
                 </comment>
-                <field id="portalbutton" translate="label" type="button" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="portalbutton" translate="label" type="button" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <frontend_model>Extend\Warranty\Block\System\Config\PortalLink</frontend_model>
                 </field>
             </group>

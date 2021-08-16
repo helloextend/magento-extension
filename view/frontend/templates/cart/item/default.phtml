@@ -16,9 +16,9 @@ $helper = $this->helper('Magento\Msrp\Helper\Data');
 $canApplyMsrp = $helper->isShowBeforeOrderConfirm($product) && $helper->isMinimalPriceLessMsrp($product);
 $attributes = $product->getTypeId() === 'warranty' ? ['width' => '50%'] : [];
 
-/** @var Extend\Warranty\ViewModel\WarrantiesInCart $inCartViewModel */
+/** @var Extend\Warranty\ViewModel\Warranty $inCartViewModel */
 $inCartViewModel = $block->getData('viewModel');
-
+$quote = $_item->getQuote();
 ?>
 <tbody class="cart item">
 <tr class="item-info">
@@ -153,7 +153,7 @@ $inCartViewModel = $block->getData('viewModel');
 </tbody>
 
 <?php if ($product->getTypeId() !== 'warranty'): ?>
-    <?php if ($inCartViewModel->isDisplayOffersEnabled()): ?>
+    <?php if ($inCartViewModel->isModuleEnabled() && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
         <?php
             $_itemID = '';
             $productTypeInstance = $product->getTypeInstance();
@@ -170,7 +170,7 @@ $inCartViewModel = $block->getData('viewModel');
             $_currentSku[$_itemID] = $product->getSku();
         ?>
 
-        <?php if (!$inCartViewModel->hasWarranty($_currentSku[$_itemID])): ?>
+        <?php if (!$inCartViewModel->hasWarranty($quote, $_currentSku[$_itemID])): ?>
             <tbody id="warranty-<?= $_itemID ?>">
             <tr>
                 <td><div id="extend-offer-<?= $_itemID ?>"></div></td>

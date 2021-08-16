@@ -12,7 +12,7 @@
  * @var \Extend\Warranty\ViewModel\Installation $viewModel
  * @var \Magento\Framework\Escaper $escaper
  */
-/** @var \Extend\Warranty\ViewModel\Installation $viewModel */
+/** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getData('viewModel');
 /** @var string $offerTypeArea */
 $offerTypeArea = $block->getData('offerTypeArea');
@@ -40,13 +40,15 @@ $product = $block->getProduct();
                 </div>
             <?php endif; ?>
             <hr>
-            <?php if (isset($viewModel) && $viewModel->getExtendEnable()): ?>
+            <?php if ($viewModel->isModuleEnabled()): ?>
                 <div id="extend-offer"></div>
                 <script type="text/x-magento-init">
                     {
                         "#extend-offer": {
                             "extendWarranties":{
-                                "productSku": "<?= $product->getTypeId() == 'configurable' ? '' : $escaper->escapeJs($product->getSku()); ?>"
+                                "productSku": "<?= $product->getTypeId() == 'configurable' ? '' : $escaper->escapeJs($product->getSku()); ?>",
+                                "isPdpOffersEnabled": "<?= $escaper->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
+                                "isInterstitialCartOffersEnabled": "<?= $escaper->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>"
                             }
                         }
                     }

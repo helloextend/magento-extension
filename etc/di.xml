@@ -71,6 +71,7 @@
     <type name="Extend\Warranty\Model\Api\Sync\Product\ProductsRequest">
         <arguments>
             <argument name="syncLogger" xsi:type="object">ProductSyncVirtualInfoLogger</argument>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
         </arguments>
     </type>
 
@@ -96,6 +97,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="extend_sync_products" xsi:type="object">Extend\Warranty\Console\Command\SyncProducts</item>
+                <item name="extendWarrantyCreateWarrantyContractCommand" xsi:type="object">Extend\Warranty\Console\Command\CreateContracts</item>
             </argument>
         </arguments>
     </type>

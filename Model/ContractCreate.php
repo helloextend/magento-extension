@@ -10,10 +10,13 @@
 
 namespace Extend\Warranty\Model;
 
+use Magento\Framework\Model\AbstractModel;
+use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource;
+
 /**
  * Class ContractCreate
  */
-class ContractCreate
+class ContractCreate extends AbstractModel
 {
     /**
      * Success status
@@ -29,4 +32,14 @@ class ContractCreate
      * Partial status
      */
     const STATUS_PARTIAL = 'partial';
+
+    /**
+     * Initialize invoice resource model
+     *
+     * @return void
+     */
+    protected function _construct()
+    {
+        $this->_init(ContractCreateResource::class);
+    }
 }

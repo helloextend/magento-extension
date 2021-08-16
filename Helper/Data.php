@@ -18,7 +18,7 @@ use Extend\Warranty\Model\Product\Type;
 class Data
 {
     /**
-     * `Contact ID` field
+     * `Contract ID` field
      */
     const CONTRACT_ID = 'contract_id';
 
