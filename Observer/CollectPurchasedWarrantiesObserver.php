@@ -92,7 +92,7 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
     {
         if ($this->dataHelper->isExtendEnabled() && !$this->dataHelper->isWarrantyContractEnabled()) {
             $event = $observer->getEvent();
-            $invoice = $event->getInvoice();
+            $invoice = $event->getData(InvoiceItemInterface::INVOICE);
 
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();

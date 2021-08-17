@@ -28,8 +28,7 @@
             <contracts>
                 <enabled>1</enabled>
                 <cron>
-                    <time>00,05,00</time>
-                    <frequency>MIN</frequency>
+                    <frequency>*/5 * * * *</frequency>
                 </cron>
                 <batch_size>25</batch_size>
                 <storage_period>30</storage_period>
@@ -40,16 +39,5 @@
                 <interstitial_cart_enabled>1</interstitial_cart_enabled>
             </offers>
         </warranty>
-        <crontab>
-            <default>
-                <jobs>
-                    <extend_warranty_create_warranty_contract>
-                        <schedule>
-                            <cron_expr>*/5 * * * *</cron_expr>
-                        </schedule>
-                    </extend_warranty_create_warranty_contract>
-                </jobs>
-            </default>
-        </crontab>
     </default>
 </config>

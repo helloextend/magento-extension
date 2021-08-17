@@ -16,6 +16,7 @@ use Magento\Framework\Setup\SchemaSetupInterface;
 use Magento\Framework\DB\Ddl\Table;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Zend_Db_Exception;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class UpgradeSchema
@@ -23,12 +24,29 @@ use Zend_Db_Exception;
 class UpgradeSchema implements UpgradeSchemaInterface
 {
     /**
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * UpgradeSchema constructor
+     *
+     * @param LoggerInterface $logger
+     */
+    public function __construct(
+        LoggerInterface $logger
+    ) {
+        $this->logger = $logger;
+    }
+
+    /**
      * Upgrade DB schema
      *
      * @param SchemaSetupInterface $setup
      * @param ModuleContextInterface $context
      * @return void
-     * @throws Zend_Db_Exception
      */
     public function upgrade(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
@@ -70,7 +88,11 @@ class UpgradeSchema implements UpgradeSchemaInterface
         }
 
         if (version_compare($context->getVersion(), '1.2.3', '<')) {
-            $this->createExtendWarrantyContractCreateTable($setup);
+            try {
+                $this->createExtendWarrantyContractCreateTable($setup);
+            } catch (Zend_Db_Exception $exception) {
+                $this->logger->critical($exception->getMessage());
+            }
         }
 
         $setup->endSetup();

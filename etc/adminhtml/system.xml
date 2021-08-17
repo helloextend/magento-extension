@@ -144,25 +144,18 @@
                     <depends>
                         <field id="warranty/contracts/enabled">0</field>
                     </depends>
-                    <field id="time" translate="label comment" type="time" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
-                        <label>Start Time</label>
-                        <backend_model>Extend\Warranty\Model\Config\Backend\ContractCreationCronSchedule</backend_model>
-                    </field>
-                    <field id="frequency" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <field id="frequency" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                         <label>Frequency</label>
-                        <comment>
-                            If "Every Minute" value is selected, please set minutes in "Start Time" field. Cron will run at every N minute.
-                            If "Every Hour" value is selected, please set hours in "Start Time" field. Cron will run past every N hour.
-                        </comment>
-                        <source_model>Extend\Warranty\Model\Config\Source\Frequency</source_model>
+                        <comment>Cron schedule expression</comment>
                         <backend_model>Extend\Warranty\Model\Config\Backend\ContractCreationCronSchedule</backend_model>
+                        <validate>validate-cron-expression</validate>
                     </field>
-                    <field id="batch_size" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <field id="batch_size" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                         <label>Batch Size</label>
                         <source_model>Extend\Warranty\Model\Config\Source\BatchSize</source_model>
                         <config_path>warranty/contracts/batch_size</config_path>
                     </field>
-                    <field id="storage_period" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <field id="storage_period" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                         <label>Storage Period, Days</label>
                         <comment>Period of time in days after which purchased warranties processed by cron job will be purged.</comment>
                         <validate>validate-zero-or-greater validate-digits</validate>

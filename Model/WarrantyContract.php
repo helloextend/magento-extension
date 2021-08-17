@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Extend\Warranty\Model;
 
+use Magento\Framework\Math\FloatComparator;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest as ApiContractModel;
@@ -63,6 +64,13 @@ class WarrantyContract
     private $logger;
 
     /**
+     * Float Comparator
+     *
+     * @var FloatComparator
+     */
+    private $floatComparator;
+
+    /**
      * WarrantyContract constructor
      *
      * @param ApiContractModel $apiContractModel
@@ -70,19 +78,22 @@ class WarrantyContract
      * @param JsonSerializer $jsonSerializer
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param LoggerInterface $logger
+     * @param FloatComparator $floatComparator
      */
     public function __construct(
         ApiContractModel $apiContractModel,
         ContractPayloadBuilder $contractPayloadBuilder,
         JsonSerializer $jsonSerializer,
         OrderItemRepositoryInterface $orderItemRepository,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        FloatComparator $floatComparator
     ) {
         $this->apiContractModel = $apiContractModel;
         $this->contractPayloadBuilder = $contractPayloadBuilder;
         $this->jsonSerializer = $jsonSerializer;
         $this->orderItemRepository = $orderItemRepository;
         $this->logger = $logger;
+        $this->floatComparator = $floatComparator;
     }
 
     /**
@@ -97,6 +108,11 @@ class WarrantyContract
     public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced): string
     {
         $result = ContractCreate::STATUS_FAILED;
+
+        if (!$this->canCreateWarranty($orderItem)) {
+            $this->logger->error('Warranty is already created for order item ID ' . $orderItem->getItemId());
+            return $result;
+        }
 
         $contractPayload = $this->contractPayloadBuilder->preparePayload($order, $orderItem);
 
@@ -152,5 +168,24 @@ class WarrantyContract
         }
 
         return $contractIds;
+    }
+
+    /**
+     * Check if warranty can be created
+     *
+     * @param OrderItemInterface $orderItem
+     * @return bool
+     */
+    protected function canCreateWarranty(OrderItemInterface $orderItem): bool
+    {
+        $qtyInvoiced = (float)$orderItem->getQtyInvoiced();
+
+        $options = $orderItem->getProductOptions();
+        $refundResponsesLogEntries = $options['refund_responses_log'] ?? [];
+        $contractIds = $this->getContractIds($orderItem);
+
+        $warrantyQty = count($contractIds) + count($refundResponsesLogEntries);
+
+        return $this->floatComparator->greaterThan($qtyInvoiced, (float)$warrantyQty);
     }
 }

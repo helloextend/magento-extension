@@ -15,7 +15,7 @@
             <schedule>0 0 * * *</schedule>
         </job>
         <job name="extend_warranty_create_warranty_contract_cronjob" instance="Extend\Warranty\Cron\CreateContracts" method="execute">
-            <config_path>crontab/default/jobs/extend_warranty_create_warranty_contract/schedule/cron_expr</config_path>
+            <config_path>warranty/contracts/cron/frequency</config_path>
         </job>
     </group>
 </config>
