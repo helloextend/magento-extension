@@ -18,6 +18,16 @@
                 <value id="helloextend-static-assets_s3_amazonaws_com" type="host">https://helloextend-static-assets.s3.amazonaws.com</value>
             </values>
         </policy>
+        <policy id="style-src">
+            <values>
+                <value id="fonts_googleapis_com" type="host">https://fonts.googleapis.com</value>
+            </values>
+        </policy>
+        <policy id="font-src">
+            <values>
+                <value id="fonts_gstatic_com" type="host">https://fonts.gstatic.com</value>
+            </values>
+        </policy>
         <policy id="script-src">
             <values>
                 <value id="*_helloextend_com" type="host">https://*.helloextend.com</value>
