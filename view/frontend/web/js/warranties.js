@@ -13,15 +13,17 @@ define([
 
     return function (params) {
 
-        Extend.buttons.render('#extend-offer', {
-            referenceId: params.productSku
-        });
+        if (params.isPdpOffersEnabled) {
+            Extend.buttons.render('#extend-offer', {
+                referenceId: params.productSku
+            });
+        }
 
         $(document).ready(function () {
             $('div.product-options-wrapper').on('change',() => {
                 let sku = selectedProduct();
 
-                if(sku !== ''){
+                if (sku !== '' && params.isPdpOffersEnabled) {
                     renderWarranties(sku);
                 }
             });
@@ -69,22 +71,39 @@ define([
         $('#product-addtocart-button').click((event) => {
             event.preventDefault();
 
-            /** get the component instance rendered previously */
-            const component = Extend.buttons.instance('#extend-offer');
-            /** get the users plan selection */
-            const plan = component.getPlanSelection();
-
             let sku = params.productSku !== '' ? params.productSku : selectedProduct();
 
-            if (plan) {
-                addWarranty(plan, sku);
-                //add hidden field for tracking
-                $('<input />').attr('type', 'hidden')
-                    .attr('name', 'warranty["component"]')
-                    .attr('value', 'buttons')
-                    .appendTo('#product_addtocart_form');
-                $('#product_addtocart_form').submit();
-            } else {
+            if (params.isPdpOffersEnabled) {
+                /** get the component instance rendered previously */
+                const component = Extend.buttons.instance('#extend-offer');
+                /** get the users plan selection */
+                const plan = component.getPlanSelection();
+
+                if (plan) {
+                    addWarranty(plan, sku);
+                    //add hidden field for tracking
+                    $('<input />').attr('type', 'hidden')
+                        .attr('name', 'warranty["component"]')
+                        .attr('value', 'buttons')
+                        .appendTo('#product_addtocart_form');
+                } else if (params.isInterstitialCartOffersEnabled) {
+                    Extend.modal.open({
+                        referenceId: sku,
+                        onClose: function (plan) {
+                            if (plan) {
+                                addWarranty(plan, sku);
+                                //add hidden field for tracking
+                                $('<input />').attr('type', 'hidden')
+                                    .attr('name', 'warranty[component]')
+                                    .attr('value', 'modal')
+                                    .appendTo('#product_addtocart_form');
+                            } else {
+                                $("input[name^='warranty']").remove();
+                            }
+                        }
+                    });
+                }
+            } else if (params.isInterstitialCartOffersEnabled) {
                 Extend.modal.open({
                     referenceId: sku,
                     onClose: function (plan) {
@@ -98,11 +117,11 @@ define([
                         } else {
                             $("input[name^='warranty']").remove();
                         }
-                        $('#product_addtocart_form').submit();
                     }
                 });
             }
 
+            $('#product_addtocart_form').submit();
         });
 
         function addWarranty(plan, sku) {
