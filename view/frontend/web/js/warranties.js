@@ -86,6 +86,7 @@ define([
                         .attr('name', 'warranty["component"]')
                         .attr('value', 'buttons')
                         .appendTo('#product_addtocart_form');
+                    $('#product_addtocart_form').submit();
                 } else if (params.isInterstitialCartOffersEnabled) {
                     Extend.modal.open({
                         referenceId: sku,
@@ -100,8 +101,11 @@ define([
                             } else {
                                 $("input[name^='warranty']").remove();
                             }
+                            $('#product_addtocart_form').submit();
                         }
                     });
+                } else {
+                    $('#product_addtocart_form').submit();
                 }
             } else if (params.isInterstitialCartOffersEnabled) {
                 Extend.modal.open({
@@ -117,11 +121,12 @@ define([
                         } else {
                             $("input[name^='warranty']").remove();
                         }
+                        $('#product_addtocart_form').submit();
                     }
                 });
+            } else {
+                $('#product_addtocart_form').submit();
             }
-
-            $('#product_addtocart_form').submit();
         });
 
         function addWarranty(plan, sku) {
