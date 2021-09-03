@@ -1,0 +1,30 @@
+<?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+
+/** @var \Magento\Catalog\Block\Product\View $block */
+/** @var \Extend\Warranty\ViewModel\Installation $viewModel */
+$viewModel = $block->getData('viewModel');
+$product = $block->getProduct();
+?>
+
+<?php if (isset($viewModel) && $viewModel->getExtendEnable()): ?>
+    <div id="extend-offer"></div>
+    <script type="text/x-magento-init">
+    {
+        "#extend-offer": {
+            "extendWarranties": {
+                "productSku":"<?= $product->getTypeId() == Configurable::TYPE_CODE ? '' : $product->getSku() ?>"
+            }
+        }
+    }
+    </script>
+<?php endif; ?>

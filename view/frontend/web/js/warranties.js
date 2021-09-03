@@ -13,8 +13,12 @@ define([
             $('div.product-options-wrapper').on('change',() => {
                 let sku = selectedProduct();
 
-                if(sku !== ''){
-                    renderWarranties(sku);
+                if(sku !== '') {
+                    if (sku !== params.productSku) {
+                        renderWarranties(sku);
+                    } else {
+                        event.preventDefault();
+                    }
                 }
             });
         });
@@ -30,13 +34,15 @@ define([
                     let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value;
                     const productConfig1 = $('#product_addtocart_form').data('mageConfigurable').options.spConfig;
                     return productConfig1.skus[productId1];
+                } else {
+                    return params.productSku;
                 }
             }else{
                 let selected_options = {};
                 let options = $('div.swatch-attribute');
                 options.each((index, value) => {
-                    let attribute_id = $(value).attr('attribute-id');
-                    let option_selected = $(value).attr('option-selected');
+                    let attribute_id = $(value).attr('data-attribute-id');
+                    let option_selected = $(value).attr('data-option-selected');
                     if (!attribute_id || !option_selected) {
                         return '';
                     }

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+-->
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp/etc/csp_whitelist.xsd">
+    <policies>
+        <policy id="script-src">
+            <values>
+                <value id="helloextend" type="host">*.helloextend.com</value>
+            </values>
+        </policy>
+        <policy id="style-src">
+            <values>
+                <value id="helloextend" type="host">*.helloextend.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="helloextend" type="host">*.helloextend.com</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="guarantee" type="host">*.guarantee-cdn.com</value>
+                <value id="helloextend" type="host">*.helloextend.com</value>
+            </values>
+        </policy>
+        <policy id="font-src">
+            <values>
+                <value id="helloextend" type="host">*.helloextend.com</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>
