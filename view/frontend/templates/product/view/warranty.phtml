@@ -11,18 +11,27 @@
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 
 /** @var \Magento\Catalog\Block\Product\View $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
 /** @var \Extend\Warranty\ViewModel\Installation $viewModel */
 $viewModel = $block->getData('viewModel');
+$isExtendEnabled = $viewModel && $viewModel->getExtendEnable();
+
+/** @var \Extend\Warranty\ViewModel\AjaxSuite $ajaxSuiteViewModel */
+$ajaxSuiteViewModel = $block->getData('ajaxSuiteViewModel');
+$isAjaxSuiteCartEnabled = $ajaxSuiteViewModel && $ajaxSuiteViewModel->isAjaxSuiteEnabled() && $ajaxSuiteViewModel->isAjaxSuiteCartEnabled();
+
 $product = $block->getProduct();
 ?>
 
-<?php if (isset($viewModel) && $viewModel->getExtendEnable()): ?>
+<?php if ($isExtendEnabled): ?>
     <div id="extend-offer"></div>
     <script type="text/x-magento-init">
     {
         "#extend-offer": {
             "extendWarranties": {
-                "productSku":"<?= $product->getTypeId() == Configurable::TYPE_CODE ? '' : $product->getSku() ?>"
+                "productSku":"<?= $product->getTypeId() == Configurable::TYPE_CODE ? '' : $product->getSku() ?>",
+                "isAjaxSuiteCartEnabled": "<?= $escaper->escapeJs($isAjaxSuiteCartEnabled); ?>"
             }
         }
     }

@@ -1,7 +1,8 @@
 define([
     'jquery',
+    'uiRegistry',
     'underscore'
-], function ($, _) {
+], function ($, uiRegistry, _) {
 
     return function (params) {
 
@@ -65,32 +66,35 @@ define([
         }
 
         $('#product-addtocart-button').click((event) => {
-            event.preventDefault();
-
-            /** get the component instance rendered previously */
-            const component = Extend.buttons.instance('#extend-offer');
-            /** get the users plan selection */
-            const plan = component.getPlanSelection();
-
             let sku = params.productSku !== '' ? params.productSku : selectedProduct();
 
-            if (plan) {
-                addWarranty(plan, sku);
-                $('#product_addtocart_form').submit();
-            } else {
-                Extend.modal.open({
-                    referenceId: sku,
-                    onClose: function (plan) {
-                        if (plan) {
-                            addWarranty(plan,sku)
-                        } else {
-                            $("input[name^='warranty']").remove();
-                        }
-                        $('#product_addtocart_form').submit();
-                    }
-                });
-            }
+            if (!params.isAjaxSuiteCartEnabled) {
+                event.preventDefault();
 
+                /** get the component instance rendered previously */
+                const component = Extend.buttons.instance('#extend-offer');
+                /** get the users plan selection */
+                const plan = component.getPlanSelection();
+                
+                if (plan) {
+                    addWarranty(plan, sku);
+                    $('#product_addtocart_form').submit();
+                } else {
+                    Extend.modal.open({
+                        referenceId: sku,
+                        onClose: function (plan) {
+                            if (plan) {
+                                addWarranty(plan, sku)
+                            } else {
+                                $("input[name^='warranty']").remove();
+                            }
+                            $('#product_addtocart_form').submit();
+                        }
+                    });
+                }
+            } else {
+                uiRegistry.set('productSku', params.productSku);
+            }
         });
 
         function addWarranty(plan, sku){
@@ -107,6 +111,5 @@ define([
                 .attr('value', sku)
                 .appendTo('#product_addtocart_form');
         }
-
     };
 });
