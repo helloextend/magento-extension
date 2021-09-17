@@ -84,7 +84,7 @@ class AddToCart implements ObserverInterface
                 return;
             }
 
-            $warrantyData['qty'] = $qty;
+            $warrantyData['qty'] = !empty($qty) ? $qty : 1;
 
             try {
                 $cart->addProduct($warranty->getId(), $warrantyData);
