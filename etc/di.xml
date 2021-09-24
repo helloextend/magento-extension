@@ -16,9 +16,6 @@
     <preference for="Extend\Warranty\Api\SyncInterface"
                 type="Extend\Warranty\Model\Product\Sync"/>
 
-    <preference for="Extend\Warranty\Api\TimeUpdaterInterface"
-                type="Extend\Warranty\Model\Api\TimeUpdater"/>
-
     <preference for="Extend\Warranty\Api\Data\UrlBuilderInterface"
                 type="Extend\Warranty\Model\Api\UrlBuilder"/>
 
@@ -33,9 +30,6 @@
     </type>
     <type name="Magento\Config\Model\Config">
         <plugin name="admin_system_config_save_plugin" type="Extend\Warranty\Plugin\ValidateCredentialPlugin" sortOrder="1"/>
-    </type>
-    <type name="Extend\Catalog\Controller\Adminhtml\Products\Sync">
-        <plugin name="syncInterceptor" type="Extend\Warranty\Plugin\SyncAction" sortOrder="1"/>
     </type>
 
     <type name="Magento\ConfigurableProduct\Block\Product\View\Type\Configurable">

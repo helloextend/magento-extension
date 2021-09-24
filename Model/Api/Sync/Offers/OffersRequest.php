@@ -3,7 +3,6 @@
 namespace Extend\Warranty\Model\Api\Sync\Offers;
 
 use Extend\Warranty\Api\ConnectorInterface;
-use Extend\Warranty\Model\Keys;
 use Extend\Warranty\Api\Data\UrlBuilderInterface;
 use Extend\Warranty\Helper\Api\Data as Config;
 use Magento\Framework\Serialize\Serializer\Json;
@@ -13,11 +12,6 @@ use Psr\Log\LoggerInterface;
 class OffersRequest
 {
     const ENDPOINT_URI = '/offers';
-
-    /**
-     * @var Keys
-     */
-    protected $keys;
 
     /**
      * @var UrlBuilderInterface
@@ -45,7 +39,6 @@ class OffersRequest
     protected $logger;
 
     public function __construct(
-        Keys $keys,
         UrlBuilderInterface $urlBuilder,
         ConnectorInterface $connector,
         Config $config,
@@ -53,7 +46,6 @@ class OffersRequest
         LoggerInterface $logger
     )
     {
-        $this->keys = $keys;
         $this->urlBuilder = $urlBuilder;
         $this->connector = $connector;
         $this->config = $config;
@@ -69,9 +61,11 @@ class OffersRequest
     private function consultRequest($productId)
     {
         try {
-            $accessKeys = $this->keys->getKeys();
+            $storeId = $this->config->getStoreId();
+            $apiKey = $this->config->getApiKey();
+
             $endpoint = self::ENDPOINT_URI
-                . "?storeId={$accessKeys['store_id']}"
+                . "?storeId={$storeId}"
                 . "&productId={$productId}";
 
             $response = $this->connector->simpleCall(

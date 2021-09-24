@@ -1,16 +1,26 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: lazaro
- * Date: 19/12/18
- * Time: 04:09 PM
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-/** @var $block Extend\Warranty\Block\System\Config\Products\Button
+/**
+ * @var \Extend\Warranty\Block\System\Config\Products\Button $block
+ * @var \Magento\Framework\Escaper $escaper
  */
+
+$scopeData = $block->getScopeData();
 ?>
 <div class="extend-sync-button-container">
-    <button id="syncBtn" data-mage-init='{"productSync": {"url": "<?= $block->getUrl('extend/products/sync') ?>"}}'>
+    <button id="syncBtn" data-mage-init='{"productSync": {
+            "url": "<?= $escaper->escapeJs($block->getUrl('extend/products/sync')) ?>",
+            "scope": "<?= $escaper->escapeJs($scopeData['scope']) ?>",
+            "scopeId": "<?= $escaper->escapeJs($scopeData['scopeId']) ?>"
+        }}'>
         <span>Sync Products</span>
     </button>
     <div class="sync-info">

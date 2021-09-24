@@ -9,7 +9,7 @@ $inCartViewModel = $block->getData('viewModel');
 ?>
 
 <?php if ($_product->getTypeId() !== 'warranty'): ?>
-    <?php if ($inCartViewModel->isModuleEnabled() && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
+    <?php if ($inCartViewModel->isExtendEnabled() && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
         <?php if (!$inCartViewModel->hasWarranty($quote, $_product->getSku())): ?>
             <tbody id="warranty-<?= $_item->getId() ?>">
                 <tr>

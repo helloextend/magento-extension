@@ -13,18 +13,14 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <warranty>
-            <products>
-                <batch_size>100</batch_size>
-                <enable_cronjob>0</enable_cronjob>
-            </products>
             <enableExtend>
+                <enable>1</enable>
+                <enableBalance>1</enableBalance>
                 <enableCartOffers>1</enableCartOffers>
                 <enableRefunds>1</enableRefunds>
+                <enableLeads>1</enableLeads>
                 <logging_enabled>1</logging_enabled>
             </enableExtend>
-            <tracking>
-                <enabled>1</enabled>
-            </tracking>
             <contracts>
                 <enabled>1</enabled>
                 <cron>
@@ -38,6 +34,13 @@
                 <pdp_enabled>1</pdp_enabled>
                 <interstitial_cart_enabled>1</interstitial_cart_enabled>
             </offers>
+            <products>
+                <batch_size>100</batch_size>
+                <enable_cronjob>0</enable_cronjob>
+            </products>
+            <tracking>
+                <enabled>1</enabled>
+            </tracking>
         </warranty>
     </default>
 </config>

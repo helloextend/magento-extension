@@ -24,7 +24,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class ProductSyncProcess
@@ -160,7 +159,7 @@ class ProductSyncProcess
      *
      * @return string
      */
-    protected function getLastSyncDate(): string
+    public function getLastSyncDate(): string
     {
         try {
             $lastSyncDate = $this->appState->getAreaCode() === Area::AREA_CRONTAB
@@ -176,7 +175,7 @@ class ProductSyncProcess
     /**
      * Set last product sync date according to sync type
      */
-    protected function setLastSyncDate(): void
+    public function setLastSyncDate(): void
     {
         $currentDate = $this->dateTime->formatDate($this->date->gmtTimestamp());
 
