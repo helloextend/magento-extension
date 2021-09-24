@@ -16,14 +16,14 @@ use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 
 /**
- * Class Button
+ * Class Note
  */
-class Button extends Field
+class Note extends Field
 {
     /**
      * Remove scope label
      *
-     * @param AbstractElement $element
+     * @param  AbstractElement $element
      * @return string
      */
     public function render(AbstractElement $element): string
@@ -38,17 +38,11 @@ class Button extends Field
     /**
      * Return element html
      *
-     * @param AbstractElement $element
+     * @param  AbstractElement $element
      * @return string
      */
     protected function _getElementHtml(AbstractElement $element): string
     {
-        $originalData = $element->getOriginalData();
-
-        return sprintf(
-            "<a href='%s' class='action action-extend-external' target='_blank'>%s</a>",
-            $originalData['button_url'],
-            $originalData['button_label']
-        );
+        return '<p class="note"><span>For more information or help, contact <a href="mailto:support@extend.com">support@extend.com</a>.<span></p>';
     }
 }

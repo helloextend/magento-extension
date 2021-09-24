@@ -9,7 +9,6 @@
  */
 /**
  * @var \Magento\Catalog\Block\Product\View $block
- * @var \Extend\Warranty\ViewModel\Installation $viewModel
  * @var \Magento\Framework\Escaper $escaper
  */
 /** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
@@ -40,7 +39,7 @@ $product = $block->getProduct();
                 </div>
             <?php endif; ?>
             <hr>
-            <?php if ($viewModel->isModuleEnabled()): ?>
+            <?php if ($viewModel->isExtendEnabled()): ?>
                 <div id="extend-offer"></div>
                 <script type="text/x-magento-init">
                     {

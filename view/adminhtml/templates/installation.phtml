@@ -1,12 +1,17 @@
 <?php
-/** @var $viewModel Extend\Warranty\ViewModel\Installation
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
+/** @var \Extend\Warranty\ViewModel\Installation $viewModel */
 $viewModel = $block->getData('viewModel');
-if ($viewModel) {
-    $viewModel->prepareBlockData();
-}
 ?>
-<?php if (isset($viewModel) && $viewModel->getExtendEnable()) : ?>
+
+<?php if ($viewModel->isExtendEnabled()) : ?>
     <script src="<?= $viewModel->getJsMode() ?>"></script>
     <script>
         Extend.config(<?= $viewModel->getJsonConfig() ?>);

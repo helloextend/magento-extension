@@ -27,7 +27,7 @@ class UrlBuilder implements UrlBuilderInterface
      */
     public function build(): string
     {
-        $baseUrl = $this->config->getValue('auth_mode') ?
+        $baseUrl = $this->config->isExtendLive() ?
             static::LIVE_URL :
             static::SANDBOX_URL;
 

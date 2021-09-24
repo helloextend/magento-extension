@@ -45,7 +45,7 @@ class Warranty implements ArgumentInterface
      *
      * @return bool
      */
-    public function isModuleEnabled(): bool
+    public function isExtendEnabled(): bool
     {
         return $this->dataHelper->isExtendEnabled();
     }

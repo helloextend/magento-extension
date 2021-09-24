@@ -3,7 +3,6 @@
 namespace Extend\Warranty\Model\Api\Sync\Leads;
 
 use Extend\Warranty\Api\ConnectorInterface;
-use Extend\Warranty\Model\Keys;
 use Extend\Warranty\Api\Data\UrlBuilderInterface;
 use Extend\Warranty\Helper\Api\Data as Config;
 use Magento\Framework\Serialize\Serializer\Json;
@@ -12,11 +11,6 @@ use Psr\Log\LoggerInterface;
 class LeadsRequest
 {
     const ENDPOINT_URI = 'leads';
-
-    /**
-     * @var Keys
-     */
-    protected $keys;
 
     /**
      * @var UrlBuilderInterface
@@ -44,7 +38,6 @@ class LeadsRequest
     protected $logger;
 
     public function __construct(
-        Keys $keys,
         UrlBuilderInterface $urlBuilder,
         ConnectorInterface $connector,
         Config $config,
@@ -52,7 +45,6 @@ class LeadsRequest
         LoggerInterface $logger
     )
     {
-        $this->keys = $keys;
         $this->urlBuilder = $urlBuilder;
         $this->connector = $connector;
         $this->config = $config;
