@@ -86,7 +86,7 @@ class InstallData implements InstallDataInterface
 
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
-        $this->state->setAreaCode(Area::AREA_ADMINHTML);
+        //$this->state->setAreaCode(Area::AREA_ADMINHTML);
 
         $setup->startSetup();
         $eavSetup = $this->eavSetupFactory->create();
