@@ -45,5 +45,14 @@
                 <enabled>1</enabled>
             </tracking>
         </warranty>
+        <csp>
+            <policies>
+                <storefront>
+                    <frame-ancestors>
+                        <inline>0</inline>
+                    </frame-ancestors>
+                </storefront>
+            </policies>
+        </csp>
     </default>
 </config>

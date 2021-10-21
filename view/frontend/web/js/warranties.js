@@ -20,11 +20,15 @@ define([
         }
 
         $(document).ready(function () {
-            $('div.product-options-wrapper').on('change',() => {
+            $('div.product-options-wrapper').on('change', (event) => {
                 let sku = selectedProduct();
 
-                if (sku !== '' && params.isPdpOffersEnabled) {
-                    renderWarranties(sku);
+                if(sku !== '' && params.isPdpOffersEnabled) {
+                    if (sku !== params.productSku) {
+                        renderWarranties(sku);
+                    } else {
+                        event.preventDefault();
+                    }
                 }
             });
         });
@@ -34,12 +38,14 @@ define([
         }
 
         function selectedProduct() {
-
-            if ($('div.swatch-attribute').length === 0 ){
-                if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value !== ''){
+            params.isProductHasOffers = true;
+            if ($('div.swatch-attribute').length === 0 ) {
+                if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value !== '') {
                     let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value;
                     const productConfig1 = $('#product_addtocart_form').data('mageConfigurable').options.spConfig;
                     return productConfig1.skus[productId1];
+                } else {
+                    return params.productSku;
                 }
             }else{
                 let selected_options = {};
@@ -83,11 +89,11 @@ define([
                     addWarranty(plan, sku);
                     //add hidden field for tracking
                     $('<input />').attr('type', 'hidden')
-                        .attr('name', 'warranty["component"]')
+                        .attr('name', 'warranty[component]')
                         .attr('value', 'buttons')
                         .appendTo('#product_addtocart_form');
                     $('#product_addtocart_form').submit();
-                } else if (params.isInterstitialCartOffersEnabled) {
+                } else if (params.isInterstitialCartOffersEnabled && params.isProductHasOffers) {
                     Extend.modal.open({
                         referenceId: sku,
                         onClose: function (plan) {
@@ -107,7 +113,7 @@ define([
                 } else {
                     $('#product_addtocart_form').submit();
                 }
-            } else if (params.isInterstitialCartOffersEnabled) {
+            } else if (params.isInterstitialCartOffersEnabled && params.isProductHasOffers) {
                 Extend.modal.open({
                     referenceId: sku,
                     onClose: function (plan) {
