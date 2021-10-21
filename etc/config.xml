@@ -37,6 +37,9 @@
             <products>
                 <batch_size>100</batch_size>
                 <enable_cronjob>0</enable_cronjob>
+                <cron>
+                    <frequency>0 0 * * *</frequency>
+                </cron>
             </products>
             <tracking>
                 <enabled>1</enabled>

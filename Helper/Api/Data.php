@@ -65,7 +65,6 @@ class Data extends AbstractHelper
     const WARRANTY_PRODUCTS_BATCH_SIZE_XML_PATH = 'warranty/products/batch_size';
     const WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH = 'warranty/products/lastSync';
     const WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/products/cron_sync_enabled';
-    const WARRANTY_PRODUCTS_CRON_LAST_SYNC_DATE_XML_PATH = 'warranty/products/cron_last_sync_date';
 
     /**
      * Leads settings
@@ -414,42 +413,6 @@ class Data extends AbstractHelper
     public function isProductSyncByCronEnabled(): bool
     {
         return $this->scopeConfig->isSetFlag(self::WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH);
-    }
-
-    /**
-     * Set last product sync date by cron
-     *
-     * @param string $value
-     * @param string $scopeType
-     * @param int|null $scopeId
-     */
-    public function setCronLastProductSyncDate(
-        string $value,
-        string $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-        ?int $scopeId = null
-    ): void {
-        $this->configResource->saveConfig(
-            self::WARRANTY_PRODUCTS_CRON_LAST_SYNC_DATE_XML_PATH,
-            $value,
-            $scopeType,
-            (int)$scopeId
-        );
-        $this->cacheManager->clean([Config::TYPE_IDENTIFIER]);
-    }
-
-    /**
-     * Get last product sync date by cron
-     *
-     * @param string|int|null $storeId
-     * @return string
-     */
-    public function getCronLastProductSyncDate($storeId = null): string
-    {
-        return (string)$this->scopeConfig->getValue(
-            self::WARRANTY_PRODUCTS_CRON_LAST_SYNC_DATE_XML_PATH,
-            ScopeInterface::SCOPE_STORES,
-            $storeId
-        );
     }
 
     /**

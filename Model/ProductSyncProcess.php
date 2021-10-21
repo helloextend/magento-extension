@@ -155,38 +155,21 @@ class ProductSyncProcess
     }
 
     /**
-     * Get last product sync date according to sync type
+     * Get last product sync date
      *
      * @return string
      */
     public function getLastSyncDate(): string
     {
-        try {
-            $lastSyncDate = $this->appState->getAreaCode() === Area::AREA_CRONTAB
-                ? $this->dataHelper->getCronLastProductSyncDate()
-                : $this->dataHelper->getLastProductSyncDate();
-        } catch (LocalizedException $exception) {
-            $lastSyncDate = $this->dataHelper->getLastProductSyncDate();
-        }
-
-        return $lastSyncDate;
+        return $this->dataHelper->getLastProductSyncDate();
     }
 
     /**
-     * Set last product sync date according to sync type
+     * Set last product sync date
      */
     public function setLastSyncDate(): void
     {
         $currentDate = $this->dateTime->formatDate($this->date->gmtTimestamp());
-
-        try {
-            if ($this->appState->getAreaCode() === Area::AREA_CRONTAB) {
-                $this->dataHelper->setCronLastProductSyncDate($currentDate);
-            } else {
-                $this->dataHelper->setLastProductSyncDate($currentDate);
-            }
-        } catch (LocalizedException $exception) {
-            $this->dataHelper->setLastProductSyncDate($currentDate);
-        }
+        $this->dataHelper->setLastProductSyncDate($currentDate);
     }
 }
