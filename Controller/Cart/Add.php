@@ -136,18 +136,6 @@ class Add extends \Magento\Checkout\Controller\Cart
                 $warranty->getName()
             );
             $this->messageManager->addSuccessMessage($message);
-            if ($this->_trackingHelper->isTrackingEnabled()) {
-                $trackingData = [
-                    'eventName'        => 'trackOfferAddedToCart',
-                    'productId'        => $warrantyData['product'] ?? '',
-                    'productQuantity'  => $qty,
-                    'warrantyQuantity' => $qty,
-                    'planId'           => $warrantyData['planId'] ?? '',
-                    'area'             => 'cart_page',
-                    'component'        => 'buttons',
-                ];
-                $this->_trackingHelper->setTrackingData($trackingData);
-            }
             return $this->goBack(null, $warranty);
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(

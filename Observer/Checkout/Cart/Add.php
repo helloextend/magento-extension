@@ -37,23 +37,25 @@ class Add implements \Magento\Framework\Event\ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        if (!$this->_trackingHelper->isTrackingEnabled()) {
-            return;
-        }
-        /** @var \Magento\Catalog\Model\Product $product */
-        $product = $observer->getData('product');
-        if (!$product instanceof \Magento\Catalog\Model\Product) {
-            return;
-        }
         /** @var \Magento\Framework\App\RequestInterface $request */
         /** @var \Magento\Framework\App\Request\Http $request */
         $request = $observer->getData('request');
-        $qty = (int)$request->getPost('qty', 1);
-        $trackingData = [
-            'eventName'       => 'trackProductAddedToCart',
-            'productId'       => $product->getSku(),
-            'productQuantity' => $qty,
-        ];
-        $this->_trackingHelper->setTrackingData($trackingData);
+        $warrantyData = $request->getPost('warranty', []);
+
+        if ($this->_trackingHelper->isTrackingEnabled() && empty($warrantyData)) {
+            /** @var \Magento\Catalog\Model\Product $product */
+            $product = $observer->getData('product');
+            if (!$product instanceof \Magento\Catalog\Model\Product) {
+                return;
+            }
+
+            $qty = (int)$request->getPost('qty', 1);
+            $trackingData = [
+                'eventName' => 'trackProductAddedToCart',
+                'productId' => $product->getSku(),
+                'productQuantity' => $qty,
+            ];
+            $this->_trackingHelper->setTrackingData($trackingData);
+        }
     }
 }

@@ -62,17 +62,6 @@ class Normalizer
                         if ($item->getQty() > 0) {
                             //update warranty qty
                             $warrantyItem->setQty($item->getQty());
-                            if ($this->_trackingHelper->isTrackingEnabled()) {
-                                $planId = (string)$warrantyItem->getOptionByCode('warranty_id')->getValue();
-                                $trackingData = [
-                                    'eventName'        => 'trackOfferUpdated',
-                                    'productId'        => $sku,
-                                    'planId'           => $planId,
-                                    'warrantyQuantity' => (int)$item->getQty(),
-                                    'productQuantity'  => (int)$item->getQty(),
-                                ];
-                                $this->_trackingHelper->setTrackingData($trackingData);
-                            }
                         } else {
                             //remove both product and warranty
                             $cart->removeItem($warrantyItem->getItemId());

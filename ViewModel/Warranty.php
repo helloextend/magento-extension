@@ -12,10 +12,13 @@ declare(strict_types=1);
 
 namespace Extend\Warranty\ViewModel;
 
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Quote\Api\Data\CartInterface;
+use Extend\Warranty\Helper\Api as ApiHelper;
 
 /**
  * Class Warranty
@@ -23,21 +26,31 @@ use Magento\Quote\Api\Data\CartInterface;
 class Warranty implements ArgumentInterface
 {
     /**
-     * DataHelper
+     * Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
+     * Api Helper
+     *
+     * @var ApiHelper
+     */
+    private $apiHelper;
+
+    /**
      * Warranty constructor
      *
      * @param DataHelper $dataHelper
+     * @param ApiHelper $apiHelper
      */
     public function __construct(
-        DataHelper $dataHelper
+        DataHelper $dataHelper,
+        ApiHelper $apiHelper
     ) {
         $this->dataHelper = $dataHelper;
+        $this->apiHelper = $apiHelper;
     }
 
     /**
@@ -102,5 +115,18 @@ class Warranty implements ArgumentInterface
     public function isInterstitialCartOffersEnabled(): bool
     {
         return $this->dataHelper->isInterstitialCartOffersEnabled();
+    }
+
+    /**
+     * Check if product has warranty offers
+     *
+     * @param ProductInterface $product
+     * @return bool
+     */
+    public function isProductHasOffers(ProductInterface $product): bool
+    {
+        $productSku = $product->getTypeId() == Configurable::TYPE_CODE ? '' : $product->getSku();
+
+        return $productSku ? $this->apiHelper->isProductHasOffers($productSku) : false;
     }
 }
