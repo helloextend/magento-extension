@@ -10,20 +10,20 @@
 
 namespace Extend\Warranty\Model\Config\Backend;
 
-use Magento\Framework\App\Config\Value;
-use Magento\Framework\Model\Context;
-use Magento\Framework\Registry;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\Cache\TypeListInterface;
-use Magento\Framework\Model\ResourceModel\AbstractResource;
-use Magento\Framework\Data\Collection\AbstractDb;
 use Extend\Warranty\Helper\Data as Helper;
+use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Config\Value;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
 use Exception;
 
 /**
- * Class ContractCreationCronSchedule
+ * Class ProductSyncCronSchedule
  */
-class ContractCreationCronSchedule extends Value
+class ProductSyncCronSchedule extends Value
 {
     /**
      * Helper
@@ -33,7 +33,7 @@ class ContractCreationCronSchedule extends Value
     private $helper;
 
     /**
-     * ContractCreationCronSchedule constructor
+     * ProductSyncCronSchedule constructor
      *
      * @param Context $context
      * @param Registry $registry
@@ -63,7 +63,7 @@ class ContractCreationCronSchedule extends Value
      */
     public function beforeSave()
     {
-        $frequency = $this->getData('groups/contracts/groups/cron/fields/frequency/value');
+        $frequency = $this->getData('groups/products/groups/cron/fields/frequency/value');
         if (!$this->helper->isCronExpressionValid($frequency)) {
             throw new Exception(__('We can\'t save the cron expression.'));
         }

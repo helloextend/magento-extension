@@ -23,6 +23,11 @@ class Data
     const CONTRACT_ID = 'contract_id';
 
     /**
+     * Cron regular expressions
+     */
+    const CRON_REG_EXP = '/^(?:[1-9]?\d|\*)(?:(?:[\/-][1-9]?\d)|(?:,[1-9]?\d)+)?$/';
+
+    /**
      * List of not allowed product types
      */
     const NOT_ALLOWED_TYPES = [
@@ -71,5 +76,24 @@ class Data
         );
 
         return (float) $price;
+    }
+
+    /**
+     * Check if cron schedule expression is valid
+     *
+     * @param string $cronExpressionString
+     * @return bool
+     */
+    public function isCronExpressionValid(string $cronExpressionString): bool
+    {
+        $cronExprArray = explode(' ', $cronExpressionString);
+        foreach ($cronExprArray as $cronExp) {
+            if (!preg_match(self::CRON_REG_EXP, $cronExp)) {
+                $isValid = false;
+                break;
+            }
+        }
+
+        return $isValid ?? count($cronExprArray) === 5;
     }
 }

@@ -226,8 +226,20 @@
                 <field id="cron_sync_enabled" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Enable Synchronization by Cron</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Products can be synchronized automatically (every day at 00:00) using this functionality.</comment>
+                    <comment>Products can be synchronized automatically using this functionality.</comment>
                 </field>
+                <group id="cron" translate="label comment" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Cron Settings</label>
+                    <depends>
+                        <field id="warranty/products/cron_sync_enabled">1</field>
+                    </depends>
+                    <field id="frequency" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                        <label>Frequency</label>
+                        <comment>Cron schedule expression</comment>
+                        <backend_model>Extend\Warranty\Model\Config\Backend\ProductSyncCronSchedule</backend_model>
+                        <validate>validate-cron-expression</validate>
+                    </field>
+                </group>
             </group>
 
             <group id="tracking" translate="label comment" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
