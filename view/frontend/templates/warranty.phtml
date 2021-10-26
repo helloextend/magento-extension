@@ -48,7 +48,7 @@ $product = $block->getProduct();
                                 "productSku": "<?= $product->getTypeId() == 'configurable' ? '' : $escaper->escapeJs($product->getSku()); ?>",
                                 "isPdpOffersEnabled": "<?= $escaper->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
                                 "isInterstitialCartOffersEnabled": "<?= $escaper->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
-                                "isProductHasOffers": "<?= $escaper->escapeJs($viewModel->isProductHasOffers($product)); ?>"
+                                "isProductHasOffers": <?= $viewModel->isProductHasOffers($product); ?>
                             }
                         }
                     }

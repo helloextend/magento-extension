@@ -14,11 +14,14 @@ namespace Extend\Warranty\ViewModel;
 
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\ConfigurableProduct\Api\LinkManagementInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Quote\Api\Data\CartInterface;
 use Extend\Warranty\Helper\Api as ApiHelper;
+use InvalidArgumentException;
 
 /**
  * Class Warranty
@@ -40,17 +43,37 @@ class Warranty implements ArgumentInterface
     private $apiHelper;
 
     /**
+     * Json Serializer
+     *
+     * @var JsonSerializer
+     */
+    private $jsonSerializer;
+
+    /**
+     * Link Management Interface
+     *
+     * @var LinkManagementInterface
+     */
+    private $linkManagement;
+
+    /**
      * Warranty constructor
      *
      * @param DataHelper $dataHelper
      * @param ApiHelper $apiHelper
+     * @param JsonSerializer $jsonSerializer
+     * @param LinkManagementInterface $linkManagement
      */
     public function __construct(
         DataHelper $dataHelper,
-        ApiHelper $apiHelper
+        ApiHelper $apiHelper,
+        JsonSerializer $jsonSerializer,
+        LinkManagementInterface $linkManagement
     ) {
         $this->dataHelper = $dataHelper;
         $this->apiHelper = $apiHelper;
+        $this->jsonSerializer = $jsonSerializer;
+        $this->linkManagement = $linkManagement;
     }
 
     /**
@@ -121,12 +144,24 @@ class Warranty implements ArgumentInterface
      * Check if product has warranty offers
      *
      * @param ProductInterface $product
-     * @return bool
+     * @return string
+     * @thrown InvalidArgumentException
      */
-    public function isProductHasOffers(ProductInterface $product): bool
+    public function isProductHasOffers(ProductInterface $product): string
     {
-        $productSku = $product->getTypeId() == Configurable::TYPE_CODE ? '' : $product->getSku();
+        $isProductHasOffers = [];
+        $productSku = $product->getSku();
 
-        return $productSku ? $this->apiHelper->isProductHasOffers($productSku) : false;
+        if ($product->getTypeId() == Configurable::TYPE_CODE) {
+            $items = $this->linkManagement->getChildren($productSku);
+            foreach ($items as $item) {
+                $itemSku = $item->getSku();
+                $isProductHasOffers[$itemSku] = $this->apiHelper->isProductHasOffers($itemSku);
+            }
+        } else {
+            $isProductHasOffers[$productSku] = $this->apiHelper->isProductHasOffers($productSku);
+        }
+
+        return $this->jsonSerializer->serialize($isProductHasOffers);
     }
 }
