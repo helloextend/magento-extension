@@ -38,7 +38,6 @@ define([
         }
 
         function selectedProduct() {
-            params.isProductHasOffers = true;
             if ($('div.swatch-attribute').length === 0 ) {
                 if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value !== '') {
                     let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value;
@@ -77,7 +76,12 @@ define([
         $('#product-addtocart-button').click((event) => {
             event.preventDefault();
 
-            let sku = params.productSku !== '' ? params.productSku : selectedProduct();
+            let sku = params.productSku !== '' ? params.productSku : selectedProduct(),
+                hasOffers = false;
+
+            if (params.isProductHasOffers.hasOwnProperty(sku)) {
+                hasOffers = params.isProductHasOffers[sku];
+            }
 
             if (params.isPdpOffersEnabled) {
                 /** get the component instance rendered previously */
@@ -93,7 +97,7 @@ define([
                         .attr('value', 'buttons')
                         .appendTo('#product_addtocart_form');
                     $('#product_addtocart_form').submit();
-                } else if (params.isInterstitialCartOffersEnabled && params.isProductHasOffers) {
+                } else if (params.isInterstitialCartOffersEnabled && hasOffers) {
                     Extend.modal.open({
                         referenceId: sku,
                         onClose: function (plan) {
@@ -113,7 +117,7 @@ define([
                 } else {
                     $('#product_addtocart_form').submit();
                 }
-            } else if (params.isInterstitialCartOffersEnabled && params.isProductHasOffers) {
+            } else if (params.isInterstitialCartOffersEnabled && hasOffers) {
                 Extend.modal.open({
                     referenceId: sku,
                     onClose: function (plan) {
