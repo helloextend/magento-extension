@@ -1,100 +1,130 @@
 <?php
-
-
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 namespace Extend\Warranty\Observer\Warranty;
 
-use Extend\Warranty\Model\Normalizer;
-use Magento\Framework\Event\Observer;
-use Magento\Framework\Event\ObserverInterface;
-use Extend\Warranty\Helper\Api\Data;
-
-use Magento\Checkout\Model\Cart;
-use Magento\Checkout\Model\Session as CheckoutSession;
-
-class Normalize implements ObserverInterface
+/**
+ * Class Normalize
+ * @package Extend\Warranty\Observer\Warranty
+ */
+class Normalize implements \Magento\Framework\Event\ObserverInterface
 {
     /**
-     * @var Normalizer
+     * @var \Extend\Warranty\Model\Normalizer
      */
-    protected $normalizer;
+    protected $_normalizer;
 
     /**
-     * @var Data
+     * @var \Extend\Warranty\Helper\Api\Data
      */
-    protected $helper;
+    protected $_apiHelper;
 
     /**
-     * @var CheckoutSession
+     * @var \Extend\Warranty\Helper\Tracking
      */
-    protected $checkoutSession;
+    protected $_trackingHelper;
 
     /**
-     * @var Cart
+     * @var \Magento\Checkout\Model\Session
      */
-    protected $cart;
+    protected $_checkoutSession;
 
-
-    public function __construct(Normalizer $normalizer, Data $helper, CheckoutSession $checkoutSession, Cart $cart)
+    /**
+     * Normalize constructor.
+     * @param \Extend\Warranty\Model\Normalizer $normalizer
+     * @param \Extend\Warranty\Helper\Api\Data $apiHelper
+     * @param \Extend\Warranty\Helper\Tracking $trackingHelper
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     */
+    public function __construct(
+        \Extend\Warranty\Model\Normalizer $normalizer,
+        \Extend\Warranty\Helper\Api\Data $apiHelper,
+        \Extend\Warranty\Helper\Tracking $trackingHelper,
+        \Magento\Checkout\Model\Session $checkoutSession
+    )
     {
-        $this->normalizer = $normalizer;
-        $this->helper = $helper;
-        $this->checkoutSession = $checkoutSession;
-        $this->cart = $cart;
-
+        $this->_normalizer = $normalizer;
+        $this->_apiHelper = $apiHelper;
+        $this->_trackingHelper = $trackingHelper;
+        $this->_checkoutSession = $checkoutSession;
     }
 
     /**
      * @inheritDoc
+     * @noinspection PhpUnusedLocalVariableInspection
      */
-    public function execute(Observer $observer)
+    public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        if(!$this->helper->isBalancedCart()){
+        if (!$this->_apiHelper->isBalancedCart()) {
             return;
         }
-
-        $_cart = $observer->getEvent()->getCart();
-
+        /** @var \Magento\Checkout\Model\Cart $cart */
+        $cart = $observer->getData('cart');
         /* Normalize on quote/cart update */
-        if (empty($_cart)) {
-            $this->_normalize($this->checkoutSession->getQuote());
+        if (empty($cart)) {
+            try {
+                $this->_normalize($this->_checkoutSession->getQuote());
+            } catch (\Exception $e) {}
         } else {
-            $this->normalizer->normalize($_cart);
+            $this->_normalizer->normalize($cart);
         }
     }
 
-    private function _normalize($quote) {
-
-        //split cart items from products and warranties
+    /**
+     * @param \Magento\Quote\Model\Quote $quote
+     * @noinspection PhpDeprecationInspection
+     * @noinspection PhpUnusedLocalVariableInspection
+     */
+    private function _normalize(\Magento\Quote\Model\Quote $quote)
+    {
+        //split cart items into products and warranties
         $warranties = [];
         $products = [];
-
         foreach ($quote->getAllItems() as $item) {
-            if ($item->getProductType() === 'warranty') {
+            /** @var \Magento\Quote\Model\Quote\Item $item */
+            if ($item->getProductType() === \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
                 $warranties[$item->getItemId()] = $item;
             } else {
                 $products[] = $item;
             }
         }
-
-        //Loop products to see if their qty is different from the warranty qty and adjust both to max
+        //loop over products to see if their qty is different from the warranty qty and adjust both to max
+        $hasChanges = false;
         foreach ($products as $item) {
+            /** @var \Magento\Quote\Model\Quote\Item $item */
             $sku = $item->getSku();
-
-            foreach ($warranties as $warrantyitem) {
-                if ($warrantyitem->getOptionByCode('associated_product')->getValue() == $sku &&
-                    ($item->getProductType() == 'configurable' || is_null($item->getOptionByCode('parent_product_id')))) {
-                    if ($warrantyitem->getQty() <> $item->getQty()) {
+            foreach ($warranties as $warrantyItem) {
+                /** @var \Magento\Quote\Model\Quote\Item $warrantyItem */
+                if ($warrantyItem->getOptionByCode('associated_product')->getValue() == $sku
+                    && ($item->getProductType() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE
+                        || is_null($item->getOptionByCode('parent_product_id'))))
+                {
+                    if ($warrantyItem->getQty() <> $item->getQty()) {
                         if ($item->getQty() > 0) {
-                            //Update Warranty QTY
-                            $warrantyitem->setQty($item->getQty());
-                            $warrantyitem->calcRowTotal();
-                            $warrantyitem->save();
+                            //update warranty qty
+                            $warrantyItem->setQty($item->getQty());
+                            $warrantyItem->calcRowTotal();
+                            try {
+                                $warrantyItem->save();
+                                $hasChanges = true;
+                            } catch(\Exception $e) {}
                         }
                     }
                 }
             }
         }
-        $quote->setTriggerRecollect(1);
-        $quote->collectTotals()->save();
+        //only collect totals and re-save the quote if something actually changed
+        if ($hasChanges) {
+            $quote->setTriggerRecollect(1);
+            try {
+                $quote->collectTotals()->save();
+            } catch (\Exception $e) {}
+        }
     }
 }

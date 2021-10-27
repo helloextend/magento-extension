@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+ -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Magento\Catalog\Block\Adminhtml\Product"
                 type="Extend\Warranty\Block\Adminhtml\Product" />
 
     <preference for="Extend\Warranty\Api\SyncInterface"
                 type="Extend\Warranty\Model\Product\Sync"/>
-
-    <preference for="Extend\Warranty\Api\TimeUpdaterInterface"
-                type="Extend\Warranty\Model\Api\TimeUpdater"/>
 
     <preference for="Extend\Warranty\Api\Data\UrlBuilderInterface"
                 type="Extend\Warranty\Model\Api\UrlBuilder"/>
@@ -23,9 +30,6 @@
     </type>
     <type name="Magento\Config\Model\Config">
         <plugin name="admin_system_config_save_plugin" type="Extend\Warranty\Plugin\ValidateCredentialPlugin" sortOrder="1"/>
-    </type>
-    <type name="Extend\Catalog\Controller\Adminhtml\Products\Sync">
-        <plugin name="syncInterceptor" type="Extend\Warranty\Plugin\SyncAction" sortOrder="1"/>
     </type>
 
     <type name="Magento\ConfigurableProduct\Block\Product\View\Type\Configurable">
@@ -61,6 +65,7 @@
     <type name="Extend\Warranty\Model\Api\Sync\Product\ProductsRequest">
         <arguments>
             <argument name="syncLogger" xsi:type="object">ProductSyncVirtualInfoLogger</argument>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
         </arguments>
     </type>
 
@@ -86,6 +91,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="extend_sync_products" xsi:type="object">Extend\Warranty\Console\Command\SyncProducts</item>
+                <item name="extendWarrantyCreateWarrantyContractCommand" xsi:type="object">Extend\Warranty\Console\Command\CreateContracts</item>
             </argument>
         </arguments>
     </type>
@@ -106,13 +112,33 @@
 
     <type name="Extend\Warranty\Observer\Warranty\AddToCart">
         <arguments>
-            <argument name="addWarrantyLogger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
+            <argument name="logger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
         </arguments>
     </type>
 
     <type name="Extend\Warranty\Controller\Cart\Add">
         <arguments>
-            <argument name="addWarrantyLogger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
+            <argument name="logger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="ExtendLogHandler" type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/extend.log</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="ExtendLogger" type="Extend\Warranty\Model\Logger">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="info" xsi:type="object">ExtendLogHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest">
+        <arguments>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
         </arguments>
     </type>
 </config>

@@ -1,72 +1,54 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
+declare(strict_types=1);
 
 namespace Extend\Warranty\Block\System\Config;
 
-use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 
-
+/**
+ * Class Button
+ */
 class Button extends Field
 {
     /**
-     * @var string
-     */
-    protected $_template = 'Extend_Warranty::system/config/render.phtml';
-
-    /**
-     * @var string
-     */
-    protected $id;
-
-    /**
-     * @var string
-     */
-    protected $label;
-
-    public function __construct(
-        Context $context,
-        array $data = [],
-        $id = '',
-        $label = ''
-    )
-    {
-        $this->id = $id;
-        $this->label = $label;
-        parent::__construct($context, $data);
-    }
-
-    /**
+     * Remove scope label
+     *
      * @param AbstractElement $element
      * @return string
      */
-    public function render(AbstractElement $element)
+    public function render(AbstractElement $element): string
     {
         $element->unsScope();
+        $element->unsCanUseWebsiteValue();
+        $element->unsCanUseDefaultValue();
+
         return parent::render($element);
     }
 
     /**
+     * Return element html
+     *
      * @param AbstractElement $element
      * @return string
      */
-    protected function _getElementHtml(AbstractElement $element)
+    protected function _getElementHtml(AbstractElement $element): string
     {
-        return $this->_toHtml();
-    }
+        $originalData = $element->getOriginalData();
 
-    public function getHtml()
-    {
-        $button = $this->getLayout()->createBlock(
-            'Magento\Backend\Block\Widget\Button'
-        )->setData(
-            [
-                'id' => $this->id,
-                'label' => __($this->label)
-            ]
+        return sprintf(
+            "<a href='%s' class='action action-extend-external' target='_blank'>%s</a>",
+            $originalData['button_url'],
+            $originalData['button_label']
         );
-
-        return $button->toHtml();
     }
 }
