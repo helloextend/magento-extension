@@ -115,4 +115,10 @@
             <argument name="addWarrantyLogger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
         </arguments>
     </type>
+
+    <type name="Extend\Warranty\Helper\Api">
+        <arguments>
+            <argument name="logger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
+        </arguments>
+    </type>
 </config>
