@@ -88,7 +88,6 @@ class Add extends Cart implements HttpPostActionInterface
     ) {
         $this->productRepository = $productRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->trackingHelper = $trackingHelper;
         $this->helper = $helper;
         $this->logger = $logger;
 

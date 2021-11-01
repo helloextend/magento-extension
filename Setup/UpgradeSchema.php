@@ -38,23 +38,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
             }
         }
 
-        if (version_compare($context->getVersion(), '1.2.2', '<')) {
-            $tableName = $setup->getTable('sales_order_item');
-            $columnName = "lead_token";
-            if ($connection->tableColumnExists($tableName, $columnName) !== true) {
-                $connection->addColumn(
-                    $tableName,
-                    $columnName,
-                    [
-                        'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
-                        'length' => '2M',
-                        'nullable' => true,
-                        'comment' => 'Extend Lead Token'
-                    ]
-                );
-            }
-        }
-
         $setup->endSetup();
     }
 }

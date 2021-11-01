@@ -150,6 +150,7 @@ class ContractBuilder
             if (!$order->getCustomerIsGuest()) {
                 $contracts[$key]['customer']['customerId'] = $order->getCustomerId();
             }
+
         }
         return $contracts;
     }

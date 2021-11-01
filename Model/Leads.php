@@ -2,25 +2,11 @@
 
 namespace Extend\Warranty\Model;
 
-use Magento\Framework\Exception\NoSuchEntityException;
-use Extend\Warranty\Model\Api\Sync\Leads\LeadsRequest;
-use Extend\Warranty\Model\Api\Request\LeadBuilder;
 use Extend\Warranty\Model\Api\Sync\Offers\OffersRequest;
-use Magento\Sales\Api\Data\OrderInterface;
 use Psr\Log\LoggerInterface;
 
 class Leads
 {
-    /**
-     * @var LeadsRequest
-     */
-    protected $leadsRequest;
-
-    /**
-     * @var LeadBuilder
-     */
-    protected $leadBuilder;
-
     /**
      * @var OffersRequest
      */
@@ -33,14 +19,10 @@ class Leads
 
     public function __construct
     (
-        LeadsRequest $leadsRequest,
-        LeadBuilder $leadBuilder,
         OffersRequest $offersRequest,
         LoggerInterface $logger
     )
     {
-        $this->leadsRequest = $leadsRequest;
-        $this->leadBuilder = $leadBuilder;
         $this->offersRequest = $offersRequest;
         $this->logger = $logger;
     }
@@ -72,22 +54,5 @@ class Leads
             return true;
         }
         return false;
-    }
-
-    /**
-     * $param $order
-     * $param $item
-     */
-    public function createLead($order, $item) {
-        $lead = '';
-        try {
-            $lead =  $this->leadsRequest->create(
-                $this->leadBuilder->prepareInfo($order, $item)
-            );
-        } catch(\Exception $e) {
-            $this->logger->error($e->getMessage(), ['exception' => $e]);
-        }
-
-        return empty($lead) ? '' : $lead;
     }
 }
