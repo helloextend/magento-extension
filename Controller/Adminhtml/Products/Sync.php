@@ -150,7 +150,7 @@ class Sync extends Action
         }
 
         if ($this->batchSize === null) {
-            $batchSize = $this->dataHelper->getProductsBatchSize();
+            $batchSize = $this->dataHelper->getProductsBatchSize($scope, $scopeId);
 
             if ($batchSize) {
                 $this->batchSize = $batchSize;
