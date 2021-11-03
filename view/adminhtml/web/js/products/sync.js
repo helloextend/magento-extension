@@ -24,9 +24,9 @@ define(
             shouldAbort = false;
         }
 
-        async function syncAllProducts(url, button) {
+        async function syncAllProducts(url, scope, scopeId, button) {
             do {
-                var data = await batchBeingProcessed(shouldAbort, url).then(data => {
+                var data = await batchBeingProcessed(shouldAbort, url, scope, scopeId).then(data => {
                     return data;            //success
                 }, data => {
                     return {                //fail
@@ -47,7 +47,7 @@ define(
             restore(button);
         }
 
-        function batchBeingProcessed(shouldAbort, url) {
+        function batchBeingProcessed(shouldAbort, url, scope, scopeId) {
             if (!shouldAbort) {
                 return new Promise((resolve, reject) => {
                     $.get({
@@ -55,7 +55,9 @@ define(
                         dataType: 'json',
                         async: true,
                         data: {
-                            currentBatchesProcessed: currentBatchesProcessed
+                            currentBatchesProcessed: currentBatchesProcessed,
+                            scope: scope,
+                            scopeId: scopeId
                         },
                         success: function (data) {
                             resolve(data)
@@ -77,7 +79,9 @@ define(
 
         $.widget('extend.productSync', {
             options: {
-                url: ''
+                url: '',
+                scope: '',
+                scopeId: ''
             },
 
             _create: function () {
@@ -103,7 +107,7 @@ define(
                 synMsg.hide();
                 cancelSync.show();
 
-                syncAllProducts(this.options.url, button);
+                syncAllProducts(this.options.url, this.options.scope, this.options.scopeId, button);
 
             }
         });

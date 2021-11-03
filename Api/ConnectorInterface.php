@@ -16,4 +16,7 @@ interface ConnectorInterface
     //Call for plugin of Cesar
     public function testConnection(): bool;
 
+    public function simpleCall(
+        string $endpoint
+    ): string;
 }

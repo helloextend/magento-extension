@@ -1,5 +1,14 @@
 <?xml version="1.0"?>
-
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+ -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
 
@@ -17,7 +26,7 @@
                    name="warranty_order_create_items_warranties"
                    template="Extend_Warranty::order/create/items/warranty.phtml">
                 <arguments>
-                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\WarrantiesInCart</argument>
+                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
                 </arguments>
             </block>
         </referenceBlock>

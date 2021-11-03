@@ -3,9 +3,8 @@
 
 namespace Extend\Warranty\Model;
 
+use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Api\Sync\Product\ProductsRequest;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Extend\Warranty\Api\TimeUpdaterInterface;
 use Psr\Log\LoggerInterface;
 
 class SyncProcess
@@ -16,9 +15,11 @@ class SyncProcess
     protected $productsRequest;
 
     /**
-     * @var ScopeConfigInterface
+     * Data Helper
+     *
+     * @var DataHelper
      */
-    protected $scopeConfig;
+    private $dataHelper;
 
     /**
      * @var LoggerInterface
@@ -27,12 +28,12 @@ class SyncProcess
 
     public function __construct(
         ProductsRequest $productsRequest,
-        ScopeConfigInterface $scopeConfig,
+        DataHelper $dataHelper,
         LoggerInterface $logger
     )
     {
         $this->productsRequest = $productsRequest;
-        $this->scopeConfig = $scopeConfig;
+        $this->dataHelper = $dataHelper;
         $this->logger = $logger;
     }
 
@@ -49,7 +50,7 @@ class SyncProcess
 
     private function processProducts(array $storeProducts): array
     {
-        $lastGlobalSyncDate = $this->scopeConfig->getValue(TimeUpdaterInterface::LAST_SYNC_PATH);
+        $lastGlobalSyncDate = $this->dataHelper->getLastProductSyncDate();
 
         if (empty($lastGlobalSyncDate)) {
             return $storeProducts;

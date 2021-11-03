@@ -1,26 +1,91 @@
 <?php
-
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Block\System\Config;
 
+use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
+/**
+ * Class Intro
+ */
 class Intro extends Field
 {
     /**
+     * Path to template file in theme
+     *
      * @var string
      */
     protected $_template = 'Extend_Warranty::system/config/intro.phtml';
 
-    public function render(AbstractElement $element)
+    /**
+     * Data Helper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
+
+    /**
+     * Intro constructor
+     *
+     * @param Context $context
+     * @param DataHelper $dataHelper
+     * @param array $data
+     * @param SecureHtmlRenderer|null $secureRenderer
+     */
+    public function __construct(
+        Context $context,
+        DataHelper $dataHelper,
+        array $data = [],
+        ?SecureHtmlRenderer $secureRenderer = null
+    ) {
+        $this->dataHelper = $dataHelper;
+        parent::__construct($context, $data, $secureRenderer);
+    }
+
+    /**
+     * Remove scope label
+     *
+     * @param  AbstractElement $element
+     * @return string
+     */
+    public function render(AbstractElement $element): string
     {
         $element->unsScope();
+        $element->unsCanUseWebsiteValue();
+        $element->unsCanUseDefaultValue();
+
         return parent::render($element);
     }
 
-    protected function _getElementHtml(AbstractElement $element)
+    /**
+     * Return element html
+     *
+     * @param  AbstractElement $element
+     * @return string
+     */
+    protected function _getElementHtml(AbstractElement $element): string
     {
-        return $this->toHtml();
+        return $this->_toHtml();
+    }
+
+    /**
+     * Get module version
+     *
+     * @return string
+     */
+    public function getModuleVersion(): string
+    {
+        return $this->dataHelper->getModuleVersion();
     }
 }
