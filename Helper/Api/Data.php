@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace Extend\Warranty\Helper\Api;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\App\Helper\Context;
@@ -42,6 +41,8 @@ class Data extends AbstractHelper
     const WARRANTY_AUTHENTICATION_API_KEY_XML_PATH = 'warranty/authentication/api_key';
     const WARRANTY_AUTHENTICATION_SANDBOX_STORE_ID_XML_PATH = 'warranty/authentication/sandbox_store_id';
     const WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH = 'warranty/authentication/sandbox_api_key';
+    const WARRANTY_AUTHENTICATION_API_URL_XML_PATH = 'warranty/authentication/api_url';
+    const WARRANTY_AUTHENTICATION_SANDBOX_API_URL_XML_PATH = 'warranty/authentication/sandbox_api_url';
 
     /**
      * Contracts settings
@@ -147,15 +148,18 @@ class Data extends AbstractHelper
     /**
      * Check if Extend in live auth mode
      *
-     * @param string|int|null $storeId
+     * @param string $scopeType
+     * @param int|string|null $scopeId
      * @return bool
      */
-    public function isExtendLive($storeId = null): bool
-    {
+    public function isExtendLive(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): bool {
         $authMode = (int)$this->scopeConfig->getValue(
             self::WARRANTY_AUTHENTICATION_AUTH_MODE_XML_PATH,
-            ScopeInterface::SCOPE_STORES,
-            $storeId
+            $scopeType,
+            $scopeId
         );
 
         return $authMode === AuthMode::LIVE_VALUE;
@@ -164,51 +168,52 @@ class Data extends AbstractHelper
     /**
      * Get store ID
      *
-     * @param string|int|null $storeId
+     * @param string $scopeType
+     * @param int|string|null $scopeId
      * @return string
      */
-    public function getStoreId($storeId = null): string
-    {
-        if ($this->isExtendLive($storeId)) {
-            $apiStoreId = (string)$this->scopeConfig->getValue(
-                self::WARRANTY_AUTHENTICATION_STORE_ID_XML_PATH,
-                ScopeInterface::SCOPE_STORES,
-                $storeId
-            );
-        } else {
-            $apiStoreId = (string)$this->scopeConfig->getValue(
-                self::WARRANTY_AUTHENTICATION_SANDBOX_STORE_ID_XML_PATH,
-                ScopeInterface::SCOPE_STORES,
-                $storeId
-            );
-        }
+    public function getStoreId(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
+        $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_STORE_ID_XML_PATH
+            : self::WARRANTY_AUTHENTICATION_SANDBOX_STORE_ID_XML_PATH;
 
-        return $apiStoreId;
+        return (string)$this->scopeConfig->getValue($path, $scopeType, $scopeId);
     }
 
     /**
      * Get API key
      *
-     * @param string|int|null $storeId
+     * @param string $scopeType
+     * @param int|string|null $scopeId
      * @return string
      */
-    public function getApiKey($storeId = null): string
-    {
-        if ($this->isExtendLive($storeId)) {
-            $apiKey = (string)$this->scopeConfig->getValue(
-                self::WARRANTY_AUTHENTICATION_API_KEY_XML_PATH,
-                ScopeInterface::SCOPE_STORES,
-                $storeId
-            );
-        } else {
-            $apiKey = (string)$this->scopeConfig->getValue(
-                self::WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH,
-                ScopeInterface::SCOPE_STORES,
-                $storeId
-            );
-        }
+    public function getApiKey(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
+        $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_API_KEY_XML_PATH
+            : self::WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH;
 
-        return $apiKey;
+        return (string)$this->scopeConfig->getValue($path, $scopeType, $scopeId);
+    }
+
+    /**
+     * Get API url
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getApiUrl(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
+       $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_API_URL_XML_PATH
+            : self::WARRANTY_AUTHENTICATION_SANDBOX_API_URL_XML_PATH;
+
+        return (string)$this->scopeConfig->getValue($path);
     }
 
     /**
@@ -359,15 +364,18 @@ class Data extends AbstractHelper
     /**
      * Get products batch size
      *
-     * @param string|int|null $storeId
+     * @param string $scopeType
+     * @param int|string|null $scopeId
      * @return int
      */
-    public function getProductsBatchSize($storeId = null): int
-    {
+    public function getProductsBatchSize(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): int {
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_PRODUCTS_BATCH_SIZE_XML_PATH,
-            ScopeInterface::SCOPE_STORES,
-            $storeId
+            $scopeType,
+            $scopeId
         );
     }
 
@@ -376,12 +384,12 @@ class Data extends AbstractHelper
      *
      * @param string $value
      * @param string $scopeType
-     * @param int|null $scopeId
+     * @param int|string|null $scopeId
      */
     public function setLastProductSyncDate(
         string $value,
-        string $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-        ?int $scopeId = null
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
     ): void {
         $this->configResource->saveConfig(
             self::WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH,
@@ -395,15 +403,18 @@ class Data extends AbstractHelper
     /**
      * Get last product sync date
      *
-     * @param string|int|null $storeId
+     * @param string $scopeType
+     * @param int|string|null $scopeId
      * @return string
      */
-    public function getLastProductSyncDate($storeId = null): string
-    {
+    public function getLastProductSyncDate(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
         return (string)$this->scopeConfig->getValue(
             self::WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH,
-            ScopeInterface::SCOPE_STORES,
-            $storeId
+            $scopeType,
+            $scopeId
         );
     }
 
