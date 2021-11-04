@@ -1,27 +1,27 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+declare(strict_types=1);
 
 namespace Extend\Warranty\Api\Data;
 
+/**
+ * Interface UrlBuilderInterface
+ */
 interface UrlBuilderInterface
 {
-    const SANDBOX_URL = 'https://api-demo.helloextend.com/';
-
-    const LIVE_URL = 'https://api.helloextend.com/';
-
     /**
+     * Build url
+     *
+     * @param string $endpoint
      * @return string
      */
-    public function build(): string;
-
-    /**
-     * @return string
-     */
-    public function getUri(): string;
-
-    /**
-     * @param string $uri
-     * @return $this
-     */
-    public function setUri(string $uri): UrlBuilderInterface;
-
+    public function build(string $endpoint): string;
 }

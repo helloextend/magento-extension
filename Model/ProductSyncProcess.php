@@ -18,7 +18,6 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 use Extend\Warranty\Model\Product\Type;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Api\Sync\Product\ProductsRequest as ApiProductModel;
-use Magento\Framework\App\Area;
 use Magento\Framework\App\State as AppState;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
