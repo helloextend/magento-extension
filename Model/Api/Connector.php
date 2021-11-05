@@ -9,7 +9,6 @@ use Extend\Warranty\Api\Data\UrlBuilderInterface;
 use Magento\Framework\HTTP\Client\CurlFactory;
 use Magento\Framework\Serialize\Serializer\Json;
 use Zend_Http_Response;
-use Extend\Warranty\Model\Keys;
 use Extend\Warranty\Helper\Api\Data as Config;
 use Magento\Framework\HTTP\ZendClient;
 
@@ -33,11 +32,6 @@ class Connector implements ConnectorInterface
     protected $client;
 
     /**
-     * @var Keys
-     */
-    protected $keys;
-
-    /**
      * @var UrlBuilderInterface
      */
     protected $urlBuilder;
@@ -55,7 +49,6 @@ class Connector implements ConnectorInterface
     public function __construct
     (
         ZendClient $client,
-        Keys $keys,
         UrlBuilderInterface $urlBuilder,
         Config $config,
         Json $jsonSerializer,
@@ -63,7 +56,6 @@ class Connector implements ConnectorInterface
     )
     {
         $this->client = $client;
-        $this->keys = $keys;
         $this->urlBuilder = $urlBuilder;
         $this->config = $config;
 
@@ -83,15 +75,16 @@ class Connector implements ConnectorInterface
 
     public function initClient(): void
     {
-        $accessKeys = $this->keys->getKeys();
+        $storeId = $this->config->getStoreId();
+        $apiKey = $this->config->getApiKey();
 
-        $this->uri = '/stores/' . $accessKeys['store_id'];
+        $this->uri = '/stores/' . $storeId;
 
         $this->client
             ->setHeaders([
-                'Accept' => ' application/json; version=2020-08-01',
+                'Accept' => ' application/json; version=2021-04-01',
                 'Content-Type' => ' application/json',
-                'X-Extend-Access-Token' => $accessKeys['api_key']
+                'X-Extend-Access-Token' => $apiKey
             ]);
 
         $this->client->setConfig(
@@ -110,14 +103,10 @@ class Connector implements ConnectorInterface
         $this->uri = rtrim($this->uri);
         $endpoint = ltrim($endpoint);
 
+        $_uri = "{$this->uri}/{$endpoint}";
+
         $this->client
-            ->setUri(
-                $this->urlBuilder
-                    ->setUri(
-                        "{$this->uri}/{$endpoint}"
-                    )
-                    ->build()
-            )
+            ->setUri($this->urlBuilder->setUri($_uri)->build())
             ->setMethod($method);
 
         if (
@@ -130,9 +119,14 @@ class Connector implements ConnectorInterface
                     'application/json'
                 );
         }
+        return $this->client->request();
+    }
 
-        $response = $this->client->request();
-
-        return $response;
+    public function simpleCall(string $endpoint): string
+    {
+        $endpoint = ltrim($endpoint);
+        return file_get_contents(
+            $this->urlBuilder->setUri($endpoint)->build()
+        );
     }
 }
