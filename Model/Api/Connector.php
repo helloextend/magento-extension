@@ -1,132 +1,143 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
+declare(strict_types=1);
 
 namespace Extend\Warranty\Model\Api;
 
-
 use Extend\Warranty\Api\ConnectorInterface;
-use Extend\Warranty\Api\Data\UrlBuilderInterface;
-use Magento\Framework\HTTP\Client\CurlFactory;
-use Magento\Framework\Serialize\Serializer\Json;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Psr\Log\LoggerInterface;
+use Zend_Http_Client;
 use Zend_Http_Response;
-use Extend\Warranty\Helper\Api\Data as Config;
 use Magento\Framework\HTTP\ZendClient;
+use Zend_Http_Client_Exception;
+use InvalidArgumentException;
 
-
+/**
+ * Class Connector
+ */
 class Connector implements ConnectorInterface
 {
     /**
-     * @var Json
+     * Timeout
      */
-    protected $jsonSerializer;
+    const TIMEOUT = 20;
 
     /**
-     * @var CurlFactory
-     */
-    protected $httpClient;
-
-
-    /**
+     * ZendClient
+     *
      * @var ZendClient
      */
-    protected $client;
+    private $httpClient;
 
     /**
-     * @var UrlBuilderInterface
+     * Json Serializer
+     *
+     * @var JsonSerializer
      */
-    protected $urlBuilder;
+    private $jsonSerializer;
 
     /**
-     * @var Config
+     * Data Helper
+     *
+     * @var DataHelper
      */
-    protected $config;
+    private $dataHelper;
 
     /**
-     * @var string
+     * Url Builder
+     *
+     * @var UrlBuilder
      */
-    protected $uri;
+    private $urlBuilder;
 
-    public function __construct
-    (
-        ZendClient $client,
-        UrlBuilderInterface $urlBuilder,
-        Config $config,
-        Json $jsonSerializer,
-        CurlFactory $httpClient
-    )
-    {
-        $this->client = $client;
-        $this->urlBuilder = $urlBuilder;
-        $this->config = $config;
+    /**
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
 
-        $this->initClient();
-
-        $this->jsonSerializer = $jsonSerializer;
+    /**
+     * Connector constructor
+     *
+     * @param ZendClient $httpClient
+     * @param JsonSerializer $jsonSerializer
+     * @param DataHelper $dataHelper
+     * @param UrlBuilder $urlBuilder
+     * @param LoggerInterface $logger
+     */
+    public function __construct(
+        ZendClient $httpClient,
+        JsonSerializer $jsonSerializer,
+        DataHelper $dataHelper,
+        UrlBuilder $urlBuilder,
+        LoggerInterface $logger
+    ) {
         $this->httpClient = $httpClient;
+        $this->jsonSerializer = $jsonSerializer;
+        $this->dataHelper = $dataHelper;
+        $this->urlBuilder = $urlBuilder;
+        $this->logger = $logger;
     }
 
-    public function testConnection(): bool
-    {
-        $response = $this->call("products");
-
-        return $response->isSuccessful();
-
-    }
-
-    public function initClient(): void
-    {
-        $storeId = $this->config->getStoreId();
-        $apiKey = $this->config->getApiKey();
-
-        $this->uri = '/stores/' . $storeId;
-
-        $this->client
-            ->setHeaders([
-                'Accept' => ' application/json; version=2021-04-01',
-                'Content-Type' => ' application/json',
-                'X-Extend-Access-Token' => $apiKey
-            ]);
-
-        $this->client->setConfig(
-            [
-                'timeout' => 20
-            ]
-        );
-    }
-
+    /**
+     * Send request
+     *
+     * @param string $endpoint
+     * @param string $method
+     * @param array $data
+     * @return Zend_Http_Response
+     * @throws Zend_Http_Client_Exception
+     */
     public function call(
         string $endpoint,
-        string $method = \Zend_Http_Client::GET,
-        array $data = null
-    ): Zend_Http_Response
-    {
-        $this->uri = rtrim($this->uri);
-        $endpoint = ltrim($endpoint);
+        string $method = Zend_Http_Client::GET,
+        array $data = []
+    ): Zend_Http_Response {
+        $apiUrl = $this->urlBuilder->build($endpoint);
+        $headers = [
+            'Accept'                => 'application/json; version=2021-04-01',
+            'Content-Type'          => 'application/json',
+            'X-Extend-Access-Token' => $this->urlBuilder->getApiKey(),
+        ];
 
-        $_uri = "{$this->uri}/{$endpoint}";
+        $this->httpClient->setUri($apiUrl);
+        $this->httpClient->setHeaders($headers);
+        $this->httpClient->setMethod($method);
+        $this->httpClient->setConfig(['timeout' => self::TIMEOUT]);
 
-        $this->client
-            ->setUri($this->urlBuilder->setUri($_uri)->build())
-            ->setMethod($method);
-
-        if (
-            isset($data) &&
-            $method !== \Zend_Http_Client::GET
-        ) {
-            $this->client
-                ->setRawData(
-                    $this->jsonSerializer->serialize($data),
-                    'application/json'
-                );
+        if (!empty($data)) {
+            try {
+                $rawData = $this->jsonSerializer->serialize($data);
+                $this->httpClient->setRawData($rawData);
+            } catch (InvalidArgumentException $exception) {
+                $this->logger->error($exception->getMessage());
+            }
         }
-        return $this->client->request();
+
+        return $this->httpClient->request();
     }
 
-    public function simpleCall(string $endpoint): string
+    /**
+     * Test connection
+     *
+     * @return bool
+     * @throws Zend_Http_Client_Exception
+     */
+    public function testConnection(): bool
     {
-        $endpoint = ltrim($endpoint);
-        return file_get_contents(
-            $this->urlBuilder->setUri($endpoint)->build()
-        );
+        $response = $this->call('products');
+
+        return $response->isSuccessful();
     }
 }

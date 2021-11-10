@@ -5,10 +5,11 @@
     "magento/framework": ">=101.0",
     "magento/module-catalog": ">=102.0",
     "magento/module-checkout": ">=100.2",
-    "magento/module-sales": ">=101.0"
+    "magento/module-sales": ">=101.0",
+    "magento/module-store": "*"
   },
   "type": "magento2-module",
-  "version": "100.2.2",
+  "version": "100.2.3",
   "license": [
     "OSL-3.0",
     "AFL-3.0"
