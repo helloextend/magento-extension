@@ -113,13 +113,15 @@ class Api extends AbstractHelper
 
         if (empty($errors)) {
             $offerInformation = $this->getOfferInformation($warrantyData['product']);
-            foreach ($offerInformation as $offer) {
-                if (
-                    $warrantyData['planId'] === $offer['id']
-                    && (int)$warrantyData['price'] !== $offer['price']
-                ) {
-                    $errors[] = __('Invalid price.');
-                    break;
+            if (isset($offerInformation['base'])) {
+                foreach ($offerInformation['base'] as $offer) {
+                    if (
+                        isset($offer['id']) && $warrantyData['planId'] === $offer['id']
+                        && isset($offer['price']) && (int)$warrantyData['price'] !== $offer['price']
+                    ) {
+                        $errors[] = __('Invalid price.');
+                        break;
+                    }
                 }
             }
         }
