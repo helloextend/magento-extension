@@ -72,17 +72,8 @@ define([
                 addWarranty(plan, sku);
                 $('#product_addtocart_form').submit();
             } else {
-                Extend.modal.open({
-                    referenceId: sku,
-                    onClose: function (plan) {
-                        if (plan) {
-                            addWarranty(plan,sku)
-                        } else {
-                            $("input[name^='warranty']").remove();
-                        }
-                        $('#product_addtocart_form').submit();
-                    }
-                });
+                $("input[name^='warranty']").remove();
+                $('#product_addtocart_form').submit();
             }
 
         });
