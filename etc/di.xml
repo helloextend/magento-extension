@@ -77,6 +77,7 @@
 
     <type name="Extend\Warranty\Model\SyncProcess">
         <arguments>
+            <argument name="request" xsi:type="object">Magento\Framework\App\RequestInterface\Proxy</argument>
             <argument name="logger" xsi:type="object">ProductSyncVirtualInfoLogger</argument>
         </arguments>
     </type>
@@ -145,6 +146,22 @@
     <type name="Extend\Warranty\Helper\Api">
         <arguments>
             <argument name="logger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Model\Api\UrlBuilder">
+        <arguments>
+            <argument name="request" xsi:type="object">Magento\Framework\App\RequestInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Catalog\Model\Product\Attribute\Backend\Price">
+        <plugin name="warranty" type="Extend\Warranty\Model\Plugin\PriceBackend" sortOrder="110" />
+    </type>
+
+    <type name="Extend\Warranty\Model\Api\Sync\Contract\OffersRequest">
+        <arguments>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
         </arguments>
     </type>
 </config>
