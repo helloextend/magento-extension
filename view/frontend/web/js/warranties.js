@@ -55,7 +55,9 @@ define([
 
         function renderWarranties(productSku){
             const component = Extend.buttons.instance('#extend-offer');
-            component.setActiveProduct(productSku);
+            if (component) {
+                component.setActiveProduct(productSku);
+            }
         }
 
         $('#product-addtocart-button').click((event) => {
@@ -63,28 +65,32 @@ define([
 
             /** get the component instance rendered previously */
             const component = Extend.buttons.instance('#extend-offer');
-            /** get the users plan selection */
-            const plan = component.getPlanSelection();
 
-            let sku = params.productSku !== '' ? params.productSku : selectedProduct();
+            if (component) {
+                /** get the users plan selection */
+                const plan = component.getPlanSelection();
 
-            if (plan) {
-                addWarranty(plan, sku);
-                $('#product_addtocart_form').submit();
-            } else {
-                Extend.modal.open({
-                    referenceId: sku,
-                    onClose: function (plan) {
-                        if (plan) {
-                            addWarranty(plan,sku)
-                        } else {
-                            $("input[name^='warranty']").remove();
+                let sku = params.productSku !== '' ? params.productSku : selectedProduct();
+
+                if (plan) {
+                    addWarranty(plan, sku);
+                    $('#product_addtocart_form').submit();
+                } else {
+                    Extend.modal.open({
+                        referenceId: sku,
+                        onClose: function (plan) {
+                            if (plan) {
+                                addWarranty(plan, sku)
+                            } else {
+                                $("input[name^='warranty']").remove();
+                            }
+                            $('#product_addtocart_form').submit();
                         }
-                        $('#product_addtocart_form').submit();
-                    }
-                });
+                    });
+                }
+            } else {
+                $('#product_addtocart_form').submit();
             }
-
         });
 
         function addWarranty(plan, sku){
