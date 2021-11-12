@@ -19,6 +19,22 @@ $offerTypeArea = $block->getData('offerTypeArea');
 $product = $block->getProduct();
 ?>
 <?php if ($product->isSaleable()): ?>
+    <?php if ($viewModel->isExtendEnabled()): ?>
+        <div id="extend-offer"></div>
+        <script type="text/x-magento-init">
+                    {
+                        "#extend-offer": {
+                            "extendWarranties":{
+                                "productSku": "<?= $product->getTypeId() == 'configurable' ? '' : $escaper->escapeJs($product->getSku()); ?>",
+                                "isPdpOffersEnabled": "<?= $escaper->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
+                                "isInterstitialCartOffersEnabled": "<?= $escaper->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
+                                "isProductHasOffers": <?= $viewModel->isProductHasOffers($product); ?>
+                            }
+                        }
+                    }
+                </script>
+    <?php endif; ?>
+
     <div class="box-tocart">
         <div class="fieldset">
             <?php if ($block->shouldRenderQuantity()): ?>
@@ -37,22 +53,6 @@ $product = $block->getProduct();
                         />
                     </div>
                 </div>
-            <?php endif; ?>
-            <hr>
-            <?php if ($viewModel->isExtendEnabled()): ?>
-                <div id="extend-offer"></div>
-                <script type="text/x-magento-init">
-                    {
-                        "#extend-offer": {
-                            "extendWarranties":{
-                                "productSku": "<?= $product->getTypeId() == 'configurable' ? '' : $escaper->escapeJs($product->getSku()); ?>",
-                                "isPdpOffersEnabled": "<?= $escaper->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
-                                "isInterstitialCartOffersEnabled": "<?= $escaper->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
-                                "isProductHasOffers": <?= $viewModel->isProductHasOffers($product); ?>
-                            }
-                        }
-                    }
-                </script>
             <?php endif; ?>
             <div class="actions">
                 <button type="submit"
