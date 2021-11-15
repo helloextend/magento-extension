@@ -107,6 +107,10 @@ class Api extends AbstractHelper
             $errors[] = __('Warranty plan price must be positive.');
         }
 
+        if (empty($warrantyData['term'])) {
+            $errors[] = __('Warranty term doesn\'t set.');
+        }
+
         if (empty($warrantyData['product'])) {
             $errors[] = __('Product reference ID doesn\'t set.');
         }
@@ -114,14 +118,22 @@ class Api extends AbstractHelper
         if (empty($errors)) {
             $offerInformation = $this->getOfferInformation($warrantyData['product']);
             if (isset($offerInformation['base'])) {
-                foreach ($offerInformation['base'] as $offer) {
-                    if (
-                        isset($offer['id']) && $warrantyData['planId'] === $offer['id']
-                        && isset($offer['price']) && (int)$warrantyData['price'] !== $offer['price']
-                    ) {
-                        $errors[] = __('Invalid price.');
-                        break;
+                $baseOfferInformation = $offerInformation['base'];
+                $offerIds = array_column($baseOfferInformation, 'id');
+                if (in_array($warrantyData['planId'], $offerIds)) {
+                    foreach ($baseOfferInformation as $offer) {
+                        if ($warrantyData['planId'] === $offer['id']) {
+                            if (isset($offer['price']) && (int)$warrantyData['price'] !== $offer['price']) {
+                                $errors[] = __('Invalid price.');
+                            }
+
+                            if (isset($offer['contract']['termLength']) && (int)$warrantyData['term'] !== $offer['contract']['termLength']) {
+                                $errors[] = __('Invalid warranty term.');
+                            }
+                        }
                     }
+                } else {
+                    $errors[] = __('Invalid warranty plan ID.');
                 }
             }
         }
