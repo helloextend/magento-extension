@@ -179,4 +179,8 @@
             <argument name="customerSession" xsi:type="object">Magento\Customer\Model\Session\Proxy</argument>
         </arguments>
     </type>
+
+    <type name="Magento\Catalog\Model\Product\Attribute\Backend\Price">
+        <plugin name="warranty" type="Extend\Warranty\Model\Plugin\PriceBackend" sortOrder="110" />
+    </type>
 </config>

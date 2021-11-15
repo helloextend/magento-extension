@@ -99,8 +99,9 @@ class Button extends Field
      */
     public function getLastSync(): string
     {
-        $lastSyncDate = $this->dataHelper->getLastProductSyncDate();
+        $scopeData = $this->getScopeData();
 
+        $lastSyncDate = $this->dataHelper->getLastProductSyncDate($scopeData['scope'], $scopeData['scopeId']);
         if (!empty($lastSyncDate)) {
             $lastSyncDate = $this->timezone->formatDate($lastSyncDate, 1, true);
         }
