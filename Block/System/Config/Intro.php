@@ -14,7 +14,6 @@ use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
 /**
  * Class Intro
@@ -41,16 +40,14 @@ class Intro extends Field
      * @param Context $context
      * @param DataHelper $dataHelper
      * @param array $data
-     * @param SecureHtmlRenderer|null $secureRenderer
      */
     public function __construct(
         Context $context,
         DataHelper $dataHelper,
-        array $data = [],
-        ?SecureHtmlRenderer $secureRenderer = null
+        array $data = []
     ) {
         $this->dataHelper = $dataHelper;
-        parent::__construct($context, $data, $secureRenderer);
+        parent::__construct($context, $data);
     }
 
     /**
