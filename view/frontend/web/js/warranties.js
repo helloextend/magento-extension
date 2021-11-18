@@ -10,11 +10,15 @@ define([
         });
 
         $(document).ready(function () {
-            $('div.product-options-wrapper').on('change',() => {
+            $('div.product-options-wrapper').on('change',(event) => {
                 let sku = selectedProduct();
 
                 if(sku !== ''){
-                    renderWarranties(sku);
+                    if (sku !== params.productSku) {
+                        renderWarranties(sku);
+                    } else {
+                        event.preventDefault();
+                    }
                 }
             });
         });
@@ -27,9 +31,20 @@ define([
 
             if ($('div.swatch-attribute').length === 0 ){
                 if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value !== ''){
-                    let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value;
-                    const productConfig1 = $('#product_addtocart_form').data('magictoolboxConfigurable').options.spConfig;
+                    let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value,
+                        options;
+
+                    if ($('#product_addtocart_form').data('magictoolboxConfigurable')) {
+                        options = $('#product_addtocart_form').data('magictoolboxConfigurable').options;
+                    } else {
+                        options = $('#product_addtocart_form').data('mageConfigurable').options;
+                    }
+
+                    const productConfig1 = options.spConfig;
+
                     return productConfig1.skus[productId1];
+                } else {
+                    return params.productSku;
                 }
             }else{
                 let selected_options = {};
