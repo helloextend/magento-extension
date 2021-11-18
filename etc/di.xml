@@ -119,6 +119,7 @@
 
     <type name="Extend\Warranty\Controller\Cart\Add">
         <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
             <argument name="logger" xsi:type="object">WarrantyAddVirtualInfoLogger</argument>
         </arguments>
     </type>
@@ -155,13 +156,31 @@
         </arguments>
     </type>
 
-    <type name="Magento\Catalog\Model\Product\Attribute\Backend\Price">
-        <plugin name="warranty" type="Extend\Warranty\Model\Plugin\PriceBackend" sortOrder="110" />
-    </type>
-
     <type name="Extend\Warranty\Model\Api\Sync\Contract\OffersRequest">
         <arguments>
             <argument name="logger" xsi:type="object">ExtendLogger</argument>
         </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Block\Tracking">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Observer\Warranty\Normalize">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Helper\Tracking">
+        <arguments>
+            <argument name="customerSession" xsi:type="object">Magento\Customer\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Catalog\Model\Product\Attribute\Backend\Price">
+        <plugin name="warranty" type="Extend\Warranty\Model\Plugin\PriceBackend" sortOrder="110" />
     </type>
 </config>
