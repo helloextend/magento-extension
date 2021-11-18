@@ -117,23 +117,31 @@ class Api extends AbstractHelper
 
         if (empty($errors)) {
             $offerInformation = $this->getOfferInformation($warrantyData['product']);
-            if (isset($offerInformation['base'])) {
-                $baseOfferInformation = $offerInformation['base'];
-                $offerIds = array_column($baseOfferInformation, 'id');
-                if (in_array($warrantyData['planId'], $offerIds)) {
-                    foreach ($baseOfferInformation as $offer) {
-                        if ($warrantyData['planId'] === $offer['id']) {
-                            if (isset($offer['price']) && (int)$warrantyData['price'] !== $offer['price']) {
-                                $errors[] = __('Invalid price.');
-                            }
+            $recommended = $offerInformation['recommended'] ?? '';
+            if ($recommended && isset($offerInformation[$recommended])) {
+                $offerInfo = $offerInformation[$recommended];
+                if (is_array($offerInfo) && !empty($offerInfo)) {
+                    $offerIds = array_column($offerInfo, 'id');
+                    if (in_array($warrantyData['planId'], $offerIds)) {
+                        foreach ($offerInfo as $offer) {
+                            if ($warrantyData['planId'] === $offer['id']) {
+                                if (isset($offer['price']) && (int)$warrantyData['price'] !== $offer['price']) {
+                                    $errors[] = __('Invalid price.');
+                                }
 
-                            if (isset($offer['contract']['termLength']) && (int)$warrantyData['term'] !== $offer['contract']['termLength']) {
-                                $errors[] = __('Invalid warranty term.');
+                                if (
+                                    isset($offer['contract']['termLength'])
+                                    && (int)$warrantyData['term'] !== $offer['contract']['termLength']
+                                ) {
+                                    $errors[] = __('Invalid warranty term.');
+                                }
+
+                                break;
                             }
                         }
+                    } else {
+                        $errors[] = __('Invalid warranty plan ID.');
                     }
-                } else {
-                    $errors[] = __('Invalid warranty plan ID.');
                 }
             }
         }
