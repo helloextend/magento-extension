@@ -183,4 +183,37 @@
     <type name="Magento\Catalog\Model\Product\Attribute\Backend\Price">
         <plugin name="warranty" type="Extend\Warranty\Model\Plugin\PriceBackend" sortOrder="110" />
     </type>
+
+    <type name="Extend\Warranty\Block\System\Config\Products\Button">
+        <arguments>
+            <argument name="timezone" xsi:type="object">Magento\Framework\Stdlib\DateTime\TimezoneInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Controller\Adminhtml\Products\Sync">
+        <arguments>
+            <argument name="dateTime" xsi:type="object">Magento\Framework\Stdlib\DateTime\Proxy</argument>
+            <argument name="date" xsi:type="object">Magento\Framework\Stdlib\DateTime\DateTime\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Model\ContractCreateProcess">
+        <arguments>
+            <argument name="dateTime" xsi:type="object">Magento\Framework\Stdlib\DateTime\Proxy</argument>
+            <argument name="date" xsi:type="object">Magento\Framework\Stdlib\DateTime\DateTime\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Model\ProductSyncProcess">
+        <arguments>
+            <argument name="dateTime" xsi:type="object">Magento\Framework\Stdlib\DateTime\Proxy</argument>
+            <argument name="date" xsi:type="object">Magento\Framework\Stdlib\DateTime\DateTime\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Model\Api\Request\ProductDataBuilder">
+        <arguments>
+            <argument name="configurableType" xsi:type="object">Magento\ConfigurableProduct\Model\Product\Type\Configurable\Proxy</argument>
+        </arguments>
+    </type>
 </config>
