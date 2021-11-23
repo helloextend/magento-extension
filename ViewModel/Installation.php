@@ -65,16 +65,26 @@ class Installation implements ArgumentInterface
      * Get JSON config
      *
      * @return string
-     * @throws InvalidArgumentException
      */
     public function getJsonConfig(): string
     {
-        $config = [
-            'storeId'       => $this->dataHelper->getStoreId(),
-            'environment'   => $this->dataHelper->isExtendLive() ? AuthMode::LIVE : AuthMode::DEMO,
-        ];
+        $jsonConfig = '';
 
-        return $this->jsonSerializer->serialize($config);
+        $storeId = $this->dataHelper->getStoreId();
+        if ($storeId) {
+            $config = [
+                'storeId' => $storeId,
+                'environment' => $this->dataHelper->isExtendLive() ? AuthMode::LIVE : AuthMode::DEMO,
+            ];
+
+            try {
+                $jsonConfig = $this->jsonSerializer->serialize($config);
+            } catch (InvalidArgumentException $exception) {
+                $jsonConfig = '';
+            }
+        }
+
+        return $jsonConfig;
     }
 
     /**
