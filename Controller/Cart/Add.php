@@ -197,7 +197,7 @@ class Add extends Cart implements HttpPostActionInterface
 
             if ($this->trackingHelper->isTrackingEnabled()) {
                 $trackingData = [
-                    'eventName'         => 'trackOfferUpdated',
+                    'eventName'         => 'trackOfferAddedToCart',
                     'productId'         => $warrantyData['product'] ?? '',
                     'productQuantity'   => $qty,
                     'warrantyQuantity'  => $qty,
