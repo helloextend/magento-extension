@@ -17,9 +17,10 @@ use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Framework\Controller\ResultFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Data\Form\FormKey\Validator as FormKeyValidator;
-use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Controller\ResultInterface;
 use Magento\Checkout\Model\Cart as CustomerCart;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
@@ -132,9 +133,9 @@ class Add extends Cart implements HttpPostActionInterface
     /**
      * Add to cart warranty
      *
-     * @return Redirect
+     * @return ResultInterface
      */
-    public function execute(): Redirect
+    public function execute(): ResultInterface
     {
         $request = $this->getRequest();
         $warrantyData = $request->getPost('warranty', []);
@@ -144,8 +145,12 @@ class Add extends Cart implements HttpPostActionInterface
                 __('Sorry! We can\'t add this product protection to your shopping cart right now.')
             );
             $this->logger->error('Invalid form key. Warranty data: ' . $this->helper->getWarrantyDataAsString($warrantyData));
+            $responseData = [
+                'status' => false,
+                'error' => 'Invalid form key',
+            ];
 
-            return $this->_goBack();
+            return $this->jsonResponse($responseData);
         }
 
         try {
@@ -158,8 +163,12 @@ class Add extends Cart implements HttpPostActionInterface
                     'Oops! There was an error finding the protection plan product, please ensure the protection plan product is in your catalog and is enabled! '
                     . 'Warranty data: ' . $this->helper->getWarrantyDataAsString($warrantyData)
                 );
+                $responseData = [
+                    'status' => false,
+                    'error' => 'Oops! There was an error finding the protection plan product, please ensure the protection plan product is in your catalog and is enabled!',
+                ];
 
-                return $this->_goBack();
+                return $this->jsonResponse($responseData);
             }
 
             $errors = $this->helper->validateWarranty($warrantyData);
@@ -171,8 +180,12 @@ class Add extends Cart implements HttpPostActionInterface
                 $this->logger->error(
                     'Invalid warranty data. ' . $errorsAsString . ' Warranty data: ' . $this->helper->getWarrantyDataAsString($warrantyData)
                 );
+                $responseData = [
+                    'status' => false,
+                    'error' => 'Invalid warranty data',
+                ];
 
-                return $this->_goBack();
+                return $this->jsonResponse($responseData);
             }
 
             $relatedProduct = $warrantyData['product'];
@@ -195,6 +208,11 @@ class Add extends Cart implements HttpPostActionInterface
                 __('You added %1 to your shopping cart.', $warranty->getName())
             );
 
+            $responseData = [
+                'status' => true,
+                'error' => '',
+            ];
+
             if ($this->trackingHelper->isTrackingEnabled()) {
                 $trackingData = [
                     'eventName'         => 'trackOfferAddedToCart',
@@ -205,18 +223,37 @@ class Add extends Cart implements HttpPostActionInterface
                     'area'              => 'cart_page',
                     'component'         => 'modal',
                 ];
-                $this->trackingHelper->setTrackingData($trackingData);
+
+                $responseData['trackingData'] = $trackingData;
             }
 
-            return $this->_goBack();
+            return $this->jsonResponse($responseData);
         } catch (LocalizedException $e) {
             $this->messageManager->addExceptionMessage(
                 $e,
                 __('Sorry! We can\'t add this product protection to your shopping cart right now.')
             );
             $this->logger->critical($e);
+            $responseData = [
+                'status' => false,
+                'error' => $e->getMessage(),
+            ];
 
-            return $this->_goBack();
+            return $this->jsonResponse($responseData);
         }
+    }
+
+    /**
+     * JSON response builder
+     *
+     * @param array $data
+     * @return ResultInterface
+     */
+    private function jsonResponse(array $data = []): ResultInterface
+    {
+        $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+        $resultJson->setData($data);
+
+        return $resultJson;
     }
 }
