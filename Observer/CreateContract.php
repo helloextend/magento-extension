@@ -71,21 +71,25 @@ class CreateContract implements ObserverInterface
     public function execute(Observer $observer): void
     {
         if ($this->dataHelper->isExtendEnabled() && $this->dataHelper->isWarrantyContractEnabled()) {
-            $event = $observer->getEvent();
-            $invoice = $event->getInvoice();
-            $order = $invoice->getOrder();
+            if (!$this->dataHelper->isOrdersApiEnabled()) {
+                $event = $observer->getEvent();
+                $invoice = $event->getInvoice();
+                $order = $invoice->getOrder();
 
-            foreach ($invoice->getAllItems() as $invoiceItem) {
-                $orderItem = $invoiceItem->getOrderItem();
+                foreach ($invoice->getAllItems() as $invoiceItem) {
+                    $orderItem = $invoiceItem->getOrderItem();
 
-                if ($orderItem->getProductType() === WarrantyType::TYPE_CODE) {
-                    $qtyInvoiced = intval($invoiceItem->getQty());
-                    try {
-                        $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
-                    } catch (LocalizedException $exception) {
-                        $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
+                    if ($orderItem->getProductType() === WarrantyType::TYPE_CODE) {
+                        $qtyInvoiced = intval($invoiceItem->getQty());
+                        try {
+                            $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+                        } catch (LocalizedException $exception) {
+                            $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
+                        }
                     }
                 }
+            } else {
+                //TODO Orders API Contract
             }
         }
     }

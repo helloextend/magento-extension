@@ -119,55 +119,59 @@ class RequestRefundObserver implements ObserverInterface
             && $this->dataHelper->isRefundEnabled()
             && $this->dataHelper->isAutoRefundEnabled()
         ) {
-            $event = $observer->getEvent();
-            $creditmemo = $event->getCreditmemo();
+            if (!$this->dataHelper->isOrdersApiEnabled()) {
+                $event = $observer->getEvent();
+                $creditmemo = $event->getCreditmemo();
 
-            foreach ($creditmemo->getAllItems() as $creditmemoItem) {
-                $orderItem = $creditmemoItem->getOrderItem();
-                $contractIds = $this->getContractIds($orderItem);
+                foreach ($creditmemo->getAllItems() as $creditmemoItem) {
+                    $orderItem = $creditmemoItem->getOrderItem();
+                    $contractIds = $this->getContractIds($orderItem);
 
-                if (!empty($contractIds)) {
-                    $options['refund_responses_log'] = [];
-                    $qtyRefunded = $creditmemoItem->getQty();
+                    if (!empty($contractIds)) {
+                        $options['refund_responses_log'] = [];
+                        $qtyRefunded = $creditmemoItem->getQty();
 
-                    $refundedContractIds = array_slice($contractIds, 0, $qtyRefunded);
+                        $refundedContractIds = array_slice($contractIds, 0, $qtyRefunded);
 
-                    foreach ($refundedContractIds as $key => $contractId) {
-                        $refundData = $this->apiContractModel->validateRefund($contractId);
+                        foreach ($refundedContractIds as $key => $contractId) {
+                            $refundData = $this->apiContractModel->validateRefund($contractId);
 
-                        if (
-                            isset($refundData['refundAmount']['amount'])
-                            && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
-                        ) {
-                            $status = $this->apiContractModel->refund($contractId);
-                            $options['refund_responses_log'][] = [
-                                'contract_id' => $contractId,
-                                'response' => $status,
-                            ];
+                            if (
+                                isset($refundData['refundAmount']['amount'])
+                                && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
+                            ) {
+                                $status = $this->apiContractModel->refund($contractId);
+                                $options['refund_responses_log'][] = [
+                                    'contract_id' => $contractId,
+                                    'response' => $status,
+                                ];
 
-                            if ($status) {
-                                unset($contractIds[$key]);
+                                if ($status) {
+                                    unset($contractIds[$key]);
+                                }
+                            } else {
+                                $this->messageManager->addErrorMessage(
+                                    __('Contract %1 can not be refunded.', $contractId)
+                                );
                             }
-                        } else {
-                            $this->messageManager->addErrorMessage(
-                                __('Contract %1 can not be refunded.', $contractId)
-                            );
                         }
-                    }
 
-                    if (!empty($options['refund_responses_log'])) {
-                        try {
-                            $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
-                            $orderItem->setContractId($contractIdsJson);
-                            $options['refund'] = empty($contractIds);
-                            $orderItem = $this->updateOrderItemOptions($orderItem, $options);
-                            $this->orderItemRepository->save($orderItem);
-                        } catch (LocalizedException $exception) {
-                            $this->logger->error($exception->getMessage());
+                        if (!empty($options['refund_responses_log'])) {
+                            try {
+                                $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+                                $orderItem->setContractId($contractIdsJson);
+                                $options['refund'] = empty($contractIds);
+                                $orderItem = $this->updateOrderItemOptions($orderItem, $options);
+                                $this->orderItemRepository->save($orderItem);
+                            } catch (LocalizedException $exception) {
+                                $this->logger->error($exception->getMessage());
+                            }
                         }
                     }
                 }
             }
+        } else {
+            // TODO Orders API Refund
         }
     }
 

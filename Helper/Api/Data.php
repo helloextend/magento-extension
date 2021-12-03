@@ -73,6 +73,11 @@ class Data extends AbstractHelper
     const WARRANTY_ENABLE_EXTEND_ENABLE_LEADS_XML_PATH = 'warranty/enableExtend/enableLeads';
 
     /**
+     * Orders API settings
+     */
+    const WARRANTY_ENABLE_ORDERS_API = 'warranty/orders/enable';
+
+    /**
      * Module name
      */
     const MODULE_NAME = 'Extend_Warranty';
@@ -436,6 +441,21 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_ENABLE_EXTEND_ENABLE_LEADS_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if Orders API enabled
+     *
+     * @param $storeId
+     * @return bool
+     */
+    public function isOrdersApiEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_ENABLE_ORDERS_API,
             ScopeInterface::SCOPE_STORES,
             $storeId
         );

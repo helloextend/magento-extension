@@ -44,6 +44,9 @@
             <tracking>
                 <enabled>1</enabled>
             </tracking>
+            <orders>
+                <enabled>1</enabled>
+            </orders>
             <authentication>
                 <api_url>https://api.helloextend.com/</api_url>
                 <sandbox_api_url>https://api-demo.helloextend.com/</sandbox_api_url>
