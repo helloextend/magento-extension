@@ -9,7 +9,6 @@
  */
 /**
  * @var \Magento\Catalog\Block\Product\View $block
- * @var \Magento\Framework\Escaper $escaper
  */
 /** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getData('viewModel');
@@ -24,16 +23,16 @@ $product = $block->getProduct();
             <?php if ($block->shouldRenderQuantity()): ?>
                 <div class="field qty">
                     <label class="label" for="qty">
-                        <span><?= $escaper->escapeHtml(__('Qty')); ?></span>
+                        <span><?= $block->escapeHtml(__('Qty')); ?></span>
                     </label>
                     <div class="control">
                         <input type="number"
                                name="qty"
                                id="qty"
                                value="<?= (int)$block->getProductDefaultQty() * 1; ?>"
-                               title="<?= $escaper->escapeHtmlAttr(__('Qty')); ?>"
+                               title="<?= $block->escapeHtmlAttr(__('Qty')); ?>"
                                class="input-text qty"
-                               data-validate="<?= $escaper->escapeHtmlAttr(json_encode($block->getQuantityValidators())); ?>"
+                               data-validate="<?= $block->escapeHtmlAttr(json_encode($block->getQuantityValidators())); ?>"
                         />
                     </div>
                 </div>
@@ -45,9 +44,9 @@ $product = $block->getProduct();
                     {
                         "#extend-offer": {
                             "extendWarranties":{
-                                "productSku": "<?= $product->getTypeId() == 'configurable' ? '' : $escaper->escapeJs($product->getSku()); ?>",
-                                "isPdpOffersEnabled": "<?= $escaper->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
-                                "isInterstitialCartOffersEnabled": "<?= $escaper->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
+                                "productSku": "<?= $product->getTypeId() == 'configurable' ? '' : $block->escapeJs($product->getSku()); ?>",
+                                "isPdpOffersEnabled": "<?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
+                                "isInterstitialCartOffersEnabled": "<?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
                                 "isProductHasOffers": <?= $viewModel->isProductHasOffers($product); ?>
                             }
                         }
@@ -56,10 +55,10 @@ $product = $block->getProduct();
             <?php endif; ?>
             <div class="actions">
                 <button type="submit"
-                        title="<?= $escaper->escapeHtmlAttr(__('Add to Cart')); ?>"
+                        title="<?= $block->escapeHtmlAttr(__('Add to Cart')); ?>"
                         class="action primary tocart"
                         id="product-addtocart-button">
-                    <span><?= $escaper->escapeHtmlAttr(__('Add to Cart')); ?></span>
+                    <span><?= $block->escapeHtmlAttr(__('Add to Cart')); ?></span>
                 </button>
                 <?= $block->getChildHtml('', true); ?>
             </div>
