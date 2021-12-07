@@ -172,12 +172,6 @@
         </arguments>
     </type>
 
-    <type name="Extend\Warranty\Observer\Warranty\Normalize">
-        <arguments>
-            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
-        </arguments>
-    </type>
-
     <type name="Extend\Warranty\Helper\Tracking">
         <arguments>
             <argument name="customerSession" xsi:type="object">Magento\Customer\Model\Session\Proxy</argument>
