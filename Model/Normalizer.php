@@ -139,6 +139,8 @@ class Normalizer
                             $this->quoteItemRepository->save($warranty);
                         } else {
                             $cart->removeItem($warranty->getItemId());
+                            $quote->setTotalsCollectedFlag(false);
+                            $cart->save();
                         }
                         $delta -= $warrantyQty;
                     } while ($delta > 0);
