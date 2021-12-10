@@ -14,9 +14,11 @@ define([
     return function (params) {
 
         if (params.isPdpOffersEnabled) {
-            Extend.buttons.render('#extend-offer', {
-                referenceId: params.productSku
-            });
+            if  (typeof params.itemId !== 'undefined') {
+                Extend.buttons.render('#extend-offer-' + params.itemId, {
+                    referenceId: params.productSku
+                });
+            }
         }
 
         $(document).ready(function () {
@@ -73,8 +75,10 @@ define([
             component.setActiveProduct(productSku);
         }
 
-        $('#product-addtocart-button').click((event) => {
+        $('#submit-' + params.itemId).click((event) => {
             event.preventDefault();
+
+            let form = $('#product_addtocart_form');
 
             let sku = params.productSku !== '' ? params.productSku : selectedProduct(),
                 hasOffers = false;
@@ -85,9 +89,24 @@ define([
 
             if (params.isPdpOffersEnabled) {
                 /** get the component instance rendered previously */
-                const component = Extend.buttons.instance('#extend-offer');
+                const component = Extend.buttons.instance('#extend-offer-' + params.itemId);
                 /** get the users plan selection */
                 const plan = component.getPlanSelection();
+
+
+                let form = $('#product_addtocart_form').closest('form');
+                let currentSimplePrices = $(form).find('.group-qty');
+                let popupQty = 1;
+                let dataSetFull;
+
+                dataSetFull = 'super_group[' + params.itemId + ']';
+                $.each(currentSimplePrices, function (key, item) {
+                    if (item.name !== dataSetFull) {
+                        item.value = 0;
+                    } else {
+                        popupQty = item.value;
+                    }
+                });
 
                 if (plan) {
                     addWarranty(plan, sku);
@@ -96,7 +115,8 @@ define([
                         .attr('name', 'warranty[component]')
                         .attr('value', 'buttons')
                         .appendTo('#product_addtocart_form');
-                    $('#product_addtocart_form').submit();
+                    form.trigger('submit');
+                    form[0].reset();
                 } else if (params.isInterstitialCartOffersEnabled && hasOffers) {
                     Extend.modal.open({
                         referenceId: sku,
@@ -111,11 +131,13 @@ define([
                             } else {
                                 $("input[name^='warranty']").remove();
                             }
-                            $('#product_addtocart_form').submit();
+                            form.trigger('submit');
+                            form[0].reset();
                         }
                     });
                 } else {
-                    $('#product_addtocart_form').submit();
+                    form.trigger('submit');
+                    form[0].reset();
                 }
             } else if (params.isInterstitialCartOffersEnabled && hasOffers) {
                 Extend.modal.open({
@@ -131,11 +153,13 @@ define([
                         } else {
                             $("input[name^='warranty']").remove();
                         }
-                        $('#product_addtocart_form').submit();
+                        form.trigger('submit');
+                        form[0].reset();
                     }
                 });
             } else {
-                $('#product_addtocart_form').submit();
+                form.trigger('submit');
+                form[0].reset();
             }
         });
 
