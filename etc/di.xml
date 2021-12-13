@@ -129,4 +129,10 @@
     <type name="Magento\Catalog\Model\Product\Attribute\Backend\Price">
         <plugin name="warranty" type="Extend\Warranty\Model\Plugin\PriceBackend" sortOrder="110" />
     </type>
+
+    <type name="Raveinfosys\General\Model\Carrier">
+        <plugin name="ExtendWarrantyCarrierGetItemsPlugin"
+                type="Extend\Warranty\Plugin\Raveinfosys\General\Model\Carrier\GetItemsPlugin"
+                sortOrder="10" />
+    </type>
 </config>
