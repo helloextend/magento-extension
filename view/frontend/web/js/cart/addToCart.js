@@ -21,26 +21,7 @@ define([
                         $.post(param.url, {
                             warranty: plan,
                             form_key: $.cookie('form_key')
-                        }).done(function (response) {
-                            if (
-                                response.status
-                                && param.isTrackingEnabled
-                                && response.trackingData !== undefined
-                                && typeof Extend.trackOfferAddedToCart === 'function'
-                            ) {
-                                var trackingData = response.trackingData;
-                                Extend.trackOfferAddedToCart({
-                                    'productId': trackingData.productId,
-                                    'productQuantity': parseInt(trackingData.productQuantity),
-                                    'warrantyQuantity': parseInt(trackingData.warrantyQuantity),
-                                    'planId': trackingData.planId,
-                                    'offerType': {
-                                        'area': trackingData.area,
-                                        'component': trackingData.component
-                                    }
-                                });
-                            }
-
+                        }).done(function () {
                             location.reload();
                         });
                     }

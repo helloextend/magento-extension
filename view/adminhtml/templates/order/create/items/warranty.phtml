@@ -6,13 +6,11 @@ $quote = $_item->getQuote();
 
 /** @var Extend\Warranty\ViewModel\Warranty $inCartViewModel */
 $inCartViewModel = $block->getData('viewModel');
-$grouped = $block->getParentIdsByChild();
 ?>
 
 <?php if ($_product->getTypeId() !== 'warranty'): ?>
     <?php if ($inCartViewModel->isExtendEnabled() && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
-        <?php $sku = $grouped ? $grouped :  $_product->getSku(); ?>
-        <?php if (!$inCartViewModel->hasWarranty($quote, $sku)): ?>
+        <?php if (!$inCartViewModel->hasWarranty($quote, $_product->getSku())): ?>
             <tbody id="warranty-<?= $_item->getId() ?>">
                 <tr>
                     <td>
@@ -22,14 +20,14 @@ $grouped = $block->getParentIdsByChild();
                 <script type="text/javascript">
                     require(['jquery'], function($){
                         Extend.buttons.renderSimpleOffer('#extend-offer-<?= $_item->getId() ?>', {
-                            referenceId: '<?= $sku ?>',
+                            referenceId: '<?= $_item->getSku() ?>',
                             onAddToCart: function (opts) {
 
                                 const plan = opts.plan;
                                 if (plan) {
                                     let parentId = "<?= $_item->getOptionByCode('simple_product') ? $_item->getProductId() : '' ?>";
                                     let url      = "<?= $block->getUrl('extend/warranty/add') ?>";
-                                    plan.product = '<?= $sku ?>';
+                                    plan.product = '<?= $_item->getSku() ?>';
 
                                    $.post(url, {
                                         warranty: plan,

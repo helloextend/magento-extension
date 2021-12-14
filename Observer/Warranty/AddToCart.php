@@ -157,15 +157,27 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
             return;
         }
         if ($this->_trackingHelper->isTrackingEnabled()) {
-            $trackingData = [
-                'eventName'         => 'trackOfferAddedToCart',
-                'productId'         => $warrantyData['product'] ?? '',
-                'productQuantity'   => $qty,
-                'warrantyQuantity'  => $qty,
-                'planId'            => $warrantyData['planId'] ?? '',
-                'area'              => 'product_page',
-                'component'         => $warrantyData['component'] ?? 'buttons',
-            ];
+            if (!isset($warrantyData['component']) || $warrantyData['component'] !== 'modal') {
+                $trackingData = [
+                    'eventName' => 'trackOfferAddedToCart',
+                    'productId' => $warrantyData['product'] ?? '',
+                    'productQuantity' => $qty,
+                    'warrantyQuantity' => $qty,
+                    'planId' => $warrantyData['planId'] ?? '',
+                    'area' => 'product_page',
+                    'component' => $warrantyData['component'] ?? 'buttons',
+                ];
+            } else {
+                $trackingData = [
+                    'eventName' => 'trackOfferUpdated',
+                    'productId' => $warrantyData['product'] ?? '',
+                    'productQuantity' => $qty,
+                    'warrantyQuantity' => $qty,
+                    'planId' => $warrantyData['planId'] ?? '',
+                    'area' => 'product_page',
+                    'component' => $warrantyData['component'] ?? 'buttons',
+                ];
+            }
             $this->_trackingHelper->setTrackingData($trackingData);
         }
     }
