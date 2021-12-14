@@ -1,44 +1,72 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+declare(strict_types=1);
 
 namespace Extend\Warranty\Model;
 
-use Magento\Framework\Exception\NoSuchEntityException;
 use Extend\Warranty\Model\Api\Sync\Leads\LeadsRequest;
 use Extend\Warranty\Model\Api\Request\LeadBuilder;
 use Extend\Warranty\Model\Api\Sync\Offers\OffersRequest;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class Leads
+ */
 class Leads
 {
     /**
+     * Leads Request
+     *
      * @var LeadsRequest
      */
-    protected $leadsRequest;
+    private $leadsRequest;
 
     /**
+     * Lead Builder
+     *
      * @var LeadBuilder
      */
-    protected $leadBuilder;
+    private $leadBuilder;
 
     /**
+     * Offers Request
+     *
      * @var OffersRequest
      */
-    protected $offersRequest;
+    private $offersRequest;
 
     /**
+     * Logger Interface
+     *
      * @var LoggerInterface
      */
-    protected $logger;
+    private $logger;
 
-    public function __construct
-    (
+    /**
+     * Leads constructor
+     *
+     * @param LeadsRequest $leadsRequest
+     * @param LeadBuilder $leadBuilder
+     * @param OffersRequest $offersRequest
+     * @param LoggerInterface $logger
+     */
+    public function __construct(
         LeadsRequest $leadsRequest,
         LeadBuilder $leadBuilder,
         OffersRequest $offersRequest,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->leadsRequest = $leadsRequest;
         $this->leadBuilder = $leadBuilder;
         $this->offersRequest = $offersRequest;
@@ -46,48 +74,54 @@ class Leads
     }
 
     /**
-     * @param $itemSku
-     * return array
+     * Get offers
+     *
+     * @param string $sku
+     * @return array
      */
-    public function getOffers($itemSku) {
-        $offers = $this->offersRequest->consult($itemSku);
-        if (!empty($offers) && isset($offers['plans'])
-            && is_array($offers['plans']) && count($offers['plans']) >= 1) {
-            return $offers['plans'];
-        }
-        return [];
+    public function getOffers(string $sku): array
+    {
+        $offers = $this->offersRequest->consult($sku);
+
+        return isset($offers['plans']) && is_array($offers['plans']) ? $offers['plans'] : [];
     }
 
     /**
-     * @param $itemSky
+     * Check if product has offers
+     *
+     * @param string $sku
+     * @return bool
      */
-    public function hasOffers($itemSku) {
-        $offerPlans = $this->getOffers($itemSku);
+    public function hasOffers(string $sku): bool
+    {
+        $offerInformation = $this->getOffers($sku);
+        $recommended = $offerInformation['recommended'] ?? '';
 
-        if (
-            !empty($offerPlans)
-            && is_array($offerPlans)
-            && count($offerPlans) >= 1
-        ) {
-            return true;
-        }
-        return false;
+        return $recommended
+            && isset($offerInformation[$recommended])
+            && is_array($offerInformation[$recommended])
+            && !empty($offerInformation[$recommended]);
     }
 
     /**
-     * $param $order
-     * $param $item
+     * Create lead
+     *
+     * @param OrderInterface $order
+     * @param OrderItemInterface $item
+     * @return string
      */
-    public function createLead($order, $item) {
+    public function createLead(OrderInterface $order, OrderItemInterface $item): string
+    {
         $lead = '';
         try {
-            $lead =  $this->leadsRequest->create(
-                $this->leadBuilder->prepareInfo($order, $item)
-            );
-        } catch(\Exception $e) {
-            $this->logger->error($e->getMessage(), ['exception' => $e]);
+            $leadPayload = $this->leadBuilder->prepareInfo($order, $item);
+            if (!empty($leadPayload)) {
+                $lead = $this->leadsRequest->create($leadPayload);
+            }
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
         }
 
-        return empty($lead) ? '' : $lead;
+        return $lead;
     }
 }

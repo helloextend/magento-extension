@@ -170,7 +170,8 @@ $quote = $_item->getQuote();
                             "productSku": "<?= $_currentSku[$_itemID] ?>",
                             "url" : "<?= $block->getUrl('warranty/cart/add') ?>",
                             "itemId" : "<?= $_itemID ?>",
-                            "parentId" : "<?= $_item->getOptionByCode('simple_product') ? $_item->getProductId() : '' ?>"
+                            "parentId" : "<?= $_item->getOptionByCode('simple_product') ? $_item->getProductId() : '' ?>",
+                            "isTrackingEnabled": "<?= $block->escapeJs($inCartViewModel->isTrackingEnabled()) ?>"
                         }
                     }
                 }
