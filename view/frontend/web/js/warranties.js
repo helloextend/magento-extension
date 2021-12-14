@@ -18,6 +18,10 @@ define([
                 Extend.buttons.render('#extend-offer-' + params.itemId, {
                     referenceId: params.productSku
                 });
+            } else {
+                Extend.buttons.render('#extend-offer', {
+                    referenceId: params.productSku
+                });
             }
         }
 
@@ -75,7 +79,7 @@ define([
             component.setActiveProduct(productSku);
         }
 
-        $('#submit-' + params.itemId).click((event) => {
+        $(addButton(params.itemId)).click((event) => {
             event.preventDefault();
 
             let form = $('#product_addtocart_form');
@@ -89,11 +93,13 @@ define([
 
             if (params.isPdpOffersEnabled) {
                 /** get the component instance rendered previously */
-                const component = Extend.buttons.instance('#extend-offer-' + params.itemId);
+                const component = getComponent(params.itemId);
+
                 /** get the users plan selection */
                 const plan = component.getPlanSelection();
 
 
+                //KEH grouped product
                 let form = $('#product_addtocart_form').closest('form');
                 let currentSimplePrices = $(form).find('.group-qty');
                 let popupQty = 1;
@@ -131,13 +137,21 @@ define([
                             } else {
                                 $("input[name^='warranty']").remove();
                             }
-                            form.trigger('submit');
-                            form[0].reset();
+                            if  (typeof params.itemId !== 'undefined') {
+                                form.trigger('submit');
+                                form[0].reset();
+                            } else {
+                                $('#product_addtocart_form').submit();
+                            }
                         }
                     });
                 } else {
-                    form.trigger('submit');
-                    form[0].reset();
+                    if  (typeof params.itemId !== 'undefined') {
+                        form.trigger('submit');
+                        form[0].reset();
+                    } else {
+                        $('#product_addtocart_form').submit();
+                    }
                 }
             } else if (params.isInterstitialCartOffersEnabled && hasOffers) {
                 Extend.modal.open({
@@ -153,13 +167,21 @@ define([
                         } else {
                             $("input[name^='warranty']").remove();
                         }
-                        form.trigger('submit');
-                        form[0].reset();
+                        if  (typeof params.itemId !== 'undefined') {
+                            form.trigger('submit');
+                            form[0].reset();
+                        } else {
+                            $('#product_addtocart_form').submit();
+                        }
                     }
                 });
             } else {
-                form.trigger('submit');
-                form[0].reset();
+                if  (typeof params.itemId !== 'undefined') {
+                    form.trigger('submit');
+                    form[0].reset();
+                } else {
+                    $('#product_addtocart_form').submit();
+                }
             }
         });
 
@@ -174,6 +196,20 @@ define([
                 .attr('name', 'warranty[product]')
                 .attr('value', sku)
                 .appendTo('#product_addtocart_form');
+        }
+
+        function addButton(itemId) {
+            if  (typeof itemId !== 'undefined') {
+                return '#submit-' + itemId;
+            }
+            return '#product-addtocart-button';
+        }
+
+        function getComponent(itemId) {
+            if  (typeof itemId !== 'undefined') {
+                return Extend.buttons.instance('#extend-offer-' + params.itemId);
+            }
+            return Extend.buttons.instance('#extend-offer');
         }
     };
 });
