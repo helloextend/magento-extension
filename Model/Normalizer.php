@@ -21,30 +21,22 @@ class Normalizer
     private $_trackingHelper;
 
     /**
-     * @var \Magento\GroupedProduct\Model\Product\Type\Grouped
+     * @var \Extend\Warranty\Helper\Grouped
      */
-    private $_grouped;
-
-    /**
-     * @var \Magento\Catalog\Api\ProductRepositoryInterface
-     */
-    private $_productRepository;
+    private $_groupedHelper;
 
     /**
      * Normalizer constructor.
      * @param \Extend\Warranty\Helper\Tracking $trackingHelper
-     * @param \Magento\GroupedProduct\Model\Product\Type\Grouped $grouped
-     * @param \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
+     * @param \Extend\Warranty\Helper\Grouped $groupedHelper
      */
     public function __construct(
         \Extend\Warranty\Helper\Tracking $trackingHelper,
-        \Magento\GroupedProduct\Model\Product\Type\Grouped $grouped,
-        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
+        \Extend\Warranty\Helper\Grouped $groupedHelper
     )
     {
         $this->_trackingHelper = $trackingHelper;
-        $this->_grouped = $grouped;
-        $this->_productRepository = $productRepository;
+        $this->_groupedHelper = $groupedHelper;
     }
 
     /**
@@ -70,9 +62,9 @@ class Normalizer
             $sku = $item->getSku();
             foreach ($warranties as $warrantyItem) {
                 /** @var \Magento\Quote\Model\Quote\Item $warrantyItem */
-                if ($warrantyItem->getOptionByCode('associated_product')->getValue() == $sku
+                if (($warrantyItem->getOptionByCode('associated_product')->getValue() == $sku
                     && ($item->getProductType() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE
-                        || is_null($item->getOptionByCode('parent_product_id'))) || $this->isGrouped($warrantyItem, $item))
+                        || is_null($item->getOptionByCode('parent_product_id')))) || $this->_groupedHelper->isGroupedWarranty($warrantyItem, $item))
                 {
                     if ($warrantyItem->getQty() <> $item->getQty()) {
                         if ($item->getQty() > 0) {
@@ -87,19 +79,5 @@ class Normalizer
                 }
             }
         }
-    }
-
-    private function isGrouped($warrantyItem, $item) : bool
-    {
-        if ($warrantyItem->getOptionByCode('associated_product')->getValue() != $item->getSku()
-            && $item->getProductType() == \Magento\GroupedProduct\Model\Product\Type\Grouped::TYPE_CODE ) {
-            $groupedProductsIds = $this->_grouped->getParentIdsByChild($item->getProduct()->getId());
-            $groupedProductId  = reset($groupedProductsIds);
-            $groupedProduct = $this->_productRepository->getById($groupedProductId);
-            if ($warrantyItem->getOptionByCode('associated_product')->getValue() == $groupedProduct->getSku()) {
-                return true;
-            }
-        }
-        return false;
     }
 }

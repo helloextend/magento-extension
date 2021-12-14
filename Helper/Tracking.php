@@ -22,6 +22,11 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     const XML_PATH_TRACKING_ENABLED = 'warranty/tracking/enabled';
 
     /**
+     * @var Grouped
+     */
+    private $_grouped;
+
+    /**
      * @var \Magento\Customer\Model\Session
      */
     private $_customerSession;
@@ -29,13 +34,16 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * Tracking constructor.
      * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Extend\Warranty\Helper\Grouped $groupedHelper
      * @param \Magento\Customer\Model\Session $customerSession
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
+        \Extend\Warranty\Helper\Grouped $groupedHelper,
         \Magento\Customer\Model\Session $customerSession
     )
     {
+        $this->_grouped = $groupedHelper;
         $this->_customerSession = $customerSession;
 
         parent::__construct(
@@ -130,6 +138,9 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     public function getWarrantyItemForQuoteItem(\Magento\Quote\Model\Quote\Item $quoteItem)
     {
         $sku = $quoteItem->getSku();
+        if ($quoteItem->getProductType() == \Magento\GroupedProduct\Model\Product\Type\Grouped::TYPE_CODE) {
+            $sku = $this->_grouped->getGroupedWarrantySku($quoteItem);
+        }
         /** @var \Magento\Quote\Model\Quote $quote */
         $quote = $quoteItem->getQuote();
         foreach ($quote->getAllItems() as $item) {
