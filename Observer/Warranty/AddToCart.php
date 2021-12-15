@@ -106,9 +106,32 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         $request = $observer->getData('request');
         /** @var \Magento\Checkout\Model\Cart $cart */
         $cart = $this->_cartHelper->getCart();
-        $qty = $request->getPost('qty', 1);
-        $warrantyData = $request->getPost('warranty', []);
-        if (empty($warrantyData)) {
+
+        if ($observer->getProduct()->getTypeId() === 'grouped') {
+            $items = $request->getPost('super_group');
+            foreach ($items as $id => $qty) {
+                $warrantyData = $request->getPost('warranty_' . $id, []);
+                $this->addWarranty($cart, $warrantyData, $qty);
+            }
+        } else {
+            $qty = $request->getPost('qty', 1);
+            $warrantyData = $request->getPost('warranty', []);
+
+            $this->addWarranty($cart, $warrantyData, $qty);
+        }
+
+    }
+
+    /**
+     * @param \Magento\Quote\Api\Data\CartInterface $cart
+     * @param array $warrantyData
+     * @param int $qty
+     * @return void
+     * @throws \Exception
+     */
+    private function addWarranty($cart, array $warrantyData, int $qty)
+    {
+        if (empty($warrantyData) || $qty < 1) {
             return;
         }
 

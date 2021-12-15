@@ -26,9 +26,9 @@ $viewModel = $block->getData('viewModel');
 <?php $_product = $block->getProduct(); ?>
 <?php $_associatedProducts = $block->getAssociatedProducts(); ?>
 <?php
-    $groupedIds = [];
+    $isProductsHasOffers = [];
     foreach ($_associatedProducts as $item) {
-        $groupedIds[] = $item->getId();
+        $isProductsHasOffers[$item->getId()] = $viewModel->isProductHasOffers($_product);
     }
 ?>
 <?php $_hasAssociatedProducts = count($_associatedProducts) > 0; ?>
@@ -79,29 +79,7 @@ $viewModel = $block->getData('viewModel');
                         </td>
                     <?php endif; ?>
                 </tr>
-                <?php if ($_item->getSku() == '380947-2492943'):?>
-                    <tr>
-                        <td>
-                            <div id="extend-offer-<?= $_item->getId(); ?>"></div>
-                            <script type="text/x-magento-init">
-                                {
-                                    "#extend-offer-<?= $_item->getId(); ?>": {
-                                        "extendWarranties":{
-                                            "productSku": "<?= $escaper->escapeJs('380947'); ?>",
-                                            "isPdpOffersEnabled": "<?= $escaper->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
-                                            "isInterstitialCartOffersEnabled": "<?= $escaper->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
-                                            "isProductHasOffers": <?= $viewModel->isProductHasOffers($_product); ?>,
-                                            "itemId": "<?= $escaper->escapeJs($_item->getId()); ?>",
-                                            "groupedIds": <?= json_encode($groupedIds);?>
-                                        }
-                                    }
-                                }
-                            </script>
-                        </td>
-                    </tr>
-                <?php endif; ?>
-                <?php if ($viewModel->isExtendEnabled() && $viewModel->isProductHasOffers($_item) && $_product->getTypeId() === 'grouped' && $_item->getSku() !== '380947-2492943'): ?>
-                <?= $viewModel->isProductHasOffers($_item);?>
+                <?php if ($viewModel->isExtendEnabled() && $isProductsHasOffers[$_item->getId()]): ?>
                     <tr>
                         <td>
                             <div id="extend-offer-<?= $_item->getId(); ?>"></div>
@@ -111,10 +89,7 @@ $viewModel = $block->getData('viewModel');
                                         "extendWarranties":{
                                             "productSku": "<?= $escaper->escapeJs($_item->getSku()); ?>",
                                             "isPdpOffersEnabled": "<?= $escaper->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
-                                            "isInterstitialCartOffersEnabled": "<?= $escaper->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
-                                            "isProductHasOffers": <?= $viewModel->isProductHasOffers($_item); ?>,
-                                            "itemId": "<?= $escaper->escapeJs($_item->getId()); ?>",
-                                            "groupedIds": <?= json_encode($groupedIds);?>
+                                            "itemId": "<?= $escaper->escapeJs($_item->getId()); ?>"
                                         }
                                     }
                                 }
