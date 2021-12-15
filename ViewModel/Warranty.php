@@ -21,7 +21,7 @@ use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Quote\Api\Data\CartInterface;
 use Extend\Warranty\Helper\Api as ApiHelper;
-use Extend\Warranty\Helper\Tracking as TrackingHelper;
+use InvalidArgumentException;
 
 /**
  * Class Warranty
@@ -57,33 +57,23 @@ class Warranty implements ArgumentInterface
     private $linkManagement;
 
     /**
-     * Tracking Helper
-     *
-     * @var TrackingHelper
-     */
-    private $trackingHelper;
-
-    /**
      * Warranty constructor
      *
      * @param DataHelper $dataHelper
      * @param ApiHelper $apiHelper
      * @param JsonSerializer $jsonSerializer
      * @param LinkManagementInterface $linkManagement
-     * @param TrackingHelper $trackingHelper
      */
     public function __construct(
         DataHelper $dataHelper,
         ApiHelper $apiHelper,
         JsonSerializer $jsonSerializer,
-        LinkManagementInterface $linkManagement,
-        TrackingHelper $trackingHelper
+        LinkManagementInterface $linkManagement
     ) {
         $this->dataHelper = $dataHelper;
         $this->apiHelper = $apiHelper;
         $this->jsonSerializer = $jsonSerializer;
         $this->linkManagement = $linkManagement;
-        $this->trackingHelper = $trackingHelper;
     }
 
     /**
@@ -173,15 +163,5 @@ class Warranty implements ArgumentInterface
         }
 
         return $this->jsonSerializer->serialize($isProductHasOffers);
-    }
-
-    /**
-     * Check if tracking enabled
-     *
-     * @return bool
-     */
-    public function isTrackingEnabled(): bool
-    {
-        return $this->trackingHelper->isTrackingEnabled();
     }
 }
