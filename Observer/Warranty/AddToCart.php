@@ -106,32 +106,9 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         $request = $observer->getData('request');
         /** @var \Magento\Checkout\Model\Cart $cart */
         $cart = $this->_cartHelper->getCart();
-
-        if ($observer->getProduct()->getTypeId() === 'grouped') {
-            $items = $request->getPost('super_group');
-            foreach ($items as $id => $qty) {
-                $warrantyData = $request->getPost('warranty_' . $id, []);
-                $this->addWarranty($cart, $warrantyData, $qty);
-            }
-        } else {
-            $qty = $request->getPost('qty', 1);
-            $warrantyData = $request->getPost('warranty', []);
-
-            $this->addWarranty($cart, $warrantyData, $qty);
-        }
-
-    }
-
-    /**
-     * @param \Magento\Quote\Api\Data\CartInterface $cart
-     * @param array $warrantyData
-     * @param int $qty
-     * @return void
-     * @throws \Exception
-     */
-    private function addWarranty($cart, array $warrantyData, int $qty)
-    {
-        if (empty($warrantyData) || $qty < 1) {
+        $qty = $request->getPost('qty', 1);
+        $warrantyData = $request->getPost('warranty', []);
+        if (empty($warrantyData)) {
             return;
         }
 
@@ -180,27 +157,15 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
             return;
         }
         if ($this->_trackingHelper->isTrackingEnabled()) {
-            if (!isset($warrantyData['component']) || $warrantyData['component'] !== 'modal') {
-                $trackingData = [
-                    'eventName' => 'trackOfferAddedToCart',
-                    'productId' => $warrantyData['product'] ?? '',
-                    'productQuantity' => $qty,
-                    'warrantyQuantity' => $qty,
-                    'planId' => $warrantyData['planId'] ?? '',
-                    'area' => 'product_page',
-                    'component' => $warrantyData['component'] ?? 'buttons',
-                ];
-            } else {
-                $trackingData = [
-                    'eventName' => 'trackOfferUpdated',
-                    'productId' => $warrantyData['product'] ?? '',
-                    'productQuantity' => $qty,
-                    'warrantyQuantity' => $qty,
-                    'planId' => $warrantyData['planId'] ?? '',
-                    'area' => 'product_page',
-                    'component' => $warrantyData['component'] ?? 'buttons',
-                ];
-            }
+            $trackingData = [
+                'eventName'         => 'trackOfferAddedToCart',
+                'productId'         => $warrantyData['product'] ?? '',
+                'productQuantity'   => $qty,
+                'warrantyQuantity'  => $qty,
+                'planId'            => $warrantyData['planId'] ?? '',
+                'area'              => 'product_page',
+                'component'         => $warrantyData['component'] ?? 'buttons',
+            ];
             $this->_trackingHelper->setTrackingData($trackingData);
         }
     }
