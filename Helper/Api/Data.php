@@ -75,7 +75,9 @@ class Data extends AbstractHelper
     /**
      * Orders API settings
      */
-    const WARRANTY_ENABLE_ORDERS_API = 'warranty/orders/enable';
+    const WARRANTY_ENABLE_ORDERS_API = 'warranty/orders/enabled';
+    const WARRANTY_STORE_NAME = 'warranty/orders/store_name';
+    const WARRANTY_ORDERS_API_CREATE_MODE = 'warranty/orders/order_create';
 
     /**
      * Module name
@@ -456,6 +458,32 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_ENABLE_ORDERS_API,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * @param $storeId
+     * @return string
+     */
+    public function getStoreName($storeId = null): string
+    {
+        return $this->scopeConfig->getValue(
+            self::WARRANTY_STORE_NAME,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function getOrdersApiCreateMode($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_ORDERS_API_CREATE_MODE,
             ScopeInterface::SCOPE_STORES,
             $storeId
         );

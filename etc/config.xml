@@ -46,6 +46,7 @@
             </tracking>
             <orders>
                 <enabled>1</enabled>
+                <order_create>0</order_create>
             </orders>
             <authentication>
                 <api_url>https://api.helloextend.com/</api_url>

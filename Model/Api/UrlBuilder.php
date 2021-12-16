@@ -91,8 +91,15 @@ class UrlBuilder implements UrlBuilderInterface
         $apiUrl = $this->dataHelper->getApiUrl($scope, $scopeId);
         $storeId = $this->dataHelper->getStoreId($scope, $scopeId);
 
-        return stripos($endpoint, 'offers') === 0 ? $apiUrl . $endpoint
-            : $apiUrl . 'stores/' . $storeId . '/' . $endpoint;
+        if (stripos($endpoint, 'offers') === 0 ||
+            stripos($endpoint, 'orders') === 0 ||
+            stripos($endpoint, 'refunds') === 0 ||
+            stripos($endpoint, 'line-items') === 0) {
+
+            return $apiUrl . $endpoint;
+        } else {
+            return $apiUrl . 'stores/' . $storeId . '/' . $endpoint;
+        }
     }
 
     /**
@@ -145,5 +152,16 @@ class UrlBuilder implements UrlBuilderInterface
             'scope' => $scope,
             'scopeId' => $scopeId,
         ];
+    }
+
+    public function getUuid4()
+    {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
     }
 }

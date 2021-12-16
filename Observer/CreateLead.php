@@ -9,6 +9,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Extend\Warranty\Model\WarrantyContract;
 use Extend\Warranty\Model\Leads;
+use Extend\Warranty\Model\Orders as ExtendOrder;
 use Extend\Warranty\Helper\Api\Data;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Psr\Log\LoggerInterface;
@@ -20,6 +21,7 @@ class CreateLead implements ObserverInterface
     protected $warrantyContract;
     protected $quoteRepository;
     protected $leads;
+    protected $extendOrder;
     protected $extendHelper;
     protected $logger;
 
@@ -29,6 +31,7 @@ class CreateLead implements ObserverInterface
         WarrantyContract $warrantyContract,
         CartRepositoryInterface $quoteRepository,
         Leads $leads,
+        ExtendOrder $extendOrder,
         Data $data,
         LoggerInterface $logger
     )
@@ -36,6 +39,7 @@ class CreateLead implements ObserverInterface
         $this->productRepository = $productRepository;
         $this->warrantyContract = $warrantyContract;
         $this->leads = $leads;
+        $this->extendOrder = $extendOrder;
         $this->quoteRepository = $quoteRepository;
         $this->extendHelper = $data;
         $this->logger = $logger;
@@ -49,16 +53,16 @@ class CreateLead implements ObserverInterface
     {
 
         if ($this->extendHelper->isExtendEnabled() && $this->extendHelper->isLeadEnabled()) {
-            if (!$this->extendHelper->isOrdersApiEnabled()) {
-                $order = $observer->getEvent()->getOrder();
-                $hasWarranty = false;
+            $order = $observer->getEvent()->getOrder();
+            $hasWarranty = false;
 
-                //Check if there is a warranty
-                foreach ($order->getAllItems() as $key => $item) {
-                    if (!$hasWarranty && $item->getProductType() == WarrantyType::TYPE_CODE) {
-                        $hasWarranty = true;
-                    }
+            //Check if there is a warranty
+            foreach ($order->getAllItems() as $key => $item) {
+                if (!$hasWarranty && $item->getProductType() == WarrantyType::TYPE_CODE) {
+                    $hasWarranty = true;
                 }
+            }
+            if (!$this->extendHelper->isOrdersApiEnabled()) {
                 //If there is not warranties, check if there is available offers for leads
                 if (false == $hasWarranty) {
                     foreach ($order->getAllItems() as $key => $item) {
@@ -80,7 +84,11 @@ class CreateLead implements ObserverInterface
                     }
                 }
             } else {
-                //TODO Orders API Leads
+                if (true == $hasWarranty) {
+                    //TODO Orders Lead
+                } else {
+                    //TODO Orders Lead
+                }
             }
         }
     }

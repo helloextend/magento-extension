@@ -106,10 +106,14 @@ class Connector implements ConnectorInterface
     ): Zend_Http_Response {
         $apiUrl = $this->urlBuilder->build($endpoint);
         $headers = [
-            'Accept'                => 'application/json; version=2021-04-01',
+            'Accept'                => 'application/json; version=2021-07-01',
             'Content-Type'          => 'application/json',
             'X-Extend-Access-Token' => $this->urlBuilder->getApiKey(),
         ];
+
+        if($this->dataHelper->isOrdersApiEnabled()) {
+            $headers['X-Idempotency-Key'] = $this->urlBuilder->getUuid4();
+        }
 
         $this->httpClient->setUri($apiUrl);
         $this->httpClient->setHeaders($headers);
@@ -125,7 +129,7 @@ class Connector implements ConnectorInterface
             }
         }
 
-        return $this->httpClient->request();
+            return $this->httpClient->request();
     }
 
     /**
