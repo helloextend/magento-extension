@@ -25,9 +25,6 @@
     <type name="Magento\Catalog\Controller\Adminhtml\Product\NewAction">
         <plugin name="warrantyInterceptor" type="Extend\Warranty\Plugin\WarrantyAction" sortOrder="1"/>
     </type>
-    <type name="Magento\Catalog\Model\Product\Type">
-        <plugin name="warrantyTypeOptionInterceptor" type="Extend\Warranty\Plugin\WarrantyTypeOption" sortOrder="1"/>
-    </type>
     <type name="Magento\Config\Model\Config">
         <plugin name="admin_system_config_save_plugin" type="Extend\Warranty\Plugin\ValidateCredentialPlugin" sortOrder="1"/>
     </type>
@@ -167,12 +164,6 @@
     </type>
 
     <type name="Extend\Warranty\Block\Tracking">
-        <arguments>
-            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
-        </arguments>
-    </type>
-
-    <type name="Extend\Warranty\Observer\Warranty\Normalize">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
