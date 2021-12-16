@@ -14,7 +14,7 @@
     <default>
         <warranty>
             <enableExtend>
-                <enable>0</enable>
+                <enable>1</enable>
                 <enableBalance>1</enableBalance>
                 <enableCartOffers>1</enableCartOffers>
                 <enableRefunds>1</enableRefunds>
