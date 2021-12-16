@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+-->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Magento\Catalog\Block\Adminhtml\Product"
                 type="Extend\Warranty\Block\Adminhtml\Product" />
@@ -33,7 +43,9 @@
     </type>
 
     <type name="Magento\Catalog\Helper\Product\Configuration">
-        <plugin name="warranty_product" type="Extend\Warranty\Plugin\Helper\Product\Configuration"/>
+        <plugin name="GetCustomOptionsPlugin"
+                type="Extend\Warranty\Plugin\Catalog\Helper\Product\Configuration\GetCustomOptionsPlugin"
+                sortOrder="10" />
     </type>
 
     <type name="Magento\Checkout\CustomerData\AbstractItem">
