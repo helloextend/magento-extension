@@ -8,19 +8,21 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 /** @var \Magento\Framework\View\Element\Template $block */
-/** @var \Magento\Framework\Escaper $escaper */
 /** @var \Extend\Warranty\ViewModel\Installation $viewModel */
 $viewModel = $block->getData('viewModel');
 ?>
 <?php if ($viewModel->isExtendEnabled()) : ?>
-    <script src="<?= $viewModel->getJsMode() ?>"></script>
-    <script>
-        Extend.config(<?= $viewModel->getJsonConfig() ?>);
-    </script>
+    <?php $jsonConfig = $viewModel->getJsonConfig(); ?>
+    <?php if ($jsonConfig): ?>
+        <script src="<?= $viewModel->getJsMode() ?>"></script>
+        <script>
+            Extend.config(<?= $jsonConfig ?>);
+        </script>
+    <?php endif; ?>
 <?php endif; ?>
 
 <script>
-    var BASE_URL = '<?= $escaper->escapeUrl($block->getBaseUrl()) ?>';
+    var BASE_URL = '<?= $block->escapeUrl($block->getBaseUrl()) ?>';
     var require = {
         "baseUrl": "<?= /* @escapeNotVerified */ $block->getViewFileUrl('/') ?>"
     };

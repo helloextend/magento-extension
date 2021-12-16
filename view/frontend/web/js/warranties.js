@@ -14,15 +14,9 @@ define([
     return function (params) {
 
         if (params.isPdpOffersEnabled) {
-            if  (typeof params.itemId !== 'undefined') {
-                Extend.buttons.render('#extend-offer-' + params.itemId, {
-                    referenceId: params.productSku
-                });
-            } else if (params.productSku !== 'grouped') {
-                Extend.buttons.render('#extend-offer', {
-                    referenceId: params.productSku
-                });
-            }
+            Extend.buttons.render('#extend-offer', {
+                referenceId: params.productSku
+            });
         }
 
         $(document).ready(function () {
@@ -82,27 +76,14 @@ define([
         $('#product-addtocart-button').click((event) => {
             event.preventDefault();
 
-            let form = $('#product_addtocart_form');
+            let sku = params.productSku !== '' ? params.productSku : selectedProduct(),
+                hasOffers = false;
 
-            if  (typeof params.groupedProducts !== 'undefined') {
-
-                multipleWarrantySubmit(form, params.groupedProducts, params.isProductHasOffers);
-
-            } else if (typeof params.itemId === 'undefined') {
-                let sku = params.productSku !== '' ? params.productSku : selectedProduct(),
-                    hasOffers = false;
-
-                if (params.isProductHasOffers.hasOwnProperty(sku)) {
-                    hasOffers = params.isProductHasOffers[sku];
-                }
-
-                singleWarrantySubmit(form, sku, hasOffers, params.isPdpOffersEnabled,params.isInterstitialCartOffersEnabled);
+            if (params.isProductHasOffers.hasOwnProperty(sku)) {
+                hasOffers = params.isProductHasOffers[sku];
             }
-        });
 
-        function singleWarrantySubmit(form, sku, hasOffers, isPdpOffersEnabled,isInterstitialCartOffersEnabled)
-        {
-            if (isPdpOffersEnabled) {
+            if (params.isPdpOffersEnabled) {
                 /** get the component instance rendered previously */
                 const component = Extend.buttons.instance('#extend-offer');
                 /** get the users plan selection */
@@ -115,8 +96,8 @@ define([
                         .attr('name', 'warranty[component]')
                         .attr('value', 'buttons')
                         .appendTo('#product_addtocart_form');
-                    form.submit();
-                } else if (isInterstitialCartOffersEnabled && hasOffers) {
+                    $('#product_addtocart_form').submit();
+                } else if (params.isInterstitialCartOffersEnabled && hasOffers) {
                     Extend.modal.open({
                         referenceId: sku,
                         onClose: function (plan) {
@@ -130,13 +111,13 @@ define([
                             } else {
                                 $("input[name^='warranty']").remove();
                             }
-                            form.submit();
+                            $('#product_addtocart_form').submit();
                         }
                     });
                 } else {
-                    form.submit();
+                    $('#product_addtocart_form').submit();
                 }
-            } else if (isInterstitialCartOffersEnabled && hasOffers) {
+            } else if (params.isInterstitialCartOffersEnabled && hasOffers) {
                 Extend.modal.open({
                     referenceId: sku,
                     onClose: function (plan) {
@@ -150,30 +131,13 @@ define([
                         } else {
                             $("input[name^='warranty']").remove();
                         }
-                        form.submit();
+                        $('#product_addtocart_form').submit();
                     }
                 });
             } else {
-                form.submit();
+                $('#product_addtocart_form').submit();
             }
-        }
-
-        function multipleWarrantySubmit(form,groupedProducts, isProductHasOffers)
-        {
-            $.each(groupedProducts, (id, sku) => {
-                let component = Extend.buttons.instance('#extend-offer-' + id),
-                    plan = component.getPlanSelection(),
-                    hasOffers = false;
-                if (isProductHasOffers.hasOwnProperty(id)) {
-                    hasOffers = isProductHasOffers[id];
-                }
-                if (hasOffers && plan) {
-                    addWarrantyGrouped(plan, sku, id);
-                }
-            });
-
-            form.submit();
-        }
+        });
 
         function addWarranty(plan, sku) {
             $.each(plan, (attribute, value) => {
@@ -184,19 +148,6 @@ define([
             });
             $('<input />').attr('type', 'hidden')
                 .attr('name', 'warranty[product]')
-                .attr('value', sku)
-                .appendTo('#product_addtocart_form');
-        }
-
-        function addWarrantyGrouped(plan, sku, itemId) {
-            $.each(plan, (attribute, value) => {
-                $('<input />').attr('type', 'hidden')
-                    .attr('name', 'warranty_' + itemId + '[' + attribute + ']')
-                    .attr('value', value)
-                    .appendTo('#product_addtocart_form');
-            });
-            $('<input />').attr('type', 'hidden')
-                .attr('name', 'warranty_' + itemId + '[product]')
                 .attr('value', sku)
                 .appendTo('#product_addtocart_form');
         }
