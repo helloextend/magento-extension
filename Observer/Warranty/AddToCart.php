@@ -66,6 +66,11 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
     protected $helper;
 
     /**
+     * @var \Magento\Quote\Api\Data\CartItemInterfaceFactory
+     */
+    protected $cartItemFactory;
+
+    /**
      * AddToCart constructor
      *
      * @param \Magento\Checkout\Helper\Cart $cartHelper
@@ -83,7 +88,8 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         \Magento\Framework\Message\ManagerInterface $messageManager,
         \Extend\Warranty\Helper\Tracking $trackingHelper,
         \Psr\Log\LoggerInterface $logger,
-        \Extend\Warranty\Helper\Api $helper
+        \Extend\Warranty\Helper\Api $helper,
+        \Magento\Quote\Api\Data\CartItemInterfaceFactory $cartItemFactory
     ) {
         $this->_cartHelper = $cartHelper;
         $this->_productRepository = $productRepository;
@@ -92,6 +98,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         $this->_trackingHelper = $trackingHelper;
         $this->_logger = $logger;
         $this->helper = $helper;
+        $this->cartItemFactory = $cartItemFactory;
     }
 
     /**
@@ -107,6 +114,8 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         /** @var \Magento\Checkout\Model\Cart $cart */
         $cart = $this->_cartHelper->getCart();
 
+        $quote = $this->_cartHelper->getQuote();
+
         if ($observer->getProduct()->getTypeId() === 'grouped') {
             $items = $request->getPost('super_group');
             foreach ($items as $id => $qty) {
@@ -119,7 +128,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
 
             $this->addWarranty($cart, $warrantyData, $qty);
         }
-
+echo '123';
     }
 
     /**
@@ -168,7 +177,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         }
         $warrantyData['qty'] = $qty;
         try {
-            $cart->addProduct($warranty->getId(), $warrantyData);
+            $cart->addProduct($warranty, $warrantyData);
             $cart->getQuote()->removeAllAddresses();
             /** @noinspection PhpUndefinedMethodInspection */
             $cart->getQuote()->setTotalsCollectedFlag(false);
