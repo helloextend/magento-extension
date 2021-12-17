@@ -262,7 +262,7 @@
                     <comment><![CDATA[Enable the Extend Warranty Orders API]]></comment>
                 </field>
                 <field id="order_create" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
-                    <label>Mode</label>
+                    <label>Orders API Contract Creating Mode</label>
                     <source_model>Extend\Warranty\Model\Config\Source\CreateMode</source_model>
                 </field>
                 <field id="store_name" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
