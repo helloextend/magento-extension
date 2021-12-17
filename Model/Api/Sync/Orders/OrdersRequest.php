@@ -66,9 +66,9 @@ class OrdersRequest
      * @param array $orderData
      * @return array
      */
-    public function create(array $orderData): array
+    public function create(array $orderData, $type = 'contract'): array
     {
-        $orderIds = [];
+        $result = [];
         try {
             $response = $this->connector->call(
                 self::CREATE_ORDER_ENDPOINT,
@@ -76,13 +76,26 @@ class OrdersRequest
                 $orderData
             );
             $responseBody = $this->processResponse($response);
-            foreach ($responseBody['lineItems'] as $lineItem) {
-                $orderIds[] = $lineItem['contractId'];
+
+            if ($type == \Extend\Warranty\Model\Orders::CONTRACT) {
+                $contractsIds = [];
+                foreach ($responseBody['lineItems'] as $lineItem) {
+                    $contractsIds[] = $lineItem['contractId'];
+                }
+
+                $result = $contractsIds;
+            } elseif ($type == \Extend\Warranty\Model\Orders::LEAD) {
+                $leadsTokens = [];
+                foreach ($responseBody['lineItems'] as $lineItem) {
+                    $leadsTokens[] = $lineItem['leadToken'];
+                }
+
+                $result = $leadsTokens;
             }
 
-            $orderId = $responseBody['id'] ?? '';
-            if ($orderId) {
-                $this->logger->info('Order is created successfully. OrderID: ' . $orderId);
+            $orderApiId = $responseBody['id'] ?? '';
+            if ($orderApiId) {
+                $this->logger->info('Order is created successfully. OrderApiID: ' . $orderApiId);
             } else {
                 $this->logger->error('Order creation is failed.');
             }
@@ -90,7 +103,7 @@ class OrdersRequest
             $this->logger->error($exception->getMessage());
         }
 
-        return $orderIds;
+        return $result;
     }
 
     /**

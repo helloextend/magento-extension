@@ -50,6 +50,8 @@ class OrderBuilder
     private $helper;
 
     /**
+     * Extend API helper
+     *
      * @var ApiDataHelper
      */
     private $apiHelper;
@@ -82,37 +84,54 @@ class OrderBuilder
      *
      * @param OrderInterface $order
      * @param OrderItemInterface $orderItem
-     * @param int $qtyInvoiced
+     * @param int $qty
      * @return array
      * @throws NoSuchEntityException
      */
-    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced): array
+    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem, int $qty, $type = 'contract'): array
     {
         $store = $this->storeManager->getStore();
         $currencyCode = $store->getBaseCurrencyCode();
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
+        $lineItem = [];
 
-        $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
-        $productSku = is_array($productSku) ? array_shift($productSku) : $productSku;
+        if ( $type == \Extend\Warranty\Model\Orders::CONTRACT) {
+            $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
+            $productSku = is_array($productSku) ? array_shift($productSku) : $productSku;
 
-        $warrantyId = $orderItem->getProductOptionByCode(Type::WARRANTY_ID);
-        $warrantyId = is_array($warrantyId) ? array_shift($warrantyId) : $warrantyId;
+            $warrantyId = $orderItem->getProductOptionByCode(Type::WARRANTY_ID);
+            $warrantyId = is_array($warrantyId) ? array_shift($warrantyId) : $warrantyId;
 
-        $product = $this->prepareProductPayload($productSku);
+            $plan = [
+                'purchasePrice' => $this->helper->formatPrice($orderItem->getPrice()),
+                'id'            => $warrantyId,
+            ];
 
-        $plan = [
-            'purchasePrice' => $this->helper->formatPrice($orderItem->getPrice()),
-            'id'        => $warrantyId,
-        ];
+            $product = $this->prepareProductPayload($productSku);
 
-        $lineItems[] = [
-            'status' => $this->getStatus(),
-            'quantity' => $qtyInvoiced,
-            'storeId' => $this->apiHelper->getStoreId(),
-            'warrantable' => true,
-            'plan' => $plan,
-            'product' => $product
-        ];
+            $lineItem = [
+                'status'      => $this->getStatus(),
+                'quantity'    => $qty,
+                'storeId'     => $this->apiHelper->getStoreId(),
+                'warrantable' => true,
+                'product'     => $product,
+                'plan'        => $plan
+            ];
+
+        } elseif ($type == \Extend\Warranty\Model\Orders::LEAD) {
+            $productSku = $orderItem->getSku();
+            $product = $this->prepareProductPayload($productSku);
+
+            $lineItem = [
+                'status'      => $this->getStatus(),
+                'quantity'    => $qty,
+                'storeId'     => $this->apiHelper->getStoreId(),
+                'warrantable' => true,
+                'product'     => $product
+            ];
+        }
+
+        $lineItems[] = $lineItem;
 
         $saleOrigin = [
             'platform'  => self::PLATFORM_CODE,
@@ -150,14 +169,14 @@ class OrderBuilder
             return [];
         }
 
-        $product = [
-            'id'   => $product->getSku(),
-            'listPrice' => $this->helper->formatPrice($product->getFinalPrice()),
-            'name' => $product->getName(),
+        $result = [
+            'id'            => $product->getSku(),
+            'listPrice'     => $this->helper->formatPrice($product->getFinalPrice()),
+            'name'          => $product->getName(),
             'purchasePrice' => $this->helper->formatPrice($product->getFinalPrice())
         ];
 
-        return $product;
+        return $result;
     }
 
     /**
@@ -196,6 +215,8 @@ class OrderBuilder
     }
 
     /**
+     * Prepare customer data
+     *
      * @param OrderInterface $order
      * @return array
      * @throws NoSuchEntityException
@@ -241,6 +262,8 @@ class OrderBuilder
     }
 
     /**
+     * Get Extend Order API status
+     *
      * @return string
      */
     protected function getStatus(): string

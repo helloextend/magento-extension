@@ -62,32 +62,29 @@ class CreateLead implements ObserverInterface
                     $hasWarranty = true;
                 }
             }
-            if (!$this->extendHelper->isOrdersApiEnabled()) {
-                //If there is not warranties, check if there is available offers for leads
-                if (false == $hasWarranty) {
-                    foreach ($order->getAllItems() as $key => $item) {
-                        if ($item->getProductType() == 'configurable') {
-                            continue;
-                        }
-                        $hasOffers = $this->leads->hasOffers($item->getSku());
-                        if ($hasOffers) {
-                            $leadToken = $this->leads->createLead($order, $item);
+            //If there is not warranties, check if there is available offers for leads
+            if (false == $hasWarranty) {
+                foreach ($order->getAllItems() as $key => $item) {
+                    if ($item->getProductType() == 'configurable') {
+                        continue;
+                    }
+                    $hasOffers = $this->leads->hasOffers($item->getSku());
+                    if ($hasOffers) {
 
-                            //Save Lead Token
-                            if (!empty($leadToken)) {
-                                $item->setLeadToken($leadToken);
-                                if ($order->getId()) {
-                                    $item->save();
-                                }
+                        if (!$this->extendHelper->isOrdersApiEnabled()) {
+                            $leadToken = $this->leads->createLead($order, $item);
+                        } else {
+                            $leadToken = $this->extendOrder->createOrder($order, $item, intval($item->getQtyOrdered()), ExtendOrder::LEAD);
+                        }
+
+                        //Save Lead Token
+                        if (!empty($leadToken)) {
+                            $item->setLeadToken($leadToken);
+                            if ($order->getId()) {
+                                $item->save();
                             }
                         }
                     }
-                }
-            } else {
-                if (true == $hasWarranty) {
-                    //TODO Orders Lead
-                } else {
-                    //TODO Orders Lead
                 }
             }
         }
