@@ -56,7 +56,11 @@ class CreateContracts
      */
     public function execute(): void
     {
-        if (!$this->dataHelper->isExtendEnabled() || $this->dataHelper->isWarrantyContractEnabled()) {
+        if (
+            !$this->dataHelper->isExtendEnabled()
+            || $this->dataHelper->isWarrantyContractEnabled()
+            || ($this->dataHelper->isOrdersApiEnabled() && $this->dataHelper->getOrdersApiCreateMode())
+        ) {
             return;
         }
 
