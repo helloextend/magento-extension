@@ -128,7 +128,6 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
 
             $this->addWarranty($cart, $warrantyData, $qty);
         }
-echo '123';
     }
 
     /**
