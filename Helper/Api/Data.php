@@ -469,11 +469,12 @@ class Data extends AbstractHelper
      */
     public function getStoreName($storeId = null): string
     {
-        return $this->scopeConfig->getValue(
+        $storeName = $this->scopeConfig->getValue(
             self::WARRANTY_STORE_NAME,
             ScopeInterface::SCOPE_STORES,
             $storeId
         );
+        return $storeName ?? '';
     }
 
     /**
