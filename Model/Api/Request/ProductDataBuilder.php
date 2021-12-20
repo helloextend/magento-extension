@@ -67,7 +67,10 @@ class ProductDataBuilder
         $data = [
             'title' => (string)$productSubject->getName(),
             'description' => $description,
-            'price' => $this->helper->formatPrice($productSubject->getFinalPrice()),
+            'price' => [
+                "amount" => $this->helper->formatPrice($productSubject->getFinalPrice()),
+                "currencyCode" => "USD"
+            ],
             'referenceId' => (string)$productSubject->getSku(),
             'category' => $this->getCategories($productSubject),
             'identifiers' => [
@@ -83,8 +86,9 @@ class ProductDataBuilder
         $parentId = $this->configurableType->getParentIdsByChild($productSubject->getEntityId());
         $parentId = reset($parentId);
         if (!empty($parentId)) {
-            $data['identifiers']['parentSku'] = $this->productRepository->getById($parentId)->getSku();
-
+            $_parentSKU = $this->productRepository->getById($parentId)->getSku();
+            $data['parentReferenceId'] = $_parentSKU;
+            $data['identifiers']['parentSku'] = $_parentSKU;
             $data['identifiers']['type'] = 'configurableChild';
         }
         return $data;

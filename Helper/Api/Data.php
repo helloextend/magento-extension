@@ -1,60 +1,443 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+declare(strict_types=1);
 
 namespace Extend\Warranty\Helper\Api;
 
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Module\ModuleListInterface;
+use Magento\Config\Model\ResourceModel\Config as ConfigResource;
+use Magento\Framework\App\Cache\Manager as CacheManager;
+use Magento\Framework\App\Cache\Type\Config;
+use Extend\Warranty\Model\Config\Source\AuthMode;
 
+/**
+ * Class Data
+ */
 class Data extends AbstractHelper
 {
-    CONST BASEPATH = 'warranty/authentication/';
+    /**
+     * General settings
+     */
+    const WARRANTY_ENABLE_EXTEND_ENABLE_XML_PATH = 'warranty/enableExtend/enable';
+    const WARRANTY_ENABLE_EXTEND_ENABLE_BALANCE_XML_PATH = 'warranty/enableExtend/enableBalance';
+    const WARRANTY_ENABLE_EXTEND_LOGGING_ENABLED_XML_PATH = 'warranty/enableExtend/logging_enabled';
 
-    CONST ENABLE_PATH = 'warranty/enableExtend/';
+    /**
+     * Authentication settings
+     */
+    const WARRANTY_AUTHENTICATION_AUTH_MODE_XML_PATH = 'warranty/authentication/auth_mode';
+    const WARRANTY_AUTHENTICATION_STORE_ID_XML_PATH = 'warranty/authentication/store_id';
+    const WARRANTY_AUTHENTICATION_API_KEY_XML_PATH = 'warranty/authentication/api_key';
+    const WARRANTY_AUTHENTICATION_SANDBOX_STORE_ID_XML_PATH = 'warranty/authentication/sandbox_store_id';
+    const WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH = 'warranty/authentication/sandbox_api_key';
+    const WARRANTY_AUTHENTICATION_API_URL_XML_PATH = 'warranty/authentication/api_url';
+    const WARRANTY_AUTHENTICATION_SANDBOX_API_URL_XML_PATH = 'warranty/authentication/sandbox_api_url';
 
-    protected $scopeConfig;
+    /**
+     * Contracts settings
+     */
+    const WARRANTY_CONTRACTS_ENABLED_XML_PATH = 'warranty/contracts/enabled';
+    const WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH = 'warranty/contracts/batch_size';
+    const WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH = 'warranty/contracts/storage_period';
+    const WARRANTY_CONTRACTS_REFUND_ENABLED_XML_PATH = 'warranty/enableExtend/enableRefunds';
+    const WARRANTY_CONTRACTS_AUTO_REFUND_ENABLED_XML_PATH = 'warranty/contracts/auto_refund_enabled';
 
-    public function __construct
-    (
+    /**
+     * Offers settings
+     */
+    const WARRANTY_OFFERS_SHOPPING_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableCartOffers';
+    const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
+    const WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH = 'warranty/offers/interstitial_cart_enabled';
+
+    /**
+     * Products settings
+     */
+    const WARRANTY_PRODUCTS_BATCH_SIZE_XML_PATH = 'warranty/products/batch_size';
+    const WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH = 'warranty/products/lastSync';
+    const WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/products/cron_sync_enabled';
+
+    /**
+     * Leads settings
+     */
+    const WARRANTY_ENABLE_EXTEND_ENABLE_LEADS_XML_PATH = 'warranty/enableExtend/enableLeads';
+
+    /**
+     * Module name
+     */
+    const MODULE_NAME = 'Extend_Warranty';
+
+    /**
+     * Module List Interface
+     *
+     * @var ModuleListInterface
+     */
+    private $moduleList;
+
+    /**
+     * Config Resource
+     *
+     * @var ConfigResource
+     */
+    private $configResource;
+
+    /**
+     * Cache Manager
+     *
+     * @var CacheManager
+     */
+    private $cacheManager;
+
+    /**
+     * Data constructor
+     *
+     * @param Context $context
+     * @param ModuleListInterface $moduleList
+     * @param ConfigResource $configResource
+     * @param CacheManager $cacheManager
+     */
+    public function __construct(
         Context $context,
-        ScopeConfigInterface $config
-    )
-    {
-        $this->scopeConfig = $config;
+        ModuleListInterface $moduleList,
+        ConfigResource $configResource,
+        CacheManager $cacheManager
+    ) {
+        $this->moduleList = $moduleList;
+        $this->configResource = $configResource;
+        $this->cacheManager = $cacheManager;
         parent::__construct($context);
     }
 
-    public function getValue(string $field)
+    /**
+     * Get module version
+     *
+     * @return string
+     */
+    public function getModuleVersion(): string
     {
-        $path = self::BASEPATH . $field;
-        return $this->scopeConfig->getValue($path);
+        $module = $this->moduleList->getOne(self::MODULE_NAME);
+
+        return $module['setup_version'] ?? '';
     }
 
-    public function isExtendEnabled()
+    /**
+     * Check if Extend module enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isExtendEnabled($storeId = null): bool
     {
-        $path = self::ENABLE_PATH . 'enable';
-        return $this->scopeConfig->isSetFlag($path);
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_ENABLE_EXTEND_ENABLE_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
     }
 
-    public function isExtendLive()
+    /**
+     * Check if Extend in live auth mode
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return bool
+     */
+    public function isExtendLive(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): bool {
+        $authMode = (int)$this->scopeConfig->getValue(
+            self::WARRANTY_AUTHENTICATION_AUTH_MODE_XML_PATH,
+            $scopeType,
+            $scopeId
+        );
+
+        return $authMode === AuthMode::LIVE_VALUE;
+    }
+
+    /**
+     * Get store ID
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getStoreId(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
+        $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_STORE_ID_XML_PATH
+            : self::WARRANTY_AUTHENTICATION_SANDBOX_STORE_ID_XML_PATH;
+
+        return (string)$this->scopeConfig->getValue($path, $scopeType, $scopeId);
+    }
+
+    /**
+     * Get API key
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getApiKey(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
+        $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_API_KEY_XML_PATH
+            : self::WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH;
+
+        return (string)$this->scopeConfig->getValue($path, $scopeType, $scopeId);
+    }
+
+    /**
+     * Get API url
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getApiUrl(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
+       $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_API_URL_XML_PATH
+            : self::WARRANTY_AUTHENTICATION_SANDBOX_API_URL_XML_PATH;
+
+        return (string)$this->scopeConfig->getValue($path);
+    }
+
+    /**
+     * Check if cart balance enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isBalancedCart($storeId = null): bool
     {
-        $path = self::BASEPATH . 'auth_mode';
-        return $this->scopeConfig->isSetFlag($path);
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_ENABLE_EXTEND_ENABLE_BALANCE_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
     }
 
-    public function isBalancedCart()
+    /**
+     * Check if logging enabled
+     *
+     * @return bool
+     */
+    public function isLoggingEnabled(): bool
     {
-        $path = self::ENABLE_PATH . 'enableBalance';
-        return $this->scopeConfig->isSetFlag($path);
+        return $this->scopeConfig->isSetFlag(self::WARRANTY_ENABLE_EXTEND_LOGGING_ENABLED_XML_PATH);
     }
 
-    public function isDisplayOffersEnabled() {
-        $path = self::ENABLE_PATH. 'enableCartOffers';
-        return $this->scopeConfig->isSetFlag($path);
+    /**
+     * Check if warranty contract creation for order item is enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isWarrantyContractEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_CONTRACTS_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
     }
 
-    public function isRefundEnabled() {
-        $path = self::ENABLE_PATH. 'enableRefunds';
-        return $this->scopeConfig->isSetFlag($path);
+    /**
+     * Check if refund enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isRefundEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_CONTRACTS_REFUND_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if a refund should be created automatically when credit memo is created
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isAutoRefundEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_CONTRACTS_AUTO_REFUND_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_WEBSITES,
+            $storeId
+        );
+    }
+
+    /**
+     * Get contracts batch size
+     *
+     * @param string|int|null $storeId
+     * @return int
+     */
+    public function getContractsBatchSize($storeId = null): int
+    {
+        return (int)$this->scopeConfig->getValue(
+            self::WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH,
+            ScopeInterface::SCOPE_WEBSITES,
+            $storeId
+        );
+    }
+
+    /**
+     * Get storage period, days
+     *
+     * @param string|int|null $storeId
+     * @return int
+     */
+    public function getStoragePeriod($storeId = null): int
+    {
+        return (int)$this->scopeConfig->getValue(
+            self::WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH,
+            ScopeInterface::SCOPE_WEBSITES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if shopping cart offers enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isShoppingCartOffersEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_OFFERS_SHOPPING_CART_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if product detail page offers enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isProductDetailPageOffersEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_OFFERS_PDP_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if interstitial cart offers enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isInterstitialCartOffersEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Get products batch size
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return int
+     */
+    public function getProductsBatchSize(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): int {
+        return (int)$this->scopeConfig->getValue(
+            self::WARRANTY_PRODUCTS_BATCH_SIZE_XML_PATH,
+            $scopeType,
+            $scopeId
+        );
+    }
+
+    /**
+     * Set last product sync date
+     *
+     * @param string $value
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     */
+    public function setLastProductSyncDate(
+        string $value,
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): void {
+        $this->configResource->saveConfig(
+            self::WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH,
+            $value,
+            $scopeType,
+            (int)$scopeId
+        );
+        $this->cacheManager->clean([Config::TYPE_IDENTIFIER]);
+    }
+
+    /**
+     * Get last product sync date
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getLastProductSyncDate(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
+        return (string)$this->scopeConfig->getValue(
+            self::WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH,
+            $scopeType,
+            $scopeId
+        );
+    }
+
+    /**
+     * Check if product synchronization by cron is enabled
+     */
+    public function isProductSyncByCronEnabled(): bool
+    {
+        return $this->scopeConfig->isSetFlag(self::WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH);
+    }
+
+    /**
+     * Check if leads enabled
+     *
+     * @param null $storeId
+     * @return bool
+     */
+    public function isLeadEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_ENABLE_EXTEND_ENABLE_LEADS_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
     }
 }

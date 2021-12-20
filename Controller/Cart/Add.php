@@ -1,50 +1,108 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Controller\Cart;
 
-use Extend\Warranty\Model\Product\Type as WarrantyType;
+use Extend\Warranty\Model\Product\Type;
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Checkout\Controller\Cart;
-use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Framework\Controller\ResultFactory;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Data\Form\FormKey\Validator as FormKeyValidator;
+use Magento\Framework\Controller\ResultInterface;
 use Magento\Checkout\Model\Cart as CustomerCart;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Serialize\SerializerInterface;
+use Extend\Warranty\Helper\Tracking as TrackingHelper;
+use Extend\Warranty\Helper\Api as Helper;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\Exception\LocalizedException;
 
-class Add extends Cart
+/**
+ * Class Add
+ */
+class Add extends Cart implements HttpPostActionInterface
 {
     /**
+     * Product Repository Interface
+     *
      * @var ProductRepositoryInterface
      */
-    protected $productRepository;
+    private $productRepository;
 
     /**
+     * Search Criteria Builder
+     *
      * @var SearchCriteriaBuilder
      */
-    protected $searchCriteriaBuilder;
+    private $searchCriteriaBuilder;
 
     /**
-     * @var SerializerInterface
+     * Tracking Helper
+     *
+     * @var TrackingHelper
      */
-    protected $serializer;
+    private $trackingHelper;
 
     /**
+     * Helper
+     *
+     * @var Helper
+     */
+    private $helper;
+
+    /**
+     * Logger Interface
+     *
      * @var LoggerInterface
      */
-    protected $addWarrantyLogger;
+    private $logger;
 
+    /**
+     * Add constructor
+     *
+     * @param Context $context
+     * @param ScopeConfigInterface $scopeConfig
+     * @param CheckoutSession $checkoutSession
+     * @param StoreManagerInterface $storeManager
+     * @param FormKeyValidator $formKeyValidator
+     * @param CustomerCart $cart
+     * @param ProductRepositoryInterface $productRepository
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param TrackingHelper $trackingHelper
+     * @param Helper $helper
+     * @param LoggerInterface $logger
+     */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\Data\Form\FormKey\Validator $formKeyValidator,
+        Context $context,
+        ScopeConfigInterface $scopeConfig,
+        CheckoutSession $checkoutSession,
+        StoreManagerInterface $storeManager,
+        FormKeyValidator $formKeyValidator,
         CustomerCart $cart,
         ProductRepositoryInterface $productRepository,
         SearchCriteriaBuilder $searchCriteriaBuilder,
-        SerializerInterface $serializer,
-        LoggerInterface $addWarrantyLogger
+        TrackingHelper $trackingHelper,
+        Helper $helper,
+        LoggerInterface $logger
     ) {
+        $this->productRepository = $productRepository;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->trackingHelper = $trackingHelper;
+        $this->helper = $helper;
+        $this->logger = $logger;
+
         parent::__construct(
             $context,
             $scopeConfig,
@@ -53,78 +111,149 @@ class Add extends Cart
             $formKeyValidator,
             $cart
         );
-        $this->productRepository = $productRepository;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->serializer = $serializer;
-        $this->addWarrantyLogger = $addWarrantyLogger;
     }
 
+    /**
+     * Init warranty
+     *
+     * @return ProductInterface|bool
+     */
     protected function initWarranty()
     {
-        $this->searchCriteriaBuilder
-            ->setPageSize(1)->addFilter('type_id', WarrantyType::TYPE_CODE);
-
+        $this->searchCriteriaBuilder->setPageSize(1);
+        $this->searchCriteriaBuilder->addFilter(ProductInterface::TYPE_ID, Type::TYPE_CODE);
         $searchCriteria = $this->searchCriteriaBuilder->create();
 
         $searchResults = $this->productRepository->getList($searchCriteria);
-
         $results = $searchResults->getItems();
+
         return reset($results);
     }
 
-    public function execute()
+    /**
+     * Add to cart warranty
+     *
+     * @return ResultInterface
+     */
+    public function execute(): ResultInterface
     {
-        $warrantyData = $this->getRequest()->getPost('warranty');
+        $request = $this->getRequest();
+        $warrantyData = $request->getPost('warranty', []);
+
+        if (!$this->_formKeyValidator->validate($request)) {
+            $this->messageManager->addErrorMessage(
+                __('Sorry! We can\'t add this product protection to your shopping cart right now.')
+            );
+            $this->logger->error('Invalid form key. Warranty data: ' . $this->helper->getWarrantyDataAsString($warrantyData));
+            $responseData = [
+                'status' => false,
+                'error' => 'Invalid form key',
+            ];
+
+            return $this->jsonResponse($responseData);
+        }
 
         try {
             $warranty = $this->initWarranty();
             if (!$warranty) {
-                $this->messageManager->addErrorMessage('We can\'t add this product protection to your shopping cart right now.');
-                $this->addWarrantyLogger->error('Error finding warranty product, please ensure warranty product is in your catalog and is enabled.');
+                $this->messageManager->addErrorMessage(
+                    __('Sorry! We can\'t add this product protection to your shopping cart right now.')
+                );
+                $this->logger->error(
+                    'Oops! There was an error finding the protection plan product, please ensure the protection plan product is in your catalog and is enabled! '
+                    . 'Warranty data: ' . $this->helper->getWarrantyDataAsString($warrantyData)
+                );
+                $responseData = [
+                    'status' => false,
+                    'error' => 'Oops! There was an error finding the protection plan product, please ensure the protection plan product is in your catalog and is enabled!',
+                ];
 
-                return $this->goBack();
+                return $this->jsonResponse($responseData);
             }
 
-            $this->cart->addProduct($warranty, $warrantyData);
+            $errors = $this->helper->validateWarranty($warrantyData);
+            if (!empty($errors)) {
+                $this->messageManager->addErrorMessage(
+                    __('Sorry! We can\'t add this product protection to your shopping cart right now.')
+                );
+                $errorsAsString = implode(' ', $errors);
+                $this->logger->error(
+                    'Invalid warranty data. ' . $errorsAsString . ' Warranty data: ' . $this->helper->getWarrantyDataAsString($warrantyData)
+                );
+                $responseData = [
+                    'status' => false,
+                    'error' => 'Invalid warranty data',
+                ];
 
+                return $this->jsonResponse($responseData);
+            }
+
+            $relatedProduct = $warrantyData['product'];
+            $qty = 1;
+
+            $quote = $this->_checkoutSession->getQuote();
+            foreach ($quote->getAllVisibleItems() as $item) {
+                if ($item->getSku() === $relatedProduct) {
+                    $qty = $item->getQty();
+                    break;
+                }
+            }
+
+            $warrantyData['qty'] = $qty;
+
+            $this->cart->addProduct($warranty, $warrantyData);
             $this->cart->save();
 
-            $message = __(
-                'You added %1 to your shopping cart.',
-                $warranty->getName()
+            $this->messageManager->addSuccessMessage(
+                __('You added %1 to your shopping cart.', $warranty->getName())
             );
-            $this->messageManager->addSuccessMessage($message);
-            return $this->goBack(null, $warranty);
-        } catch (\Exception $e) {
+
+            $responseData = [
+                'status' => true,
+                'error' => '',
+            ];
+
+            if ($this->trackingHelper->isTrackingEnabled()) {
+                $trackingData = [
+                    'eventName'         => 'trackOfferAddedToCart',
+                    'productId'         => $warrantyData['product'] ?? '',
+                    'productQuantity'   => $qty,
+                    'warrantyQuantity'  => $qty,
+                    'planId'            => $warrantyData['planId'] ?? '',
+                    'area'              => 'cart_page',
+                    'component'         => 'modal',
+                ];
+
+                $responseData['trackingData'] = $trackingData;
+            }
+
+            return $this->jsonResponse($responseData);
+        } catch (LocalizedException $e) {
             $this->messageManager->addExceptionMessage(
                 $e,
-                __('We can\'t add this product protection to your shopping cart right now.')
+                __('Sorry! We can\'t add this product protection to your shopping cart right now.')
             );
-            $this->_objectManager->get(\Psr\Log\LoggerInterface::class)->critical($e);
-            return $this->goBack();
+            $this->logger->critical($e);
+            $responseData = [
+                'status' => false,
+                'error' => $e->getMessage(),
+            ];
+
+            return $this->jsonResponse($responseData);
         }
     }
 
-    protected function goBack($backUrl = null, $product = null)
+    /**
+     * JSON response builder
+     *
+     * @param array $data
+     * @return ResultInterface
+     */
+    private function jsonResponse(array $data = []): ResultInterface
     {
-        if (!$this->getRequest()->isAjax()) {
-            return parent::_goBack($backUrl);
-        }
+        $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+        $resultJson->setData($data);
 
-        $result = [];
-
-        if ($backUrl || $backUrl = $this->getBackUrl()) {
-            $result['backUrl'] = $backUrl;
-        } else {
-            if ($product && !$product->getIsSalable()) {
-                $result['product'] = [
-                    'statusText' => __('Out of stock')
-                ];
-            }
-        }
-
-        $this->getResponse()->representJson(
-            $this->_objectManager->get(\Magento\Framework\Json\Helper\Data::class)->jsonEncode($result)
-        );
+        return $resultJson;
     }
 }

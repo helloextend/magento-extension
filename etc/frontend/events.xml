@@ -1,12 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+
     <event name="checkout_cart_add_product_complete">
-        <observer name="add_warranty_to_cart" instance="Extend\Warranty\Observer\Warranty\AddToCart"/>
+        <observer name="extend_warranty_observer_warranty_add_to_cart"
+                  instance="Extend\Warranty\Observer\Warranty\AddToCart" />
+        <observer name="extend_warranty_observer_checkout_cart_add"
+                  instance="Extend\Warranty\Observer\Checkout\Cart\Add" />
     </event>
+
     <event name="sales_quote_remove_item">
-        <observer name="remove_warranties" instance="Extend\Warranty\Observer\Warranty\RemoveWarranties"/>
+        <observer name="extend_warranty_observer_quote_remove_item"
+                  instance="Extend\Warranty\Observer\QuoteRemoveItem" />
     </event>
+
     <event name="checkout_cart_update_items_after">
-        <observer name="cart_normalize" instance="Extend\Warranty\Observer\Warranty\Normalize"/>
+        <observer name="extend_warranty_observer_warranty_normalize"
+                  instance="Extend\Warranty\Observer\Warranty\Normalize" />
+        <observer name="extend_warranty_observer_checkout_cart_update_items_after"
+                  instance="Extend\Warranty\Observer\Checkout\Cart\UpdateItemsAfter" />
     </event>
+
+    <event name="checkout_cart_update_item_complete">
+        <observer name="extend_Warranty_observer_warranty_normalize"
+                  instance="Extend\Warranty\Observer\Warranty\Normalize" />
+        <observer name="extend_warranty_observer_checkout_cart_update_item_complete"
+                  instance="Extend\Warranty\Observer\Checkout\Cart\UpdateItemComplete" />
+    </event>
+
 </config>

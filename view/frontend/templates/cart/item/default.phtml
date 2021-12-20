@@ -16,9 +16,9 @@ $helper = $this->helper('Magento\Msrp\Helper\Data');
 $canApplyMsrp = $helper->isShowBeforeOrderConfirm($product) && $helper->isMinimalPriceLessMsrp($product);
 $attributes = $product->getTypeId() === 'warranty' ? ['width' => '50%'] : [];
 
-/** @var Extend\Warranty\ViewModel\WarrantiesInCart $inCartViewModel */
+/** @var Extend\Warranty\ViewModel\Warranty $inCartViewModel */
 $inCartViewModel = $block->getData('viewModel');
-
+$quote = $_item->getQuote();
 ?>
 <tbody class="cart item">
 <tr class="item-info">
@@ -153,30 +153,42 @@ $inCartViewModel = $block->getData('viewModel');
 </tbody>
 
 <?php if ($product->getTypeId() !== 'warranty'): ?>
-    <?php if ($inCartViewModel->isDisplayOffersEnabled()): ?>
-        <?php if (!$inCartViewModel->hasWarranty($product->getSku())): ?>
-            <tbody id="warranty-<?= $_item->getId() ?>">
+    <?php if ($inCartViewModel->isExtendEnabled() && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
+        <?php
+            $_itemID = '';
+            $productTypeInstance = $product->getTypeInstance();
+            if ($product->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
+                $usedProducts = $productTypeInstance->getUsedProducts($product);
+                 foreach ($usedProducts  as $child) {
+                     if ($child->getSku() == $product->getSku()) {
+                         $_itemID = $child->getId();
+                     }
+                 }
+            }
+
+            $_itemID = empty($_itemID) ? $_item->getId() : $_itemID;
+            $_currentSku[$_itemID] = $product->getSku();
+        ?>
+
+        <?php if (!$inCartViewModel->hasWarranty($quote, $_currentSku[$_itemID])): ?>
+            <tbody id="warranty-<?= $_itemID ?>">
             <tr>
-                <td>
-                    <div id="extend-offer-<?= $_item->getId() ?>"></div>
-                </td>
+                <td><div id="extend-offer-<?= $_itemID ?>"></div></td>
             </tr>
             </tbody>
             <script type="text/x-magento-init">
                 {
-                    "#warranty-<?= $_item->getId() ?>": {
+                    "#warranty-<?= $_itemID ?>": {
                         "cartAddWarranty":{
-                            "productSku": "<?= $product->getSku() ?>",
+                            "productSku": "<?= $_currentSku[$_itemID] ?>",
                             "url" : "<?= $block->getUrl('warranty/cart/add') ?>",
-                            "itemId" : "<?= $_item->getId() ?>",
-                            "parentId" : "<?= $_item->getOptionByCode('simple_product') ? $_item->getProductId() : '' ?>"
+                            "itemId" : "<?= $_itemID ?>",
+                            "parentId" : "<?= $_item->getOptionByCode('simple_product') ? $_item->getProductId() : '' ?>",
+                            "isTrackingEnabled": "<?= $block->escapeJs($inCartViewModel->isTrackingEnabled()) ?>"
                         }
                     }
                 }
-
-
             </script>
         <?php endif; ?>
     <?php endif; ?>
 <?php endif; ?>
-

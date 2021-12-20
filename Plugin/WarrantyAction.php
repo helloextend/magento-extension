@@ -32,7 +32,7 @@ class WarrantyAction
         $typeId = $subject->getRequest()->getParam('type');
 
         if (in_array($typeId, Data::NOT_ALLOWED_TYPES)) {
-            $this->messageManager->addError(__("Warranty type products cannot be created by admin"));
+            $this->messageManager->addError(__("Protection plan products of type 'warranty' cannot be created by admin."));
             return $this->redirectFactory->create()->setPath('catalog/product/index');
         }
 

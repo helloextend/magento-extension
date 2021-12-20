@@ -1,113 +1,158 @@
 <?php
-
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Model\Api\Sync\Product;
 
-use Extend\Warranty\Model\Api\Request\ProductDataBuilder;
+use Extend\Warranty\Api\ConnectorInterface;
+use Extend\Warranty\Model\Api\Request\ProductDataBuilder as ProductPayloadBuilder;
 use Magento\Framework\Serialize\Serializer\Json;
 use Psr\Log\LoggerInterface;
+use Zend_Http_Client;
+use Zend_Http_Response;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 
-use Extend\Warranty\Api\ConnectorInterface;
-
-
+/**
+ * Class ProductsRequest
+ */
 class ProductsRequest
 {
-    const ENDPOINT_URI = 'products';
     /**
+     * Create / update a product
+     */
+    const CREATE_PRODUCT_ENDPOINT = 'products/';
+
+    /**
+     * Response status codes
+     */
+    const STATUS_CODE_SUCCESS = 201;
+
+    /**
+     * Connector Interface
+     *
      * @var ConnectorInterface
      */
-    protected $connector;
+    private $connector;
 
     /**
-     * @var ProductDataBuilder
+     * Product Payload Builder
+     *
+     * @var ProductPayloadBuilder
      */
-    protected $productDataBuilder;
+    private $productPayloadBuilder;
 
     /**
+     * Json Serializer
+     *
      * @var Json
      */
-    protected $jsonSerializer;
+    private $jsonSerializer;
 
     /**
+     * Logger Interface
+     *
      * @var LoggerInterface
      */
-    protected $logger;
+    private $syncLogger;
 
-    public function __construct
-    (
+    /**
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * ProductsRequest constructor
+     *
+     * @param ConnectorInterface $connector
+     * @param ProductPayloadBuilder $productPayloadBuilder
+     * @param Json $jsonSerializer
+     * @param LoggerInterface $syncLogger
+     * @param LoggerInterface $logger
+     */
+    public function __construct (
         ConnectorInterface $connector,
-        ProductDataBuilder $productDataBuilder,
+        ProductPayloadBuilder $productPayloadBuilder,
         Json $jsonSerializer,
-        LoggerInterface $syncLogger
-    )
-    {
+        LoggerInterface $syncLogger,
+        LoggerInterface $logger
+    ) {
         $this->connector = $connector;
-        $this->productDataBuilder = $productDataBuilder;
+        $this->productPayloadBuilder = $productPayloadBuilder;
         $this->jsonSerializer = $jsonSerializer;
-        $this->logger = $syncLogger;
+        $this->syncLogger = $syncLogger;
+        $this->logger = $logger;
     }
 
     /**
-     * @param $products
-     * @throws \Exception
+     * Create / update batch of products
+     *
+     * @param array $products
+     * @param int $currentBatch
+     * @throws NoSuchEntityException
      */
-    public function create($products, $batch)
+    public function create(array $products, int $currentBatch = 1): void
     {
-        $data = [];
-
+        $productData = [];
         foreach ($products as $product) {
-            $data[] = $this->productDataBuilder->build($product);
-        }
-
-        $response = $this->connector->call(
-            self::ENDPOINT_URI . '?batch=1&upsert=1',
-            \Zend_Http_Client::POST,
-            $data
-        );
-
-        $res = $this->jsonSerializer->unserialize($response->getBody());
-
-        if ($response->getStatus() === 201 || $response->getStatus() === 202) {
-            $this->logger->info('Synced ' . count($data) . ' products in batch ' . $batch);
-            foreach ($res as $name => $section) {
-                $info = array_column($section, 'referenceId');
-                $this->logger->info($name, $info);
+            $productPayload = $this->productPayloadBuilder->build($product);
+            if (!empty($productPayload)) {
+                $productData[] = $productPayload;
             }
-            return;
         }
 
-        $this->logger->error($res['message']);
-        throw new \Exception($res['message']);
-    }
+        if (!empty($productData)) {
+            try {
+                $response = $this->connector->call(
+                    self::CREATE_PRODUCT_ENDPOINT . '?batch=true',
+                    Zend_Http_Client::POST,
+                    $productData
+                );
+                $responseBody = $this->processResponse($response);
 
+                if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
+                    $this->logger->info(sprintf('Product batch %s is synchronized successfully.', $currentBatch));
+                    $this->syncLogger->info('Synced ' . count($productData) . ' products in batch ' . $currentBatch);
+
+                    foreach ($responseBody as $name => $section) {
+                        $info = array_column($section, 'referenceId');
+                        $this->syncLogger->info($name, $info);
+                    }
+                } else {
+                    $this->logger->error(sprintf('Product batch %s synchronization is failed.', $currentBatch));
+                }
+            } catch (LocalizedException $exception) {
+                $this->logger->error($exception->getMessage());
+            }
+        }
+    }
 
     /**
-     * @param $products
-     * @throws \Exception
+     * Process response
+     *
+     * @param Zend_Http_Response $response
+     * @return array
      */
-    public function update($products)
+    protected function processResponse(Zend_Http_Response $response): array
     {
-        foreach ($products as $product) {
-            $data = $this->productDataBuilder->build($product);
-            $response = $this->connector->call(
-                self::ENDPOINT_URI . "/{$product->getSku()}",
-                \Zend_Http_Client::PUT,
-                $data
-            );
+        $responseBody = [];
+        $responseBodyJson = $response->getBody();
 
-            if ($response->isError()) {
-                $res = $this->jsonSerializer->unserialize($response->getBody());
-                $this->logger->error($res['message']);
-
-                throw new \Exception($res['message']);
-            } else {
-                $this->logger->info('Update product request successful');
-                $product->setCustomAttribute('is_product_synced', true);
-
-                $this->productRepository->save($product);
-            }
+        if ($responseBodyJson) {
+            $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
+            $this->logger->info('Response: ' . $response->getHeadersAsString() . PHP_EOL . $response->getRawBody());
+        } else {
+            $this->logger->error('Response body is empty.');
         }
 
+        return $responseBody;
     }
-
 }

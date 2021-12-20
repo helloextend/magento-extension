@@ -1,58 +1,66 @@
 <?php
-
 /**
- * @var $block \Magento\Catalog\Block\Product\View
- * @var Extend\Warranty\ViewModel\Installation $viewModel
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
+/**
+ * @var \Magento\Catalog\Block\Product\View $block
+ */
+/** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getData('viewModel');
-
+/** @var string $offerTypeArea */
+$offerTypeArea = $block->getData('offerTypeArea');
+/** @var \Magento\Catalog\Model\Product $product */
+$product = $block->getProduct();
 ?>
-<?php $_product = $block->getProduct(); ?>
-<?php $buttonTitle = __('Add to Cart'); ?>
-<?php if ($_product->isSaleable()): ?>
+<?php if ($product->isSaleable()): ?>
     <div class="box-tocart">
         <div class="fieldset">
             <?php if ($block->shouldRenderQuantity()): ?>
                 <div class="field qty">
-                    <label class="label" for="qty"><span><?= /* @escapeNotVerified */
-                            __('Qty') ?></span></label>
+                    <label class="label" for="qty">
+                        <span><?= $block->escapeHtml(__('Qty')); ?></span>
+                    </label>
                     <div class="control">
                         <input type="number"
                                name="qty"
                                id="qty"
-                               value="<?= /* @escapeNotVerified */
-                               $block->getProductDefaultQty() * 1 ?>"
-                               title="<?= /* @escapeNotVerified */
-                               __('Qty') ?>"
+                               value="<?= (int)$block->getProductDefaultQty() * 1; ?>"
+                               title="<?= $block->escapeHtmlAttr(__('Qty')); ?>"
                                class="input-text qty"
-                               data-validate="<?= $block->escapeHtml(json_encode($block->getQuantityValidators())) ?>"
+                               data-validate="<?= $block->escapeHtmlAttr(json_encode($block->getQuantityValidators())); ?>"
                         />
                     </div>
                 </div>
             <?php endif; ?>
             <hr>
-            <?php if (isset($viewModel) && $viewModel->getExtendEnable()) : ?>
+            <?php if ($viewModel->isExtendEnabled()): ?>
                 <div id="extend-offer"></div>
-
                 <script type="text/x-magento-init">
-                {
-                    "#extend-offer": {
-                        "extendWarranties":{"productSku":"<?= $_product->getTypeId() == 'configurable' ? '' : $_product->getSku() ?>"}
+                    {
+                        "#extend-offer": {
+                            "extendWarranties":{
+                                "productSku": "<?= $product->getTypeId() == 'configurable' ? '' : $block->escapeJs($product->getSku()); ?>",
+                                "isPdpOffersEnabled": "<?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
+                                "isInterstitialCartOffersEnabled": "<?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
+                                "isProductHasOffers": <?= $viewModel->isProductHasOffers($product); ?>
+                            }
+                        }
                     }
-                }
                 </script>
             <?php endif; ?>
-
             <div class="actions">
                 <button type="submit"
-                        title="<?= /* @escapeNotVerified */
-                        $buttonTitle ?>"
+                        title="<?= $block->escapeHtmlAttr(__('Add to Cart')); ?>"
                         class="action primary tocart"
                         id="product-addtocart-button">
-                    <span><?= /* @escapeNotVerified */
-                        $buttonTitle ?></span>
+                    <span><?= $block->escapeHtmlAttr(__('Add to Cart')); ?></span>
                 </button>
-                <?= $block->getChildHtml('', true) ?>
+                <?= $block->getChildHtml('', true); ?>
             </div>
         </div>
     </div>

@@ -26,9 +26,19 @@
         $_productOptions = $_item->getProductOptions();
         $_planId = isset($_productOptions["warranty_id"]) ? $_productOptions["warranty_id"] : '';
         $_contractID = json_decode($_item->getContractId()) === NULL ? [$_item->getContractId()] : json_decode($_item->getContractId(), true);
+        $_contractID = is_array($_contractID) ? $_contractID : [$_contractID];
+
+        $_refunded = (isset($_productOptions["refund"]) && true == $_productOptions["refund"])
+            ? "-- All refunded --" : '';;
         ?>
         <div class="product-warranty-block">
-            <br /><span><?= $block->escapeHtml(__('Contract ID'))?>: </span><?= implode(", ", $_contractID); ?>
+            <br />
+            <?php if (empty($_refunded)): ?>
+                <span><?= $block->escapeHtml(__('Contract ID'))?>: </span>
+                <?= implode(", ", $_contractID); ?>
+            <?php else: ?>
+                <?= $block->escapeHtml($_refunded); ?>
+            <?php endif; ?>
             <br /><span><?= $block->escapeHtml(__('Plan ID'))?>: </span><?= $_planId ?>
         </div>
     <?php endif; ?>

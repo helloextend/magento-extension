@@ -1,12 +1,21 @@
 <?xml version="1.0"?>
-
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+ -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="extend_warranty">
-        <job name="sync_products" instance="Extend\Warranty\Cron\Sync" method="execute">
-            <schedule>0 0 * * *</schedule>
+        <job name="extend_warranty_sync_products_cronjob" instance="Extend\Warranty\Cron\SyncProducts" method="execute">
+            <config_path>warranty/products/cron/frequency</config_path>
         </job>
-        <job name="sync_contracts" instance="Extend\Warranty\Cron\Contracts" method="execute">
-            <schedule>0 */1 * * *</schedule>
+        <job name="extend_warranty_create_warranty_contract_cronjob" instance="Extend\Warranty\Cron\CreateContracts" method="execute">
+            <config_path>warranty/contracts/cron/frequency</config_path>
         </job>
     </group>
 </config>

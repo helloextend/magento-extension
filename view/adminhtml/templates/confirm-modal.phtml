@@ -1,3 +1,25 @@
-<div id="popup-modal" style="display: none">
-    <p>Are you sure?</p>
+<div id="popup-modal" style="display: none;">
+    <p>Are you sure you want to refund <span id="refund-amount-validation-text"></span>?</p>
+    <input type="hidden" id="refund-amount-validation-cache" value="0">
 </div>
+
+<div id="popup-modal-partial" style="display: none;">
+    <p style="margin-bottom: 20px;"><b>Select the Contract IDs to process</b></p>
+    <div id="partial-contracts-list"></div>
+    <span id="partial-select-all" class="select">Select/Unselect All</span>
+</div>
+
+
+<script>
+    require(['jquery'], function($){
+        $('span#partial-select-all').on('click', function(e) {
+
+            if ($('span#partial-select-all').hasClass("selected")) {
+                $("div#popup-modal-partial>div#partial-contracts-list input").prop("checked", false);
+            } else {
+                $("div#popup-modal-partial>div#partial-contracts-list input").prop("checked", true);
+            }
+            $(this).toggleClass("selected")
+        });
+    });
+</script>

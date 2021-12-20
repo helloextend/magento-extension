@@ -1,9 +1,22 @@
 <?xml version="1.0"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+ -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="Extend_Warranty" setup_version="1.2.1" schema_version="1.2.1">
+    <module name="Extend_Warranty" setup_version="1.2.3" schema_version="1.2.3">
         <sequence>
             <module name="Magento_Catalog"/>
+            <module name="Magento_Quote" />
+            <module name="Magento_Sales" />
+            <module name="Magento_Sales" />
         </sequence>
     </module>
 </config>

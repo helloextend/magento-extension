@@ -9,12 +9,7 @@ class AbstractItem
 {
     public function afterGetItemData(SuperAbstractItem $subject, $result, Item $item)
     {
-        if ($result['product_type'] === 'warranty') {
-            $result['product_image']['isWarranty'] = true;
-        } else {
-            $result['product_image']['isWarranty'] = false;
-        }
-
+        $result['product_image']['isWarranty'] = $result['product_type'] === 'warranty';
         return $result;
     }
 }

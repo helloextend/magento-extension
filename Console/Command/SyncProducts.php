@@ -2,6 +2,7 @@
 
 namespace Extend\Warranty\Console\Command;
 
+use Extend\Warranty\Model\ProductSyncProcess;
 use Magento\Framework\Exception\LocalizedException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -10,7 +11,6 @@ use Extend\Warranty\Api\SyncInterface as ProductBatch;
 use Magento\Framework\App\State;
 use Extend\Warranty\Model\SyncProcess;
 use Psr\Log\LoggerInterface;
-use Extend\Warranty\Api\TimeUpdaterInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Helper\ProgressBar;
 
@@ -37,16 +37,18 @@ class SyncProducts extends Command
     private $logger;
 
     /**
-     * @var TimeUpdaterInterface
+     * ProductSyncProcess
+     *
+     * @var ProductSyncProcess
      */
-    private $timeUpdater;
+    private $productSyncProcess;
 
     public function __construct(
         State $state,
         ProductBatch $productBatch,
         SyncProcess $syncProcess,
         LoggerInterface $logger,
-        TimeUpdaterInterface $timeUpdater,
+        ProductSyncProcess $productSyncProcess,
         $name = null
     )
     {
@@ -55,7 +57,7 @@ class SyncProducts extends Command
         $this->productBatch = $productBatch;
         $this->syncProcess = $syncProcess;
         $this->logger = $logger;
-        $this->timeUpdater = $timeUpdater;
+        $this->productSyncProcess = $productSyncProcess;
     }
 
     protected function configure()
@@ -123,7 +125,7 @@ class SyncProducts extends Command
         $output->writeln('');
 
         if ($noError) {
-            $this->timeUpdater->updateLastSync();
+            $this->productSyncProcess->setLastSyncDate();
             $output->writeln('<info>Synchronization completed.</info>');
         } else {
             $output->writeln('<error>Some batches have not sync correctly, unable to save last time sync time.</error>');

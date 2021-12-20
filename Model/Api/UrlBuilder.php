@@ -1,57 +1,149 @@
 <?php
-
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Model\Api;
 
-
 use Extend\Warranty\Api\Data\UrlBuilderInterface;
-use Extend\Warranty\Helper\Api\Data as Config;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Area;
+use Magento\Framework\App\State as AppState;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 
+/**
+ * Class UrlBuilder
+ */
 class UrlBuilder implements UrlBuilderInterface
 {
+    /**
+     * App State
+     *
+     * @var AppState
+     */
+    private $appState;
 
-    const DS = DIRECTORY_SEPARATOR;
+    /**
+     * Request Interface
+     *
+     * @var RequestInterface
+     */
+    private $request;
 
-    protected $config;
+    /**
+     * Store Manager Interface
+     *
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
 
-    protected $uri;
+    /**
+     * Data Helper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
 
-
-    public function __construct(Config $config)
-    {
-        $this->config = $config;
+    /**
+     * UrlBuilder constructor
+     *
+     * @param AppState $appState
+     * @param RequestInterface $request
+     * @param StoreManagerInterface $storeManager
+     * @param DataHelper $dataHelper
+     */
+    public function __construct(
+        AppState $appState,
+        RequestInterface $request,
+        StoreManagerInterface $storeManager,
+        DataHelper $dataHelper
+    ) {
+        $this->appState = $appState;
+        $this->request = $request;
+        $this->storeManager = $storeManager;
+        $this->dataHelper = $dataHelper;
     }
 
     /**
+     * Build url
+     *
+     * @param string $endpoint
      * @return string
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
-    public function build(): string
+    public function build(string $endpoint): string
     {
-        $baseUrl = $this->config->getValue('auth_mode') ?
-            static::LIVE_URL :
-            static::SANDBOX_URL;
+        $scopeData = $this->getScopeData();
+        $scope = $scopeData['scope'];
+        $scopeId = $scopeData['scopeId'];
 
-        return rtrim($baseUrl, static::DS) .
-            static::DS .
-            ltrim($this->uri, static::DS);
+        $apiUrl = $this->dataHelper->getApiUrl($scope, $scopeId);
+        $storeId = $this->dataHelper->getStoreId($scope, $scopeId);
+
+        return stripos($endpoint, 'offers') === 0 ? $apiUrl . $endpoint
+            : $apiUrl . 'stores/' . $storeId . '/' . $endpoint;
     }
 
     /**
+     * Get API key
+     *
      * @return string
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
-    public function getUri(): string
+    public function getApiKey(): string
     {
-        return (string) $this->uri;
+        $scopeData = $this->getScopeData();
+        $scope = $scopeData['scope'];
+        $scopeId = $scopeData['scopeId'];
+
+        return $this->dataHelper->getApiKey($scope, $scopeId);
     }
 
     /**
-     * @param string $uri
-     * @return $this
+     * Get scope data
+     *
+     * @return array
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
-    public function setUri(string $uri): UrlBuilderInterface
+    private function getScopeData(): array
     {
-        $this->uri = $uri;
+        if ($this->appState->getAreaCode() === Area::AREA_FRONTEND) {
+            $scope = ScopeInterface::SCOPE_STORES;
+            $store = $this->storeManager->getStore();
+            $scopeId = $store->getId();
+        } else {
+            $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
+            $scopeId = 0;
 
-        return $this;
+            $params = $this->request->getParams();
+            if (isset($params['scope'])) {
+                $scope = $params['scope'];
+                $scopeId = $params['scopeId'];
+            } elseif (isset($params['store']) || isset($params['stores'])) {
+                $scope = ScopeInterface::SCOPE_STORES;
+                $scopeId = $params['store'] ?? $params['stores'];
+            } elseif (isset($params['website']) || isset($params['websites'])) {
+                $scope = ScopeInterface::SCOPE_WEBSITES;
+                $scopeId = $params['website'] ?? $params['websites'];
+            }
+        }
+
+        return [
+            'scope' => $scope,
+            'scopeId' => $scopeId,
+        ];
     }
 }

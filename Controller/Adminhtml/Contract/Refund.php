@@ -48,7 +48,6 @@ class Refund extends Action
         $this->extendHelper = $extendHelper;
     }
 
-
     public function execute()
     {
         $response = $this->resultFactory->create(ResultFactory::TYPE_JSON);
@@ -64,39 +63,76 @@ class Refund extends Action
         }
 
         $contractId = $this->getRequest()->getPost('contractId');
-        $response_log = [];
-        $noErrors = true;
+
+        $isValidationRequest = $this->getRequest()->getPost('validation');
+
+        /* Validation Request */
+        if (!empty($isValidationRequest) && $isValidationRequest) {
+            $amountValidated = 0;
+            foreach ($contractId as $_contractId) {
+                $_response = $this->contractsRequest->validateRefund($_contractId);
+                if (!empty($_response) && !empty($_response["refundAmount"])
+                    && !empty($_response["refundAmount"]["amount"])) {
+                    $amountValidated += $_response["refundAmount"]["amount"];
+                }
+            }
+
+            //Cent to dollars
+            if ($amountValidated > 0) {
+                $amountValidated /= 100;
+            }
+
+            return $this->resultFactory->create(ResultFactory::TYPE_JSON)
+                ->setHttpResponseCode(200)
+                ->setData(["amountValidated" => $amountValidated]);
+        }
+
+        $itemId  = (string)$this->getRequest()->getPost('itemId');
+        $item    = $this->orderItemRepository->get($itemId);
+        $options = $item->getProductOptions();
+        $response_log = empty($options['refund_responses_log']) ? [] : $options['refund_responses_log'];
+
+        $currentContracts = json_decode($item->getContractId()) === NULL ?
+            [$item->getContractId()] : json_decode($item->getContractId(), true);
+
+        $refundHadErrors = false;
 
         foreach ($contractId as $_contractId) {
             $refundResponse = $this->contractsRequest->refund($_contractId);
-            // Responses log
+
+            // Refunds log
             $response_log[] = [
                 "contract_id" => $_contractId,
                 "response" => $refundResponse
             ];
 
-            //At least one error
-            if ($refundResponse == false) {
-                $noErrors = false;
+            if ($refundResponse == true) {
+                if (($key = array_search($_contractId, $currentContracts)) !== false) {
+                    unset($currentContracts[$key]);
+                }
+            } else {
+                $refundHadErrors = true;
             }
         }
 
-        $itemId = (string)$this->getRequest()->getPost('itemId');
-        $item = $this->orderItemRepository->get($itemId);
-        $options = $item->getProductOptions();
-
-        if ($noErrors) {
+        //All contracts are refunded
+        if (empty($currentContracts)) {
             $options['refund'] = true;
-            $options['refund_responses_log'] = $response_log;
-            $item->setProductOptions($options);
-            $item->save();
-            $response->setHttpResponseCode(200);
         } else {
-            $options['refund_responses_log'] = $response_log;
-            $item->setProductOptions($options);
-            $item->save();
-            $response->setHttpResponseCode(500);
+            $options['refund'] = false;
         }
+
+        //At least one error return 500 error code
+        if ($refundHadErrors) {
+            $response->setHttpResponseCode(500);
+        } else {
+            $response->setHttpResponseCode(200);
+        }
+
+        $options['refund_responses_log'] = $response_log;
+        $item->setProductOptions($options);
+        $item->setContractId(json_encode($currentContracts));
+        $item->save();
 
         return $response;
     }

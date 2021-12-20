@@ -1,113 +1,99 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
+declare(strict_types=1);
 
 namespace Extend\Warranty\ViewModel;
 
-
+use Extend\Warranty\Model\Config\Source\AuthMode;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use Extend\Warranty\Helper\Api\Data;
-use Extend\Warranty\Model\Keys;
-use Extend\Warranty\Model\Api\Connector;
-use Magento\Framework\Serialize\Serializer\Json;
+use InvalidArgumentException;
 
+/**
+ * Class Installation
+ */
 class Installation implements ArgumentInterface
 {
-    const DEMO = 'demo';
-
-    const LIVE = 'live';
+    /**
+     * DataHelper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
 
     /**
-     * @var StoreManagerInterface
+     * Json Serializer
+     *
+     * @var JsonSerializer
      */
-    protected $storeManager;
+    private $jsonSerializer;
 
     /**
-     * @var Data
+     * Installation constructor
+     *
+     * @param DataHelper $dataHelper
+     * @param JsonSerializer $jsonSerializer
      */
-    protected $data;
-
-    /**
-     * @var Keys
-     */
-    protected $keys;
-
-    /**
-     * @var Json
-     */
-    protected $jsonSerializer;
-
-    /**
-     * @var Connector
-     */
-    protected $connection;
-
-    /**
-     * @var bool
-     */
-    protected $enable;
-
-    /**
-     * @var string
-     */
-    protected $storeId;
-
-    public function __construct
-    (
-        StoreManagerInterface $storeManager,
-        Data $data,
-        Keys $keys,
-        Connector $connection,
-        Json $jsonSerializer
-    )
-    {
-        $this->storeManager = $storeManager;
-        $this->data = $data;
-        $this->keys = $keys;
-        $this->connection = $connection;
+    public function __construct(
+        DataHelper $dataHelper,
+        JsonSerializer $jsonSerializer
+    ) {
+        $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
     }
 
-    public function prepareBlockData()
+    /**
+     * Check if module enabled
+     *
+     * @return bool
+     */
+    public function isExtendEnabled(): bool
     {
-        if ($this->data->isExtendEnabled()) {
-            $this->enable = true;
-            $keys = $this->keys->getKeys();
-            $this->storeId = $keys['store_id'];
-        } else {
-            $this->enable = false;
-        }
+        return $this->dataHelper->isExtendEnabled();
     }
 
-    public function getJsMode()
+    /**
+     * Get JSON config
+     *
+     * @return string
+     */
+    public function getJsonConfig(): string
+    {
+        $jsonConfig = '';
+
+        $storeId = $this->dataHelper->getStoreId();
+        if ($storeId) {
+            $config = [
+                'storeId' => $storeId,
+                'environment' => $this->dataHelper->isExtendLive() ? AuthMode::LIVE : AuthMode::DEMO,
+            ];
+
+            try {
+                $jsonConfig = $this->jsonSerializer->serialize($config);
+            } catch (InvalidArgumentException $exception) {
+                $jsonConfig = '';
+            }
+        }
+
+        return $jsonConfig;
+    }
+
+    /**
+     * Get JS mode
+     *
+     * @return string
+     */
+    public function getJsMode(): string
     {
         return "https://sdk.helloextend.com/extend-sdk-client/v1/extend-sdk-client.min.js";
     }
-
-    public function getJsonConfig()
-    {
-
-        $data = [
-            'storeId' => (string)$this->getExtendStoreId(),
-            'environment' => (string)$this->getExtendLive()? self::LIVE : self::DEMO,
-        ];
-
-        return $this->jsonSerializer->serialize($data);
-    }
-
-    public function getExtendEnable()
-    {
-        return isset($this->enable) ? $this->enable : $this->data->isExtendEnabled();
-    }
-
-    public function getExtendLive()
-    {
-        return $this->data->isExtendLive();
-    }
-
-    public function getExtendStoreId()
-    {
-        return isset($this->storeId) ? $this->storeId : null;
-    }
-
 }
