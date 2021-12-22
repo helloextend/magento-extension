@@ -1,5 +1,14 @@
 <?xml version="1.0"?>
-
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+-->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <css src="Extend_Warranty::css/styles.css"/>
@@ -8,8 +17,11 @@
         <referenceContainer name="content">
             <block class="Magento\Framework\View\Element\Template" name="extend-modal-cont" template="Extend_Warranty::confirm-modal.phtml" after="-"/>
         </referenceContainer>
-        <referenceContainer name="order_items">
-            <block class="Extend\Warranty\Block\Adminhtml\Order\View\Items\Renderer\WarrantyRenderer" as="warranty" name="warranty_order_items_renderer" template="Magento_Sales::order/view/items/renderer/default.phtml">
+        <referenceBlock name="order_items">
+            <block class="Extend\Warranty\Block\Adminhtml\Order\View\Items\Renderer\WarrantyRenderer"
+                   as="warranty"
+                   name="warranty_order_items_renderer"
+                   template="Magento_Sales::order/view/items/renderer/default.phtml">
                 <arguments>
                     <argument name="columns" xsi:type="array">
                         <item name="product" xsi:type="string" translate="false">col-product</item>
@@ -31,6 +43,14 @@
                     <argument name="template" xsi:type="string">Extend_Warranty::items/column/name.phtml</argument>
                 </action>
             </referenceBlock>
-        </referenceContainer>
+            <block class="Magento\Sales\Block\Adminhtml\Items\Column\DefaultColumn"
+                   name="column_export"
+                   template="Extend_Warranty::items/column/export.phtml"
+                   group="column">
+                <arguments>
+                    <argument name="order_export_view_model" xsi:type="object">Extend\Warranty\ViewModel\OrderExport</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
     </body>
 </page>

@@ -40,8 +40,17 @@ define([
         function selectedProduct() {
             if ($('div.swatch-attribute').length === 0 ) {
                 if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value !== '') {
-                    let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value;
-                    const productConfig1 = $('#product_addtocart_form').data('mageConfigurable').options.spConfig;
+                    let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value,
+                        options;
+
+                    if ($('#product_addtocart_form').data('firebearConfig_icp')) {
+                        options = $('#product_addtocart_form').data('firebearConfig_icp').options;
+                    } else {
+                        options = $('#product_addtocart_form').data('mageConfigurable').options;
+                    }
+
+                    const productConfig1 = options.spConfig;
+
                     return productConfig1.skus[productId1];
                 } else {
                     return params.productSku;

@@ -88,7 +88,7 @@
             <argument name="logger" xsi:type="object">ProductSyncVirtualInfoLogger</argument>
         </arguments>
     </type>
-<!--
+
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
@@ -97,7 +97,7 @@
             </argument>
         </arguments>
     </type>
--->
+
     <virtualType name="WarrantyAddLogHandler" type="Magento\Framework\Logger\Handler\Base">
         <arguments>
             <argument name="fileName" xsi:type="string">/var/log/extend/addWarranty.log</argument>
@@ -218,5 +218,11 @@
             <argument name="dataHelper" xsi:type="object">Extend\Warranty\Helper\Api\Data\Proxy</argument>
             <argument name="contractCreateProcess" xsi:type="object">Extend\Warranty\Model\ContractCreateProcess\Proxy</argument>
         </arguments>
+    </type>
+
+    <type name="Shiphawk\Shipping\Model\Carrier">
+        <plugin name="ExtendWarrantyCarrierGetItemsPlugin"
+                type="Extend\Warranty\Plugin\Shiphawk\Shipping\Model\Carrier\GetItemsPlugin"
+                sortOrder="10" />
     </type>
 </config>

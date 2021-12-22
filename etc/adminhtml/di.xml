@@ -20,4 +20,10 @@
             </argument>
         </arguments>
     </virtualType>
+
+    <type name="Magento\Sales\Block\Adminhtml\Order\View\Items\Renderer\DefaultRenderer">
+        <plugin name="AddExportColumn"
+                type="Extend\Warranty\Plugin\Sales\Block\Adminhtml\Order\View\Items\Renderer\DefaultRenderer\AddExportColumn"
+                sortOrder="10" />
+    </type>
 </config>

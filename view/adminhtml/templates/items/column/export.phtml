@@ -1,0 +1,29 @@
+<?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+/** @var Magento\Sales\Block\Adminhtml\Items\Column\DefaultColumn $block */
+$item = $block->getItem();
+$orderExportViewModel = $block->getOrderExportViewModel();
+?>
+
+<?php if ($orderExportViewModel->isEnabled()): ?>
+    <select class="admin__control-select" 
+            onchange='OrdersExportTool._udpateExportTo("<?= $item->getId(); ?>", this.value, "<?= $block->getUrl('ordersexporttool/orders/update'); ?>")'>
+        <?php
+            $profiles = $orderExportViewModel->getProfilesAsArray($block->getLayout());
+        ?>
+        <?php foreach ($profiles as $id => $name) : ?>
+            <option value="<?= $block->escapeHtmlAttr($id) ?>"
+                <?= $block->escapeHtml($orderExportViewModel->getExportTo($item)) == $id ? ' selected="selected"' : '' ?>
+            >
+                <?= $block->escapeHtml($name); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+<?php endif; ?>

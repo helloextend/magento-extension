@@ -14,6 +14,7 @@ namespace Extend\Warranty\ViewModel;
 
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\ConfigurableProduct\Api\LinkManagementInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
@@ -65,7 +66,7 @@ class Warranty implements ArgumentInterface
 
     /**
      * Warranty constructor
-     *
+     * 
      * @param DataHelper $dataHelper
      * @param ApiHelper $apiHelper
      * @param JsonSerializer $jsonSerializer

@@ -17,6 +17,8 @@
             <module name="Magento_Quote" />
             <module name="Magento_Sales" />
             <module name="Magento_Sales" />
+            <module name="Wyomind_OrdersExportTool" />
+            <module name="Shiphawk_Shipping" />
         </sequence>
     </module>
 </config>
