@@ -24,7 +24,6 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class ContractCreateProcess
@@ -39,7 +38,7 @@ class ContractCreateProcess
     private $contractCreateResource;
 
     /**
-     * DateTime
+     * Date Time
      *
      * @var DateTime
      */
@@ -121,8 +120,6 @@ class ContractCreateProcess
 
     /**
      * Process records
-     *
-     * @throws NoSuchEntityException
      */
     public function execute(): void
     {
@@ -152,7 +149,12 @@ class ContractCreateProcess
                 }
 
                 $qtyInvoiced = intval($contractCreateRecord[OrderItemInterface::QTY_INVOICED]);
-                $processedContractCreateRecords[$recordId] = $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+                try {
+                    $processedContractCreateRecords[$recordId] = $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+                } catch (LocalizedException $exception) {
+                    $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
+                    $this->logger->error($exception->getMessage());
+                }
             }
 
             $this->updateContractCreateRecords($processedContractCreateRecords);

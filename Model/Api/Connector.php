@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Extend\Warranty\Model\Api;
 
 use Extend\Warranty\Api\ConnectorInterface;
-use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
@@ -47,20 +46,6 @@ class Connector implements ConnectorInterface
     private $jsonSerializer;
 
     /**
-     * Data Helper
-     *
-     * @var DataHelper
-     */
-    private $dataHelper;
-
-    /**
-     * Url Builder
-     *
-     * @var UrlBuilder
-     */
-    private $urlBuilder;
-
-    /**
      * Logger Interface
      *
      * @var LoggerInterface
@@ -72,21 +57,15 @@ class Connector implements ConnectorInterface
      *
      * @param ZendClient $httpClient
      * @param JsonSerializer $jsonSerializer
-     * @param DataHelper $dataHelper
-     * @param UrlBuilder $urlBuilder
      * @param LoggerInterface $logger
      */
     public function __construct(
         ZendClient $httpClient,
         JsonSerializer $jsonSerializer,
-        DataHelper $dataHelper,
-        UrlBuilder $urlBuilder,
         LoggerInterface $logger
     ) {
         $this->httpClient = $httpClient;
         $this->jsonSerializer = $jsonSerializer;
-        $this->dataHelper = $dataHelper;
-        $this->urlBuilder = $urlBuilder;
         $this->logger = $logger;
     }
 
@@ -95,6 +74,7 @@ class Connector implements ConnectorInterface
      *
      * @param string $endpoint
      * @param string $method
+     * @param array $headers
      * @param array $data
      * @return Zend_Http_Response
      * @throws Zend_Http_Client_Exception
@@ -102,16 +82,18 @@ class Connector implements ConnectorInterface
     public function call(
         string $endpoint,
         string $method = Zend_Http_Client::GET,
+        array $headers = [],
         array $data = []
     ): Zend_Http_Response {
-        $apiUrl = $this->urlBuilder->build($endpoint);
-        $headers = [
-            'Accept'                => 'application/json; version=2021-04-01',
-            'Content-Type'          => 'application/json',
-            'X-Extend-Access-Token' => $this->urlBuilder->getApiKey(),
-        ];
+        $headers = array_merge(
+            [
+                'Accept'        => 'application/json; version=2021-04-01',
+                'Content-Type'  => 'application/json',
+            ],
+            $headers
+        );
 
-        $this->httpClient->setUri($apiUrl);
+        $this->httpClient->setUri($endpoint);
         $this->httpClient->setHeaders($headers);
         $this->httpClient->setMethod($method);
         $this->httpClient->setConfig(['timeout' => self::TIMEOUT]);
@@ -126,18 +108,5 @@ class Connector implements ConnectorInterface
         }
 
         return $this->httpClient->request();
-    }
-
-    /**
-     * Test connection
-     *
-     * @return bool
-     * @throws Zend_Http_Client_Exception
-     */
-    public function testConnection(): bool
-    {
-        $response = $this->call('products');
-
-        return $response->isSuccessful();
     }
 }

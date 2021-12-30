@@ -131,17 +131,20 @@ class Data extends AbstractHelper
     }
 
     /**
-     * Check if Extend module enabled
+     * Check if enabled
      *
-     * @param string|int|null $storeId
+     * @param string $scopeType
+     * @param string|int|null $scopeId
      * @return bool
      */
-    public function isExtendEnabled($storeId = null): bool
-    {
+    public function isExtendEnabled(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): bool {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_ENABLE_EXTEND_ENABLE_XML_PATH,
-            ScopeInterface::SCOPE_STORES,
-            $storeId
+            $scopeType,
+            $scopeId
         );
     }
 

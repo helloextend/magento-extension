@@ -1,3 +1,11 @@
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 define(
     [
         'jquery',
@@ -12,6 +20,7 @@ define(
         var shouldAbort = false;
         var synMsg = $("#sync-msg");
         var cancelSync = $("#cancel_sync");
+        var resetFlagUrl = '';
 
         function restore(button) {
             button.text('Sync Products');
@@ -24,9 +33,9 @@ define(
             shouldAbort = false;
         }
 
-        async function syncAllProducts(url, scope, scopeId, button) {
+        async function syncAllProducts(url, button) {
             do {
-                var data = await batchBeingProcessed(shouldAbort, url, scope, scopeId).then(data => {
+                var data = await batchBeingProcessed(shouldAbort, url).then(data => {
                     return data;            //success
                 }, data => {
                     return {                //fail
@@ -47,7 +56,7 @@ define(
             restore(button);
         }
 
-        function batchBeingProcessed(shouldAbort, url, scope, scopeId) {
+        function batchBeingProcessed(shouldAbort, url) {
             if (!shouldAbort) {
                 return new Promise((resolve, reject) => {
                     $.get({
@@ -55,9 +64,7 @@ define(
                         dataType: 'json',
                         async: true,
                         data: {
-                            currentBatchesProcessed: currentBatchesProcessed,
-                            scope: scope,
-                            scopeId: scopeId
+                            currentBatchesProcessed: currentBatchesProcessed
                         },
                         success: function (data) {
                             resolve(data)
@@ -69,10 +76,20 @@ define(
                 })
             } else {
                 return new Promise((resolve, reject) => {
-                    resolve({
+                    var data = {
                         'totalBatches': 0,
                         'currentBatchesProcessed': 1
-                    });
+                    };
+                    $.get({
+                        url: resetFlagUrl,
+                        dataType: 'json',
+                        success: function (data) {
+                            resolve(data);
+                        },
+                        error: function (data) {
+                            reject(data);
+                        }
+                    })
                 })
             }
         }
@@ -80,8 +97,7 @@ define(
         $.widget('extend.productSync', {
             options: {
                 url: '',
-                scope: '',
-                scopeId: ''
+                resetFlagUrl: ''
             },
 
             _create: function () {
@@ -91,9 +107,11 @@ define(
 
             _bind: function () {
                 $(this.element).click(this.syncProducts.bind(this));
-                var cancelSync = $("#cancel_sync");
+                var cancelSync = $("#cancel_sync"),
+                    self = this;
                 $(cancelSync).bind("click", function () {
-                    shouldAbort = true
+                    shouldAbort = true;
+                    resetFlagUrl = self.options.resetFlagUrl;
                 });
 
             },
@@ -107,7 +125,7 @@ define(
                 synMsg.hide();
                 cancelSync.show();
 
-                syncAllProducts(this.options.url, this.options.scope, this.options.scopeId, button);
+                syncAllProducts(this.options.url, button);
 
             }
         });

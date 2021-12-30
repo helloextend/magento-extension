@@ -17,6 +17,7 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Locale\Currency;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -69,7 +70,7 @@ class ContractBuilder
      * @param CountryInformationAcquirerInterface $countryInformationAcquirer
      * @param DataHelper $helper
      */
-    public function __construct (
+    public function __construct(
         StoreManagerInterface $storeManager,
         ProductRepositoryInterface $productRepository,
         CountryInformationAcquirerInterface $countryInformationAcquirer,
@@ -107,8 +108,7 @@ class ContractBuilder
             return [];
         }
 
-        $store = $this->storeManager->getStore();
-        $currencyCode = $store->getBaseCurrencyCode();
+        $currencyCode = $order->getOrderCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
 
         $transactionTotal = [
             'currencyCode'  => $currencyCode,

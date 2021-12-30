@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Extend\Warranty\Observer;
 
+use Extend\Warranty\Model\WarrantyContract as WarrantyContractModel;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest as ApiContractModel;
 use Magento\Framework\Event\Observer;
@@ -20,9 +21,10 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Framework\Math\FloatComparator;
 use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\Exception\InvalidArgumentException;
 
 /**
  * Class RequestRefundObserver
@@ -72,11 +74,18 @@ class RequestRefundObserver implements ObserverInterface
     private $orderItemRepository;
 
     /**
-     * LoggerInterface
+     * Logger Interface
      *
      * @var LoggerInterface
      */
     private $logger;
+
+    /**
+     * Warranty Contract Model
+     *
+     * @var WarrantyContractModel
+     */
+    private $warrantyContactModel;
 
     /**
      * RequestRefundObserver constructor
@@ -88,6 +97,7 @@ class RequestRefundObserver implements ObserverInterface
      * @param Json $jsonSerializer
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param LoggerInterface $logger
+     * @param WarrantyContractModel $warrantyContactModel
      */
     public function __construct(
         ApiContractModel $apiContractModel,
@@ -96,7 +106,8 @@ class RequestRefundObserver implements ObserverInterface
         FloatComparator $floatComparator,
         Json $jsonSerializer,
         OrderItemRepositoryInterface $orderItemRepository,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        WarrantyContractModel $warrantyContactModel
     ) {
         $this->apiContractModel = $apiContractModel;
         $this->dataHelper = $dataHelper;
@@ -105,6 +116,7 @@ class RequestRefundObserver implements ObserverInterface
         $this->jsonSerializer = $jsonSerializer;
         $this->orderItemRepository = $orderItemRepository;
         $this->logger = $logger;
+        $this->warrantyContactModel = $warrantyContactModel;
     }
 
     /**
@@ -114,45 +126,59 @@ class RequestRefundObserver implements ObserverInterface
      */
     public function execute(Observer $observer): void
     {
+        $event = $observer->getEvent();
+        $creditmemo = $event->getCreditmemo();
+        $order = $creditmemo->getOrder();
+
+        $storeId = $order->getStoreId();
+
         if (
-            $this->dataHelper->isExtendEnabled()
-            && $this->dataHelper->isRefundEnabled()
-            && $this->dataHelper->isAutoRefundEnabled()
+            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            && $this->dataHelper->isRefundEnabled($storeId)
+            && $this->dataHelper->isAutoRefundEnabled($storeId)
         ) {
             $event = $observer->getEvent();
             $creditmemo = $event->getCreditmemo();
 
             foreach ($creditmemo->getAllItems() as $creditmemoItem) {
                 $orderItem = $creditmemoItem->getOrderItem();
-                $contractIds = $this->getContractIds($orderItem);
+                $contractIds = $this->warrantyContactModel->getContractIds($orderItem);
 
                 if (!empty($contractIds)) {
+                    $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
+                    $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+                    $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
+
                     $options['refund_responses_log'] = [];
                     $qtyRefunded = $creditmemoItem->getQty();
 
                     $refundedContractIds = array_slice($contractIds, 0, $qtyRefunded);
+                    try {
+                        $this->apiContractModel->setConfig($apiUrl, $apiStoreId, $apiKey);
+                        foreach ($refundedContractIds as $key => $contractId) {
+                            $refundData = $this->apiContractModel->validateRefund($contractId);
 
-                    foreach ($refundedContractIds as $key => $contractId) {
-                        $refundData = $this->apiContractModel->validateRefund($contractId);
+                            if (
+                                isset($refundData['refundAmount']['amount'])
+                                && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
+                            ) {
+                                $status = $this->apiContractModel->refund($contractId);
+                                $options['refund_responses_log'][] = [
+                                    'contract_id' => $contractId,
+                                    'response' => $status,
+                                ];
 
-                        if (
-                            isset($refundData['refundAmount']['amount'])
-                            && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
-                        ) {
-                            $status = $this->apiContractModel->refund($contractId);
-                            $options['refund_responses_log'][] = [
-                                'contract_id' => $contractId,
-                                'response' => $status,
-                            ];
-
-                            if ($status) {
-                                unset($contractIds[$key]);
+                                if ($status) {
+                                    unset($contractIds[$key]);
+                                }
+                            } else {
+                                $this->messageManager->addErrorMessage(
+                                    __('Contract %1 can not be refunded.', $contractId)
+                                );
                             }
-                        } else {
-                            $this->messageManager->addErrorMessage(
-                                __('Contract %1 can not be refunded.', $contractId)
-                            );
                         }
+                    } catch (InvalidArgumentException $exception) {
+                        $this->logger->error($exception->getMessage());
                     }
 
                     if (!empty($options['refund_responses_log'])) {
@@ -160,7 +186,7 @@ class RequestRefundObserver implements ObserverInterface
                             $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
                             $orderItem->setContractId($contractIdsJson);
                             $options['refund'] = empty($contractIds);
-                            $orderItem = $this->updateOrderItemOptions($orderItem, $options);
+                            $orderItem = $this->warrantyContactModel->updateOrderItemOptions($orderItem, $options);
                             $this->orderItemRepository->save($orderItem);
                         } catch (LocalizedException $exception) {
                             $this->logger->error($exception->getMessage());
@@ -169,43 +195,5 @@ class RequestRefundObserver implements ObserverInterface
                 }
             }
         }
-    }
-
-    /**
-     * Get contract IDs
-     *
-     * @param OrderItemInterface $orderItem
-     * @return array
-     */
-    protected function getContractIds(OrderItemInterface $orderItem): array
-    {
-        try {
-            $contractIdsJson = $orderItem->getContractId();
-            $contractIds = $contractIdsJson ? $this->jsonSerializer->unserialize($contractIdsJson) : [];
-        } catch (LocalizedException $exception) {
-            $contractIds = [];
-        }
-
-        return $contractIds;
-    }
-
-    /**
-     * Update order item options
-     *
-     * @param OrderItemInterface $orderItem
-     * @param array $productOptions
-     * @return OrderItemInterface
-     */
-    protected function updateOrderItemOptions(OrderItemInterface $orderItem, array $productOptions): OrderItemInterface
-    {
-        $options = $orderItem->getProductOptions();
-        $refundResponsesLog = $options['refund_responses_log'] ?? [];
-        $refundResponsesLog = array_merge($refundResponsesLog, $productOptions['refund_responses_log']);
-        $options['refund_responses_log'] = $refundResponsesLog;
-        $options['refund'] = $productOptions['refund'];
-
-        $orderItem->setProductOptions($options);
-
-        return $orderItem;
     }
 }
