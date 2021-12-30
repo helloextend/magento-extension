@@ -34,7 +34,9 @@
     </type>
 
     <type name="Magento\Catalog\Helper\Product\Configuration">
-        <plugin name="warranty_product" type="Extend\Warranty\Plugin\Helper\Product\Configuration"/>
+        <plugin name="GetCustomOptionsPlugin"
+                type="Extend\Warranty\Plugin\Catalog\Helper\Product\Configuration\GetCustomOptionsPlugin"
+                sortOrder="10" />
     </type>
 
     <type name="Magento\Checkout\CustomerData\AbstractItem">
