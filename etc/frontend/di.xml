@@ -32,4 +32,9 @@
                 sortOrder="10" />
     </type>
 
+    <type name="Extend\Warranty\Observer\Warranty\Normalize">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
 </config>
