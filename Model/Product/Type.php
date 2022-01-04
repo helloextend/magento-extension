@@ -1,11 +1,12 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: lazaro
- * Date: 13/05/19
- * Time: 05:13 PM
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
-
 namespace Extend\Warranty\Model\Product;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -13,14 +14,29 @@ use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Catalog\Model\Product;
 use Extend\Warranty\Helper\Data;
 
+/**
+ * Class Type
+ */
 class Type extends AbstractType
 {
+    /**
+     * Product type code
+     */
     const TYPE_CODE = 'warranty';
 
+    /**
+     * Custom option codes
+     */
     const WARRANTY_ID = 'warranty_id';
     const ASSOCIATED_PRODUCT = 'associated_product';
     const TERM = 'warranty_term';
     const BUY_REQUEST = 'info_buyRequest';
+
+    /**
+     * Custom option labels
+     */
+    const ASSOCIATED_PRODUCT_LABEL = 'Product';
+    const TERM_LABEL = 'Term';
 
     /**
      * @var Data
@@ -107,42 +123,6 @@ class Type extends AbstractType
         if ($term = $product->getCustomOption(self::TERM)) {
             $options[self::TERM] = $term->getValue();
         }
-        return $options;
-    }
-
-    /**
-     * @param \Magento\Catalog\Model\Product $product
-     * @return array
-     */
-    public function getWarrantyInfo($product)
-    {
-        $warrantyProperties = [
-            self::ASSOCIATED_PRODUCT => 'Product',
-            self::TERM => 'Term'
-        ];
-
-        $options = [];
-
-        foreach ($warrantyProperties as $property => $label) {
-
-            if ($attributesOption = $product->getCustomOption($property)) {
-                $data = $attributesOption->getValue();
-                if (!$data) {
-                    continue;
-                }
-
-                if ($property == self::TERM) {
-                    $data = ((int)$data) / 12;
-
-                    $data .= $data > 1 ? ' years' : ' year';
-                }
-                $options[] = [
-                    'label' => $label,
-                    'value' => $data
-                ];
-            }
-        }
-
         return $options;
     }
 }

@@ -13,7 +13,11 @@ declare(strict_types=1);
 namespace Extend\Warranty\Cron;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\ProductSyncFlag;
 use Extend\Warranty\Model\ProductSyncProcess;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\FlagManager;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class SyncProducts
@@ -21,7 +25,7 @@ use Extend\Warranty\Model\ProductSyncProcess;
 class SyncProducts
 {
     /**
-     * ProductSyncProcess
+     * Product Sync Process
      *
      * @var ProductSyncProcess
      */
@@ -35,17 +39,37 @@ class SyncProducts
     private $dataHelper;
 
     /**
+     * Flag Manager
+     *
+     * @var FlagManager
+     */
+    private $flagManager;
+
+    /**
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * SyncProducts constructor
      *
      * @param DataHelper $dataHelper
      * @param ProductSyncProcess $productSyncProcess
+     * @param FlagManager $flagManager
+     * @param LoggerInterface $logger
      */
     public function __construct(
         DataHelper $dataHelper,
-        ProductSyncProcess $productSyncProcess
+        ProductSyncProcess $productSyncProcess,
+        FlagManager $flagManager,
+        LoggerInterface $logger
     ) {
-        $this->productSyncProcess = $productSyncProcess;
         $this->dataHelper = $dataHelper;
+        $this->productSyncProcess = $productSyncProcess;
+        $this->flagManager = $flagManager;
+        $this->logger = $logger;
     }
 
     /**
@@ -53,10 +77,21 @@ class SyncProducts
      */
     public function execute(): void
     {
-        if (!$this->dataHelper->isExtendEnabled() || !$this->dataHelper->isProductSyncByCronEnabled()) {
+        if (
+            !$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
+            || !$this->dataHelper->isProductSyncByCronEnabled()
+        ) {
             return;
         }
 
+        if ((bool)$this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME)) {
+            $this->logger->error('Product sync has already started by another process.');
+
+            return;
+        }
+
+        $this->flagManager->saveFlag(ProductSyncFlag::FLAG_NAME, true);
         $this->productSyncProcess->execute();
+        $this->flagManager->deleteFlag(ProductSyncFlag::FLAG_NAME);
     }
 }

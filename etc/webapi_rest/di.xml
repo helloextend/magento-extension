@@ -14,7 +14,7 @@
 
     <type name="Magento\Sales\Api\OrderItemRepositoryInterface">
         <plugin name="extend_warranty_plugin_api_order_item_repository_interface_plugin"
-                type="Extend\Warranty\Plugin\Api\OrderItemRepositoryInterfacePlugin" />
+                type="Extend\Warranty\Plugin\Api\OrderItemRepositoryInterfacePlugin" sortOrder="10" />
     </type>
 
 </config>

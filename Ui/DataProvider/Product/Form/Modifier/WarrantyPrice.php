@@ -87,7 +87,7 @@ class WarrantyPrice extends AbstractModifier
                     . ProductAttributeInterface::CODE_PRICE . '/arguments/data/config';
 
                 if ($this->arrayManager->exists($priceConfigPath, $meta)) {
-                    $this->arrayManager->merge(
+                    $meta = $this->arrayManager->merge(
                         $priceConfigPath,
                         $meta,
                         ['disabled' => true]
@@ -98,7 +98,7 @@ class WarrantyPrice extends AbstractModifier
                     . self::ADVANCED_PRICING_BUTTON . '/arguments/data/config';
 
                 if ($this->arrayManager->exists($advancedPricingButtonConfigPath, $meta)) {
-                    $this->arrayManager->merge(
+                    $meta = $this->arrayManager->merge(
                         $advancedPricingButtonConfigPath,
                         $meta,
                         ['disabled' => true, 'visible' => false]

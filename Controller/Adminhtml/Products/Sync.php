@@ -10,18 +10,25 @@
 
 namespace Extend\Warranty\Controller\Adminhtml\Products;
 
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\Product;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Controller\Result\Json;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
-use Extend\Warranty\Model\SyncProcess;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 use Psr\Log\LoggerInterface;
-use Extend\Warranty\Api\SyncInterface;
-use Exception;
+use Extend\Warranty\Api\SyncInterface as ProductSyncModel;
+use Extend\Warranty\Model\ProductSyncFlag;
+use Magento\Framework\FlagManager;
+use Extend\Warranty\Model\Api\Sync\Product\ProductsRequest as ApiProductModel;
+use Magento\Framework\Exception\InvalidArgumentException;
 
 /**
  * Class Sync
@@ -29,45 +36,30 @@ use Exception;
 class Sync extends Action
 {
     /**
-     * Status codes
-     */
-    const STATUS_CODE_OK = 200;
-
-    /**
      * Authorization level of a basic admin session
      */
     const ADMIN_RESOURCE = 'Extend_Warranty::product_manual_sync';
 
     /**
-     * Logger Interface
-     *
-     * @var LoggerInterface
+     * Status
      */
-    private $logger;
+    const STATUS_SUCCESS = 'SUCCESS';
+    const STATUS_FAIL = 'FAIL';
 
     /**
-     * Sync Interface
-     *
-     * @var SyncInterface
+     * Website ID filter
      */
-    private $sync;
+    const WEBSITE_ID = 'website_id';
 
     /**
-     * Sync Process
+     * Flag Manager
      *
-     * @var SyncProcess
+     * @var FlagManager
      */
-    private $syncProcess;
+    private $flagManager;
 
     /**
-     * Data Helper
-     *
-     * @var DataHelper
-     */
-    private $dataHelper;
-
-    /**
-     * DateTime
+     * Date Time
      *
      * @var DateTime
      */
@@ -81,118 +73,157 @@ class Sync extends Action
     private $date;
 
     /**
-     * Total batches
+     * Data Helper
      *
-     * @var int
+     * @var DataHelper
      */
-    private $totalBatches;
+    private $dataHelper;
 
     /**
-     * Batch size
+     * Product Sync Model
      *
-     * @var int
+     * @var ProductSyncModel
      */
-    private $batchSize;
+    private $productSyncModel;
 
     /**
-     * Reset total
+     * Api Product Model
      *
-     * @var bool
+     * @var ApiProductModel
      */
-    private $resetTotal;
+    private $apiProductModel;
+
+    /**
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $syncLogger;
 
     /**
      * Sync constructor
      *
      * @param Context $context
-     * @param LoggerInterface $logger
-     * @param SyncProcess $syncProcess
-     * @param SyncInterface $sync
      * @param DataHelper $dataHelper
      * @param DateTime $dateTime
      * @param Date $date
+     * @param FlagManager $flagManager
+     * @param ProductSyncModel $productSyncModel
+     * @param ApiProductModel $apiProductModel
+     * @param LoggerInterface $logger
+     * @param LoggerInterface $syncLogger
      */
     public function __construct(
         Context $context,
-        LoggerInterface $logger,
-        SyncProcess $syncProcess,
-        SyncInterface $sync,
         DataHelper $dataHelper,
         DateTime $dateTime,
-        Date $date
+        Date $date,
+        FlagManager $flagManager,
+        ProductSyncModel $productSyncModel,
+        ApiProductModel $apiProductModel,
+        LoggerInterface $logger,
+        LoggerInterface $syncLogger
     ) {
         parent::__construct($context);
-        $this->logger = $logger;
-        $this->syncProcess = $syncProcess;
-        $this->sync = $sync;
-        $this->dataHelper = $dataHelper;
+        $this->flagManager = $flagManager;
         $this->dateTime = $dateTime;
         $this->date = $date;
+        $this->dataHelper = $dataHelper;
+        $this->productSyncModel = $productSyncModel;
+        $this->apiProductModel = $apiProductModel;
+        $this->logger = $logger;
+        $this->syncLogger = $syncLogger;
     }
 
     /**
-     * Sync products
+     * Sync product batch
      *
-     * @return Json
+     * @return ResultInterface
+     * @throws InvalidArgumentException
      */
-    public function execute(): Json
+    public function execute(): ResultInterface
     {
         $request = $this->getRequest();
-        $params = $request->getParams();
+        $currentBatch = (int)$request->getParam('currentBatchesProcessed');
 
-        $currentBatch = (int)$params['currentBatchesProcessed'] ?? 0;
-
-        $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
-        $scopeId = 0;
-        if (isset($params['scope'])) {
-            $scope = $params['scope'];
-            $scopeId = $params['scopeId'];
-        }
-
-        if ($this->batchSize === null) {
-            $batchSize = $this->dataHelper->getProductsBatchSize($scope, $scopeId);
-
-            if ($batchSize) {
-                $this->batchSize = $batchSize;
-                $this->sync->setBatchSize($batchSize);
+        if (!(bool)$this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME) || $currentBatch > 1) {
+            if (!$this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME)) {
+                $currentDate = $this->dateTime->formatDate($this->date->gmtTimestamp());
+                $this->flagManager->saveFlag(ProductSyncFlag::FLAG_NAME, $currentDate);
             }
-        }
 
-        if ($this->totalBatches === null) {
-            $this->totalBatches = $this->sync->getBatchesToProcess();
-            $this->resetTotal = false;
-        }
+            $filters = [];
+            $website = $request->getParam('website');
+            $store = $request->getParam('store');
+            if ($website) {
+                $scopeType = ScopeInterface::SCOPE_WEBSITES;
+                $scopeId = $website;
+                $filters[self::WEBSITE_ID] = $website;
+            } elseif ($store) {
+                $scopeType = ScopeInterface::SCOPE_STORES;
+                $scopeId = $store;
+                $filters[Product::STORE_ID] = $store;
+            } else {
+                $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
+                $scopeId = Store::DEFAULT_STORE_ID;
+            }
 
-        $productsBatch = $this->sync->getProducts($currentBatch);
+            $apiUrl = $this->dataHelper->getApiUrl($scopeType, $scopeId);
+            $apiStoreId = $this->dataHelper->getStoreId($scopeType, $scopeId);
+            $apiKey = $this->dataHelper->getApiKey($scopeType, $scopeId);
 
-        $data = [];
+            $this->apiProductModel->setConfig($apiUrl, $apiStoreId, $apiKey);
 
-        try {
-            $this->syncProcess->sync($productsBatch, $currentBatch);
-            $data['status'] = 'SUCCESS';
-        } catch (Exception $e) {
-            $this->logger->info('Error found in products batch ' . $currentBatch, ['Exception' => $e->getMessage()]);
-            $data['status'] = 'FAIL';
-        }
+            $batchSize = $this->dataHelper->getProductsBatchSize($scopeType, $scopeId);
+            $this->productSyncModel->setBatchSize($batchSize);
 
-        if ($currentBatch === $this->totalBatches) {
-            $currentDate = $this->dateTime->formatDate($this->date->gmtTimestamp());
-            $this->dataHelper->setLastProductSyncDate($currentDate, $scope, $scopeId);
-            $data['msg'] = $currentDate;
-            $this->resetTotal = true;
-        }
+            $lastSyncDate = $this->dataHelper->getLastProductSyncDate($scopeType, $scopeId);
+            if ($lastSyncDate) {
+                $filters[ProductInterface::UPDATED_AT] = $lastSyncDate;
+            }
 
-        $currentBatch++;
+            $products = $this->productSyncModel->getProducts($currentBatch, $filters);
+            $countOfBathes = $this->productSyncModel->getCountOfBatches();
 
-        $data['totalBatches'] = $this->totalBatches;
-        $data['currentBatchesProcessed'] = $currentBatch;
+            if (!empty($products)) {
+                try {
+                    $this->apiProductModel->create($products, $currentBatch);
+                    $data['status'] = self::STATUS_SUCCESS;
+                } catch (LocalizedException $exception) {
+                    $message = sprintf('Error found in products batch %s. %s', $currentBatch, $exception->getMessage());
+                    $this->syncLogger->error($message);
+                    $data = [
+                        'status'    => self::STATUS_FAIL,
+                        'message'   => __($message),
+                    ];
+                }
 
-        if ($this->resetTotal) {
-            unset($this->totalBatches);
+                if ($currentBatch === $countOfBathes) {
+                    $currentDate = $this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME);
+                    $this->dataHelper->setLastProductSyncDate($currentDate, $scopeType, $scopeId);
+                    $data['msg'] = $currentDate;
+                    $this->flagManager->deleteFlag(ProductSyncFlag::FLAG_NAME);
+                }
+            }
+
+            $currentBatch++;
+            $data['totalBatches'] = $countOfBathes;
+            $data['currentBatchesProcessed'] = $currentBatch;
+        } else {
+            $data = [
+                'status'    => self::STATUS_FAIL,
+                'message'   => __('Product sync has already started by another process.'),
+            ];
         }
 
         $jsonResult = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-        $jsonResult->setHttpResponseCode(self::STATUS_CODE_OK);
         $jsonResult->setData($data);
 
         return $jsonResult;

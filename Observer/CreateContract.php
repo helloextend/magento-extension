@@ -19,6 +19,7 @@ use Extend\Warranty\Model\WarrantyContract;
 use Extend\Warranty\Model\Orders as ExtendOrder;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -46,7 +47,7 @@ class CreateContract implements ObserverInterface
     private $dataHelper;
 
     /**
-     * LoggerInterface
+     * Logger Interface
      *
      * @var LoggerInterface
      */
@@ -60,7 +61,7 @@ class CreateContract implements ObserverInterface
      * @param DataHelper $dataHelper
      * @param LoggerInterface $logger
      */
-    public function __construct (
+    public function __construct(
         WarrantyContract $warrantyContract,
         ExtendOrder $extendOrder,
         DataHelper $dataHelper,
@@ -79,17 +80,22 @@ class CreateContract implements ObserverInterface
      */
     public function execute(Observer $observer): void
     {
-        if ($this->dataHelper->isExtendEnabled() && $this->dataHelper->isWarrantyContractEnabled()) {
-            $event = $observer->getEvent();
-            $invoice = $event->getInvoice();
-            $order = $invoice->getOrder();
+        $event = $observer->getEvent();
+        $invoice = $event->getInvoice();
+        $order = $invoice->getOrder();
 
+        $storeId = $order->getStoreId();
+
+        if (
+            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            && $this->dataHelper->isWarrantyContractEnabled($storeId)
+        ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();
 
                 if ($orderItem->getProductType() === WarrantyType::TYPE_CODE) {
                     $qtyInvoiced = intval($invoiceItem->getQty());
-                    if (!$this->dataHelper->isOrdersApiEnabled()) {
+                    if (!$this->dataHelper->isOrdersApiEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
                         try {
                             $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
                         } catch (LocalizedException $exception) {
