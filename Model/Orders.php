@@ -4,6 +4,7 @@ namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Model\Api\Request\OrderBuilder;
 use Extend\Warranty\Model\Api\Sync\Orders\OrdersRequest;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
@@ -20,6 +21,11 @@ class Orders
      * @var OrderBuilder
      */
     protected $orderBuilder;
+
+    /**
+     * @var DataHelper
+     */
+    protected $dataHelper;
 
     /**
      * @var OrderItemRepositoryInterface
@@ -39,6 +45,7 @@ class Orders
     /**
      * @param OrdersRequest $ordersRequest
      * @param OrderBuilder $orderBuilder
+     * @param DataHelper $dataHelper
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param JsonSerializer $jsonSerializer
      * @param LoggerInterface $logger
@@ -47,12 +54,14 @@ class Orders
     (
         OrdersRequest $ordersRequest,
         OrderBuilder $orderBuilder,
+        DataHelper $dataHelper,
         OrderItemRepositoryInterface $orderItemRepository,
         JsonSerializer $jsonSerializer,
         LoggerInterface $logger
     ) {
         $this->ordersRequest = $ordersRequest;
         $this->orderBuilder = $orderBuilder;
+        $this->dataHelper = $dataHelper;
         $this->orderItemRepository = $orderItemRepository;
         $this->jsonSerializer = $jsonSerializer;
         $this->logger = $logger;
@@ -66,10 +75,14 @@ class Orders
      */
     public function createOrder($orderMagento, $orderItem, $qtyInvoiced) :string
     {
+        $apiUrl = $this->dataHelper->getApiUrl();
+        $apiStoreId = $this->dataHelper->getStoreId();
+        $apiKey = $this->dataHelper->getApiKey();
         $orderExtend = '';
         $contractIds = [];
         try {
             $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qtyInvoiced);
+            $this->ordersRequest->setConfig($apiUrl,$apiStoreId,$apiKey);
             $contractIds =  $this->ordersRequest->create($orderData);
             if (!empty($contractIds)) {
                 $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
