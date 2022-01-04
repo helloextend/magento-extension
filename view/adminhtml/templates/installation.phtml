@@ -12,13 +12,10 @@ $viewModel = $block->getData('viewModel');
 ?>
 
 <?php if ($viewModel->isExtendEnabled()) : ?>
-    <?php $jsonConfig = $viewModel->getJsonConfig(); ?>
-    <?php if ($jsonConfig): ?>
-        <script src="<?= $viewModel->getJsMode() ?>"></script>
-        <script>
-            Extend.config(<?= $viewModel->getJsonConfig() ?>);
-        </script>
-    <?php endif; ?>
+    <script src="<?= $viewModel->getJsMode() ?>"></script>
+    <script>
+        Extend.config(<?= $viewModel->getJsonConfig() ?>);
+    </script>
 <?php endif; ?>
 
 <script>

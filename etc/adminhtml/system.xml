@@ -254,6 +254,28 @@
                 </field>
             </group>
 
+            <group id="orders" translate="label comment" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
+                <label>Orders API</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Enable the Extend Warranty Orders API]]></comment>
+                </field>
+                <field id="order_create" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
+                    <label>Orders API Contract Creating Mode</label>
+                    <source_model>Extend\Warranty\Model\Config\Source\CreateMode</source_model>
+                </field>
+                <field id="store_name" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
+                    <label>Extend Store Name</label>
+                    <comment>
+                        <![CDATA[
+                                Unique name for your store on the Extend platform. Go to <a href="https://merchants.extend.com">your Extend merchant dashboard</a>
+                                to find your StoreName and then paste of type it here.
+                            ]]>
+                    </comment>
+                </field>
+            </group>
+
             <group id="advance_config" translate="label comment" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
                 <label>Advanced Configuration</label>
                 <comment>
@@ -268,6 +290,7 @@
                     <button_label>Go to my Extend merchant dashboard</button_label>
                 </field>
             </group>
+
         </section>
     </system>
 </config>

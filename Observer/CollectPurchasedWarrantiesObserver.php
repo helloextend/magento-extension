@@ -99,22 +99,26 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
             $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && !$this->dataHelper->isWarrantyContractEnabled($storeId)
         ) {
-            foreach ($invoice->getAllItems() as $invoiceItem) {
-                $orderItem = $invoiceItem->getOrderItem();
-                $productType = $orderItem->getProductType();
-                if ($productType === WarrantyType::TYPE_CODE) {
-                    try {
-                        $contractCreate = $this->contractCreateFactory->create();
-                        $contractCreate->setData([
-                            InvoiceItemInterface::ORDER_ITEM_ID => $orderItem->getId(),
-                            self::INVOICE_ITEM_ID => $invoiceItem->getId(),
-                            OrderItemInterface::QTY_INVOICED => $invoiceItem->getQty(),
-                        ]);
-                        $this->contractCreateResource->save($contractCreate);
-                    } catch (LocalizedException $exception) {
-                        $this->logger->error($exception->getMessage());
+            if (!$this->dataHelper->isOrdersApiEnabled()) {
+                foreach ($invoice->getAllItems() as $invoiceItem) {
+                    $orderItem = $invoiceItem->getOrderItem();
+                    $productType = $orderItem->getProductType();
+                    if ($productType === WarrantyType::TYPE_CODE) {
+                        try {
+                            $contractCreate = $this->contractCreateFactory->create();
+                            $contractCreate->setData([
+                                InvoiceItemInterface::ORDER_ITEM_ID => $orderItem->getId(),
+                                self::INVOICE_ITEM_ID => $invoiceItem->getId(),
+                                OrderItemInterface::QTY_INVOICED => $invoiceItem->getQty(),
+                            ]);
+                            $this->contractCreateResource->save($contractCreate);
+                        } catch (LocalizedException $exception) {
+                            $this->logger->error($exception->getMessage());
+                        }
                     }
                 }
+            } else {
+                //TODO Orders API Contract
             }
         }
     }

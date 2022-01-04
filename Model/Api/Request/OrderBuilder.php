@@ -1,0 +1,257 @@
+<?php
+
+namespace Extend\Warranty\Model\Api\Request;
+
+use Extend\Warranty\Helper\Data as DataHelper;
+use Extend\Warranty\Helper\Api\Data as ApiDataHelper;
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Directory\Api\CountryInformationAcquirerInterface;
+use Extend\Warranty\Model\Product\Type;
+
+class OrderBuilder
+{
+    /**
+     * Platform code
+     */
+    const PLATFORM_CODE = 'magento';
+
+    /**
+     * Product Repository Interface
+     *
+     * @var ProductRepositoryInterface
+     */
+    private $productRepository;
+
+    /**
+     * Store Manager Interface
+     *
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
+     * Country Information Acquirer Interface
+     *
+     * @var CountryInformationAcquirerInterface
+     */
+    private $countryInformationAcquirer;
+
+    /**
+     * Data Helper
+     *
+     * @var DataHelper
+     */
+    private $helper;
+
+    /**
+     * @var ApiDataHelper
+     */
+    private $apiHelper;
+
+    /**
+     * ContractBuilder constructor
+     *
+     * @param StoreManagerInterface $storeManager
+     * @param ProductRepositoryInterface $productRepository
+     * @param CountryInformationAcquirerInterface $countryInformationAcquirer
+     * @param DataHelper $helper
+     * @param ApiDataHelper $apiHelper
+     */
+    public function __construct (
+        StoreManagerInterface $storeManager,
+        ProductRepositoryInterface $productRepository,
+        CountryInformationAcquirerInterface $countryInformationAcquirer,
+        DataHelper $helper,
+        ApiDataHelper $apiHelper
+    ) {
+        $this->productRepository = $productRepository;
+        $this->storeManager = $storeManager;
+        $this->countryInformationAcquirer = $countryInformationAcquirer;
+        $this->helper = $helper;
+        $this->apiHelper = $apiHelper;
+    }
+
+    /**
+     * Prepare payload
+     *
+     * @param OrderInterface $order
+     * @param OrderItemInterface $orderItem
+     * @param int $qtyInvoiced
+     * @return array
+     * @throws NoSuchEntityException
+     */
+    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced): array
+    {
+        $store = $this->storeManager->getStore();
+        $currencyCode = $store->getBaseCurrencyCode();
+        $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
+
+        $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
+        $productSku = is_array($productSku) ? array_shift($productSku) : $productSku;
+
+        $warrantyId = $orderItem->getProductOptionByCode(Type::WARRANTY_ID);
+        $warrantyId = is_array($warrantyId) ? array_shift($warrantyId) : $warrantyId;
+
+        $product = $this->prepareProductPayload($productSku);
+
+        $plan = [
+            'purchasePrice' => $this->helper->formatPrice($orderItem->getPrice()),
+            'id'        => $warrantyId,
+        ];
+
+        $lineItems[] = [
+            'status' => $this->getStatus(),
+            'quantity' => $qtyInvoiced,
+            'storeId' => $this->apiHelper->getStoreId(),
+            'warrantable' => true,
+            'plan' => $plan,
+            'product' => $product
+        ];
+
+        $saleOrigin = [
+            'platform'  => self::PLATFORM_CODE,
+        ];
+
+        $payload = [
+            'isTest'            => !$this->apiHelper->isExtendLive(),
+            'currency'          => $currencyCode,
+            'createdAt'         => strtotime($order->getCreatedAt()),
+            'customer'          => $this->getCustomerData($order),
+            'lineItems'         => $lineItems,
+            'total'             => $transactionTotal,
+            'storeId'           => $this->apiHelper->getStoreId(),
+            'storeName'         => $this->apiHelper->getStoreName(),
+            'transactionId'     => $order->getIncrementId(),
+            'saleOrigin'        => $saleOrigin,
+        ];
+
+        return $payload;
+    }
+
+    /**
+     * @param $productSku
+     * @return array
+     */
+    protected function prepareProductPayload($productSku) :array
+    {
+        if (empty($productSku)) {
+            return [];
+        }
+
+        $product = $this->getProduct($productSku);
+
+        if (!$product) {
+            return [];
+        }
+
+        $product = [
+            'id'   => $product->getSku(),
+            'listPrice' => $this->helper->formatPrice($product->getFinalPrice()),
+            'name' => $product->getName(),
+            'purchasePrice' => $this->helper->formatPrice($product->getFinalPrice())
+        ];
+
+        return $product;
+    }
+
+    /**
+     * Format street
+     *
+     * @param array $street
+     * @return array
+     */
+    protected function formatStreet(array $street = []): array
+    {
+        $address = [];
+
+        $address['address1'] = array_shift($street);
+        if (!empty($street)) {
+            $address['address2'] = implode(",", $street);
+        }
+
+        return $address;
+    }
+
+    /**
+     * Get product
+     *
+     * @param string $sku
+     * @return ProductInterface|null
+     */
+    protected function getProduct(string $sku): ?ProductInterface
+    {
+        try {
+            $product = $this->productRepository->get($sku);
+        } catch (LocalizedException $e) {
+            $product = null;
+        }
+
+        return $product;
+    }
+
+    /**
+     * @param OrderInterface $order
+     * @return array
+     * @throws NoSuchEntityException
+     */
+    protected function getCustomerData(OrderInterface $order) : array
+    {
+        $billingAddress = $order->getBillingAddress();
+        $billingCountryId = $billingAddress->getCountryId();
+        $billingCountryInfo = $this->countryInformationAcquirer->getCountryInfo($billingCountryId);
+        $billingStreet = $this->formatStreet($billingAddress->getStreet());
+
+        $customer = [
+            'name'      => $order->getCustomerFirstname() . ' ' . $order->getCustomerLastname(),
+            'email'     => $order->getCustomerEmail(),
+            'phone'     => $billingAddress->getTelephone(),
+            'billingAddress'    => [
+                'address1'      => $billingStreet['address1'] ?? '',
+                'address2'      => $billingStreet['address2'] ?? '',
+                'city'          => $billingAddress->getCity(),
+                'countryCode'   => $billingCountryInfo->getThreeLetterAbbreviation(),
+                'postalCode'    => $billingAddress->getPostcode(),
+                'province'      => $billingAddress->getRegionCode() ?? ''
+            ],
+            'shippingAddress'   => [],
+        ];
+
+        $shippingAddress = $order->getShippingAddress();
+        if ($shippingAddress) {
+            $shippingCountryId = $shippingAddress->getCountryId();
+            $shippingCountryInfo = $this->countryInformationAcquirer->getCountryInfo($shippingCountryId);
+            $shippingStreet = $this->formatStreet($shippingAddress->getStreet());
+
+            $customer['shippingAddress'] = [
+                'address1'      => $shippingStreet['address1'] ?? '',
+                'address2'      => $shippingStreet['address2'] ?? '',
+                'city'          => $shippingAddress->getCity(),
+                'countryCode'   => $shippingCountryInfo->getThreeLetterAbbreviation(),
+                'postalCode'    => $shippingAddress->getPostcode(),
+            ];
+        }
+
+        return $customer;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getStatus(): string
+    {
+        $status = '';
+        if (!$this->apiHelper->getOrdersApiCreateMode()) {
+            $status = 'fulfilled';
+        } else {
+            $status = 'unfulfilled';
+        }
+
+        return $status;
+    }
+}

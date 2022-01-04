@@ -14,7 +14,7 @@
     <default>
         <warranty>
             <enableExtend>
-                <enable>0</enable>
+                <enable>1</enable>
                 <enableBalance>1</enableBalance>
                 <enableCartOffers>1</enableCartOffers>
                 <enableRefunds>1</enableRefunds>
@@ -44,6 +44,10 @@
             <tracking>
                 <enabled>1</enabled>
             </tracking>
+            <orders>
+                <enabled>1</enabled>
+                <order_create>0</order_create>
+            </orders>
             <authentication>
                 <api_url>https://api.helloextend.com/</api_url>
                 <sandbox_api_url>https://api-demo.helloextend.com/</sandbox_api_url>

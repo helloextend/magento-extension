@@ -54,7 +54,11 @@ class CreateContracts
      */
     public function execute(): void
     {
-        if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
+        if (
+            !$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
+            || $this->dataHelper->isWarrantyContractEnabled()
+            || ($this->dataHelper->isOrdersApiEnabled() && $this->dataHelper->getOrdersApiCreateMode())
+        ) {
             return;
         }
 

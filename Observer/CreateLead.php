@@ -130,19 +130,23 @@ class CreateLead implements ObserverInterface
                 }
 
                 if (!$hasWarranty) {
-                    $hasOffers = $this->offerModel->orderItemHasOffers($productItem);
-                    if ($hasOffers) {
-                        try {
-                            $leadToken = $this->leadModel->createLead($order, $productItem);
-                            if ($leadToken) {
-                                $productItem->setLeadToken($leadToken);
-                                if ($order->getId()) {
-                                    $this->orderItemRepository->save($productItem);
+                    if (!$this->dataHelper->isOrdersApiEnabled($storeId)) {
+                        $hasOffers = $this->offerModel->orderItemHasOffers($productItem);
+                        if ($hasOffers) {
+                            try {
+                                $leadToken = $this->leadModel->createLead($order, $productItem);
+                                if ($leadToken) {
+                                    $productItem->setLeadToken($leadToken);
+                                    if ($order->getId()) {
+                                        $this->orderItemRepository->save($productItem);
+                                    }
                                 }
+                            } catch (LocalizedException $exception) {
+                                $this->logger->error('Error during lead creation. ' . $exception->getMessage());
                             }
-                        } catch (LocalizedException $exception) {
-                            $this->logger->error('Error during lead creation. ' . $exception->getMessage());
                         }
+                    } else {
+                        // @todo
                     }
                 }
             }

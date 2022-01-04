@@ -16,6 +16,7 @@ use Magento\Framework\Event\Observer;
 use Extend\Warranty\Model\Product\Type as WarrantyType;
 use Magento\Framework\Event\ObserverInterface;
 use Extend\Warranty\Model\WarrantyContract;
+use Extend\Warranty\Model\Orders as ExtendOrder;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\ScopeInterface;
@@ -32,6 +33,11 @@ class CreateContract implements ObserverInterface
      * @var WarrantyContract
      */
     private $warrantyContract;
+
+    /**
+     * @var ExtendOrder
+     */
+    private $extendOrder;
 
     /**
      * DataHelper
@@ -51,15 +57,18 @@ class CreateContract implements ObserverInterface
      * CreateContract constructor
      *
      * @param WarrantyContract $warrantyContract
+     * @param ExtendOrder $extendOrder
      * @param DataHelper $dataHelper
      * @param LoggerInterface $logger
      */
     public function __construct(
         WarrantyContract $warrantyContract,
+        ExtendOrder $extendOrder,
         DataHelper $dataHelper,
         LoggerInterface $logger
     ) {
         $this->warrantyContract = $warrantyContract;
+        $this->extendOrder = $extendOrder;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
     }
@@ -86,10 +95,18 @@ class CreateContract implements ObserverInterface
 
                 if ($orderItem->getProductType() === WarrantyType::TYPE_CODE) {
                     $qtyInvoiced = intval($invoiceItem->getQty());
-                    try {
-                        $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
-                    } catch (LocalizedException $exception) {
-                        $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
+                    if (!$this->dataHelper->isOrdersApiEnabled()) {
+                        try {
+                            $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+                        } catch (LocalizedException $exception) {
+                            $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
+                        }
+                    } else {
+                        try {
+                            $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced);
+                        } catch (LocalizedException $exception) {
+                            $this->logger->error('Error during warranty order api contract creation. ' . $exception->getMessage());
+                        }
                     }
                 }
             }
