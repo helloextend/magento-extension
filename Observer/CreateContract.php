@@ -95,7 +95,7 @@ class CreateContract implements ObserverInterface
 
                 if ($orderItem->getProductType() === WarrantyType::TYPE_CODE) {
                     $qtyInvoiced = intval($invoiceItem->getQty());
-                    if (!$this->dataHelper->isOrdersApiEnabled()) {
+                    if (!$this->dataHelper->isOrdersApiEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
                         try {
                             $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
                         } catch (LocalizedException $exception) {

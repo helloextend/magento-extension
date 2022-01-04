@@ -255,6 +255,9 @@
             </group>
 
             <group id="orders" translate="label comment" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
+                <depends>
+                    <field id="warranty/enableExtend/enable">1</field>
+                </depends>
                 <label>Orders API</label>
                 <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Enabled</label>

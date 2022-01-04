@@ -160,6 +160,7 @@ class ContractCreateProcess
                 $qtyInvoiced = intval($contractCreateRecord[OrderItemInterface::QTY_INVOICED]);
 
                 try {
+                    // @todo
                     if ($this->dataHelper->isOrdersApiEnabled() && $this->dataHelper->getOrdersApiCreateMode()) {
                         $processedContractCreateRecords[$recordId] = $this->extendOrdersApi->createOrder($order, $orderItem, $qtyInvoiced);
                     } else {

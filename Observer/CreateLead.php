@@ -130,7 +130,7 @@ class CreateLead implements ObserverInterface
                 }
 
                 if (!$hasWarranty) {
-                    if (!$this->dataHelper->isOrdersApiEnabled($storeId)) {
+                    if (!$this->dataHelper->isOrdersApiEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
                         $hasOffers = $this->offerModel->orderItemHasOffers($productItem);
                         if ($hasOffers) {
                             try {

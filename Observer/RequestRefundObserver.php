@@ -137,7 +137,7 @@ class RequestRefundObserver implements ObserverInterface
             && $this->dataHelper->isRefundEnabled($storeId)
             && $this->dataHelper->isAutoRefundEnabled($storeId)
         ) {
-            if (!$this->dataHelper->isOrdersApiEnabled($storeId)) {
+            if (!$this->dataHelper->isOrdersApiEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
                 $event = $observer->getEvent();
                 $creditmemo = $event->getCreditmemo();
 

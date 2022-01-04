@@ -9,7 +9,6 @@
  */
 /**
  * @var \Magento\Catalog\Block\Product\View $block
- * @var \Magento\Framework\Escaper $escaper
  */
 /** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getData('viewModel');
@@ -87,9 +86,9 @@ $viewModel = $block->getData('viewModel');
                                 {
                                     "#extend-offer-<?= $_item->getId(); ?>": {
                                         "extendWarranties":{
-                                            "productSku": "<?= $escaper->escapeJs($_item->getSku()); ?>",
-                                            "isPdpOffersEnabled": "<?= $escaper->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
-                                            "itemId": "<?= $escaper->escapeJs($_item->getId()); ?>"
+                                            "productSku": "<?= $block->escapeJs($_item->getSku()); ?>",
+                                            "isPdpOffersEnabled": "<?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
+                                            "itemId": "<?= $block->escapeJs($_item->getId()); ?>"
                                         }
                                     }
                                 }
