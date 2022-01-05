@@ -10,13 +10,15 @@
 
 namespace Extend\Warranty\Block\System\Config\Products;
 
+use Exception;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Backend\Block\Template\Context;
-use Exception;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 
 /**
  * Class Button
@@ -50,7 +52,7 @@ class Button extends Field
      * @param DataHelper $dataHelper
      * @param array $data
      */
-    public function __construct (
+    public function __construct(
         Context $context,
         TimezoneInterface $timezone,
         DataHelper $dataHelper,
@@ -101,7 +103,7 @@ class Button extends Field
     {
         $scopeData = $this->getScopeData();
 
-        $lastSyncDate = $this->dataHelper->getLastProductSyncDate($scopeData['scope'], $scopeData['scopeId']);
+        $lastSyncDate = $this->dataHelper->getLastProductSyncDate($scopeData['scopeType'], $scopeData['scopeId']);
         if (!empty($lastSyncDate)) {
             $lastSyncDate = $this->timezone->formatDate($lastSyncDate, 1, true);
         }
@@ -117,21 +119,36 @@ class Button extends Field
     public function getScopeData(): array
     {
         $request = $this->getRequest();
-        $params = $request->getParams();
+        $website = $request->getParam('website');
+        $store = $request->getParam('store');
 
-        $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
-        $scopeId = 0;
-        if (isset($params['store'])) {
-            $scope = 'stores';
-            $scopeId = $params['store'];
-        } elseif (isset($params['website'])) {
-            $scope = 'websites';
-            $scopeId = $params['website'];
+        if ($website) {
+            $scopeType = ScopeInterface::SCOPE_WEBSITE;
+            $scopeId = $website;
+        } elseif ($store) {
+            $scopeType = ScopeInterface::SCOPE_STORE;
+            $scopeId = $store;
+        } else {
+            $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
+            $scopeId = Store::DEFAULT_STORE_ID;
         }
 
         return [
-            'scope' => $scope,
-            'scopeId' => $scopeId,
+            'scopeType' => $scopeType,
+            'scopeId'   => $scopeId,
         ];
+    }
+
+    /**
+     * Check if button enabled
+     *
+     * @return bool
+     */
+    public function isButtonEnabled(): bool
+    {
+        $scopeData = $this->getScopeData();
+
+        return $this->dataHelper->getStoreId($scopeData['scopeType'], $scopeData['scopeId'])
+                && $this->dataHelper->getApiKey($scopeData['scopeType'], $scopeData['scopeId']);
     }
 }

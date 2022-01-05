@@ -255,6 +255,9 @@
             </group>
 
             <group id="orders" translate="label comment" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
+                <depends>
+                    <field id="warranty/enableExtend/enable">1</field>
+                </depends>
                 <label>Orders API</label>
                 <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Enabled</label>
@@ -262,7 +265,7 @@
                     <comment><![CDATA[Enable the Extend Warranty Orders API]]></comment>
                 </field>
                 <field id="order_create" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
-                    <label>Contract Creation Mode</label>
+                    <label>Orders API Contract Creating Mode</label>
                     <source_model>Extend\Warranty\Model\Config\Source\CreateMode</source_model>
                 </field>
                 <field id="store_name" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">

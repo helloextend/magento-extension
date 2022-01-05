@@ -1,89 +1,152 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+declare(strict_types=1);
 
 namespace Extend\Warranty\Observer;
 
-use Extend\Warranty\Model\Product\Type as WarrantyType;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Leads as LeadModel;
+use Extend\Warranty\Model\Offers as OfferModel;
+use Extend\Warranty\Model\Product\Type;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Sales\Api\Data\OrderInterface;
-use Extend\Warranty\Model\WarrantyContract;
-use Extend\Warranty\Model\Leads;
-use Extend\Warranty\Model\Orders as ExtendOrder;
-use Extend\Warranty\Helper\Api\Data;
-use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Sales\Api\OrderItemRepositoryInterface;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
-
+/**
+ * Class CreateLead
+ */
 class CreateLead implements ObserverInterface
 {
-    protected $productRepository;
-    protected $warrantyContract;
-    protected $quoteRepository;
-    protected $leads;
-    protected $extendOrder;
-    protected $extendHelper;
-    protected $logger;
+    /**
+     * Order Item Repository Interface
+     *
+     * @var OrderItemRepositoryInterface
+     */
+    private $orderItemRepository;
 
-    public function __construct
-    (
-        ProductRepositoryInterface $productRepository,
-        WarrantyContract $warrantyContract,
-        CartRepositoryInterface $quoteRepository,
-        Leads $leads,
-        ExtendOrder $extendOrder,
-        Data $data,
+    /**
+     * Offer Model
+     *
+     * @var OfferModel
+     */
+    private $offerModel;
+
+    /**
+     * Lead Model
+     *
+     * @var LeadModel
+     */
+    private $leadModel;
+
+    /**
+     * Data Helper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
+
+    /**
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * CreateLead constructor
+     *
+     * @param OrderItemRepositoryInterface $orderItemRepository
+     * @param OfferModel $offerModel
+     * @param LeadModel $leadModel
+     * @param DataHelper $dataHelper
+     * @param LoggerInterface $logger
+     */
+    public function __construct(
+        OrderItemRepositoryInterface $orderItemRepository,
+        OfferModel $offerModel,
+        LeadModel $leadModel,
+        DataHelper $dataHelper,
         LoggerInterface $logger
-    )
-    {
-        $this->productRepository = $productRepository;
-        $this->warrantyContract = $warrantyContract;
-        $this->leads = $leads;
-        $this->extendOrder = $extendOrder;
-        $this->quoteRepository = $quoteRepository;
-        $this->extendHelper = $data;
+    ) {
+        $this->orderItemRepository = $orderItemRepository;
+        $this->offerModel = $offerModel;
+        $this->leadModel = $leadModel;
+        $this->dataHelper = $dataHelper;
         $this->logger = $logger;
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
-     * @return void
+     * Create a lead
+     *
+     * @param Observer $observer
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer): void
     {
+        $event = $observer->getEvent();
+        $order = $event->getOrder();
+        $storeId = $order->getStoreId();
 
-        if ($this->extendHelper->isExtendEnabled() && $this->extendHelper->isLeadEnabled()) {
-            $order = $observer->getEvent()->getOrder();
-            $hasWarranty = false;
-
-            //Check if there is a warranty
-            foreach ($order->getAllItems() as $key => $item) {
-                if (!$hasWarranty && $item->getProductType() == WarrantyType::TYPE_CODE) {
-                    $hasWarranty = true;
+        if (
+            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            && $this->dataHelper->isLeadEnabled($storeId)
+        ) {
+            $productItems = $warrantyItems = [];
+            foreach ($order->getAllItems() as $orderItem) {
+                if ($orderItem->getProductType() === Type::TYPE_CODE) {
+                    $warrantyItems[] = $orderItem;
+                } else {
+                    $productItems[] = $orderItem;
                 }
             }
-            //If there is not warranties, check if there is available offers for leads
-            if (false == $hasWarranty) {
-                foreach ($order->getAllItems() as $key => $item) {
-                    if ($item->getProductType() == 'configurable') {
-                        continue;
+
+            foreach ($productItems as &$productItem) {
+                $sku = $productItem->getSku();
+                $hasWarranty = false;
+                foreach ($warrantyItems as $warrantyItem) {
+                    $associatedSku = $warrantyItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
+                    if (
+                        $associatedSku
+                        && $sku === $associatedSku
+                        && (
+                            $productItem->getProductType() === Configurable::TYPE_CODE
+                            || is_null($productItem->getProductOptionByCode('parent_product_id'))
+                        )
+                    ) {
+                        $hasWarranty = true;
+                        break;
                     }
-                    $hasOffers = $this->leads->hasOffers($item->getSku());
-                    if ($hasOffers) {
+                }
 
-                        if (!$this->extendHelper->isOrdersApiEnabled()) {
-                            $leadToken = $this->leads->createLead($order, $item);
-                        } else {
-                            $leadToken = $this->extendOrder->createOrder($order, $item, intval($item->getQtyOrdered()), ExtendOrder::LEAD);
-                        }
-
-                        //Save Lead Token
-                        if (!empty($leadToken)) {
-                            $item->setLeadToken($leadToken);
-                            if ($order->getId()) {
-                                $item->save();
+                if (!$hasWarranty) {
+                    if (!$this->dataHelper->isOrdersApiEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
+                        $hasOffers = $this->offerModel->orderItemHasOffers($productItem);
+                        if ($hasOffers) {
+                            try {
+                                $leadToken = $this->leadModel->createLead($order, $productItem);
+                                if ($leadToken) {
+                                    $productItem->setLeadToken($leadToken);
+                                    if ($order->getId()) {
+                                        $this->orderItemRepository->save($productItem);
+                                    }
+                                }
+                            } catch (LocalizedException $exception) {
+                                $this->logger->error('Error during lead creation. ' . $exception->getMessage());
                             }
                         }
+                    } else {
+                        // @todo
                     }
                 }
             }

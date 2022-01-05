@@ -14,6 +14,7 @@ namespace Extend\Warranty\Api;
 
 use Zend_Http_Client;
 use Zend_Http_Response;
+use Zend_Http_Client_Exception;
 
 /**
  * Interface ConnectorInterface
@@ -25,19 +26,15 @@ interface ConnectorInterface
      *
      * @param string $endpoint
      * @param string $method
+     * @param array $headers
      * @param array $data
      * @return Zend_Http_Response
+     * @throws Zend_Http_Client_Exception
      */
     public function call(
         string $endpoint,
         string $method = Zend_Http_Client::GET,
+        array $headers = [],
         array $data = []
     ): Zend_Http_Response;
-
-    /**
-     * Test connection
-     *
-     * @return bool
-     */
-    public function testConnection(): bool;
 }

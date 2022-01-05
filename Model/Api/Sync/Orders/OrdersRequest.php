@@ -2,7 +2,7 @@
 
 namespace Extend\Warranty\Model\Api\Sync\Orders;
 
-
+use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Extend\Warranty\Api\ConnectorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
 use Zend_Http_Response;
 
-class OrdersRequest
+class OrdersRequest extends AbstractRequest
 {
     /**
      * Create a warranty contract
@@ -23,79 +23,35 @@ class OrdersRequest
     const STATUS_CODE_SUCCESS = 200;
 
     /**
-     * Connector Interface
-     *
-     * @var ConnectorInterface
-     */
-    private $connector;
-
-    /**
-     * Json Serializer
-     *
-     * @var Json
-     */
-    private $jsonSerializer;
-
-    /**
-     * Logger Interface
-     *
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * ContractsRequest constructor
-     *
-     * @param ConnectorInterface $connector
-     * @param Json $jsonSerializer
-     * @param LoggerInterface $logger
-     */
-    public function __construct(
-        ConnectorInterface $connector,
-        Json $jsonSerializer,
-        LoggerInterface $logger
-    ) {
-        $this->connector = $connector;
-        $this->jsonSerializer = $jsonSerializer;
-        $this->logger = $logger;
-    }
-
-    /**
      * Create an order
      *
      * @param array $orderData
      * @return array
      */
-    public function create(array $orderData, $type = 'contract'): array
+    public function create(array $orderData): array
     {
-        $result = [];
+        $orderIds = [];
+        $url = $this->apiUrl . self::CREATE_ORDER_ENDPOINT;
         try {
             $response = $this->connector->call(
-                self::CREATE_ORDER_ENDPOINT,
+                $url,
                 Zend_Http_Client::POST,
+                [
+                    'Accept'                  => 'application/json; version=2021-07-01',
+                    'Content-Type'            => 'application/json',
+                    self::ACCESS_TOKEN_HEADER => $this->apiKey,
+                    'X-Idempotency-Key'       => $this->getUuid4()
+                ],
                 $orderData
             );
             $responseBody = $this->processResponse($response);
-
-            if ($type == \Extend\Warranty\Model\Orders::CONTRACT) {
-                $contractsIds = [];
-                foreach ($responseBody['lineItems'] as $lineItem) {
-                    $contractsIds[] = $lineItem['contractId'];
-                }
-
-                $result = $contractsIds;
-            } elseif ($type == \Extend\Warranty\Model\Orders::LEAD) {
-                $leadsTokens = [];
-                foreach ($responseBody['lineItems'] as $lineItem) {
-                    $leadsTokens[] = $lineItem['leadToken'];
-                }
-
-                $result = $leadsTokens;
+            foreach ($responseBody['lineItems'] as $lineItem) {
+                $orderIds[] = $lineItem['contractId'];
             }
 
-            $orderApiId = $responseBody['id'] ?? '';
-            if ($orderApiId) {
-                $this->logger->info('Order is created successfully. OrderApiID: ' . $orderApiId);
+            $orderId = $responseBody['id'] ?? '';
+            if ($orderId) {
+                $this->logger->info('Order is created successfully. OrderID: ' . $orderId);
             } else {
                 $this->logger->error('Order creation is failed.');
             }
@@ -103,7 +59,18 @@ class OrdersRequest
             $this->logger->error($exception->getMessage());
         }
 
-        return $result;
+        return $orderIds;
+    }
+
+    protected function getUuid4()
+    {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
     }
 
     /**

@@ -8,21 +8,23 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
+declare(strict_types=1);
+
 namespace Extend\Warranty\Model\Api\Sync\Product;
 
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Model\Api\Request\ProductDataBuilder as ProductPayloadBuilder;
-use Magento\Framework\Serialize\Serializer\Json;
+use Extend\Warranty\Model\Api\Sync\AbstractRequest;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
-use Zend_Http_Response;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Zend_Http_Client_Exception;
+use InvalidArgumentException;
 
 /**
  * Class ProductsRequest
  */
-class ProductsRequest
+class ProductsRequest extends AbstractRequest
 {
     /**
      * Create / update a product
@@ -30,16 +32,14 @@ class ProductsRequest
     const CREATE_PRODUCT_ENDPOINT = 'products/';
 
     /**
+     * Get a product
+     */
+    const GET_PRODUCT_ENDPOINT = 'products/';
+
+    /**
      * Response status codes
      */
     const STATUS_CODE_SUCCESS = 201;
-
-    /**
-     * Connector Interface
-     *
-     * @var ConnectorInterface
-     */
-    private $connector;
 
     /**
      * Product Payload Builder
@@ -49,13 +49,6 @@ class ProductsRequest
     private $productPayloadBuilder;
 
     /**
-     * Json Serializer
-     *
-     * @var Json
-     */
-    private $jsonSerializer;
-
-    /**
      * Logger Interface
      *
      * @var LoggerInterface
@@ -63,33 +56,24 @@ class ProductsRequest
     private $syncLogger;
 
     /**
-     * Logger Interface
-     *
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
      * ProductsRequest constructor
      *
      * @param ConnectorInterface $connector
-     * @param ProductPayloadBuilder $productPayloadBuilder
-     * @param Json $jsonSerializer
-     * @param LoggerInterface $syncLogger
+     * @param JsonSerializer $jsonSerializer
      * @param LoggerInterface $logger
+     * @param ProductPayloadBuilder $productPayloadBuilder
+     * @param LoggerInterface $syncLogger
      */
-    public function __construct (
+    public function __construct(
         ConnectorInterface $connector,
+        JsonSerializer $jsonSerializer,
+        LoggerInterface $logger,
         ProductPayloadBuilder $productPayloadBuilder,
-        Json $jsonSerializer,
-        LoggerInterface $syncLogger,
-        LoggerInterface $logger
+        LoggerInterface $syncLogger
     ) {
-        $this->connector = $connector;
         $this->productPayloadBuilder = $productPayloadBuilder;
-        $this->jsonSerializer = $jsonSerializer;
         $this->syncLogger = $syncLogger;
-        $this->logger = $logger;
+        parent::__construct($connector, $jsonSerializer, $logger);
     }
 
     /**
@@ -97,13 +81,12 @@ class ProductsRequest
      *
      * @param array $products
      * @param int $currentBatch
-     * @throws NoSuchEntityException
      */
     public function create(array $products, int $currentBatch = 1): void
     {
         $productData = [];
         foreach ($products as $product) {
-            $productPayload = $this->productPayloadBuilder->build($product);
+            $productPayload = $this->productPayloadBuilder->preparePayload($product);
             if (!empty($productPayload)) {
                 $productData[] = $productPayload;
             }
@@ -112,15 +95,16 @@ class ProductsRequest
         if (!empty($productData)) {
             try {
                 $response = $this->connector->call(
-                    self::CREATE_PRODUCT_ENDPOINT . '?batch=true',
+                    $this->buildUrl(self::CREATE_PRODUCT_ENDPOINT . '?batch=true'),
                     Zend_Http_Client::POST,
+                    [self::ACCESS_TOKEN_HEADER => $this->apiKey],
                     $productData
                 );
                 $responseBody = $this->processResponse($response);
 
                 if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
                     $this->logger->info(sprintf('Product batch %s is synchronized successfully.', $currentBatch));
-                    $this->syncLogger->info('Synced ' . count($productData) . ' products in batch ' . $currentBatch);
+                    $this->syncLogger->info('Synced ' . count($productData) . ' product(s) in batch ' . $currentBatch);
 
                     foreach ($responseBody as $name => $section) {
                         $info = array_column($section, 'referenceId');
@@ -129,30 +113,31 @@ class ProductsRequest
                 } else {
                     $this->logger->error(sprintf('Product batch %s synchronization is failed.', $currentBatch));
                 }
-            } catch (LocalizedException $exception) {
+            } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
                 $this->logger->error($exception->getMessage());
             }
         }
     }
 
     /**
-     * Process response
+     * Check if connection successful
      *
-     * @param Zend_Http_Response $response
-     * @return array
+     * @return bool
      */
-    protected function processResponse(Zend_Http_Response $response): array
+    public function isConnectionSuccessful(): bool
     {
-        $responseBody = [];
-        $responseBodyJson = $response->getBody();
+        try {
+            $response = $this->connector->call(
+                $this->buildUrl(self::GET_PRODUCT_ENDPOINT),
+                Zend_Http_Client::GET,
+                [self::ACCESS_TOKEN_HEADER => $this->apiKey]
+            );
 
-        if ($responseBodyJson) {
-            $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
-            $this->logger->info('Response: ' . $response->getHeadersAsString() . PHP_EOL . $response->getRawBody());
-        } else {
-            $this->logger->error('Response body is empty.');
+            $isConnectionSuccessful = $response->isSuccessful();
+        } catch (Zend_Http_Client_Exception $exception) {
+            $isConnectionSuccessful = false;
         }
 
-        return $responseBody;
+        return $isConnectionSuccessful;
     }
 }

@@ -4,8 +4,7 @@ namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Model\Api\Request\OrderBuilder;
 use Extend\Warranty\Model\Api\Sync\Orders\OrdersRequest;
-use Extend\Warranty\Model\Api\Sync\Offers\OffersRequest;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
@@ -13,10 +12,6 @@ use Psr\Log\LoggerInterface;
 
 class Orders
 {
-
-    const CONTRACT = 'contract';
-    const LEAD = 'lead';
-
     /**
      * @var OrdersRequest
      */
@@ -28,9 +23,9 @@ class Orders
     protected $orderBuilder;
 
     /**
-     * @var OffersRequest
+     * @var DataHelper
      */
-    protected $offersRequest;
+    protected $dataHelper;
 
     /**
      * @var OrderItemRepositoryInterface
@@ -50,7 +45,7 @@ class Orders
     /**
      * @param OrdersRequest $ordersRequest
      * @param OrderBuilder $orderBuilder
-     * @param OffersRequest $offersRequest
+     * @param DataHelper $dataHelper
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param JsonSerializer $jsonSerializer
      * @param LoggerInterface $logger
@@ -59,101 +54,49 @@ class Orders
     (
         OrdersRequest $ordersRequest,
         OrderBuilder $orderBuilder,
-        OffersRequest $offersRequest,
+        DataHelper $dataHelper,
         OrderItemRepositoryInterface $orderItemRepository,
         JsonSerializer $jsonSerializer,
         LoggerInterface $logger
     ) {
         $this->ordersRequest = $ordersRequest;
         $this->orderBuilder = $orderBuilder;
-        $this->offersRequest = $offersRequest;
+        $this->dataHelper = $dataHelper;
         $this->orderItemRepository = $orderItemRepository;
         $this->jsonSerializer = $jsonSerializer;
         $this->logger = $logger;
     }
 
     /**
-     * @param $itemSku
-     * @return array
-     */
-    public function getOffers($itemSku): array
-    {
-        $offers = $this->offersRequest->consult($itemSku);
-        if (!empty($offers) && isset($offers['plans'])
-            && is_array($offers['plans']) && count($offers['plans']) >= 1) {
-            return $offers['plans'];
-        }
-        return [];
-    }
-
-    /**
-     * @param $itemSku
-     * @return bool
-     */
-    public function hasOffers($itemSku) :bool
-    {
-        $offerPlans = $this->getOffers($itemSku);
-
-        if (
-            !empty($offerPlans)
-            && is_array($offerPlans)
-            && count($offerPlans) >= 1
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * @param $orderMagento
      * @param $orderItem
-     * @param $qty
-     * @param $type
+     * @param $qtyInvoiced
      * @return string
      */
-    public function createOrder($orderMagento, $orderItem, $qty, $type = self::CONTRACT) :string
+    public function createOrder($orderMagento, $orderItem, $qtyInvoiced) :string
     {
+        $apiUrl = $this->dataHelper->getApiUrl();
+        $apiStoreId = $this->dataHelper->getStoreId();
+        $apiKey = $this->dataHelper->getApiKey();
         $orderExtend = '';
-        $response = [];
+        $contractIds = [];
         try {
-            $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qty, $type);
-            $response =  $this->ordersRequest->create($orderData, $type);
-            if (!empty($response) && $type == self::CONTRACT) {
-                $orderExtend = $this->saveContract($orderItem, $qty, $response);
-            } elseif(!empty($response) && $type == self::LEAD) {
-                $orderExtend = $this->prepareLead($response);
+            $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qtyInvoiced);
+            $this->ordersRequest->setConfig($apiUrl,$apiStoreId,$apiKey);
+            $contractIds =  $this->ordersRequest->create($orderData);
+            if (!empty($contractIds)) {
+                $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+                $orderItem->setContractId($contractIdsJson);
+                $options = $orderItem->getProductOptions();
+                $options['refund'] = false;
+                $orderItem->setProductOptions($options);
+                $this->orderItemRepository->save($orderItem);
+                $orderExtend = count($contractIds) === $qtyInvoiced ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;;
             }
         } catch(\Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
         }
 
         return empty($orderExtend) ? '' : $orderExtend;
-    }
-
-    /**
-     * @param $orderItem
-     * @param $qty
-     * @param $contractIds
-     * @return string
-     */
-    private function saveContract($orderItem, $qty, $contractIds): string
-    {
-        $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
-        $orderItem->setContractId($contractIdsJson);
-        $options = $orderItem->getProductOptions();
-        $options['refund'] = false;
-        $orderItem->setProductOptions($options);
-        $this->orderItemRepository->save($orderItem);
-
-        return count($contractIds) === $qty ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;
-    }
-
-    /**
-     * @param $leadTokens
-     * @return bool|string
-     */
-    private function prepareLead($leadTokens)
-    {
-        return $this->jsonSerializer->serialize($leadTokens);
     }
 }

@@ -138,17 +138,20 @@ class Data extends AbstractHelper
     }
 
     /**
-     * Check if Extend module enabled
+     * Check if enabled
      *
-     * @param string|int|null $storeId
+     * @param string $scopeType
+     * @param string|int|null $scopeId
      * @return bool
      */
-    public function isExtendEnabled($storeId = null): bool
-    {
+    public function isExtendEnabled(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): bool {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_ENABLE_EXTEND_ENABLE_XML_PATH,
-            ScopeInterface::SCOPE_STORES,
-            $storeId
+            $scopeType,
+            $scopeId
         );
     }
 
@@ -451,41 +454,54 @@ class Data extends AbstractHelper
     /**
      * Check if Orders API enabled
      *
-     * @param $storeId
+     * @param string $scopeType
+     * @param int|string|null $scopeId
      * @return bool
      */
-    public function isOrdersApiEnabled($storeId = null): bool
-    {
+    public function isOrdersApiEnabled(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): bool {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_ENABLE_ORDERS_API,
-            ScopeInterface::SCOPE_STORES,
-            $storeId
+            $scopeType,
+            $scopeId
         );
     }
 
     /**
-     * @param $storeId
+     * Get store name
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
      * @return string
      */
-    public function getStoreName($storeId = null): string
-    {
-        return $this->scopeConfig->getValue(
+    public function getStoreName(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
+        return (string)$this->scopeConfig->getValue(
             self::WARRANTY_STORE_NAME,
-            ScopeInterface::SCOPE_STORES,
-            $storeId
+            $scopeType,
+            $scopeId
         );
     }
 
     /**
-     * @param $storeId
-     * @return bool
+     * Get Order API contract creating mode
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
      */
-    public function getOrdersApiCreateMode($storeId = null): bool
-    {
-        return $this->scopeConfig->isSetFlag(
+    public function getOrdersApiCreateMode(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
+        return (string)$this->scopeConfig->getValue(
             self::WARRANTY_ORDERS_API_CREATE_MODE,
-            ScopeInterface::SCOPE_STORES,
-            $storeId
+            $scopeType,
+            $scopeId
         );
     }
 }
