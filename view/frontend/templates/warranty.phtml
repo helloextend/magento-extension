@@ -17,6 +17,11 @@ $offerTypeArea = $block->getData('offerTypeArea');
 /** @var \Magento\Catalog\Model\Product $product */
 $product = $block->getProduct();
 ?>
+<style>
+    #extend-offer iframe {
+        min-height: 72px;
+    }
+</style>
 <?php if ($product->isSaleable()): ?>
     <div class="box-tocart">
         <div class="fieldset">
