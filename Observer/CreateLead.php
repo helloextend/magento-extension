@@ -15,6 +15,7 @@ namespace Extend\Warranty\Observer;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Leads as LeadModel;
 use Extend\Warranty\Model\Offers as OfferModel;
+use Extend\Warranty\Model\Orders as ExtendOrder;
 use Extend\Warranty\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Event\Observer;
@@ -50,6 +51,8 @@ class CreateLead implements ObserverInterface
      */
     private $leadModel;
 
+    private $extendOrder;
+
     /**
      * Data Helper
      *
@@ -77,12 +80,14 @@ class CreateLead implements ObserverInterface
         OrderItemRepositoryInterface $orderItemRepository,
         OfferModel $offerModel,
         LeadModel $leadModel,
+        ExtendOrder $extendOrder,
         DataHelper $dataHelper,
         LoggerInterface $logger
     ) {
         $this->orderItemRepository = $orderItemRepository;
         $this->offerModel = $offerModel;
         $this->leadModel = $leadModel;
+        $this->extendOrder = $extendOrder;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
     }
@@ -146,7 +151,17 @@ class CreateLead implements ObserverInterface
                             }
                         }
                     } else {
-                        // @todo
+                        try {
+                            $leadToken = $leadToken = $this->extendOrder->createOrder($order, $productItem, intval($productItem->getQtyOrdered()), ExtendOrder::LEAD);
+                            if ($leadToken) {
+                                $productItem->setLeadToken($leadToken);
+                                if ($order->getId()) {
+                                    $this->orderItemRepository->save($productItem);
+                                }
+                            }
+                        } catch (LocalizedException $exception) {
+                            $this->logger->error('Error during lead creation. ' . $exception->getMessage());
+                        }
                     }
                 }
             }

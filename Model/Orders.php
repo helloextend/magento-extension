@@ -12,6 +12,10 @@ use Psr\Log\LoggerInterface;
 
 class Orders
 {
+
+    const CONTRACT = 'contract';
+    const LEAD = 'lead';
+
     /**
      * @var OrdersRequest
      */
@@ -73,7 +77,7 @@ class Orders
      * @param $qtyInvoiced
      * @return string
      */
-    public function createOrder($orderMagento, $orderItem, $qtyInvoiced) :string
+    public function createOrder($orderMagento, $orderItem, $qty, $type = self::CONTRACT) :string
     {
         $apiUrl = $this->dataHelper->getApiUrl();
         $apiStoreId = $this->dataHelper->getStoreId();
@@ -81,22 +85,44 @@ class Orders
         $orderExtend = '';
         $contractIds = [];
         try {
-            $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qtyInvoiced);
+            $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qty, $type);
             $this->ordersRequest->setConfig($apiUrl,$apiStoreId,$apiKey);
-            $contractIds =  $this->ordersRequest->create($orderData);
-            if (!empty($contractIds)) {
-                $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
-                $orderItem->setContractId($contractIdsJson);
-                $options = $orderItem->getProductOptions();
-                $options['refund'] = false;
-                $orderItem->setProductOptions($options);
-                $this->orderItemRepository->save($orderItem);
-                $orderExtend = count($contractIds) === $qtyInvoiced ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;;
+            $response =  $this->ordersRequest->create($orderData, $type);
+            if (!empty($response) && $type == self::CONTRACT) {
+                $orderExtend = $this->saveContract($orderItem, $qty, $response);
+            } elseif(!empty($response) && $type == self::LEAD) {
+                $orderExtend = $this->prepareLead($response);
             }
         } catch(\Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
         }
 
         return empty($orderExtend) ? '' : $orderExtend;
+    }
+    /**
+     * @param $orderItem
+     * @param $qty
+     * @param $contractIds
+     * @return string
+     */
+    private function saveContract($orderItem, $qty, $contractIds): string
+    {
+        $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+        $orderItem->setContractId($contractIdsJson);
+        $options = $orderItem->getProductOptions();
+        $options['refund'] = false;
+        $orderItem->setProductOptions($options);
+        $this->orderItemRepository->save($orderItem);
+
+        return count($contractIds) === $qty ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;
+    }
+
+    /**
+     * @param $leadTokens
+     * @return bool|string
+     */
+    private function prepareLead($leadTokens)
+    {
+        return $this->jsonSerializer->serialize($leadTokens);
     }
 }
