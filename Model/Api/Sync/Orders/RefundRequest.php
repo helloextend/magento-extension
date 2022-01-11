@@ -1,4 +1,14 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+declare(strict_types=1);
 
 namespace Extend\Warranty\Model\Api\Sync\Orders;
 
@@ -10,6 +20,9 @@ use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
 use Zend_Http_Response;
 
+/**
+ * Class RefundRequest
+ */
 class RefundRequest extends AbstractRequest
 {
     /**
@@ -23,13 +36,12 @@ class RefundRequest extends AbstractRequest
     const STATUS_CODE_SUCCESS = 201;
 
     /**
-     * Create refund
+     * Cancel a warranty contract and request a refund
      *
      * @param string $contractId
-     * @return string
-     *
+     * @return bool
      */
-    public function refund(string $contractId): string
+    public function refund(string $contractId): bool
     {
         $url = $this->apiUrl . self::REFUND_ENDPOINT;
         $isRefundRequested = false;

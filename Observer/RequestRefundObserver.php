@@ -89,6 +89,8 @@ class RequestRefundObserver implements ObserverInterface
     private $warrantyContactModel;
 
     /**
+     * Orders API refund Model
+     *
      * @var OrdersApiRefund
      */
     private $ordersApiRefund;
@@ -138,7 +140,6 @@ class RequestRefundObserver implements ObserverInterface
         $event = $observer->getEvent();
         $creditmemo = $event->getCreditmemo();
         $order = $creditmemo->getOrder();
-
         $storeId = $order->getStoreId();
 
         if (
@@ -213,6 +214,13 @@ class RequestRefundObserver implements ObserverInterface
         }
     }
 
+    /**
+     * Validate refund
+     *
+     * @param string $contractId
+     * @param $storeId
+     * @return bool
+     */
     private function validateRefund(string $contractId, $storeId): bool
     {
         $isValid = false;
@@ -235,6 +243,6 @@ class RequestRefundObserver implements ObserverInterface
             }
         }
 
-            return $isValid;
+        return $isValid;
     }
 }
