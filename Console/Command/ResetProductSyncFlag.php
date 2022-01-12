@@ -10,21 +10,20 @@
 
 namespace Extend\Warranty\Console\Command;
 
-use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Extend\Warranty\Model\ContractCreateProcess;
+use Extend\Warranty\Model\ProductSyncFlag;
 use Magento\Framework\App\Area;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\State as AppState;
-use Psr\Log\LoggerInterface;
+use Magento\Framework\FlagManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Psr\Log\LoggerInterface;
 use Exception;
 
 /**
- * Class CreateContracts
+ * Class ResetProductSyncFlag
  */
-class CreateContracts extends Command
+class ResetProductSyncFlag extends Command
 {
     /**
      * App State
@@ -34,18 +33,11 @@ class CreateContracts extends Command
     private $appState;
 
     /**
-     * Data Helper
+     * Flag Manager
      *
-     * @var DataHelper
+     * @var FlagManager
      */
-    private $dataHelper;
-
-    /**
-     * Contract Create Process
-     *
-     * @var ContractCreateProcess
-     */
-    private $contractCreateProcess;
+    private $flagManager;
 
     /**
      * Logger Interface
@@ -55,24 +47,21 @@ class CreateContracts extends Command
     private $logger;
 
     /**
-     * CreateContracts constructor
+     * ResetProductSyncFlag constructor
      *
      * @param AppState $appState
-     * @param DataHelper $dataHelper
-     * @param ContractCreateProcess $contractCreateProcess
+     * @param FlagManager $flagManager
      * @param LoggerInterface $logger
      * @param string|null $name
      */
     public function __construct(
         AppState $appState,
-        DataHelper $dataHelper,
-        ContractCreateProcess $contractCreateProcess,
+        FlagManager $flagManager,
         LoggerInterface $logger,
         string $name = null
     ) {
         $this->appState = $appState;
-        $this->dataHelper = $dataHelper;
-        $this->contractCreateProcess = $contractCreateProcess;
+        $this->flagManager = $flagManager;
         $this->logger = $logger;
         parent::__construct($name);
     }
@@ -80,17 +69,17 @@ class CreateContracts extends Command
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
-        $this->setName('extend:contracts:create');
-        $this->setDescription('Create warranty contracts');
+        $this->setName('extend:sync-products:reset-flag');
+        $this->setDescription('Reset product sync flag to unlock sync process');
+
         parent::configure();
     }
-
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         try {
             $this->appState->emulateAreaCode(
@@ -99,26 +88,20 @@ class CreateContracts extends Command
                 [$input, $output]
             );
         } catch (Exception $exception) {
-            $output->writeln("Something went wrong while creating the warranty contracts.");
             $this->logger->error($exception->getMessage());
+            $output->writeln('<error>' . $exception->getMessage() . '</error>');
         }
     }
 
     /**
-     * Create warranty contracts
+     * Reset product sync flag
      *
      * @param InputInterface $input
      * @param OutputInterface $output
      */
     public function doExecute(InputInterface $input, OutputInterface $output): void
     {
-        if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
-            $output->writeln("<error>Extension is disabled. Please, check the configuration settings.</error>");
-            return;
-        }
-
-        $output->writeln("<comment>Process was started.</comment>");
-        $this->contractCreateProcess->execute();
-        $output->writeln("<comment>Process was finished.</comment>");
+        $this->flagManager->deleteFlag(ProductSyncFlag::FLAG_NAME);
+        $output->writeln("<comment>Product sync flag has been reset.</comment>");
     }
 }

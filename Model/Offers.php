@@ -10,26 +10,35 @@
 
 declare(strict_types=1);
 
-namespace Extend\Warranty\Helper;
+namespace Extend\Warranty\Model;
 
-use Magento\Framework\App\Helper\AbstractHelper;
-use Extend\Warranty\Model\Leads as LeadModel;
-use Magento\Framework\App\Helper\Context;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Api\Sync\Offer\OffersRequest as ApiOfferModel;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Sales\Api\Data\OrderItemInterface;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\Exception\LocalizedException;
 use InvalidArgumentException;
 
 /**
- * Class Api
+ * Class Offers
  */
-class Api extends AbstractHelper
+class Offers
 {
     /**
-     * Lead Model
+     * Api Offer Model
      *
-     * @var LeadModel
+     * @var ApiOfferModel
      */
-    private $leadModel;
+    private $apiOfferModel;
+
+    /**
+     * Data Helper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
 
     /**
      * Json Serializer
@@ -46,45 +55,106 @@ class Api extends AbstractHelper
     private $logger;
 
     /**
-     * Api constructor
+     * Offers constructor
      *
-     * @param Context $context
-     * @param LeadModel $leadModel
+     * @param ApiOfferModel $apiOfferModel
+     * @param DataHelper $dataHelper
      * @param JsonSerializer $jsonSerializer
      * @param LoggerInterface $logger
      */
     public function __construct(
-        Context $context,
-        LeadModel $leadModel,
+        ApiOfferModel $apiOfferModel,
+        DataHelper $dataHelper,
         JsonSerializer $jsonSerializer,
         LoggerInterface $logger
     ) {
-        $this->leadModel = $leadModel;
+        $this->apiOfferModel = $apiOfferModel;
+        $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
         $this->logger = $logger;
-        parent::__construct($context);
     }
 
     /**
-     * Check if product has warranty offers
-     *
-     * @param string $productSku
-     * @return bool
-     */
-    public function isProductHasOffers(string $productSku): bool
-    {
-        return $this->leadModel->hasOffers($productSku);
-    }
-
-    /**
-     * Get offer information
+     * Get offers
      *
      * @param string $productSku
      * @return array
      */
-    public function getOfferInformation(string $productSku): array
+    public function getOffers(string $productSku): array
     {
-        return $this->leadModel->getOffers($productSku);
+        $apiUrl = $this->dataHelper->getApiUrl();
+        $apiStoreId = $this->dataHelper->getStoreId();
+        $apiKey = $this->dataHelper->getApiKey();
+
+        try {
+            $this->apiOfferModel->setConfig($apiUrl, $apiStoreId, $apiKey);
+            $offers = $this->apiOfferModel->getOfferInformation($productSku);
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
+            $offers = [];
+        }
+
+        return isset($offers['plans']) && is_array($offers['plans']) ? $offers['plans'] : [];
+    }
+
+    /**
+     * Check if product has offers
+     *
+     * @param string $productSku
+     * @return bool
+     */
+    public function hasOffers(string $productSku): bool
+    {
+        $offerInformation = $this->getOffers($productSku);
+        $recommended = $offerInformation['recommended'] ?? '';
+
+        return $recommended
+            && isset($offerInformation[$recommended])
+            && is_array($offerInformation[$recommended])
+            && !empty($offerInformation[$recommended]);
+    }
+
+    /**
+     * Get offers for order item
+     *
+     * @param OrderItemInterface $item
+     * @return array
+     */
+    public function getOffersForOrderItem(OrderItemInterface $item): array
+    {
+        $storeId = $item->getStoreId();
+
+        $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
+        $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+        $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
+
+        try {
+            $this->apiOfferModel->setConfig($apiUrl, $apiStoreId, $apiKey);
+            $productSku = $item->getSku();
+            $offers = $this->apiOfferModel->getOfferInformation($productSku);
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
+            $offers = [];
+        }
+
+        return isset($offers['plans']) && is_array($offers['plans']) ? $offers['plans'] : [];
+    }
+
+    /**
+     * Check if order item has offers
+     *
+     * @param OrderItemInterface $item
+     * @return bool
+     */
+    public function orderItemHasOffers(OrderItemInterface $item): bool
+    {
+        $offerInformation = $this->getOffersForOrderItem($item);
+        $recommended = $offerInformation['recommended'] ?? '';
+
+        return $recommended
+            && isset($offerInformation[$recommended])
+            && is_array($offerInformation[$recommended])
+            && !empty($offerInformation[$recommended]);
     }
 
     /**
@@ -116,7 +186,7 @@ class Api extends AbstractHelper
         }
 
         if (empty($errors)) {
-            $offerInformation = $this->getOfferInformation($warrantyData['product']);
+            $offerInformation = $this->getOffers($warrantyData['product']);
             $recommended = $offerInformation['recommended'] ?? '';
             if ($recommended && isset($offerInformation[$recommended])) {
                 $offerInfo = $offerInformation[$recommended];

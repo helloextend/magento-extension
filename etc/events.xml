@@ -17,7 +17,7 @@
         <observer name="extend_warranty_request_refund_observer" instance="Extend\Warranty\Observer\RequestRefundObserver" />
     </event>
     <event name="sales_order_place_after">
-        <observer name="create_warranty_lead" instance="Extend\Warranty\Observer\CreateLead"/>
+        <observer name="extend_warranty_create_lead_observer" instance="Extend\Warranty\Observer\CreateLead"/>
     </event>
     <event name="sales_order_invoice_save_commit_after">
         <observer name="extend_warranty_collect_purchased_warranties_observer" instance="Extend\Warranty\Observer\CollectPurchasedWarrantiesObserver"/>
