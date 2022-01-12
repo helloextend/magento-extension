@@ -99,13 +99,7 @@ class OrderBuilder
             $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
             $productSku = is_array($productSku) ? array_shift($productSku) : $productSku;
 
-            $warrantyId = $orderItem->getProductOptionByCode(Type::WARRANTY_ID);
-            $warrantyId = is_array($warrantyId) ? array_shift($warrantyId) : $warrantyId;
-
-            $plan = [
-                'purchasePrice' => $this->helper->formatPrice($orderItem->getPrice()),
-                'id'            => $warrantyId,
-            ];
+            $plan = $this->getPlan($orderItem);
 
             $product = $this->prepareProductPayload($productSku);
 
@@ -128,6 +122,20 @@ class OrderBuilder
                 'storeId'     => $this->apiHelper->getStoreId(),
                 'warrantable' => true,
                 'product'     => $product
+            ];
+        } elseif ($type == \Extend\Warranty\Model\Orders::LEAD_CONTRACT) {
+            $productSku = $orderItem->getSku();
+            $product = $this->prepareProductPayload($productSku);
+
+            $plan = $this->getPlan($orderItem);
+
+            $lineItem = [
+                'status'      => $this->getStatus(),
+                'quantity'    => $qty,
+                'storeId'     => $this->apiHelper->getStoreId(),
+                'warrantable' => true,
+                'plan'        => $plan,
+                'leadToken'     => implode(", ", json_decode($orderItem->getLeadToken(), true))
             ];
         }
 
@@ -177,6 +185,24 @@ class OrderBuilder
         ];
 
         return $result;
+    }
+
+    /**
+     * @param OrderItemInterface $orderItem
+     * @return array
+     */
+    protected function getPlan(OrderItemInterface $orderItem): array
+    {
+        $plan = [];
+        $warrantyId = $orderItem->getProductOptionByCode(Type::WARRANTY_ID);
+        $warrantyId = is_array($warrantyId) ? array_shift($warrantyId) : $warrantyId;
+
+        $plan = [
+            'purchasePrice' => $this->helper->formatPrice($orderItem->getPrice()),
+            'id'            => $warrantyId,
+        ];
+
+        return $plan;
     }
 
     /**
@@ -240,7 +266,6 @@ class OrderBuilder
                 'postalCode'    => $billingAddress->getPostcode(),
                 'province'      => $billingAddress->getRegionCode() ?? ''
             ],
-            'shippingAddress'   => [],
         ];
 
         $shippingAddress = $order->getShippingAddress();

@@ -116,6 +116,22 @@ class CreateLead implements ObserverInterface
                 }
             }
 
+            if (count($productItems) == 0 && count($warrantyItems) > 0) {
+                $leadToken = [];
+                foreach ($warrantyItems as $warrantyItem) {
+                    try {
+                        if (array_key_exists('leadToken',$warrantyItem->getProductOptionByCode('info_buyRequest'))) {
+                            $leadToken[] = $warrantyItem->getProductOptionByCode('info_buyRequest')['leadToken'];
+                            if ($leadToken) {
+                                $warrantyItem->setLeadToken(json_encode($leadToken));
+                            }
+                        }
+                    } catch (LocalizedException $exception) {
+                        $this->logger->error('Error during lead saving. ' . $exception->getMessage());
+                    }
+                }
+            }
+
             foreach ($productItems as &$productItem) {
                 $sku = $productItem->getSku();
                 $hasWarranty = false;
@@ -152,7 +168,7 @@ class CreateLead implements ObserverInterface
                         }
                     } else {
                         try {
-                            $leadToken = $leadToken = $this->extendOrder->createOrder($order, $productItem, intval($productItem->getQtyOrdered()), ExtendOrder::LEAD);
+                            $leadToken = $this->extendOrder->createOrder($order, $productItem, intval($productItem->getQtyOrdered()), ExtendOrder::LEAD);
                             if ($leadToken) {
                                 $productItem->setLeadToken($leadToken);
                                 if ($order->getId()) {

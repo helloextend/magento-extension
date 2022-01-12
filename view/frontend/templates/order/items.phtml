@@ -37,47 +37,31 @@ $viewModel = $block->getViewModel();
             endif;
             ?>
             <tbody>
-            <td>
-                <div id="extend-offer-<?= $item->getSku(); ?>"></div>
-            </td>
-            <script type="text/javascript">
-                require(['jquery','mage/url'], function($, urlBuilder){
-                    Extend.buttons.renderSimpleOffer('#extend-offer-<?= $item->getSku() ?>', {
-                        referenceId: '<?= $item->getSku() ?>',
-                        onAddToCart: function (opts) {
+                <?= $block->getItemHtml($item) ?>
+                <?php if ($viewModel->isProductDetailPageOffersEnabled() ** $viewModel->isLeadEnabled()): ?>
+                    <tr>
+                        <tr>
+                            <td class="col">
+                                <div id="extend-offer-<?= $item->getId(); ?>"></div>
+                            </td>
+                        </tr>
 
-                            const plan = opts.plan;
-                            if (plan) {
-                                let parentId = "<?= $item->getOptionByCode('simple_product') ? $item->getProductId() : '' ?>";
-                                let url      = "<?= $block->getUrl('extend/warranty/leads') ?>";
-                                let leadToken = "<?= implode(", ", $leadToken); ?>";
-                                let customerEmail = "<?= $block->getOrder()->getCustomerEmail();?>";
-                                let order = "<?= $block->getOrder()->getId();?>"
-                                plan.product = '<?= $item->getSku() ?>';
-
-                                $.post(url, {
-                                    customerEmail: customerEmail,
-                                    order: order,
-                                    warranty: plan,
-                                    option: parentId,
-                                    leadToken : leadToken
-                                }).done(function (data) {
-                                    if (data.status == "success") {
-
-                                        var url = urlBuilder.build("sales/order/view");
-                                        console.log(url);
-                                        window.location.href = url;
-                                    } else {
-                                        console.log("Oops! There was an error adding the protection plan.");
-                                    }
-                                });
+                        <script type="text/x-magento-init">
+                        {
+                            "#extend-offer-<?= $item->getId(); ?>": {
+                                "cartAddLeadWarranty":{
+                                        "itemId" : "<?= $item->getId(); ?>",
+                                        "productSku": "<?= $item->getSku(); ?>",
+                                        "isPdpOffersEnabled": "<?= $viewModel->isProductDetailPageOffersEnabled(); ?>",
+                                        "url": "<?= $block->getUrl('warranty/cart/addlead') ?>",
+                                        "leadToken": "<?= implode(", ", json_decode($item->getLeadToken(), true)); ?>",
+                                        "qty": "<?= (int)$item->getQtyOrdered(); ?>"
+                                }
                             }
                         }
-                    });
-                });
-            </script>
-            <td><span>TEST</span></td>
-                <?= $block->getItemHtml($item) ?>
+                        </script>
+                    </tr>
+                <?php endif; ?>
                 <?php if ($this->helper(\Magento\GiftMessage\Helper\Message::class)->isMessagesAllowed('order_item', $item) && $item->getGiftMessageId()) : ?>
                     <?php $giftMessage = $this->helper(\Magento\GiftMessage\Helper\Message::class)->getGiftMessageForEntity($item); ?>
                     <tr>

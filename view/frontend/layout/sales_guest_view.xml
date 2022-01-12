@@ -24,15 +24,9 @@
                 <action method="setTemplate">
                     <argument name="template" xsi:type="string">Extend_Warranty::order/items.phtml</argument>
                 </action>
-                <block class="Magento\Sales\Block\Order\View"
-                       name="add_warranty"
-                       template="Extend_Warranty::order/view/leads.phtml"
-                       after="-"
-                >
-                    <arguments>
-                        <argument name="view_model" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
-                    </arguments>
-                </block>
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
+                </arguments>
             </referenceBlock>
 
         </referenceContainer>

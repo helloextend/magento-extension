@@ -46,7 +46,7 @@ class OrdersRequest extends AbstractRequest
             );
             $responseBody = $this->processResponse($response);
 
-            if ($type == \Extend\Warranty\Model\Orders::CONTRACT) {
+            if ($type == \Extend\Warranty\Model\Orders::CONTRACT || $type == \Extend\Warranty\Model\Orders::LEAD_CONTRACT) {
                 $contractsIds = [];
                 foreach ($responseBody['lineItems'] as $lineItem) {
                     $contractsIds[] = $lineItem['contractId'];

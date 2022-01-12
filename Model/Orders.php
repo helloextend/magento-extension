@@ -15,6 +15,7 @@ class Orders
 
     const CONTRACT = 'contract';
     const LEAD = 'lead';
+    const LEAD_CONTRACT = 'lead_contract';
 
     /**
      * @var OrdersRequest
@@ -83,12 +84,11 @@ class Orders
         $apiStoreId = $this->dataHelper->getStoreId();
         $apiKey = $this->dataHelper->getApiKey();
         $orderExtend = '';
-        $contractIds = [];
         try {
             $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qty, $type);
             $this->ordersRequest->setConfig($apiUrl,$apiStoreId,$apiKey);
             $response =  $this->ordersRequest->create($orderData, $type);
-            if (!empty($response) && $type == self::CONTRACT) {
+            if (!empty($response) && ($type == self::CONTRACT || $type == self::LEAD_CONTRACT)) {
                 $orderExtend = $this->saveContract($orderItem, $qty, $response);
             } elseif(!empty($response) && $type == self::LEAD) {
                 $orderExtend = $this->prepareLead($response);
