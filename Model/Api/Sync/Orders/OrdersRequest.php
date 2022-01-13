@@ -28,9 +28,9 @@ class OrdersRequest extends AbstractRequest
      * @param array $orderData
      * @return array
      */
-    public function create(array $orderData): array
+    public function create(array $orderData, $type = 'contract'): array
     {
-        $orderIds = [];
+        $result = [];
         $url = $this->apiUrl . self::CREATE_ORDER_ENDPOINT;
         try {
             $response = $this->connector->call(
@@ -45,13 +45,26 @@ class OrdersRequest extends AbstractRequest
                 $orderData
             );
             $responseBody = $this->processResponse($response);
-            foreach ($responseBody['lineItems'] as $lineItem) {
-                $orderIds[] = $lineItem['contractId'];
+
+            if ($type == \Extend\Warranty\Model\Orders::CONTRACT || $type == \Extend\Warranty\Model\Orders::LEAD_CONTRACT) {
+                $contractsIds = [];
+                foreach ($responseBody['lineItems'] as $lineItem) {
+                    $contractsIds[] = $lineItem['contractId'];
+                }
+
+                $result = $contractsIds;
+            } elseif ($type == \Extend\Warranty\Model\Orders::LEAD) {
+                $leadsTokens = [];
+                foreach ($responseBody['lineItems'] as $lineItem) {
+                    $leadsTokens[] = $lineItem['leadToken'];
+                }
+
+                $result = $leadsTokens;
             }
 
-            $orderId = $responseBody['id'] ?? '';
-            if ($orderId) {
-                $this->logger->info('Order is created successfully. OrderID: ' . $orderId);
+            $orderApiId = $responseBody['id'] ?? '';
+            if ($orderApiId) {
+                $this->logger->info('Order is created successfully. OrderApiID: ' . $orderApiId);
             } else {
                 $this->logger->error('Order creation is failed.');
             }
@@ -59,7 +72,7 @@ class OrdersRequest extends AbstractRequest
             $this->logger->error($exception->getMessage());
         }
 
-        return $orderIds;
+        return $result;
     }
 
     protected function getUuid4()

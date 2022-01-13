@@ -103,7 +103,11 @@ class CreateContract implements ObserverInterface
                         }
                     } else {
                         try {
-                            $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced);
+                            if (implode(", ", json_decode($orderItem->getLeadToken(), true)) != null) {
+                                $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\Orders::LEAD_CONTRACT);
+                            } else {
+                                $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\Orders::CONTRACT);
+                            }
                         } catch (LocalizedException $exception) {
                             $this->logger->error('Error during warranty order api contract creation. ' . $exception->getMessage());
                         }

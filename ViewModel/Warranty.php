@@ -184,4 +184,14 @@ class Warranty implements ArgumentInterface
     {
         return $this->trackingHelper->isTrackingEnabled();
     }
+
+    /**
+     * Check is leads enabled
+     *
+     * @return bool
+     */
+    public function isLeadEnabled(): bool
+    {
+        return $this->dataHelper->isLeadEnabled();
+    }
 }
