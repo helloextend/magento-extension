@@ -29,23 +29,22 @@ $leadToken = json_decode($item->getLeadToken()) === NULL ? [] : json_decode($ite
 
                     const plan = opts.plan;
                     if (plan) {
-                        let parentId = "<?= $item->getOptionByCode('simple_product') ? $item->getProductId() : '' ?>";
                         let url      = "<?= $block->getUrl('extend/warranty/leads') ?>";
                         let leadToken = "<?= implode(", ", $leadToken); ?>";
-                        let customerEmail = "<?= $block->getOrder()->getCustomerEmail();?>";
-                        let order = "<?= $block->getOrder()->getId();?>"
+                        let order = "<?= $block->getOrder()->getId();?>";
+                        let qty = "<?= $item->getQtyOrdered(); ?>";
                         plan.product = '<?= $item->getSku() ?>';
+                        plan.qty = '<?= $item->getQtyOrdered(); ?>';
 
                         $.post(url, {
-                            customerEmail: customerEmail,
                             order: order,
                             warranty: plan,
-                            option: parentId,
+                            qty: qty,
                             leadToken : leadToken
                         }).done(function (data) {
                             if (data.status == "success") {
 
-                                var url = urlBuilder.build("sales/order/view");
+                                var url = data.redirect;
                                 console.log(url);
                                 window.location.href = url;
                             } else {

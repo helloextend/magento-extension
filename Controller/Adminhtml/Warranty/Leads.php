@@ -15,8 +15,8 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\SerializerInterface;
 
-use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Sales\Model\OrderRepository;
+use Magento\Quote\Model\QuoteManagement;
 
 class Leads extends Action
 {
@@ -42,10 +42,28 @@ class Leads extends Action
      */
     protected $serializer;
 
-    protected $customerRepository;
-
+    /**
+     * @var OrderRepository
+     */
     protected $orderRepository;
 
+
+    /**
+     * @var QuoteManagement
+     */
+    protected $quoteManagement;
+
+    /**
+     * @param Action\Context $context
+     * @param ScopeConfigInterface $scopeConfig
+     * @param StoreManagerInterface $storeManager
+     * @param ProductRepositoryInterface $productRepository
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param SerializerInterface $serializer
+     * @param OrderCreate $orderCreate
+     * @param OrderRepository $orderRepository
+     * @param QuoteManagement $quoteManagement
+     */
     public function __construct(
         Action\Context $context,
         ScopeConfigInterface $scopeConfig,
@@ -54,8 +72,8 @@ class Leads extends Action
         SearchCriteriaBuilder $searchCriteriaBuilder,
         SerializerInterface $serializer,
         OrderCreate $orderCreate,
-        CustomerRepositoryInterface $customerRepository,
-        OrderRepository $orderRepository
+        OrderRepository $orderRepository,
+        QuoteManagement $quoteManagement
     ) {
         parent::__construct($context);
 
@@ -63,10 +81,13 @@ class Leads extends Action
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->serializer = $serializer;
         $this->orderCreate = $orderCreate;
-        $this->customerRepository = $customerRepository;
         $this->orderRepository = $orderRepository;
+        $this->quoteManagement = $quoteManagement;
     }
 
+    /**
+     * @return false|mixed
+     */
     protected function initWarranty()
     {
         $this->searchCriteriaBuilder
@@ -79,6 +100,9 @@ class Leads extends Action
         return reset($results);
     }
 
+    /**
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\ResultInterface
+     */
     public function execute()
     {
         try {
@@ -86,25 +110,27 @@ class Leads extends Action
             $warrantyData = $this->getRequest()->getPost('warranty');
             $orderId = $this->getRequest()->getPost('order');
             $warrantyData['leadToken'] = $this->getRequest()->getPost('leadToken');
-            $quoteData =  $this->orderCreate->getQuote();
-
-            $resultRedirect = $this->resultRedirectFactory->create();
 
             if (!$warranty) {
                 $data = ["status"=>"fail"];
             }
 
+            $this->_getSession()->setUseOldShippingMethod(true);
+
             $orderInit = $this->orderRepository->get($orderId);
             $this->orderCreate->initFromOrder($orderInit);
-            $this->_getSession()->setUseOldShippingMethod(true);
-//            $items = $order->getQuote()->getItems();
-//            foreach ($items as $item) {
-//                $order->removeQuoteItem($item);
-//            }
-
+            $this->orderCreate->getQuote()->removeAllItems();
             $this->orderCreate->addProduct($warranty->getId(), $warrantyData);
+            $this->orderCreate->setInventoryProcessed(false);
+            $this->orderCreate->setPaymentMethod('checkmo');
+            $this->orderCreate->recollectCart();
+            $this->orderCreate->saveQuote();
 
-            $data = ["status"=>"success"];
+            $quote = $this->orderCreate->getQuote();
+
+            $order = $this->quoteManagement->submit($quote);
+
+            $data = ["status"=>"success", "redirect" => $this->_url->getUrl('sales/order/view/', ['order_id' => $order->getId()]) ];
 
         } catch (\Exception $e) {
             $data = ["status"=>"fail"];
