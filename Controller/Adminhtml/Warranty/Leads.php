@@ -17,6 +17,12 @@ use Magento\Framework\Serialize\SerializerInterface;
 
 use Magento\Sales\Model\OrderRepository;
 use Magento\Quote\Model\QuoteManagement;
+use Magento\Quote\Model\QuoteRepository;
+
+use Magento\Quote\Model\QuoteFactory;
+use Magento\Customer\Api\Data\CustomerInterfaceFactory;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Framework\DataObject\Factory as DataObjectFactory;
 
 class Leads extends Action
 {
@@ -42,16 +48,42 @@ class Leads extends Action
      */
     protected $serializer;
 
+    protected $storeManager;
+
     /**
      * @var OrderRepository
      */
     protected $orderRepository;
 
-
     /**
      * @var QuoteManagement
      */
     protected $quoteManagement;
+
+    /**
+     * @var QuoteFactory
+     */
+    protected $quoteFactory;
+
+    /**
+     * @var CustomerInterfaceFactory
+     */
+    protected $customerFactory;
+
+    /**
+     * @var CustomerRepositoryInterface
+     */
+    protected $customerRepository;
+
+    /**
+     * @var QuoteRepository
+     */
+    protected $quoteRepository;
+
+    /**
+     * @var DataObjectFactory
+     */
+    protected $dataObjectFactory;
 
     /**
      * @param Action\Context $context
@@ -63,6 +95,11 @@ class Leads extends Action
      * @param OrderCreate $orderCreate
      * @param OrderRepository $orderRepository
      * @param QuoteManagement $quoteManagement
+     * @param QuoteFactory $quoteFactory
+     * @param CustomerInterfaceFactory $customerFactory
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param QuoteRepository $quoteRepository
+     * @param DataObjectFactory $dataObjectFactory
      */
     public function __construct(
         Action\Context $context,
@@ -73,16 +110,27 @@ class Leads extends Action
         SerializerInterface $serializer,
         OrderCreate $orderCreate,
         OrderRepository $orderRepository,
-        QuoteManagement $quoteManagement
+        QuoteManagement $quoteManagement,
+        QuoteFactory $quoteFactory,
+        CustomerInterfaceFactory $customerFactory,
+        CustomerRepositoryInterface $customerRepository,
+        QuoteRepository $quoteRepository,
+        DataObjectFactory $dataObjectFactory
     ) {
         parent::__construct($context);
 
         $this->productRepository = $productRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->serializer = $serializer;
+        $this->storeManager = $storeManager;
         $this->orderCreate = $orderCreate;
         $this->orderRepository = $orderRepository;
         $this->quoteManagement = $quoteManagement;
+        $this->quoteFactory = $quoteFactory;
+        $this->customerFactory = $customerFactory;
+        $this->customerRepository = $customerRepository;
+        $this->quoteRepository = $quoteRepository;
+        $this->dataObjectFactory = $dataObjectFactory;
     }
 
     /**
@@ -101,6 +149,21 @@ class Leads extends Action
     }
 
     /**
+     * @return false|mixed
+     */
+    protected function getCustomer($customerEmail)
+    {
+        $this->searchCriteriaBuilder
+            ->setPageSize(1)->addFilter('email', $customerEmail);
+
+        $searchCriteria = $this->searchCriteriaBuilder->create();
+        $searchResults  = $this->customerRepository->getList($searchCriteria);
+        $results        = $searchResults->getItems();
+
+        return reset($results);
+    }
+
+    /**
      * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\ResultInterface
      */
     public function execute()
@@ -110,23 +173,46 @@ class Leads extends Action
             $warrantyData = $this->getRequest()->getPost('warranty');
             $orderId = $this->getRequest()->getPost('order');
             $warrantyData['leadToken'] = $this->getRequest()->getPost('leadToken');
+            $warrantyDataRequest = $this->dataObjectFactory->create($warrantyData);
 
             if (!$warranty) {
                 $data = ["status"=>"fail"];
             }
 
-            $this->_getSession()->setUseOldShippingMethod(true);
-
             $orderInit = $this->orderRepository->get($orderId);
-            $this->orderCreate->initFromOrder($orderInit);
-            $this->orderCreate->getQuote()->removeAllItems();
-            $this->orderCreate->addProduct($warranty->getId(), $warrantyData);
-            $this->orderCreate->setInventoryProcessed(false);
-            $this->orderCreate->setPaymentMethod('checkmo');
-            $this->orderCreate->recollectCart();
-            $this->orderCreate->saveQuote();
 
-            $quote = $this->orderCreate->getQuote();
+            $store= $this->storeManager->getStore();
+            $quote = $this->quoteFactory->create();
+            $customer = $this->getCustomer($orderInit->getCustomerEmail());
+            if (!$customer) {
+                $customer = $this->customerFactory->create();
+                $customer->setFirstname($orderInit->getCustomerFirstname())
+                    ->setLastname($orderInit->getCustomerLastname())
+                    ->setEmail($orderInit->getCustomerEmail());
+                $quote->setCustomerIsGuest(true);
+                $customer = $this->customerRepository->save($customer);
+            }
+
+            $billingAddress = [
+                'firstname'    => $orderInit->getCustomerFirstname(),
+                'lastname'     => $orderInit->getCustomerLastname(),
+                'street' => $orderInit->getBillingAddress()->getStreet(),
+                'city' => $orderInit->getBillingAddress()->getCity(),
+                'country_id' => $orderInit->getBillingAddress()->getCountryId(),
+                'region_id' => $orderInit->getBillingAddress()->getRegionId(),
+                'postcode' => $orderInit->getBillingAddress()->getPostcode(),
+                'telephone' => $orderInit->getBillingAddress()->getTelephone()
+            ];
+
+            $quote->setStore($store);
+            $quote->assignCustomer($customer);
+            $quote->getBillingAddress()->addData($billingAddress);
+            $quote->addProduct($warranty, $warrantyDataRequest);
+            $quote->setPaymentMethod('checkmo');
+            $this->quoteRepository->save($quote);
+            $quote->getPayment()->importData(['method' => 'checkmo']);
+            $quote->collectTotals();
+            $this->quoteRepository->save($quote);
 
             $order = $this->quoteManagement->submit($quote);
 
@@ -138,5 +224,4 @@ class Leads extends Action
 
         return $this->resultFactory->create(ResultFactory::TYPE_JSON)->setHttpResponseCode(200)->setData($data);
     }
-
 }
