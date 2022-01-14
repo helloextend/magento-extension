@@ -91,7 +91,7 @@ class Leads
             $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
             $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
 
-            $leadPayload = $this->leadBuilder->prepareInfo($order, $item);
+            $leadPayload = $this->leadBuilder->preparePayload($order, $item);
             if (!empty($leadPayload)) {
                 $this->apiLeadBuilder->setConfig($apiUrl, $apiStoreId, $apiKey);
                 $lead = $this->apiLeadBuilder->create($leadPayload);
