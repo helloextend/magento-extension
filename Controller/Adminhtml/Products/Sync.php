@@ -211,6 +211,11 @@ class Sync extends Action
                     $data['msg'] = $currentDate;
                     $this->flagManager->deleteFlag(ProductSyncFlag::FLAG_NAME);
                 }
+            } else {
+                $currentDate = $this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME);
+                $this->dataHelper->setLastProductSyncDate($currentDate, $scopeType, $scopeId);
+                $data['msg'] = $currentDate;
+                $this->flagManager->deleteFlag(ProductSyncFlag::FLAG_NAME);
             }
 
             $currentBatch++;

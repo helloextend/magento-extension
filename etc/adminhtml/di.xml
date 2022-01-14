@@ -20,4 +20,10 @@
             </argument>
         </arguments>
     </virtualType>
+
+    <type name="Magento\Catalog\Controller\Adminhtml\Product\NewAction">
+        <plugin name="DisableCreateNewWarrantyPlugin"
+                type="Extend\Warranty\Plugin\Catalog\Controller\Adminhtml\Product\NewAction\DisableCreateNewWarrantyPlugin"
+                sortOrder="10" />
+    </type>
 </config>
