@@ -4,26 +4,32 @@
  *
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
- * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 /** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
 /** @var \Extend\Warranty\ViewModel\Installation $viewModel */
 $viewModel = $block->getData('viewModel');
 ?>
-<?php if ($viewModel->isExtendEnabled()) : ?>
+<?php if ($viewModel->isExtendEnabled()): ?>
     <?php $jsonConfig = $viewModel->getJsonConfig(); ?>
     <?php if ($jsonConfig): ?>
-        <script src="<?= $viewModel->getJsMode() ?>"></script>
-        <script>
-            Extend.config(<?= $jsonConfig ?>);
-        </script>
+        <?php
+        $libUrl = $block->escapeJs(str_replace('.js', '', $viewModel->getJsMode()));
+        $scriptString = <<<script
+        require.config({
+            paths: {
+                'extendSdk': '{$libUrl}'
+            }
+        });
+        require(['extendSdk'], function(Extend) {
+        //<![CDATA[
+            Extend.config({$jsonConfig});
+        //]]>
+        });
+script;
+        ?>
+        <?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>
     <?php endif; ?>
 <?php endif; ?>
-
-<script>
-    var BASE_URL = '<?= $block->escapeUrl($block->getBaseUrl()) ?>';
-    var require = {
-        "baseUrl": "<?= /* @escapeNotVerified */ $block->getViewFileUrl('/') ?>"
-    };
-</script>

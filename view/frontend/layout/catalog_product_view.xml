@@ -5,21 +5,14 @@
  *
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
- * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
  -->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+
+    <update handle="extend_warranty_installation" />
     <body>
-        <referenceBlock name="require.js">
-            <arguments>
-                <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Installation</argument>
-            </arguments>
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Extend_Warranty::installation.phtml</argument>
-            </action>
-        </referenceBlock>
         <referenceContainer name="content">
             <referenceBlock name="product.info.addtocart" template="Extend_Warranty::warranty.phtml">
                 <arguments>
@@ -35,4 +28,5 @@
             </referenceBlock>
         </referenceContainer>
     </body>
+
 </page>
