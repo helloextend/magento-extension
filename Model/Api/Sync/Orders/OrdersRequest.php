@@ -49,7 +49,9 @@ class OrdersRequest extends AbstractRequest
             if ($type == \Extend\Warranty\Model\Orders::CONTRACT || $type == \Extend\Warranty\Model\Orders::LEAD_CONTRACT) {
                 $contractsIds = [];
                 foreach ($responseBody['lineItems'] as $lineItem) {
-                    $contractsIds[] = $lineItem['contractId'];
+                    if ($lineItem['status'] != 'unfulfilled') {
+                        $contractsIds[] = $lineItem['contractId'];
+                    }
                 }
 
                 $result = $contractsIds;

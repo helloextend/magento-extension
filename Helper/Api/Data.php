@@ -492,13 +492,13 @@ class Data extends AbstractHelper
      *
      * @param string $scopeType
      * @param int|string|null $scopeId
-     * @return string
+     * @return bool
      */
     public function getOrdersApiCreateMode(
         string $scopeType = ScopeInterface::SCOPE_STORES,
         $scopeId = null
-    ): string {
-        return (string)$this->scopeConfig->getValue(
+    ): bool {
+        return $this->scopeConfig->isSetFlag(
             self::WARRANTY_ORDERS_API_CREATE_MODE,
             $scopeType,
             $scopeId
