@@ -88,7 +88,7 @@ class CreateContract implements ObserverInterface
 
         if (
             $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
-            && $this->dataHelper->isWarrantyContractEnabled($storeId)
+            && ($this->dataHelper->isWarrantyContractEnabled($storeId))
         ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();
@@ -101,9 +101,9 @@ class CreateContract implements ObserverInterface
                         } catch (LocalizedException $exception) {
                             $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
                         }
-                    } else {
+                    } elseif (!$this->dataHelper->getOrdersApiCreateMode(ScopeInterface::SCOPE_STORES, $storeId)) {
                         try {
-                            if (implode(", ", json_decode($orderItem->getLeadToken(), true)) != null) {
+                            if ($orderItem->getLeadToken() != null && implode(", ", json_decode($orderItem->getLeadToken(), true)) != null) {
                                 $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\Orders::LEAD_CONTRACT);
                             } else {
                                 $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\Orders::CONTRACT);

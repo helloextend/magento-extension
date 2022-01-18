@@ -57,9 +57,14 @@ class CreateContracts
         if (
             !$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
             || $this->dataHelper->isWarrantyContractEnabled()
-            || (
-                $this->dataHelper->isOrdersApiEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
-                && $this->dataHelper->getOrdersApiCreateMode(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
+        ) {
+            return;
+        }
+
+        if (
+            !$this->dataHelper->isOrdersApiEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
+            || ($this->dataHelper->isOrdersApiEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
+                && !$this->dataHelper->getOrdersApiCreateMode(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
             )
         ) {
             return;

@@ -8,6 +8,7 @@ use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
 class Orders
@@ -80,9 +81,10 @@ class Orders
      */
     public function createOrder($orderMagento, $orderItem, $qty, $type = self::CONTRACT) :string
     {
-        $apiUrl = $this->dataHelper->getApiUrl();
-        $apiStoreId = $this->dataHelper->getStoreId();
-        $apiKey = $this->dataHelper->getApiKey();
+        $storeId = $orderItem->getStoreId();
+        $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
+        $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+        $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
         $orderExtend = '';
         try {
             $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qty, $type);
@@ -92,6 +94,8 @@ class Orders
                 $orderExtend = $this->saveContract($orderItem, $qty, $response);
             } elseif(!empty($response) && $type == self::LEAD) {
                 $orderExtend = $this->prepareLead($response);
+            } elseif (empty($response) && $this->dataHelper->getOrdersApiCreateMode()) {
+                $orderExtend = 'Scheduled';
             }
         } catch(\Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
@@ -107,14 +111,18 @@ class Orders
      */
     private function saveContract($orderItem, $qty, $contractIds): string
     {
-        $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
-        $orderItem->setContractId($contractIdsJson);
-        $options = $orderItem->getProductOptions();
-        $options['refund'] = false;
-        $orderItem->setProductOptions($options);
-        $this->orderItemRepository->save($orderItem);
+        if (!$this->dataHelper->getOrdersApiCreateMode()) {
+            $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+            $orderItem->setContractId($contractIdsJson);
+            $options = $orderItem->getProductOptions();
+            $options['refund'] = false;
+            $orderItem->setProductOptions($options);
+            $this->orderItemRepository->save($orderItem);
 
-        return count($contractIds) === $qty ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;
+            return count($contractIds) === $qty ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;
+        }
+
+        return ContractCreate::STATUS_FAILED;
     }
 
     /**

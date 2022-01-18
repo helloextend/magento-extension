@@ -152,6 +152,7 @@ class ContractCreateProcess
 
                 $orderId = (int)$orderItem->getOrderId();
                 $order = $this->getOrder($orderId);
+
                 if (!$order) {
                     $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
                     continue;
@@ -160,7 +161,6 @@ class ContractCreateProcess
                 $qtyInvoiced = intval($contractCreateRecord[OrderItemInterface::QTY_INVOICED]);
 
                 try {
-                    // @todo
                     if ($this->dataHelper->isOrdersApiEnabled() && $this->dataHelper->getOrdersApiCreateMode()) {
                         $processedContractCreateRecords[$recordId] = $this->extendOrdersApi->createOrder($order, $orderItem, $qtyInvoiced);
                     } else {
