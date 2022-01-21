@@ -22,7 +22,8 @@
                 <logging_enabled>1</logging_enabled>
             </enableExtend>
             <contracts>
-                <enabled>1</enabled>
+                <create>1</create>
+                <mode>1</mode>
                 <cron>
                     <frequency>*/5 * * * *</frequency>
                 </cron>
@@ -44,10 +45,6 @@
             <tracking>
                 <enabled>1</enabled>
             </tracking>
-            <orders>
-                <enabled>1</enabled>
-                <order_create>0</order_create>
-            </orders>
             <authentication>
                 <api_url>https://api.helloextend.com/</api_url>
                 <sandbox_api_url>https://api-demo.helloextend.com/</sandbox_api_url>

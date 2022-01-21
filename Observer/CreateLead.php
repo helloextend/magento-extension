@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Extend\Warranty\Observer;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Config\Source\CreateContractApi;
 use Extend\Warranty\Model\Leads as LeadModel;
 use Extend\Warranty\Model\Offers as OfferModel;
 use Extend\Warranty\Model\Orders as ExtendOrder;
@@ -151,7 +152,7 @@ class CreateLead implements ObserverInterface
                 }
 
                 if (!$hasWarranty) {
-                    if (!$this->dataHelper->isOrdersApiEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
+                    if ($this->dataHelper->getContractCreateMode(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                         $hasOffers = $this->offerModel->orderItemHasOffers($productItem);
                         if ($hasOffers) {
                             try {
@@ -166,7 +167,7 @@ class CreateLead implements ObserverInterface
                                 $this->logger->error('Error during lead creation. ' . $exception->getMessage());
                             }
                         }
-                    } else {
+                    } elseif ($this->dataHelper->getContractCreateMode(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
                         try {
                             $leadToken = $this->extendOrder->createOrder($order, $productItem, intval($productItem->getQtyOrdered()), ExtendOrder::LEAD);
                             if ($leadToken) {
