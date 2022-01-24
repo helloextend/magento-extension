@@ -18,12 +18,13 @@ use Magento\Framework\Event\ObserverInterface;
 use Extend\Warranty\Model\WarrantyContract;
 use Extend\Warranty\Model\Orders as ExtendOrder;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Config\Source\CreateContractApi;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class CreateContract
+ * Class CreateContractApi
  */
 class CreateContract implements ObserverInterface
 {
@@ -54,7 +55,7 @@ class CreateContract implements ObserverInterface
     private $logger;
 
     /**
-     * CreateContract constructor
+     * CreateContractApi constructor
      *
      * @param WarrantyContract $warrantyContract
      * @param ExtendOrder $extendOrder
@@ -88,20 +89,21 @@ class CreateContract implements ObserverInterface
 
         if (
             $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
-            && ($this->dataHelper->isWarrantyContractEnabled($storeId))
+            && $this->dataHelper->isWarrantyContractEnabled($storeId)
+            && !$this->dataHelper->getContractCreateMode(ScopeInterface::SCOPE_STORES, $storeId)
         ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();
 
                 if ($orderItem->getProductType() === WarrantyType::TYPE_CODE) {
                     $qtyInvoiced = intval($invoiceItem->getQty());
-                    if (!$this->dataHelper->isOrdersApiEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
+                    if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                         try {
                             $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
                         } catch (LocalizedException $exception) {
                             $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
                         }
-                    } elseif (!$this->dataHelper->getOrdersApiCreateMode(ScopeInterface::SCOPE_STORES, $storeId)) {
+                    } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
                         try {
                             if ($orderItem->getLeadToken() != null && implode(", ", json_decode($orderItem->getLeadToken(), true)) != null) {
 //                                $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\Orders::LEAD_CONTRACT);

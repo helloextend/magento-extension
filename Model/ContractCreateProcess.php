@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Config\Source\CreateContractApi;
 use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource;
 use Extend\Warranty\Model\Orders as ExtendOrdersAPI;
 use Magento\Framework\DB\Adapter\AdapterInterface;
@@ -161,7 +162,7 @@ class ContractCreateProcess
                 $qtyInvoiced = intval($contractCreateRecord[OrderItemInterface::QTY_INVOICED]);
 
                 try {
-                    if ($this->dataHelper->isOrdersApiEnabled() && $this->dataHelper->getOrdersApiCreateMode()) {
+                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API && $this->dataHelper->getContractCreateMode()) {
                         $processedContractCreateRecords[$recordId] = $this->extendOrdersApi->createOrder($order, $orderItem, $qtyInvoiced);
                     } else {
                         $processedContractCreateRecords[$recordId] = $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);

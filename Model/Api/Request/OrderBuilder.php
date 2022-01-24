@@ -376,7 +376,7 @@ class OrderBuilder
     protected function getStatus(): string
     {
         $status = '';
-        if (!$this->apiHelper->getOrdersApiCreateMode()) {
+        if (!$this->apiHelper->getContractCreateMode()) {
             $status = 'fulfilled';
         } else {
             $status = 'unfulfilled';

@@ -16,6 +16,7 @@ use Extend\Warranty\Model\WarrantyContract as WarrantyContractModel;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest as ApiContractModel;
 use Extend\Warranty\Model\Api\Sync\Orders\RefundRequest as OrdersApiRefund;
+use Extend\Warranty\Model\Config\Source\CreateContractApi;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
@@ -164,18 +165,18 @@ class RequestRefundObserver implements ObserverInterface
 
                     $refundedContractIds = array_slice($contractIds, 0, $qtyRefunded);
                     try {
-                        if (!$this->dataHelper->isOrdersApiEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
+                        if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                             $this->apiContractModel->setConfig($apiUrl, $apiStoreId, $apiKey);
-                        } else {
+                        } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
                             $this->ordersApiRefund->setConfig($apiUrl, $apiStoreId, $apiKey);
                         }
                         foreach ($refundedContractIds as $key => $contractId) {
                             $isValidRefund = $this->validateRefund($contractId, $storeId);
 
                             if ($isValidRefund) {
-                                if (!$this->dataHelper->isOrdersApiEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
+                                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                                     $status = $this->apiContractModel->refund($contractId);
-                                } else {
+                                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
                                     $status = $this->ordersApiRefund->refund($contractId);
                                 }
 

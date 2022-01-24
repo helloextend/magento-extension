@@ -153,7 +153,7 @@ class Orders
                 $orderExtend = $this->saveContract($orderItem, $qty, $response);
             } elseif(!empty($response) && $type == self::LEAD) {
                 $orderExtend = $this->prepareLead($response);
-            } elseif (empty($response) && $this->dataHelper->getOrdersApiCreateMode()) {
+            } elseif (empty($response) && $this->dataHelper->getContractCreateMode()) {
                 $orderExtend = 'Scheduled';
             }
         } catch(\Exception $e) {
@@ -197,7 +197,7 @@ class Orders
      */
     private function saveContract($orderItem, $qty, $contractIds): string
     {
-        if (!$this->dataHelper->getOrdersApiCreateMode()) {
+        if (!$this->dataHelper->getContractCreateMode()) {
             $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
             $orderItem->setContractId($contractIdsJson);
             $options = $orderItem->getProductOptions();
