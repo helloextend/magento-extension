@@ -226,7 +226,7 @@ class RequestRefundObserver implements ObserverInterface
     {
         $isValid = false;
 
-        if (!$this->dataHelper->isOrdersApiEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
+        if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
             $refundData = $this->apiContractModel->validateRefund($contractId);
             if (
                 isset($refundData['refundAmount']['amount'])
@@ -234,7 +234,7 @@ class RequestRefundObserver implements ObserverInterface
             ) {
                 $isValid = true;
             }
-        } else {
+        } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
             $refundData = $this->ordersApiRefund->validateRefund($contractId);
             if (
                 isset($refundData['refundAmounts']['customer'])
