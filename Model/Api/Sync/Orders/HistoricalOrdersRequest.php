@@ -14,6 +14,7 @@ namespace Extend\Warranty\Model\Api\Sync\Orders;
 
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Extend\Warranty\Api\ConnectorInterface;
+use Extend\Warranty\Model\Api\Request\OrderBuilder as ExtendOrderBuilder;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Psr\Log\LoggerInterface;
@@ -30,7 +31,28 @@ class HistoricalOrdersRequest extends AbstractRequest
     /**
      * Response status codes
      */
-    const STATUS_CODE_SUCCESS = 200;
+    const STATUS_CODE_SUCCESS = 201;
+
+    private $orderApiBuilder;
+
+    /**
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $syncLogger;
+
+    public function __construct(
+        ConnectorInterface $connector,
+        Json $jsonSerializer,
+        ExtendOrderBuilder $orderApiBuilder,
+        LoggerInterface $logger,
+        LoggerInterface $syncLogger
+    ) {
+        parent::__construct($connector, $jsonSerializer, $logger);
+        $this->syncLogger = $syncLogger;
+        $this->orderApiBuilder = $orderApiBuilder;
+    }
 
     /**
      *  Send historical orders to Orders API
@@ -38,10 +60,11 @@ class HistoricalOrdersRequest extends AbstractRequest
      * @param array $ordersData
      * @return array
      */
-    public function create(array $ordersData): array
+    public function create(array $ordersData, $currentBatch): array
     {
         $result = [];
         $url = $this->apiUrl . self::CREATE_ORDER_ENDPOINT;
+        $orders = $this->orderApiBuilder->preparePayloadBatch($ordersData);
         try {
             $response = $this->connector->call(
                 $url,
@@ -52,17 +75,20 @@ class HistoricalOrdersRequest extends AbstractRequest
                     self::ACCESS_TOKEN_HEADER => $this->apiKey,
                     'X-Idempotency-Key'       => $this->getUuid4()
                 ],
-                $ordersData
+                $orders
             );
             $responseBody = $this->processResponse($response);
 
-//            TODO
+            if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
+                $this->logger->info(sprintf('Orders batch %s is synchronized successfully.', $currentBatch));
+                $this->syncLogger->info('Synced ' . count($ordersData) . ' order(s) in batch ' . $currentBatch);
 
-            $orderApiId = $responseBody['id'] ?? '';
-            if ($orderApiId) {
-                $this->logger->info('Historical orders successfully send.');
+                foreach ($responseBody as $name => $section) {
+                    $info = array_column($section, 'referenceId');
+                    $this->syncLogger->info($name, $info);
+                }
             } else {
-                $this->logger->error('Historical orders send is failed.');
+                $this->logger->error(sprintf('Order batch %s synchronization is failed.', $currentBatch));
             }
         } catch (LocalizedException $exception) {
             $this->logger->error($exception->getMessage());

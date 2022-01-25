@@ -12,11 +12,7 @@ declare(strict_types=1);
 
 namespace Extend\Warranty\Model;
 
-use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\Stdlib\DateTime;
-use Magento\Framework\Stdlib\DateTime\DateTime as Date;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
-use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
@@ -58,16 +54,6 @@ class Orders
     protected $dataHelper;
 
     /**
-     * @var SearchCriteriaBuilder
-     */
-    protected $searchCriteriaBuilder;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    protected $orderRepository;
-
-    /**
      * @var OrderItemRepositoryInterface
      */
     protected $orderItemRepository;
@@ -83,27 +69,13 @@ class Orders
     protected $logger;
 
     /**
-     * @var Date
-     */
-    protected $date;
-
-    /**
-     * @var DateTime
-     */
-    protected $dateTime;
-
-    /**
      * @param ExtendOrderApiRequest $extendOrderApiRequest
      * @param HistoricalOrdersRequest $historicalOrdersRequest
      * @param ExtendOrderBuilder $extendOrderBuilder
      * @param DataHelper $dataHelper
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
-     * @param OrderRepositoryInterface $orderRepository
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param JsonSerializer $jsonSerializer
      * @param LoggerInterface $logger
-     * @param Date $date
-     * @param DateTime $dateTime
      */
     public function __construct
     (
@@ -111,25 +83,17 @@ class Orders
         HistoricalOrdersRequest      $historicalOrdersRequest,
         ExtendOrderBuilder           $extendOrderBuilder,
         DataHelper                   $dataHelper,
-        SearchCriteriaBuilder        $searchCriteriaBuilder,
-        OrderRepositoryInterface     $orderRepository,
         OrderItemRepositoryInterface $orderItemRepository,
         JsonSerializer               $jsonSerializer,
-        LoggerInterface              $logger,
-        Date                         $date,
-        DateTime                     $dateTime
+        LoggerInterface              $logger
     ) {
         $this->extendOrderApiRequest = $extendOrderApiRequest;
         $this->historicalOrdersRequest = $historicalOrdersRequest;
         $this->extendOrderBuilder = $extendOrderBuilder;
         $this->dataHelper = $dataHelper;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->orderRepository = $orderRepository;
         $this->orderItemRepository = $orderItemRepository;
         $this->jsonSerializer = $jsonSerializer;
         $this->logger = $logger;
-        $this->date = $date;
-        $this->dateTime = $dateTime;
     }
 
     /**
@@ -170,18 +134,6 @@ class Orders
         $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, Store::DEFAULT_STORE_ID);
 
         try {
-            $this->historicalOrdersRequest->setConfig($apiUrl,$apiStoreId,$apiKey);
-
-            $offset = 60*60*24*30*12*2; // 2 Years
-            $dateTo = $this->dateTime->formatDate($this->date->gmtTimestamp());
-            $dateFrom = $this->dateTime->formatDate($this->date->gmtTimestamp() - $offset);;
-
-            $searchCriteria = $this->searchCriteriaBuilder
-                ->addFilter('created_at', $dateFrom, 'gteq')
-                ->addFilter('created_at', $dateTo, 'lteq')
-                ->create();
-            $orders = $this->orderRepository->getList($searchCriteria)->getItems();
-
             $ordersData = $this->extendOrderBuilder->preparePayloadBatch($orders);
             $this->historicalOrdersRequest->create($ordersData);
         } catch (\Exception $e) {

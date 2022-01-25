@@ -157,7 +157,7 @@ class ProductSyncProcess
             }
 
             $currentBatch = 1;
-            $products = $this->productSyncModel->getProducts($currentBatch, $filters);
+            $products = $this->productSyncModel->getItems($currentBatch, $filters);
             $countOfBathes = $this->productSyncModel->getCountOfBatches();
 
             do {
@@ -172,7 +172,7 @@ class ProductSyncProcess
                 }
 
                 $currentBatch++;
-                $products = $this->productSyncModel->getProducts($currentBatch);
+                $products = $this->productSyncModel->getItems($currentBatch);
             } while ($currentBatch <= $countOfBathes);
 
             $this->dataHelper->setLastProductSyncDate($currentDate, ScopeInterface::SCOPE_STORES, $storeId);

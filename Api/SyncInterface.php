@@ -23,13 +23,13 @@ interface SyncInterface
     const DEFAULT_BATCH_SIZE = 100;
 
     /**
-     * Get products
+     * Get items
      *
      * @param int $batchNumber
      * @param array $filters
      * @return array
      */
-    public function getProducts(int $batchNumber, array $filters = []): array;
+    public function getItems(int $batchNumber, array $filters = []): array;
 
     /**
      * Get batch size
@@ -55,7 +55,7 @@ interface SyncInterface
     /**
      * Set count of batches to process
      *
-     * @param int $countOfProducts
+     * @param int $countOfItems
      */
-    public function setCountOfBatches(int $countOfProducts): void;
+    public function setCountOfBatches(int $countOfItems): void;
 }

@@ -180,4 +180,13 @@
             <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
         </arguments>
     </type>
+
+    <type name="Extend\Warranty\Model\Api\Sync\Orders\HistoricalOrdersRequest">
+        <arguments>
+            <argument name="dateTime" xsi:type="object">Magento\Framework\Stdlib\DateTime\Proxy</argument>
+            <argument name="date" xsi:type="object">Magento\Framework\Stdlib\DateTime\DateTime\Proxy</argument>
+            <argument name="syncLogger" xsi:type="object">ProductSyncVirtualInfoLogger</argument>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
+        </arguments>
+    </type>
 </config>
