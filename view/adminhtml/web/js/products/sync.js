@@ -47,11 +47,7 @@ define(
                 });
                 currentBatchesProcessed = data.currentBatchesProcessed;
                 totalBatches = data.totalBatches;
-                if (currentBatchesProcessed > totalBatches) {
-                    if (totalBatches > 0) {
-                        $("#sync-time").text(data.msg);
-                    }
-                }
+                $("#sync-time").text(data.msg);
             } while (currentBatchesProcessed <= totalBatches);
             restore(button);
         }
