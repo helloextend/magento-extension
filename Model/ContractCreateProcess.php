@@ -162,7 +162,7 @@ class ContractCreateProcess
                 $qtyInvoiced = intval($contractCreateRecord[OrderItemInterface::QTY_INVOICED]);
 
                 try {
-                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API && $this->dataHelper->getContractCreateMode()) {
+                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API && $this->dataHelper->isContractCreateModeScheduled()) {
                         $processedContractCreateRecords[$recordId] = $this->extendOrdersApi->createOrder($order, $orderItem, $qtyInvoiced);
                     } else {
                         $processedContractCreateRecords[$recordId] = $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);

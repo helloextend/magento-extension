@@ -90,7 +90,7 @@ class CreateContract implements ObserverInterface
         if (
             $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isWarrantyContractEnabled($storeId)
-            && !$this->dataHelper->getContractCreateMode(ScopeInterface::SCOPE_STORES, $storeId)
+            && !$this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)
         ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();

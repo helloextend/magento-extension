@@ -94,7 +94,7 @@ class Orders
                 $orderExtend = $this->saveContract($orderItem, $qty, $response);
             } elseif(!empty($response) && $type == self::LEAD) {
                 $orderExtend = $this->prepareLead($response);
-            } elseif (empty($response) && $this->dataHelper->getContractCreateMode()) {
+            } elseif (empty($response) && $this->dataHelper->isContractCreateModeScheduled()) {
                 $orderExtend = 'Scheduled';
             }
         } catch(\Exception $e) {
@@ -111,18 +111,14 @@ class Orders
      */
     private function saveContract($orderItem, $qty, $contractIds): string
     {
-        if (!$this->dataHelper->getContractCreateMode()) {
-            $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
-            $orderItem->setContractId($contractIdsJson);
-            $options = $orderItem->getProductOptions();
-            $options['refund'] = false;
-            $orderItem->setProductOptions($options);
-            $this->orderItemRepository->save($orderItem);
+        $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+        $orderItem->setContractId($contractIdsJson);
+        $options = $orderItem->getProductOptions();
+        $options['refund'] = false;
+        $orderItem->setProductOptions($options);
+        $this->orderItemRepository->save($orderItem);
 
-            return count($contractIds) === $qty ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;
-        }
-
-        return ContractCreate::STATUS_FAILED;
+        return count($contractIds) === $qty ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;
     }
 
     /**

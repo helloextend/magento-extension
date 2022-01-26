@@ -152,7 +152,7 @@ class CreateLead implements ObserverInterface
                 }
 
                 if (!$hasWarranty) {
-                    if ($this->dataHelper->getContractCreateMode(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                    if ($this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                         $hasOffers = $this->offerModel->orderItemHasOffers($productItem);
                         if ($hasOffers) {
                             try {
@@ -167,7 +167,7 @@ class CreateLead implements ObserverInterface
                                 $this->logger->error('Error during lead creation. ' . $exception->getMessage());
                             }
                         }
-                    } elseif ($this->dataHelper->getContractCreateMode(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
+                    } elseif ($this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
                         try {
                             $leadToken = $this->extendOrder->createOrder($order, $productItem, intval($productItem->getQtyOrdered()), ExtendOrder::LEAD);
                             if ($leadToken) {
