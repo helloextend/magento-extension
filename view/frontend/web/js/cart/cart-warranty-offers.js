@@ -10,10 +10,10 @@ define([
     'jquery',
     'mage/translate',
     'Magento_Ui/js/modal/alert',
-    'extendSdk',
+    'Extend_Warranty/js/tracking/actions',
     'extendWarrantyOffers',
     'domReady!'
-], function ($, $t, alert, Extend) {
+], function ($, $t, alert, trackActions) {
     'use strict';
 
     $.widget('mage.cartWarrantyOffers', $.mage.extendWarrantyOffers, {
@@ -81,21 +81,8 @@ define([
          */
         _onAddToCartSuccess: function (response) {
             // track warranty 'Add To Cart'
-            if (this.options.trackingEnabled
-                && typeof (response.trackingData) !== 'undefined'
-                && typeof (Extend.trackOfferAddedToCart) === 'function'
-            ) {
-                var trackingData = response.trackingData;
-                Extend.trackOfferAddedToCart({
-                    'productId': trackingData.productId,
-                    'productQuantity': parseInt(trackingData.productQuantity),
-                    'warrantyQuantity': parseInt(trackingData.warrantyQuantity),
-                    'planId': trackingData.planId,
-                    'offerType': {
-                        'area': trackingData.area,
-                        'component': trackingData.component
-                    }
-                });
+            if (this.options.trackingEnabled && typeof (response.trackingData) !== 'undefined') {
+                trackActions.trackOfferAddToCart(response.trackingData);
             }
 
             // trigger warranty 'Add To Cart' event
