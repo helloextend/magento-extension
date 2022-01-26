@@ -26,10 +26,21 @@ $viewModel = $block->getData('viewModel');
         require(['extendSdk'], function(Extend) {
         //<![CDATA[
             Extend.config({$jsonConfig});
+            window.Extend = Extend;
         //]]>
         });
 script;
         ?>
         <?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>
+
+        <?php if ($block->getTrackingEnabled()): ?>
+            <script type="text/x-magento-init">
+            {
+                "*": {
+                    "Extend_Warranty/js/tracking-service": {}
+                }
+            }
+            </script>
+        <?php endif; ?>
     <?php endif; ?>
 <?php endif; ?>

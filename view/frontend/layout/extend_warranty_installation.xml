@@ -13,12 +13,12 @@
 
     <body>
         <referenceContainer name="after.body.start">
-            <block class="Magento\Framework\View\Element\Template" name="extend.warranty.js">
+            <block class="Magento\Framework\View\Element\Template" name="extend.warranty.js" template="Extend_Warranty::installation.phtml">
                 <arguments>
                     <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Installation</argument>
                 </arguments>
-                <action method="setTemplate">
-                    <argument name="template" xsi:type="string">Extend_Warranty::installation.phtml</argument>
+                <action method="setTrackingEnabled" ifconfig="warranty/tracking/enabled">
+                    <argument name="trackingEnabled" xsi:type="boolean">true</argument>
                 </action>
             </block>
         </referenceContainer>
