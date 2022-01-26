@@ -17,7 +17,7 @@ $viewModel = $block->getData('viewModel');
 $offerTypeArea = $block->getData('offerTypeArea');
 /** @var \Magento\Catalog\Model\Product $product */
 $product = $block->getProduct();
-$isConfigurable = $product->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
+$isConfigurable = $product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
 ?>
 <?php if ($viewModel->isExtendEnabled() && $product->isSaleable()): ?>
     <div class="pdp-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($product->getId()) ?>"></div>
@@ -25,7 +25,7 @@ $isConfigurable = $product->getTypeId() == \Magento\ConfigurableProduct\Model\Pr
     <script type="text/x-magento-init">
     {
         "#warranty-offers-<?= $block->escapeHtmlAttr($product->getId()) ?>": {
-            "productWarrantyOffers":{
+            "productWarrantyOffers": {
                 "isInProductView": true,
                 "productSku": "<?= $isConfigurable ? '' : $block->escapeJs($product->getSku()) ?>",
                 "buttonEnabled": <?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled() ? 1 : 0) ?>,

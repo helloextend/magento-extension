@@ -17,44 +17,43 @@ define([
         options: {
             productSku: null,
             buttonEnabled: true,
-            modalEnabled: false,
-            simpleOffers: {
-                enabled: false,
-                addToCartCallback: null
-            }
-        },
-
-        /** @inheritdoc */
-        _create: function () {
-            this.initWarrantyOffers();
+            modalEnabled: false
         },
 
         /**
          * Renders warranty offers block
          */
-        initWarrantyOffers: function () {
+        renderWarrantyOffers: function () {
             if (!this.options.buttonEnabled)
                 return;
 
-            if (this.options.simpleOffers && this.options.simpleOffers.enabled) {
-                Extend.buttons.renderSimpleOffer(this.element.get(0), {
-                    referenceId: this.options.productSku,
-                    onAddToCart: function (data) {
-                        var plan = data.plan;
-                        if (plan && data.product) {
-                            plan.product = data.product.id;
-                        }
+            Extend.buttons.render(this.element.get(0), {
+                referenceId: this.options.productSku
+            });
+        },
 
-                        if (typeof (this.options.simpleOffers.addToCartCallback) === 'function') {
-                            this.options.simpleOffers.addToCartCallback(plan);
-                        }
-                    }.bind(this)
-                });
-            } else {
-                Extend.buttons.render(this.element.get(0), {
-                    referenceId: this.options.productSku
-                });
-            }
+        /**
+         * Renders warranty simple offer button
+         *
+         * @param {Function|null} addToCartCallback
+         */
+        renderSimpleOfferButton: function (addToCartCallback) {
+            if (!this.options.buttonEnabled)
+                return;
+
+            Extend.buttons.renderSimpleOffer(this.element.get(0), {
+                referenceId: this.options.productSku,
+                onAddToCart: function (data) {
+                    var warranty = data.plan;
+                    if (warranty && data.product) {
+                        warranty.product = data.product.id;
+                    }
+
+                    if (typeof (addToCartCallback) === 'function') {
+                        addToCartCallback(warranty);
+                    }
+                }
+            });
         },
 
         /**

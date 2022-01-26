@@ -9,11 +9,9 @@
 define([
     'jquery',
     'underscore',
-    'mage/utils/wrapper',
-    'extendSdk',
     'extendWarrantyOffers',
     'domReady!'
-], function ($, _, wrapper, Extend) {
+], function ($, _) {
     'use strict';
 
     $.widget('mage.productWarrantyOffers', $.mage.extendWarrantyOffers, {
@@ -47,7 +45,7 @@ define([
             this.addToCartButton = $(this.options.selectors.addToCartButton, this.mainWrap);
 
             this._bind();
-            this.initWarrantyOffers();
+            this.renderWarrantyOffers();
         },
 
         /**
