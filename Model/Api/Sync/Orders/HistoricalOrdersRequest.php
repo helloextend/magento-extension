@@ -55,14 +55,15 @@ class HistoricalOrdersRequest extends AbstractRequest
     }
 
     /**
-     *  Send historical orders to Orders API
+     * Send historical orders to Orders API
      *
      * @param array $ordersData
-     * @return array
+     * @param $currentBatch
+     * @return void
+     * @throws \Zend_Http_Client_Exception
      */
-    public function create(array $ordersData, $currentBatch): array
+    public function create(array $ordersData, $currentBatch): void
     {
-        $result = [];
         $url = $this->apiUrl . self::CREATE_ORDER_ENDPOINT;
         $orders = $this->orderApiBuilder->preparePayloadBatch($ordersData);
         try {
@@ -83,18 +84,12 @@ class HistoricalOrdersRequest extends AbstractRequest
                 $this->logger->info(sprintf('Orders batch %s is synchronized successfully.', $currentBatch));
                 $this->syncLogger->info('Synced ' . count($ordersData) . ' order(s) in batch ' . $currentBatch);
 
-                foreach ($responseBody as $name => $section) {
-                    $info = array_column($section, 'referenceId');
-                    $this->syncLogger->info($name, $info);
-                }
             } else {
                 $this->logger->error(sprintf('Order batch %s synchronization is failed.', $currentBatch));
             }
         } catch (LocalizedException $exception) {
             $this->logger->error($exception->getMessage());
         }
-
-        return $result;
     }
 
     protected function getUuid4()

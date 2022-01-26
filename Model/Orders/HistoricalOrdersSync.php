@@ -61,9 +61,15 @@ class HistoricalOrdersSync implements SyncInterface
      */
     private $countOfBatches = 0;
 
-    private $fromDate = '';
+    /**
+     * @var string
+     */
+    private $fromDate;
 
-    private $toDate = '';
+    /**
+     * @var string
+     */
+    private $toDate;
 
     /**
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
@@ -107,25 +113,13 @@ class HistoricalOrdersSync implements SyncInterface
     {
         $batchSize = $this->getBatchSize();
 
-        if (!$this->getFromDate()) {
-            $offset = 60*60*24*30*12*2; // 2 Years
-            $this->setFromDate($this->dateTime->formatDate($this->date->gmtTimestamp() - $offset));
-            $dateFrom = $this->getFromDate();
-        }
-
-        if (!$this->getToDate()) {
-            $this->setToDate($this->dateTime->formatDate($this->date->gmtTimestamp()));
-            $dateTo = $this->getToDate();
-        }
-
         foreach ($filters as $field => $value) {
             $this->searchCriteriaBuilder->addFilter($field, $value);
         }
 
-
         $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('created_at', $dateFrom, 'gteq')
-            ->addFilter('created_at', $dateTo, 'lteq')
+            ->addFilter('created_at', $this->getFromDate(), 'gteq')
+            ->addFilter('created_at', $this->getToDate(), 'lteq')
             ->create();
         $searchCriteria->setPageSize($batchSize);
         $searchCriteria->setCurrentPage($batchNumber);
@@ -202,12 +196,24 @@ class HistoricalOrdersSync implements SyncInterface
     }
 
     /**
-     * @param $from
-     * @param $to
-     * @return \Magento\Framework\Phrase
+     * @return string
      */
-    public function getSyncPeriod()
+    public function getSyncPeriod(): string
     {
-        return __(sprintf('Sync period from %1 to %2', $from, $to));
+        $from = $this->getFromDate();
+        $to = $this->getToDate();
+
+        if (!$from) {
+            $offset = 60*60*24*30*12*2; // 2 Years
+            $this->setFromDate($this->dateTime->formatDate($this->date->gmtTimestamp() - $offset));
+            $from = $this->getFromDate();
+        }
+
+        if (!$to) {
+            $this->setToDate($this->dateTime->formatDate($this->date->gmtTimestamp()));
+            $to = $this->getToDate();
+        }
+
+        return sprintf('Orders From %s to %s', $from, $to);
     }
 }

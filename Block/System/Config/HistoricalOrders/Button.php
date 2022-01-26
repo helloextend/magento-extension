@@ -104,9 +104,6 @@ class Button extends Field
         $scopeData = $this->getScopeData();
 
         $period = $this->dataHelper->getHistoricalOrdersSyncPeriod($scopeData['scopeType'], $scopeData['scopeId']);
-        if (!empty($period)) {
-            $period = $this->timezone->formatDate($period, 1, true);
-        }
 
         return $period;
     }

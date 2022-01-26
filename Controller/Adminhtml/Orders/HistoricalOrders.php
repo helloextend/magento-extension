@@ -167,8 +167,13 @@ class HistoricalOrders extends Action
             $this->apiHistoricalOrdersModel->setConfig($apiUrl, $apiStoreId, $apiKey);
 
 //            $batchSize = $this->dataHelper->getProductsBatchSize($scopeType, $scopeId);
+//Current orders API max batch size is 10
             $batchSize = 10;
             $this->historicalOrdersSync->setBatchSize($batchSize);
+
+            $offset = 60*60*24*30*12*2; // 2 Years
+            $this->historicalOrdersSync->setFromDate($this->dateTime->formatDate($this->date->gmtTimestamp() - $offset, false));
+            $this->historicalOrdersSync->setToDate($this->dateTime->formatDate($this->date->gmtTimestamp(), false));
 
             $orders = $this->historicalOrdersSync->getItems($currentBatch, $filters);
             $countOfBathes = $this->historicalOrdersSync->getCountOfBatches();

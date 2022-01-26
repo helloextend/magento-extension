@@ -17,16 +17,16 @@ $scopeData = $block->getScopeData();
 <div class="extend-sync-button-container">
     <button id="syncBtn" data-mage-init='{"historicalOrdersSync": {
             "url": "<?= $block->escapeJs($block->getUrl('extend/orders/historicalOrders', [$scopeData['scopeType'] => $scopeData['scopeId']])) ?>",
-            "resetFlagUrl": "<?= $block->escapeJs($block->getUrl('extend/products_sync/resetFlag')) ?>"
+            "resetFlagUrl": "<?= $block->escapeJs($block->getUrl('extend/orders_sync/resetFlag')) ?>"
         }}' <?php if (!$block->isButtonEnabled()): ?>class="disabled"<?php endif; ?>>
         <span><?= __('Send historical Orders') ?></span>
     </button>
     <div class="sync-info">
-        <p id="sync-msg">
+        <p id="orders-sync-msg">
             <label for="sync-time"><?= __('Sync: ') ?></label>
-            <span id="sync-time"><?= !empty($block->getSyncPeriod()) ? $block->getSyncPeriod() : __('Never') ?></span>
+            <span id="orders-sync-time"><?= !empty($block->getSyncPeriod()) ? $block->getSyncPeriod() : __('Never') ?></span>
         </p>
-        <a id="cancel_sync">
+        <a id="orders_cancel_sync">
             <span><?= __('Cancel Sync') ?></span>
         </a>
     </div>

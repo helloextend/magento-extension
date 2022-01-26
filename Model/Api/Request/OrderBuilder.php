@@ -235,7 +235,8 @@ class OrderBuilder
                     'quantity'    => $qty,
                     'storeId'     => $this->apiHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId),
                     'warrantable' => $this->offers->orderItemHasOffers($orderItem),
-                    'product'     => $product
+                    'product'     => $product,
+                    'orderId'     => $orderItem->getOrderId()
                 ];
                 break;
             default:

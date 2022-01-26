@@ -18,8 +18,8 @@ define(
         var currentBatchesProcessed = 1;
         var totalBatches = 0;
         var shouldAbort = false;
-        var synMsg = $("#sync-msg");
-        var cancelSync = $("#cancel_sync");
+        var synMsg = $("#orders-sync-msg");
+        var cancelSync = $("#orders_cancel_sync");
         var resetFlagUrl = '';
 
         function restore(button) {
@@ -47,11 +47,8 @@ define(
                 });
                 currentBatchesProcessed = data.currentBatchesProcessed;
                 totalBatches = data.totalBatches;
-                if (currentBatchesProcessed > totalBatches) {
-                    if (totalBatches > 0) {
-                        $("#sync-time").text(data.msg);
-                    }
-                }
+                $("#orders-sync-time").text(data.msg);
+
             } while (currentBatchesProcessed <= totalBatches);
             restore(button);
         }
@@ -67,9 +64,11 @@ define(
                             currentBatchesProcessed: currentBatchesProcessed
                         },
                         success: function (data) {
+                            console.log('success')
                             resolve(data)
                         },
                         error: function (data) {
+                            console.log('error')
                             reject(data);
                         }
                     })
@@ -107,8 +106,7 @@ define(
 
             _bind: function () {
                 $(this.element).click(this.syncHistoricalOrders.bind(this));
-                var cancelSync = $("#cancel_sync"),
-                    self = this;
+                var self = this;
                 $(cancelSync).bind("click", function () {
                     shouldAbort = true;
                     resetFlagUrl = self.options.resetFlagUrl;
