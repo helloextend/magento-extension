@@ -5,43 +5,52 @@
  *
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
- * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
  -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <referenceBlock name="checkout.cart.item.renderers.default">
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Extend_Warranty::cart/item/default.phtml</argument>
-            </action>
-            <arguments>
-                <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
-            </arguments>
+        <!-- Warranty cart item renderer -->
+        <referenceBlock name="checkout.cart.item.renderers">
+            <block class="Magento\Checkout\Block\Cart\Item\Renderer" name="checkout.cart.item.renderers.warranty" as="warranty" template="Magento_Checkout::cart/item/default.phtml">
+                <action method="setIgnoreProductUrl">
+                    <argument name="ignore" xsi:type="boolean">true</argument>
+                </action>
+                <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions" name="checkout.cart.item.renderers.warranty.actions" as="actions">
+                    <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Remove" name="checkout.cart.item.renderers.warranty.actions.remove" template="Magento_Checkout::cart/item/renderer/actions/remove.phtml" />
+                </block>
+            </block>
         </referenceBlock>
-        <referenceBlock name="checkout.cart.item.renderers.simple">
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Extend_Warranty::cart/item/default.phtml</argument>
-            </action>
-            <arguments>
-                <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
-            </arguments>
+
+        <!-- "Add Warranty" button -->
+        <referenceBlock name="checkout.cart.item.renderers.default.actions">
+            <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Generic" name="checkout.cart.item.renderers.default.actions.warranty" template="Extend_Warranty::cart/item/renderer/actions/warranty-offers.phtml" before="-">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
+                </arguments>
+            </block>
         </referenceBlock>
-        <referenceBlock name="checkout.cart.item.renderers.virtual">
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Extend_Warranty::cart/item/default.phtml</argument>
-            </action>
-            <arguments>
-                <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
-            </arguments>
+        <referenceBlock name="checkout.cart.item.renderers.simple.actions">
+            <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Generic" name="checkout.cart.item.renderers.simple.actions.warranty" template="Extend_Warranty::cart/item/renderer/actions/warranty-offers.phtml" before="-">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
+                </arguments>
+            </block>
         </referenceBlock>
-        <referenceBlock name="checkout.cart.item.renderers.configurable">
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Extend_Warranty::cart/item/default.phtml</argument>
-            </action>
-            <arguments>
-                <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
-            </arguments>
+        <referenceBlock name="checkout.cart.item.renderers.configurable.actions">
+            <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Generic" name="checkout.cart.item.renderers.configurable.actions.warranty" template="Extend_Warranty::cart/item/renderer/actions/warranty-offers.phtml" before="-">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+        <referenceBlock name="checkout.cart.item.renderers.grouped.actions">
+            <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Generic" name="checkout.cart.item.renderers.grouped.actions.warranty" template="Extend_Warranty::cart/item/renderer/actions/warranty-offers.phtml" before="-">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
+                </arguments>
+            </block>
         </referenceBlock>
     </body>
 </page>

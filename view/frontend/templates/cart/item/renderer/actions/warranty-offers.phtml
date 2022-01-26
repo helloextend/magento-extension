@@ -1,0 +1,61 @@
+<?php
+/**
+ * Extend Warranty - "Add Warranty" button on Cart page
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+/**
+ * @var \Magento\Checkout\Block\Cart\Item\Renderer\Actions\Generic $block
+ */
+
+/** @var \Magento\Quote\Model\Quote\Item $_item */
+$_item = $block->getItem();
+/** @var \Magento\Catalog\Model\Product $product */
+$product = $_item->getProduct();
+/** @var \Magento\Quote\Model\Quote $quote */
+$quote = $_item->getQuote();
+/** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
+$viewModel = $block->getData('viewModel');
+
+$productType = $product->getTypeId();
+$isConfigurable = $productType === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
+$isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
+?>
+
+<?php if (!$isWarrantyItem && $viewModel->isExtendEnabled() && $viewModel->isShoppingCartOffersEnabled()): ?>
+    <?php
+    $_itemID = '';
+    $productTypeInstance = $product->getTypeInstance();
+    if ($isConfigurable) {
+        $usedProducts = $productTypeInstance->getUsedProducts($product);
+        foreach ($usedProducts  as $child) {
+            if ($child->getSku() == $product->getSku()) {
+                $_itemID = $child->getId();
+            }
+        }
+    }
+
+    $_itemID = empty($_itemID) ? $_item->getId() : $_itemID;
+    $_currentSku[$_itemID] = $product->getSku();
+    ?>
+
+    <?php if (!$viewModel->hasWarranty($quote, $_currentSku[$_itemID])): ?>
+        <div class="cart-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_itemID) ?>"></div>
+
+        <script type="text/x-magento-init">
+            {
+                "#warranty-offers-<?= $block->escapeHtmlAttr($_itemID) ?>": {
+                    "cartWarrantyOffers":{
+                        "productSku": "<?= $block->escapeJs($_currentSku[$_itemID]) ?>",
+                        "addToCartUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/add')) ?>",
+                        "buttonEnabled": true,
+                        "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>
+                    }
+                }
+            }
+        </script>
+    <?php endif; ?>
+<?php endif; ?>

@@ -3,6 +3,7 @@ var config = {
         '*': {
             extendWarrantyOffers: 'Extend_Warranty/js/warranty-offers-base',
             productWarrantyOffers: 'Extend_Warranty/js/product/product-warranty-offers',
+            cartWarrantyOffers: 'Extend_Warranty/js/cart/cart-warranty-offers',
 
             extendWarranties: 'Extend_Warranty/js/warranties',
             cartAddWarranty: 'Extend_Warranty/js/cart/addToCart',
