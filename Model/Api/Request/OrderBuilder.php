@@ -293,13 +293,6 @@ class OrderBuilder
      */
     protected function getStatus(): string
     {
-        $status = '';
-        if (!$this->apiHelper->getContractCreateMode()) {
-            $status = 'fulfilled';
-        } else {
-            $status = 'unfulfilled';
-        }
-
-        return $status;
+        return 'fulfilled';
     }
 }

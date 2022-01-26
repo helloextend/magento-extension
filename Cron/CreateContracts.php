@@ -61,7 +61,7 @@ class CreateContracts
             return;
         }
 
-        if (!$this->dataHelper->getContractCreateMode(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
+        if (!$this->dataHelper->isContractCreateModeScheduled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
             return;
         }
 

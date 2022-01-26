@@ -289,7 +289,7 @@ class Data extends AbstractHelper
      * @param int|string|null $scopeId
      * @return bool
      */
-    public function getContractCreateMode(
+    public function isContractCreateModeScheduled(
         string $scopeType = ScopeInterface::SCOPE_STORES,
                $scopeId = null
     ): bool {
