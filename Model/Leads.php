@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace Extend\Warranty\Model;
 
-use Extend\Warranty\Model\Api\Sync\Leads\LeadsRequest;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Api\Sync\Lead\LeadsRequest as ApiLeadModel;
 use Extend\Warranty\Model\Api\Request\LeadBuilder;
-use Extend\Warranty\Model\Api\Sync\Offers\OffersRequest;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -26,11 +27,11 @@ use Psr\Log\LoggerInterface;
 class Leads
 {
     /**
-     * Leads Request
+     * Api Lead Model
      *
-     * @var LeadsRequest
+     * @var ApiLeadModel
      */
-    private $leadsRequest;
+    private $apiLeadBuilder;
 
     /**
      * Lead Builder
@@ -40,13 +41,6 @@ class Leads
     private $leadBuilder;
 
     /**
-     * Offers Request
-     *
-     * @var OffersRequest
-     */
-    private $offersRequest;
-
-    /**
      * Logger Interface
      *
      * @var LoggerInterface
@@ -54,53 +48,30 @@ class Leads
     private $logger;
 
     /**
+     * Data Helper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
+
+    /**
      * Leads constructor
      *
-     * @param LeadsRequest $leadsRequest
+     * @param ApiLeadModel $apiLeadBuilder
      * @param LeadBuilder $leadBuilder
-     * @param OffersRequest $offersRequest
      * @param LoggerInterface $logger
+     * @param DataHelper $dataHelper
      */
     public function __construct(
-        LeadsRequest $leadsRequest,
+        ApiLeadModel $apiLeadBuilder,
         LeadBuilder $leadBuilder,
-        OffersRequest $offersRequest,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        DataHelper $dataHelper
     ) {
-        $this->leadsRequest = $leadsRequest;
+        $this->apiLeadBuilder = $apiLeadBuilder;
         $this->leadBuilder = $leadBuilder;
-        $this->offersRequest = $offersRequest;
         $this->logger = $logger;
-    }
-
-    /**
-     * Get offers
-     *
-     * @param string $sku
-     * @return array
-     */
-    public function getOffers(string $sku): array
-    {
-        $offers = $this->offersRequest->consult($sku);
-
-        return isset($offers['plans']) && is_array($offers['plans']) ? $offers['plans'] : [];
-    }
-
-    /**
-     * Check if product has offers
-     *
-     * @param string $sku
-     * @return bool
-     */
-    public function hasOffers(string $sku): bool
-    {
-        $offerInformation = $this->getOffers($sku);
-        $recommended = $offerInformation['recommended'] ?? '';
-
-        return $recommended
-            && isset($offerInformation[$recommended])
-            && is_array($offerInformation[$recommended])
-            && !empty($offerInformation[$recommended]);
+        $this->dataHelper = $dataHelper;
     }
 
     /**
@@ -114,9 +85,16 @@ class Leads
     {
         $lead = '';
         try {
-            $leadPayload = $this->leadBuilder->prepareInfo($order, $item);
+            $storeId = $item->getStoreId();
+
+            $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
+            $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+            $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
+
+            $leadPayload = $this->leadBuilder->preparePayload($order, $item);
             if (!empty($leadPayload)) {
-                $lead = $this->leadsRequest->create($leadPayload);
+                $this->apiLeadBuilder->setConfig($apiUrl, $apiStoreId, $apiKey);
+                $lead = $this->apiLeadBuilder->create($leadPayload);
             }
         } catch (LocalizedException $exception) {
             $this->logger->error($exception->getMessage());

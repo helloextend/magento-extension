@@ -16,6 +16,14 @@ $viewModel = $block->getData('viewModel');
 $offerTypeArea = $block->getData('offerTypeArea');
 /** @var \Magento\Catalog\Model\Product $product */
 $product = $block->getProduct();
+$_associatedProducts = $product->getTypeInstance()->getAssociatedProducts($product);
+$groupedProducts = [];
+$isProductsHasOffers = [];
+foreach ($_associatedProducts as $item) {
+    $groupedProducts[$item->getId()] = $item->getSku();
+    $isProductsHasOffers[$item->getId()] = $viewModel->isProductHasOffers($item);
+}
+
 ?>
 <?php if ($product->isSaleable()): ?>
     <div class="box-tocart">
@@ -38,7 +46,7 @@ $product = $block->getProduct();
                 </div>
             <?php endif; ?>
             <hr>
-            <?php if ($viewModel->isExtendEnabled()): ?>
+            <?php if ($viewModel->isExtendEnabled() && $product->getTypeId() !== 'grouped'): ?>
                 <div id="extend-offer"></div>
                 <script type="text/x-magento-init">
                     {
@@ -48,6 +56,21 @@ $product = $block->getProduct();
                                 "isPdpOffersEnabled": "<?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
                                 "isInterstitialCartOffersEnabled": "<?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
                                 "isProductHasOffers": <?= $viewModel->isProductHasOffers($product); ?>
+                            }
+                        }
+                    }
+                </script>
+            <?php elseif ($product->getTypeId() === 'grouped'):?>
+                <div id="extend-offer"></div>
+                <script type="text/x-magento-init">
+                    {
+                        "#extend-offer": {
+                            "extendWarranties":{
+                                "productSku": "grouped",
+                                "isPdpOffersEnabled": "<?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
+                                "isInterstitialCartOffersEnabled": "<?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
+                                "isProductHasOffers": <?= json_encode($isProductsHasOffers); ?>,
+                                "groupedProducts": <?= json_encode($groupedProducts);?>
                             }
                         }
                     }

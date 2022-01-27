@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Config\Source\CreateContractApi;
 use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource;
+use Extend\Warranty\Model\Orders as ExtendOrdersAPI;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
@@ -24,7 +26,6 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class ContractCreateProcess
@@ -39,7 +40,7 @@ class ContractCreateProcess
     private $contractCreateResource;
 
     /**
-     * DateTime
+     * Date Time
      *
      * @var DateTime
      */
@@ -81,6 +82,11 @@ class ContractCreateProcess
     private $orderRepository;
 
     /**
+     * @var ExtendOrdersAPI
+     */
+    private $extendOrdersApi;
+
+    /**
      * Logger Interface
      *
      * @var LoggerInterface
@@ -97,6 +103,7 @@ class ContractCreateProcess
      * @param WarrantyContract $warrantyContract
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param OrderRepositoryInterface $orderRepository
+     * @param ExtendOrdersAPI $extendOrdersApi
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -107,6 +114,7 @@ class ContractCreateProcess
         WarrantyContract $warrantyContract,
         OrderItemRepositoryInterface $orderItemRepository,
         OrderRepositoryInterface $orderRepository,
+        ExtendOrdersAPI $extendOrdersApi,
         LoggerInterface $logger
     ) {
         $this->contractCreateResource = $contractCreateResource;
@@ -116,13 +124,12 @@ class ContractCreateProcess
         $this->warrantyContract = $warrantyContract;
         $this->orderItemRepository = $orderItemRepository;
         $this->orderRepository = $orderRepository;
+        $this->extendOrdersApi = $extendOrdersApi;
         $this->logger = $logger;
     }
 
     /**
      * Process records
-     *
-     * @throws NoSuchEntityException
      */
     public function execute(): void
     {
@@ -146,13 +153,24 @@ class ContractCreateProcess
 
                 $orderId = (int)$orderItem->getOrderId();
                 $order = $this->getOrder($orderId);
+
                 if (!$order) {
                     $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
                     continue;
                 }
 
                 $qtyInvoiced = intval($contractCreateRecord[OrderItemInterface::QTY_INVOICED]);
-                $processedContractCreateRecords[$recordId] = $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+
+                try {
+                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API && $this->dataHelper->isContractCreateModeScheduled()) {
+                        $processedContractCreateRecords[$recordId] = $this->extendOrdersApi->createOrder($order, $orderItem, $qtyInvoiced);
+                    } else {
+                        $processedContractCreateRecords[$recordId] = $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+                    }
+                } catch (LocalizedException $exception) {
+                    $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
+                    $this->logger->error($exception->getMessage());
+                }
             }
 
             $this->updateContractCreateRecords($processedContractCreateRecords);

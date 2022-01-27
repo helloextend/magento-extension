@@ -14,7 +14,7 @@ namespace Extend\Warranty\Cron;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\ContractCreateProcess;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
  * Class CreateContracts
@@ -51,12 +51,17 @@ class CreateContracts
 
     /**
      * Create warranty contracts
-     *
-     * @throws NoSuchEntityException
      */
     public function execute(): void
     {
-        if (!$this->dataHelper->isExtendEnabled() || $this->dataHelper->isWarrantyContractEnabled()) {
+        if (
+            !$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
+            || !$this->dataHelper->isWarrantyContractEnabled()
+        ) {
+            return;
+        }
+
+        if (!$this->dataHelper->isContractCreateModeScheduled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
             return;
         }
 

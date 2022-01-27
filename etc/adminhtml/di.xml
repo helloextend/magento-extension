@@ -6,7 +6,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
  -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
@@ -20,4 +20,10 @@
             </argument>
         </arguments>
     </virtualType>
+
+    <type name="Magento\Catalog\Controller\Adminhtml\Product\NewAction">
+        <plugin name="DisableCreateNewWarrantyPlugin"
+                type="Extend\Warranty\Plugin\Catalog\Controller\Adminhtml\Product\NewAction\DisableCreateNewWarrantyPlugin"
+                sortOrder="10" />
+    </type>
 </config>
