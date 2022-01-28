@@ -148,8 +148,6 @@ class RequestRefundObserver implements ObserverInterface
             && $this->dataHelper->isRefundEnabled($storeId)
             && $this->dataHelper->isAutoRefundEnabled($storeId)
         ) {
-            $event = $observer->getEvent();
-            $creditmemo = $event->getCreditmemo();
             $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
             $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
             $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
@@ -179,7 +177,7 @@ class RequestRefundObserver implements ObserverInterface
                         }
 
                         $validContracts = $this->validateRefund($refundItems, $storeId);
-                    } catch (InvalidArgumentException $exception) {
+                    } catch (\InvalidArgumentException $exception) {
                         $this->logger->error($exception->getMessage());
                     }
 
@@ -217,10 +215,10 @@ class RequestRefundObserver implements ObserverInterface
      * Validate refund
      *
      * @param array $refundItems
-     * @param int $storeId
+     * @param string|int|null $storeId
      * @return array
      */
-    private function validateRefund(array $refundItems, int $storeId): array
+    private function validateRefund(array $refundItems, $storeId): array
     {
         $validContracts = [];
 
@@ -257,10 +255,10 @@ class RequestRefundObserver implements ObserverInterface
      * Request a refund
      *
      * @param array $validContracts
-     * @param $storeId
+     * @param string|int|null $storeId
      * @return array
      */
-    private function refund(array $validContracts, int $storeId): array
+    private function refund(array $validContracts, $storeId): array
     {
         $status = false;
         $refundedContracts = [];
