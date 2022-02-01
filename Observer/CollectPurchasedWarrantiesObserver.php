@@ -88,7 +88,7 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
      * @param Observer $observer
      * @throws Exception
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         if ($this->dataHelper->isExtendEnabled() && !$this->dataHelper->isWarrantyContractEnabled()) {
             $event = $observer->getEvent();

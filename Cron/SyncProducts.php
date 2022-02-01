@@ -51,7 +51,7 @@ class SyncProducts
     /**
      * Sync products by cron
      */
-    public function execute(): void
+    public function execute()
     {
         if (!$this->dataHelper->isExtendEnabled() || !$this->dataHelper->isProductSyncByCronEnabled()) {
             return;

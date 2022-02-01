@@ -120,7 +120,7 @@ class ProductSyncProcess
     /**
      * Sync products
      */
-    public function execute(): void
+    public function execute()
     {
         $lastSyncDate = $this->getLastSyncDate();
         $batchSize = $this->dataHelper->getProductsBatchSize();
@@ -166,7 +166,7 @@ class ProductSyncProcess
     /**
      * Set last product sync date
      */
-    public function setLastSyncDate(): void
+    public function setLastSyncDate()
     {
         $currentDate = $this->dateTime->formatDate($this->date->gmtTimestamp());
         $this->dataHelper->setLastProductSyncDate($currentDate);

@@ -54,7 +54,7 @@ class CreateContracts
      *
      * @throws NoSuchEntityException
      */
-    public function execute(): void
+    public function execute()
     {
         if (!$this->dataHelper->isExtendEnabled() || $this->dataHelper->isWarrantyContractEnabled()) {
             return;

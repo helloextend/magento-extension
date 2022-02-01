@@ -111,7 +111,7 @@ class CreateContracts extends Command
      * @param OutputInterface $output
      * @throws NoSuchEntityException
      */
-    public function doExecute(InputInterface $input, OutputInterface $output): void
+    public function doExecute(InputInterface $input, OutputInterface $output)
     {
         if (!$this->dataHelper->isExtendEnabled() || $this->dataHelper->isWarrantyContractEnabled()) {
             $output->writeln("<error>Command is disabled. Please, check the configuration settings.</error>");

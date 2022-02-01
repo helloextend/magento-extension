@@ -99,7 +99,7 @@ class ProductsRequest
      * @param int $currentBatch
      * @throws NoSuchEntityException
      */
-    public function create(array $products, int $currentBatch = 1): void
+    public function create(array $products, int $currentBatch = 1)
     {
         $productData = [];
         foreach ($products as $product) {

@@ -78,7 +78,7 @@ class SyncProcess
      * @param int $batch
      * @throws NoSuchEntityException
      */
-    public function sync(array $storeProducts, int $batch): void
+    public function sync(array $storeProducts, int $batch)
     {
         $productsToSync = $this->processProducts($storeProducts);
 

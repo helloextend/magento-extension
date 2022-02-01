@@ -124,7 +124,7 @@ class ContractCreateProcess
      *
      * @throws NoSuchEntityException
      */
-    public function execute(): void
+    public function execute()
     {
         $batchSize = $this->dataHelper->getContractsBatchSize();
         $offset = 0;
@@ -187,7 +187,7 @@ class ContractCreateProcess
      *
      * @param array $processedRecords
      */
-    protected function updateContractCreateRecords(array $processedRecords): void
+    protected function updateContractCreateRecords(array $processedRecords)
     {
         $connection = $this->contractCreateResource->getConnection();
         $tableName = $connection->getTableName('extend_warranty_contract_create');
@@ -204,7 +204,7 @@ class ContractCreateProcess
     /**
      * Purge old records
      */
-    protected function purgeOldContractCreateRecords(): void
+    protected function purgeOldContractCreateRecords()
     {
         $storagePeriod = $this->dataHelper->getStoragePeriod();
         if (!$storagePeriod) {
@@ -235,7 +235,7 @@ class ContractCreateProcess
      * @param int $orderItemId
      * @return OrderItemInterface|null
      */
-    protected function getOrderItem(int $orderItemId): ?OrderItemInterface
+    protected function getOrderItem(int $orderItemId)
     {
         try {
             $orderItem = $this->orderItemRepository->get($orderItemId);
@@ -253,7 +253,7 @@ class ContractCreateProcess
      * @param int $orderId
      * @return OrderInterface|null
      */
-    protected function getOrder(int $orderId): ?OrderInterface
+    protected function getOrder(int $orderId)
     {
         try {
             $order = $this->orderRepository->get($orderId);
