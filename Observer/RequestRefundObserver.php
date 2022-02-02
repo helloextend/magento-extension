@@ -148,69 +148,65 @@ class RequestRefundObserver implements ObserverInterface
             && $this->dataHelper->isRefundEnabled($storeId)
             && $this->dataHelper->isAutoRefundEnabled($storeId)
         ) {
-            $event = $observer->getEvent();
-            $creditmemo = $event->getCreditmemo();
+            $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
+            $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+            $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
+            $refundItems = [];
 
             foreach ($creditmemo->getAllItems() as $creditmemoItem) {
                 $orderItem = $creditmemoItem->getOrderItem();
                 $contractIds = $this->warrantyContactModel->getContractIds($orderItem);
 
                 if (!empty($contractIds)) {
-                    $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
-                    $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
-                    $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
-
-                    $options['refund_responses_log'] = [];
                     $qtyRefunded = $creditmemoItem->getQty();
-
                     $refundedContractIds = array_slice($contractIds, 0, $qtyRefunded);
+                    $refundItems[$orderItem->getId()] = $refundedContractIds;
+                }
+            }
+
+            try {
+                $validContracts = [];
+                $refundedContracts = [];
+
+                if (!empty($refundItems)) {
                     try {
                         if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                             $this->apiContractModel->setConfig($apiUrl, $apiStoreId, $apiKey);
                         } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
                             $this->ordersApiRefund->setConfig($apiUrl, $apiStoreId, $apiKey);
                         }
-                        foreach ($refundedContractIds as $key => $contractId) {
-                            $isValidRefund = $this->validateRefund($contractId, $storeId);
 
-                            if ($isValidRefund) {
-                                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
-                                    $status = $this->apiContractModel->refund($contractId);
-                                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
-                                    $status = $this->ordersApiRefund->refund($contractId);
-                                }
-
-
-                                $options['refund_responses_log'][] = [
-                                    'contract_id' => $contractId,
-                                    'response' => $status,
-                                ];
-
-                                if ($status) {
-                                    unset($contractIds[$key]);
-                                }
-                            } else {
-                                $this->messageManager->addErrorMessage(
-                                    __('Contract %1 can not be refunded.', $contractId)
-                                );
-                            }
-                        }
-                    } catch (InvalidArgumentException $exception) {
+                        $validContracts = $this->validateRefund($refundItems, $storeId);
+                    } catch (\InvalidArgumentException $exception) {
                         $this->logger->error($exception->getMessage());
                     }
 
-                    if (!empty($options['refund_responses_log'])) {
-                        try {
-                            $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
-                            $orderItem->setContractId($contractIdsJson);
-                            $options['refund'] = empty($contractIds);
-                            $orderItem = $this->warrantyContactModel->updateOrderItemOptions($orderItem, $options);
-                            $this->orderItemRepository->save($orderItem);
-                        } catch (LocalizedException $exception) {
-                            $this->logger->error($exception->getMessage());
+                }
+
+                if (!empty($validContracts)) {
+                    $refundedContracts = $this->refund($validContracts,$storeId);
+                }
+
+                if (!empty($refundedContracts)) {
+                    foreach ($creditmemo->getAllItems() as $creditmemoItem) {
+                        $orderItem = $creditmemoItem->getOrderItem();
+                        $contractIds = $this->warrantyContactModel->getContractIds($orderItem);
+
+                        if (array_key_exists($orderItem->getId(), $refundedContracts)) {
+                            foreach ($refundedContracts as $refundedContractsData) {
+                                $contractIds = array_diff($contractIds, $refundedContractsData['contractIds']);
+                                $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+                                $options = $refundedContractsData['options'];
+                                $orderItem->setContractId($contractIdsJson);
+                                $options['refund'] = empty($contractIds);
+                                $orderItem = $this->warrantyContactModel->updateOrderItemOptions($orderItem, $options);
+                                $this->orderItemRepository->save($orderItem);
+                            }
                         }
                     }
                 }
+            } catch (LocalizedException $exception) {
+                $this->logger->error($exception->getMessage());
             }
         }
     }
@@ -218,32 +214,75 @@ class RequestRefundObserver implements ObserverInterface
     /**
      * Validate refund
      *
-     * @param string $contractId
-     * @param $storeId
-     * @return bool
+     * @param array $refundItems
+     * @param string|int|null $storeId
+     * @return array
      */
-    private function validateRefund(string $contractId, $storeId): bool
+    private function validateRefund(array $refundItems, $storeId): array
     {
-        $isValid = false;
+        $validContracts = [];
 
-        if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
-            $refundData = $this->apiContractModel->validateRefund($contractId);
-            if (
-                isset($refundData['refundAmount']['amount'])
-                && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
-            ) {
-                $isValid = true;
-            }
-        } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
-            $refundData = $this->ordersApiRefund->validateRefund($contractId);
-            if (
-                isset($refundData['refundAmounts']['customer'])
-                && $this->floatComparator->greaterThan((float)$refundData['refundAmounts']['customer'], 0)
-            ) {
-                $isValid = true;
+        foreach ($refundItems as $itemId => $item) {
+            foreach ($item as $key => $contractId) {
+                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                    $refundData = $this->apiContractModel->validateRefund($contractId);
+                    if (
+                        isset($refundData['refundAmount']['amount'])
+                        && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
+                    ) {
+                        $validContracts[$itemId][$key] = $contractId;
+                    }
+                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
+                    $refundData = $this->ordersApiRefund->validateRefund($contractId);
+                    if (
+                        isset($refundData['refundAmounts']['customer'])
+                        && $this->floatComparator->greaterThan((float)$refundData['refundAmounts']['customer'], 0)
+                    ) {
+                        $validContracts[$itemId][$key] = $contractId;
+                    }
+                } else {
+                    $this->messageManager->addErrorMessage(
+                        __('Contract %1 can not be refunded.', $contractId)
+                    );
+                }
             }
         }
 
-        return $isValid;
+        return $validContracts;
+    }
+
+    /**
+     * Request a refund
+     *
+     * @param array $validContracts
+     * @param string|int|null $storeId
+     * @return array
+     */
+    private function refund(array $validContracts, $storeId): array
+    {
+        $status = false;
+        $refundedContracts = [];
+        $options['refund_responses_log'] = [];
+
+        foreach ($validContracts as $itemId => $item) {
+            foreach ($item as $key => $contractId) {
+                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                    $status = $this->apiContractModel->refund($contractId);
+                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
+                    $status = $this->ordersApiRefund->refund($contractId);
+                }
+
+                if ($status) {
+                    $options['refund_responses_log'][] = [
+                        'contract_id' => $contractId,
+                        'response' => $status,
+                    ];
+                    $refundedContracts[$itemId]['contractIds'][] = $contractId;
+                    $refundedContracts[$itemId]['options'] = $options;
+                }
+            }
+        }
+
+        return $refundedContracts;
     }
 }
