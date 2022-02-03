@@ -29,7 +29,10 @@ define([
 
         function selectedProduct() {
 
-            if ($('div.swatch-attribute').length === 0 ){
+            if ($('div.swatch-attribute').length === 0
+                || ($('div.swatch-attribute').length > 0
+                    && $('div.swatch-attribute').find('.mageworx-swatch-container').length > 0)
+            ) {
                 if ($('#product_addtocart_form [name=selected_configurable_option]')[0].value !== ''){
                     let productId1 = $('#product_addtocart_form [name=selected_configurable_option]')[0].value,
                         options;
@@ -58,6 +61,13 @@ define([
                     selected_options[attribute_id] = option_selected;
                 });
 
+                if ($('[data-role=swatch-options]').data('mageSwatchRenderer')) {
+                    productConfig = $('[data-role=swatch-options]').data('mageSwatchRenderer').options.jsonConfig;
+                } else if ($('#product_addtocart_form').data('magictoolboxConfigurable')) {
+                    productConfig = $('#product_addtocart_form').data('magictoolboxConfigurable').options.spConfig;
+                } else {
+                    productConfig = $('#product_addtocart_form').data('mageConfigurable').options.spConfig;
+                }
                 const productConfig = $('[data-role=swatch-options]').data('mageSwatchRenderer').options.jsonConfig;
 
                 for (let [productId, attributes] of Object.entries(productConfig.index)) {
