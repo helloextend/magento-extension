@@ -132,6 +132,15 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="store_name" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
+                    <label>Extend Store Name</label>
+                    <comment>
+                        <![CDATA[
+                                Unique name for your store on the Extend platform. Go to <a href="https://merchants.extend.com">your Extend merchant dashboard</a>
+                                to find your StoreName and then paste of type it here.
+                            ]]>
+                    </comment>
+                </field>
             </group>
 
             <group id="contracts" translate="label comment" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
@@ -139,15 +148,22 @@
                 <depends>
                     <field id="warranty/enableExtend/enable">1</field>
                 </depends>
-                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="create" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Create Warranty Contract</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If enabled, a warranty contract is created during invoice. If not, warranty contracts will be created by cron.</comment>
+                    <source_model>Extend\Warranty\Model\Config\Source\CreateContractApi</source_model>
                 </field>
-                <group id="cron" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                <field id="mode" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
+                    <label>Contract Creating Mode</label>
+                    <depends>
+                        <field id="create" negative="1">0</field>
+                    </depends>
+                    <source_model>Extend\Warranty\Model\Config\Source\CreateMode</source_model>
+                </field>
+                <group id="cron" translate="label comment" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Cron Settings</label>
                     <depends>
-                        <field id="warranty/contracts/enabled">0</field>
+                        <field id="warranty/contracts/create" negative="1">0</field>
+                        <field id="warranty/contracts/mode">1</field>
                     </depends>
                     <field id="frequency" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                         <label>Frequency</label>
@@ -169,6 +185,9 @@
                 </group>
                 <field id="refund_enabled" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Enable Refunds</label>
+                    <depends>
+                        <field id="create" negative="1">0</field>
+                    </depends>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>warranty/enableExtend/enableRefunds</config_path>
                 </field>
@@ -177,6 +196,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Process a refund request automatically when credit memo is created.</comment>
                     <depends>
+                        <field id="create" negative="1">0</field>
                         <field id="refund_enabled">1</field>
                     </depends>
                 </field>
@@ -268,6 +288,7 @@
                     <button_label>Go to my Extend merchant dashboard</button_label>
                 </field>
             </group>
+
         </section>
     </system>
 </config>

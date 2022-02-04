@@ -13,13 +13,13 @@ namespace Extend\Warranty\Console\Command;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\ContractCreateProcess;
 use Magento\Framework\App\Area;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\State as AppState;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Exception;
-use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class CreateContracts
@@ -109,12 +109,11 @@ class CreateContracts extends Command
      *
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @throws NoSuchEntityException
      */
     public function doExecute(InputInterface $input, OutputInterface $output): void
     {
-        if (!$this->dataHelper->isExtendEnabled() || $this->dataHelper->isWarrantyContractEnabled()) {
-            $output->writeln("<error>Command is disabled. Please, check the configuration settings.</error>");
+        if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
+            $output->writeln("<error>Extension is disabled. Please, check the configuration settings.</error>");
             return;
         }
 

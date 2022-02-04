@@ -1,67 +1,74 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+
+declare(strict_types=1);
 
 namespace Extend\Warranty\Model\Api\Request;
 
-use Extend\Warranty\Helper\Data;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Sales\Model\Order;
-use Extend\Warranty\Model\Product\Type;
+use Extend\Warranty\Helper\Data as Helper;
+use Magento\Framework\Locale\Currency;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
 
+/**
+ * Class LeadBuilder
+ */
 class LeadBuilder
 {
     /**
-     * @var ProductRepositoryInterface
+     * Helper
+     *
+     * @var Helper
      */
-    protected $productRepository;
+    private $helper;
 
     /**
-     * @var StoreManagerInterface
+     * LeadBuilder constructor
+     *
+     * @param Helper $helper
      */
-    protected $storeManager;
-
-    /**
-     * @var Data
-     */
-    protected $helper;
-
-
-    public function __construct
-    (
-        StoreManagerInterface $storeManager,
-        ProductRepositoryInterface $productRepository,
-        Data $helper
-    )
-    {
-        $this->productRepository = $productRepository;
-        $this->storeManager = $storeManager;
+    public function __construct(
+        Helper $helper
+    ) {
         $this->helper = $helper;
     }
 
     /**
-     * @param $order
-     * @param $product
+     * Prepare payload
+     *
+     * @param OrderInterface $order
+     * @param OrderItemInterface $orderItem
      * @return array
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function prepareInfo($order, $product)
+    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem): array
     {
-        $lead = [
-            'customer' => [
-                "email" => $order->getCustomerEmail()
-                ],
-            'quantity' => $product->getQtyOrdered(),
-            'product' => [
-                'purchasePrice' => [
-                    'currencyCode' => $order->getBaseCurrencyCode(),
-                    'amount' => $product->getPrice()
-                ],
-                'referenceId' => $product->getSku(),
-                'transactionDate' => time() * 1000,
-                'transactionId' => $order->getIncrementId()
-            ]
+        $customer['email'] = $order->getCustomerEmail();
+
+        $price = [
+            'currencyCode'  => $order->getOrderCurrencyCode() ?? Currency::DEFAULT_CURRENCY,
+            'amount'        => $this->helper->formatPrice($orderItem->getPrice()),
         ];
-        return $lead;
+
+        $product = [
+            'purchasePrice'     => $price,
+            'referenceId'       => $orderItem->getSku(),
+            'transactionDate'   => time(),
+            'transactionId'     => $order->getIncrementId(),
+        ];
+
+        $payload = [
+            'customer'  => $customer,
+            'quantity'  => $orderItem->getQtyOrdered(),
+            'product'   => $product,
+        ];
+
+        return $payload;
     }
 }

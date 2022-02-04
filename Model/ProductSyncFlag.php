@@ -10,18 +10,17 @@
 
 declare(strict_types=1);
 
-namespace Extend\Warranty\Api\Data;
+namespace Extend\Warranty\Model;
+
+use Magento\Framework\Flag;
 
 /**
- * Interface UrlBuilderInterface
+ * Class ProductSyncFlag
  */
-interface UrlBuilderInterface
+class ProductSyncFlag extends Flag
 {
     /**
-     * Build url
-     *
-     * @param string $endpoint
-     * @return string
+     * Flag Name
      */
-    public function build(string $endpoint): string;
+    const FLAG_NAME = 'extend_product_sync';
 }
