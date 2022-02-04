@@ -36,9 +36,10 @@ $viewModel = $block->getViewModel();
                 continue;
             endif;
             ?>
+        <?php $leadToken = $item->getLeadToken(); ?>
             <tbody>
                 <?= $block->getItemHtml($item) ?>
-                <?php if ($viewModel->isProductDetailPageOffersEnabled() ** $viewModel->isLeadEnabled()): ?>
+                <?php if ($viewModel->isProductDetailPageOffersEnabled() && $viewModel->isLeadEnabled() && isset($leadToken)): ?>
                     <tr>
                         <tr>
                             <td class="col">
@@ -54,7 +55,7 @@ $viewModel = $block->getViewModel();
                                         "productSku": "<?= $item->getSku(); ?>",
                                         "isPdpOffersEnabled": "<?= $viewModel->isProductDetailPageOffersEnabled(); ?>",
                                         "url": "<?= $block->getUrl('warranty/cart/addlead') ?>",
-                                        "leadToken": "<?= implode(", ", json_decode($item->getLeadToken(), true)); ?>",
+                                        "leadToken": "<?= implode(", ", json_decode($leadToken, true)); ?>",
                                         "qty": "<?= (int)$item->getQtyOrdered(); ?>"
                                 }
                             }

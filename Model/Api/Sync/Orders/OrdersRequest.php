@@ -67,6 +67,13 @@ class OrdersRequest extends AbstractRequest
             $orderApiId = $responseBody['id'] ?? '';
             if ($orderApiId) {
                 $this->logger->info('Order is created successfully. OrderApiID: ' . $orderApiId);
+                if (!empty($contractsIds)) {
+                    $this->logger->info('Contracts is created successfully. OrderApiID: ' . $orderApiId . ' Contracts: ' . implode(', ', $contractsIds));
+                }
+
+                if (!empty($leadsTokens)) {
+                    $this->logger->info('Leads is created successfully. OrderApiID: ' . $orderApiId . ' Leads: ' . implode(', ', $leadsTokens));
+                }
             } else {
                 $this->logger->error('Order creation is failed.');
             }
