@@ -25,6 +25,7 @@ define([
             insertionPoint: 'div.actions',
             insertionLogic: 'before',
             formInputName: 'warranty',
+            formInputClass: 'extend-warranty-input',
             selectors: {
                 addToCartForm: '#product_addtocart_form',
                 addToCartButton: '#product-addtocart-button'
@@ -42,16 +43,23 @@ define([
          * @protected
          */
         _create: function () {
+            this._initElements();
+            this._bind();
+
+            this.warrantyBlock = this._initWarrantyOffersBlock(this.options.productId, this.options.productSku);
+        },
+
+        /**
+         * Init basic elements
+         * @protected
+         */
+        _initElements: function () {
             this.mainWrap = this.options.isInProductView ?
                 this.element.parents('.column.main') :
                 this.element.parents('.product-item-info');
 
             this.addToCartForm = $(this.options.selectors.addToCartForm, this.mainWrap);
             this.addToCartButton = $(this.options.selectors.addToCartButton, this.mainWrap);
-
-            this._bind();
-            this._initWarrantyOffersBlock(this.options.productId, this.options.productSku);
-            this._renderWarrantyOffers();
         },
 
         /**
@@ -70,35 +78,41 @@ define([
         /**
          * Inserts html-element into DOM and initialize `extendWarrantyOffers` widget
          * @protected
-         * @param {String} id - unique ID-suffix
+         * @param {String} productId - product ID
          * @param {String} productSku - product SKU
+         * @return {jQuery|HTMLElement}
          */
-        _initWarrantyOffersBlock: function (id, productSku) {
-            var blockID = 'warranty-offers-' + id;
+        _initWarrantyOffersBlock: function (productId, productSku) {
+            var blockID = 'warranty-offers-' + productId;
 
             if (this.warrantyBlock.length) {
                 this.warrantyBlock.remove();
             }
 
-            this.warrantyBlock = $('<div />').attr('id', blockID).addClass(this.options.blockClass);
+            var warrantyBlock = $('<div />').attr('id', blockID).addClass(this.options.blockClass);
 
-            var insertion = this._getWarrantyOffersInsertion();
-            this.warrantyBlock[insertion.method](insertion.element);
+            var insertion = this._getWarrantyOffersInsertion(productId, productSku);
+            warrantyBlock[insertion.method](insertion.element);
 
-            this.warrantyBlock.extendWarrantyOffers({
+            warrantyBlock.extendWarrantyOffers({
                 productSku: productSku,
                 buttonEnabled: this.options.buttonEnabled,
                 modalEnabled: this.options.modalEnabled,
-                formInputName: this.options.formInputName
+                formInputName: this.options.formInputName.replace('%s', productId)
             });
+            this._renderWarrantyOffers(warrantyBlock);
+
+            return warrantyBlock;
         },
 
         /**
          * Returns information about warranty offers block insertion
          * @protected
+         * @param {String} productId - product ID
+         * @param {String} productSku - product SKU
          * @return {Object} - contains `element` and `method`
          */
-        _getWarrantyOffersInsertion: function () {
+        _getWarrantyOffersInsertion: function (productId, productSku) {
             var method;
             switch (this.options.insertionLogic) {
                 case 'before':
@@ -126,9 +140,14 @@ define([
             };
         },
 
-        _renderWarrantyOffers: function () {
+        /**
+         * Enables warranty offers block
+         * @protected
+         * @param {jQuery|HTMLElement} warrantyBlock - DOM-element connected to `extendWarrantyOffers` widget
+         */
+        _renderWarrantyOffers: function (warrantyBlock) {
             if (this.options.buttonEnabled) {
-                this.warrantyBlock.extendWarrantyOffers('renderOffersButton');
+                warrantyBlock.extendWarrantyOffers('renderOffersButton');
             }
         },
 
@@ -161,7 +180,7 @@ define([
                 var plan = component ? component.getPlanSelection() : null;
 
                 if (plan) {
-                    this._appendWarrantyInputs(productSku, plan, 'buttons');
+                    this._appendWarrantyInputs(this.warrantyBlock, productSku, plan, 'buttons');
                     this._submitAddToCartForm();
 
                     event.preventDefault();
@@ -189,8 +208,10 @@ define([
          */
         _addToCartFromModal: function (productSku) {
             this.warrantyBlock.extendWarrantyOffers('openOffersModal', productSku, function (plan) {
+                this._removeWarrantyInputs();
+
                 if (plan) {
-                    this._appendWarrantyInputs(productSku, plan, 'modal');
+                    this._appendWarrantyInputs(this.warrantyBlock, productSku, plan, 'modal');
                 }
                 this._submitAddToCartForm();
             }.bind(this));
@@ -199,14 +220,16 @@ define([
         /**
          * Appends warranty inputs to the "Add To Cart" form
          * @protected
+         * @param {jQuery|HTMLElement} warrantyBlock - DOM-element connected to `extendWarrantyOffers` widget
          * @param {Object} plan - selected warranty offer plan
          * @param {String} productSku - currently selected product SKU
          * @param {String} componentName - component name for tracking (`button` or `modal`)
          */
-        _appendWarrantyInputs: function (productSku, plan, componentName) {
-            this._removeWarrantyInputs();
-
-            var inputs = this.warrantyBlock.extendWarrantyOffers('getWarrantyFormInputs', productSku, plan, componentName);
+        _appendWarrantyInputs: function (warrantyBlock, productSku, plan, componentName) {
+            var inputs = warrantyBlock.extendWarrantyOffers('getWarrantyFormInputs', productSku, plan, componentName);
+            _.each(inputs, function (input) {
+                input.addClass(this.options.formInputClass)
+            }.bind(this));
             this.addToCartForm.append(inputs);
         },
 
@@ -215,7 +238,9 @@ define([
          * @protected
          */
         _removeWarrantyInputs: function () {
-            this.addToCartForm.children("input[type='hidden'][name^='warranty']").remove();
+            this.addToCartForm
+            .children("input." + this.options.formInputClass)
+            .remove();
         },
 
         /**

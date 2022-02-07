@@ -21,7 +21,7 @@ $product = $block->getProduct();
 <?php if ($viewModel->isExtendEnabled()): ?>
     <script type="text/x-magento-init">
     {
-        ".box-tocart": {
+        "#product_addtocart_form .box-tocart": {
             "configurableProductWarranty": {
                 "isInProductView": true,
                 "productId": "<?= $block->escapeJs($product->getId()) ?>",

@@ -26,6 +26,7 @@ define([
             insertionPoint: 'div.actions',
             insertionLogic: 'before',
             formInputName: 'warranty',
+            formInputClass: 'extend-warranty-input',
             selectors: {
                 addToCartForm: '#product_addtocart_form',
                 addToCartButton: '#product-addtocart-button',
