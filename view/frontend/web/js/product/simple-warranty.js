@@ -22,8 +22,9 @@ define([
             buttonEnabled: true,
             modalEnabled: false,
             blockClass: 'product-warranty-offers',
-            insertionPoint: '.actions',
+            insertionPoint: 'div.actions',
             insertionLogic: 'before',
+            formInputName: 'warranty',
             selectors: {
                 addToCartForm: '#product_addtocart_form',
                 addToCartButton: '#product-addtocart-button'
@@ -81,30 +82,48 @@ define([
 
             this.warrantyBlock = $('<div />').attr('id', blockID).addClass(this.options.blockClass);
 
-            var insertionPoint = $(this.options.insertionPoint, this.element);
-            if (!insertionPoint.length) {
-                this.element.append(this.warrantyBlock);
-            } else {
-                var method;
-                switch (this.options.insertionLogic) {
-                    case 'before':
-                        method = 'insertBefore';
-                        break;
-                    case 'after':
-                        method = 'insertAfter';
-                        break;
-                    default:
-                        method = 'append';
-                        break;
-                }
-                this.warrantyBlock[method](insertionPoint);
-            }
+            var insertion = this._getWarrantyOffersInsertion();
+            this.warrantyBlock[insertion.method](insertion.element);
 
             this.warrantyBlock.extendWarrantyOffers({
                 productSku: productSku,
                 buttonEnabled: this.options.buttonEnabled,
-                modalEnabled: this.options.modalEnabled
+                modalEnabled: this.options.modalEnabled,
+                formInputName: this.options.formInputName
             });
+        },
+
+        /**
+         * Returns information about warranty offers block insertion
+         * @protected
+         * @return {Object} - contains `element` and `method`
+         */
+        _getWarrantyOffersInsertion: function () {
+            var method;
+            switch (this.options.insertionLogic) {
+                case 'before':
+                    method = 'insertBefore';
+                    break;
+                case 'after':
+                    method = 'insertAfter';
+                    break;
+                default:
+                    method = 'appendTo';
+                    break;
+            }
+
+            var elem = this.element;
+            if (this.options.insertionPoint) {
+                elem = $(this.options.insertionPoint, this.element);
+                if (!elem.length) {
+                    method = 'appendTo';
+                }
+            }
+
+            return {
+                element: elem,
+                method: method
+            };
         },
 
         _renderWarrantyOffers: function () {

@@ -22,8 +22,10 @@ define([
             productSku: null,
             buttonEnabled: true,
             modalEnabled: false,
-            insertionPoint: '.actions',
+            blockClass: 'product-warranty-offers',
+            insertionPoint: 'div.actions',
             insertionLogic: 'before',
+            formInputName: 'warranty',
             selectors: {
                 addToCartForm: '#product_addtocart_form',
                 addToCartButton: '#product-addtocart-button',
