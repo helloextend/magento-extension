@@ -23,12 +23,32 @@ use Extend\Warranty\Helper\Tracking as TrackingHelper;
  */
 class AbstractItemPlugin
 {
+    /**
+     * Url builder
+     *
+     * @var UrlInterface
+     */
     private $urlBuilder;
 
+    /**
+     * Data Helper
+     *
+     * @var DataHelper
+     */
     private $dataHelper;
 
+    /**
+     * Tracking Helper
+     *
+     * @var TrackingHelper
+     */
     private $trackingHelper;
 
+    /**
+     * @param UrlInterface $urlBuilder
+     * @param DataHelper $dataHelper
+     * @param TrackingHelper $trackingHelper
+     */
     public function __construct(
         UrlInterface $urlBuilder,
         DataHelper $dataHelper,
@@ -41,29 +61,87 @@ class AbstractItemPlugin
 
     /**
      * Set 'isWarranty' flag for product image
+     * Set data for render add warranty button on minicart
      *
      * @param AbstractItem $subject
      * @param array $result
+     * @param $item
      * @return array
      */
     public function afterGetItemData(AbstractItem $subject, array $result, $item): array
     {
-        $test = $item;
         $result['product_image']['isWarranty'] = isset($result['product_type']) && $result['product_type'] === Type::TYPE_CODE;
-        $result['is_can_add_warranty'] = true;
-        $result['warranty_add_url'] = $this->getWarrantyAddUrl();
-        $result['product_parent_id'] = $this->getParentId($item);
+
+        if ($this->isShoppingCartOffersEnabled() && !$this->hasWarranty($item)) {
+            $result['product_can_add_warranty'] = true;
+            $result['warranty_add_url'] = $this->getWarrantyAddUrl();
+            $result['product_parent_id'] = $this->getParentId($item);
+            $result['product_is_tracking_enabled'] = $this->isTrackingEnabled();
+        } else {
+            $result['product_can_add_warranty'] = false;
+        }
 
         return $result;
     }
 
-    private function getWarrantyAddUrl()
+    /**
+     * Check if has warranty in cart
+     *
+     * @param $item
+     * @return bool
+     */
+    private function hasWarranty($item): bool
+    {
+        $hasWarranty = false;
+        $quote = $item->getQuote();
+        $sku = $item->getSku();
+        $items = $quote->getAllVisibleItems();
+        foreach ($items as $item) {
+            if ($item->getProductType() === Type::TYPE_CODE) {
+                $associatedProduct = $item->getOptionByCode('associated_product');
+                if ($associatedProduct && $associatedProduct->getValue() === $sku) {
+                    $hasWarranty = true;
+                }
+            }
+        }
+
+        return $hasWarranty;
+    }
+
+    /**
+     * @return string
+     */
+    private function getWarrantyAddUrl(): string
     {
         return $this->urlBuilder->getUrl('warranty/cart/add');
     }
 
-    private function getParentId($item)
+    /**
+     * @param $item
+     * @return string
+     */
+    private function getParentId($item): string
     {
         return $item->getOptionByCode('simple_product') ? $item->getProductId() : '';
+    }
+
+    /**
+     * Check if shopping cart offers enabled
+     *
+     * @return bool
+     */
+    private function isShoppingCartOffersEnabled(): bool
+    {
+        return $this->dataHelper->isShoppingCartOffersEnabled();
+    }
+
+    /**
+     * Check if tracking enabled
+     *
+     * @return bool
+     */
+    private function isTrackingEnabled(): bool
+    {
+        return $this->trackingHelper->isTrackingEnabled();
     }
 }

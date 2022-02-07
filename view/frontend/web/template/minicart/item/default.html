@@ -111,19 +111,22 @@
                 </div>
             </div>
 
-            <!-- ko if: is_can_add_warranty -->
-            <div class="extend">
-                <div data-bind="attr: {
-                           id: 'extend-offer-'+item_id},
-                           visible: addWarranty({'productSku': product_sku, 'url': warranty_add_url, 'itemId': item_id, 'parentId': product_parent_id, 'isTrackingEnabled': 'true'}) || true
+            <!-- ko if: product_can_add_warranty -->
+            <div class="product extend-warranty"
+                 style="display: flex; margin-top: 10px"
+                 data-bind="attr: {
+                       id: 'extend-offer-'+item_id
+                       },
+                       mageInit: {
+                        'miniCartAddWarranty': {
+                            'productSku': product_sku,
+                            'url': warranty_add_url,
+                            'itemId': item_id,
+                            'parentId': product_parent_id,
+                            'isTrackingEnabled': product_is_tracking_enabled
+                        }
+                       }
                 "></div>
-                <button type="button"
-                        id="btn-gggg-close"
-                        class=""
-                        data-bind="attr: { title: $t('test') }, click: test({'test': 123})">
-                    <span translate="'BUTTON'">BUTTON</span>
-                </button>
-            </div>
             <!-- /ko -->
         </div>
     </div>

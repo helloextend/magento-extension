@@ -21,6 +21,12 @@ $viewModel = $block->getData('viewModel');
     <?php endif; ?>
 <?php endif; ?>
 
+<style>
+    .extend-warranty iframe {
+        min-height: 30px;
+    }
+</style>
+
 <script>
     var BASE_URL = '<?= $block->escapeUrl($block->getBaseUrl()) ?>';
     var require = {
