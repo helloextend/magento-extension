@@ -48,7 +48,7 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
         <script type="text/x-magento-init">
             {
                 "#warranty-offers-<?= $block->escapeHtmlAttr($_itemID) ?>": {
-                    "cartWarrantyOffers":{
+                    "cartItemWarranty":{
                         "productSku": "<?= $block->escapeJs($_currentSku[$_itemID]) ?>",
                         "addToCartUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/add')) ?>",
                         "buttonEnabled": true,

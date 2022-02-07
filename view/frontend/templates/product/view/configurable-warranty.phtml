@@ -1,6 +1,6 @@
 <?php
 /**
- * Extend Warranty - PDP warranty offers block
+ * Extend Warranty - Configurable product warranty offers block
  *
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
@@ -17,17 +17,15 @@ $viewModel = $block->getData('viewModel');
 $offerTypeArea = $block->getData('offerTypeArea');
 /** @var \Magento\Catalog\Model\Product $product */
 $product = $block->getProduct();
-$isConfigurable = $product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
 ?>
-<?php if ($viewModel->isExtendEnabled() && $product->isSaleable()): ?>
-    <div class="pdp-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($product->getId()) ?>"></div>
-
+<?php if ($viewModel->isExtendEnabled()): ?>
     <script type="text/x-magento-init">
     {
-        "#warranty-offers-<?= $block->escapeHtmlAttr($product->getId()) ?>": {
-            "productWarrantyOffers": {
+        ".box-tocart": {
+            "configurableProductWarranty": {
                 "isInProductView": true,
-                "productSku": "<?= $isConfigurable ? '' : $block->escapeJs($product->getSku()) ?>",
+                "productId": "<?= $block->escapeJs($product->getId()) ?>",
+                "productSku": "",
                 "buttonEnabled": <?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled() ? 1 : 0) ?>,
                 "modalEnabled": <?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled() ? 1 : 0) ?>
             }

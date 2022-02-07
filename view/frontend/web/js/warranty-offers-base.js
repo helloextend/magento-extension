@@ -17,13 +17,14 @@ define([
         options: {
             productSku: null,
             buttonEnabled: true,
-            modalEnabled: false
+            modalEnabled: false,
+            formInputName: 'warranty'
         },
 
         /**
          * Renders warranty offers block
          */
-        renderWarrantyOffers: function () {
+        renderOffersButton: function () {
             if (!this.options.buttonEnabled)
                 return;
 
@@ -37,7 +38,7 @@ define([
          *
          * @param {Function|null} addToCartCallback
          */
-        renderSimpleOfferButton: function (addToCartCallback) {
+        renderSimpleButton: function (addToCartCallback) {
             if (!this.options.buttonEnabled)
                 return;
 
@@ -61,17 +62,17 @@ define([
          *
          * @return {Object|null}
          */
-        getWarrantyOffersInstance: function () {
+        getButtonInstance: function () {
             return Extend.buttons.instance(this.element.get(0));
         },
 
         /**
-         * Updates warranty offers button
+         * Updates warranty offers product
          *
          * @param {String} productSku - new product SKU
          */
-        updateWarrantyOffers: function (productSku) {
-            var component = this.getWarrantyOffersInstance();
+        updateActiveProduct: function (productSku) {
+            var component = this.getButtonInstance();
             if (!component)
                 return;
 
@@ -87,7 +88,7 @@ define([
          * @param {String} productSku - product SKU
          * @param {Function} closeCallback - function to be invoked after the modal is closed
          */
-        openWarrantyOffersModal: function (productSku, closeCallback) {
+        openOffersModal: function (productSku, closeCallback) {
             if (!this.options.modalEnabled) {
                 closeCallback(null);
                 return;
@@ -97,6 +98,31 @@ define([
                 referenceId: productSku,
                 onClose: closeCallback.bind(this)
             });
+        },
+
+        /**
+         * Get warranty inputs for the "Add To Cart" form
+         * @protected
+         * @param {String} productSku - currently selected product SKU
+         * @param {Object} plan - selected warranty offer plan
+         * @param {String} componentName - component name for tracking (`button` or `modal`)
+         */
+        getWarrantyFormInputs: function (productSku, plan, componentName) {
+            var inputs = [];
+            var data = $.extend({
+                product: productSku,
+                component: componentName
+            }, plan);
+
+            $.each(data, function (attribute, value) {
+                inputs.push(
+                    $('<input />').attr('type', 'hidden')
+                    .attr('name', this.options.formInputName + '[' + attribute + ']')
+                    .attr('value', value)
+                );
+            }.bind(this));
+
+            return inputs;
         }
     });
 

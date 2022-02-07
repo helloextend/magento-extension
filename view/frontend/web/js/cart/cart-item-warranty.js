@@ -16,7 +16,7 @@ define([
 ], function ($, $t, alert, trackActions) {
     'use strict';
 
-    $.widget('mage.cartWarrantyOffers', $.mage.extendWarrantyOffers, {
+    $.widget('mage.cartItemWarranty', $.mage.extendWarrantyOffers, {
         options: {
             productSku: null,
             addToCartUrl: null,
@@ -30,7 +30,7 @@ define([
          * @protected
          */
         _create: function () {
-            this.renderSimpleOfferButton(this._addToCart.bind(this));
+            this.renderSimpleButton(this._addToCart.bind(this));
         },
 
         /**
@@ -105,5 +105,5 @@ define([
         }
     });
 
-    return $.mage.cartWarrantyOffers;
+    return $.mage.cartItemWarranty;
 });
