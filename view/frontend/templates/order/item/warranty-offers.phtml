@@ -34,7 +34,7 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
                     "itemId": "<?= $block->escapeJs($_item->getId()) ?>",
                     "productSku": "<?= $block->escapeJs($_item->getSku()) ?>",
                     "qty": "<?= $block->escapeJs($_item->getQtyOrdered()) ?>",
-                    "leadToken": "<?= $block->escapeJs(implode(", ", json_decode($_item->getLeadToken() ?: "[1]", true))) ?>",
+                    "leadToken": "<?= $block->escapeJs(implode(", ", json_decode($_item->getLeadToken(), true))) ?>",
                     "addLeadUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/addlead')) ?>",
                     "buttonEnabled": true,
                     "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>
