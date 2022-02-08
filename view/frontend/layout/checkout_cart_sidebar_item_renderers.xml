@@ -1,38 +1,18 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Extend Warranty - Mini-cart items
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
--->
+ -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+
+    <update handle="extend_warranty_installation" />
     <body>
-        <referenceBlock name="require.js">
-            <arguments>
-                <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Installation</argument>
-            </arguments>
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Extend_Warranty::installation.phtml</argument>
-            </action>
-        </referenceBlock>
-        <referenceBlock name="minicart">
-            <arguments>
-                <argument name="jsLayout" xsi:type="array">
-                    <item name="components" xsi:type="array">
-                        <item name="minicart_content" xsi:type="array">
-                            <item name="children" xsi:type="array">
-                                <item name="item.renderer" xsi:type="array">
-                                    <item name="component" xsi:type="string">uiComponent</item>
-                                    <item name="config" xsi:type="array">
-                                        <item name="displayArea" xsi:type="string">defaultRenderer</item>
-                                        <item name="template" xsi:type="string">Extend_Warranty/minicart/item/default</item>
-                                    </item>
-                                </item>
-                            </item>
-                        </item>
-                    </item>
-                </argument>
-            </arguments>
-        </referenceBlock>
     </body>
+
 </page>

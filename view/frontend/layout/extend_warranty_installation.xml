@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 /**
  * Extend Warranty
@@ -8,17 +8,15 @@
  * @package     Extend_Warranty
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
--->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd" label="Extend Warranty Installation">
 
-    <update handle="extend_warranty_installation" />
     <body>
         <referenceContainer name="after.body.start">
-            <block class="Extend\Warranty\Block\Tracking"
-                   name="extend.tracking.checkout-success"
-                   template="Extend_Warranty::tracking/checkout-success.phtml"
-                   after="extend.warranty.js"
-                   ifconfig="warranty/enableExtend/enable">
+            <block class="Magento\Framework\View\Element\Template" name="extend.warranty.js" template="Extend_Warranty::installation.phtml">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Installation</argument>
+                </arguments>
                 <action method="setTrackingEnabled" ifconfig="warranty/tracking/enabled">
                     <argument name="trackingEnabled" xsi:type="boolean">true</argument>
                 </action>
