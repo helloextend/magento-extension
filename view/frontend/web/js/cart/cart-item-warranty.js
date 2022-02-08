@@ -10,14 +10,16 @@ define([
     'jquery',
     'mage/translate',
     'Magento_Ui/js/modal/alert',
+    'Magento_Customer/js/customer-data',
     'Extend_Warranty/js/tracking/actions',
     'extendWarrantyOffers',
     'domReady!'
-], function ($, $t, alert, trackActions) {
+], function ($, $t, alert, customerData, trackActions) {
     'use strict';
 
     $.widget('mage.cartItemWarranty', $.mage.extendWarrantyOffers, {
         options: {
+            isInCartPage: true,
             productSku: null,
             addToCartUrl: null,
             addToCartEvent: null,
@@ -90,8 +92,13 @@ define([
                 $(document).trigger('ajax:' + this.options.addToCartEvent);
             }
 
-            // reload Cart page
-            window.location.reload(false);
+            if (this.options.isInCartPage) {
+                // reload Cart page
+                window.location.reload(false);
+            } else {
+                // reload Customer cart data
+                customerData.reload(['cart'], false);
+            }
         },
 
         /**
