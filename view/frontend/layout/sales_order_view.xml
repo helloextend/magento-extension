@@ -12,12 +12,16 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <update handle="extend_warranty_installation" />
     <body>
-        <block class="Magento\Framework\View\Element\Template" name="additional.product.info" template="Extend_Warranty::order/item/additional-info.phtml" after="content">
+        <referenceBlock name="additional.product.info">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Extend_Warranty::order/item/additional-info.phtml</argument>
+            </action>
+
             <block class="Magento\Sales\Block\Order\Item\Renderer\DefaultRenderer" name="order.item.warranty" template="Extend_Warranty::order/item/warranty-offers.phtml" after="-">
                 <arguments>
                     <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
                 </arguments>
             </block>
-        </block>
+        </referenceBlock>
     </body>
 </page>

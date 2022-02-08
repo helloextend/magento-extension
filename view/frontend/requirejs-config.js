@@ -7,7 +7,7 @@ var config = {
             groupedProductWarranty: 'Extend_Warranty/js/product/grouped-warranty',
 
             cartItemWarranty: 'Extend_Warranty/js/cart/cart-item-warranty',
-			cartAddLeadWarranty : 'Extend_Warranty/js/cart/addLead',
+            leadOrderWarranty: 'Extend_Warranty/js/order/lead-order-warranty',
 
             'Magento_Catalog/template/product/image_with_borders.html':
                 'Extend_Warranty/template/product/image_with_borders.html'
