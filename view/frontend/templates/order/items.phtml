@@ -36,9 +36,10 @@ $viewModel = $block->getViewModel();
                 continue;
             endif;
             ?>
+        <?php $leadToken = $item->getLeadToken(); ?>
             <tbody>
                 <?= $block->getItemHtml($item) ?>
-                <?php if ($viewModel->isProductDetailPageOffersEnabled() ** $viewModel->isLeadEnabled()): ?>
+                <?php if ($viewModel->isProductDetailPageOffersEnabled() && $viewModel->isLeadEnabled() && isset($leadToken)): ?>
                     <tr>
                         <tr>
                             <td class="col">
