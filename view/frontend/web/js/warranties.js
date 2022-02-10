@@ -52,6 +52,7 @@ define([
             }else{
                 let selected_options = {};
                 let options = $('div.swatch-attribute');
+                let productConfig;
                 options.each((index, value) => {
                     let attribute_id = $(value).attr('attribute-id');
                     let option_selected = $(value).attr('option-selected');
@@ -68,7 +69,6 @@ define([
                 } else {
                     productConfig = $('#product_addtocart_form').data('mageConfigurable').options.spConfig;
                 }
-                const productConfig = $('[data-role=swatch-options]').data('mageSwatchRenderer').options.jsonConfig;
 
                 for (let [productId, attributes] of Object.entries(productConfig.index)) {
                     if (match(attributes, selected_options)) {
