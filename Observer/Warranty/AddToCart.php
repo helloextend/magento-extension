@@ -59,11 +59,16 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
     protected $_logger;
 
     /**
-     * Helper
+     * Offer Model
      *
-     * @var \Extend\Warranty\Helper\Api
+     * @var \Extend\Warranty\Model\Offers
      */
-    protected $helper;
+    protected $offerModel;
+
+    /**
+     * @var \Magento\Quote\Api\Data\CartItemInterfaceFactory
+     */
+    protected $cartItemFactory;
 
     /**
      * AddToCart constructor
@@ -83,7 +88,8 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         \Magento\Framework\Message\ManagerInterface $messageManager,
         \Extend\Warranty\Helper\Tracking $trackingHelper,
         \Psr\Log\LoggerInterface $logger,
-        \Extend\Warranty\Helper\Api $helper
+        \Extend\Warranty\Model\Offers $offerModel,
+        \Magento\Quote\Api\Data\CartItemInterfaceFactory $cartItemFactory
     ) {
         $this->_cartHelper = $cartHelper;
         $this->_productRepository = $productRepository;
@@ -91,7 +97,8 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         $this->_messageManager = $messageManager;
         $this->_trackingHelper = $trackingHelper;
         $this->_logger = $logger;
-        $this->helper = $helper;
+        $this->offerModel = $offerModel;
+        $this->cartItemFactory = $cartItemFactory;
     }
 
     /**
@@ -106,31 +113,44 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         $request = $observer->getData('request');
         /** @var \Magento\Checkout\Model\Cart $cart */
         $cart = $this->_cartHelper->getCart();
-        $qty = $request->getPost('qty', 1);
+
+        $quote = $this->_cartHelper->getQuote();
 
         if ($observer->getProduct()->getTypeId() === 'grouped') {
-            $groupedProductsQtyArray = $request->getPost('super_group');
-            if (!empty($groupedProductsQtyArray)) {
-                $qty = 0;
-                foreach ($groupedProductsQtyArray as $itemQty) {
-                    $qty += $itemQty;
-                }
+            $items = $request->getPost('super_group');
+            foreach ($items as $id => $qty) {
+                $warrantyData = $request->getPost('warranty_' . $id, []);
+                $this->addWarranty($cart, $warrantyData, $qty);
             }
-        }
+        } else {
+            $qty = $request->getPost('qty', 1);
+            $warrantyData = $request->getPost('warranty', []);
 
-        $warrantyData = $request->getPost('warranty', []);
-        if (empty($warrantyData)) {
+            $this->addWarranty($cart, $warrantyData, $qty);
+        }
+    }
+
+    /**
+     * @param \Magento\Quote\Api\Data\CartInterface $cart
+     * @param array $warrantyData
+     * @param int $qty
+     * @return void
+     * @throws \Exception
+     */
+    private function addWarranty($cart, array $warrantyData, int $qty)
+    {
+        if (empty($warrantyData) || $qty < 1) {
             return;
         }
 
-        $errors = $this->helper->validateWarranty($warrantyData);
+        $errors = $this->offerModel->validateWarranty($warrantyData);
         if (!empty($errors)) {
             $this->_messageManager->addErrorMessage(
                 __('Oops! There was an error adding the protection plan product.')
             );
             $errorsAsString = implode(' ', $errors);
             $this->_logger->error(
-                'Invalid warranty data. ' . $errorsAsString . ' Warranty data: ' . $this->helper->getWarrantyDataAsString($warrantyData)
+                'Invalid warranty data. ' . $errorsAsString . ' Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData)
             );
 
             return;
@@ -149,14 +169,14 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
             $this->_messageManager->addErrorMessage('Oops! There was an error adding the protection plan product.');
             $this->_logger->error(
                 'Oops! There was an error finding the protection plan product, please ensure the protection plan product is in your catalog and is enabled! '
-                . 'Warranty data: ' . $this->helper->getWarrantyDataAsString($warrantyData)
+                . 'Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData)
             );
 
             return;
         }
         $warrantyData['qty'] = $qty;
         try {
-            $cart->addProduct($warranty->getId(), $warrantyData);
+            $cart->addProduct($warranty, $warrantyData);
             $cart->getQuote()->removeAllAddresses();
             /** @noinspection PhpUndefinedMethodInspection */
             $cart->getQuote()->setTotalsCollectedFlag(false);

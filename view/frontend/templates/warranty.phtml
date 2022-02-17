@@ -9,7 +9,6 @@
  */
 /**
  * @var \Magento\Catalog\Block\Product\View $block
- * @var \Magento\Framework\Escaper $escaper
  */
 /** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getData('viewModel');
@@ -17,49 +16,72 @@ $viewModel = $block->getData('viewModel');
 $offerTypeArea = $block->getData('offerTypeArea');
 /** @var \Magento\Catalog\Model\Product $product */
 $product = $block->getProduct();
-?>
-<?php if ($product->isSaleable() && $product->getTypeId() != 'grouped'): ?>
-    <div class="box-tocart">
-        <?php if ($viewModel->isExtendEnabled()): ?>
-            <div id="extend-offer"></div>
-            <script type="text/x-magento-init">
-                    {
-                        "#extend-offer": {
-                            "extendWarranties":{
-                                "productSku": "<?= $product->getTypeId() == 'configurable' ? '' : $escaper->escapeJs($product->getSku()); ?>",
-                                "isPdpOffersEnabled": "<?= $escaper->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
-                                "isInterstitialCartOffersEnabled": "<?= $escaper->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
-                                "isProductHasOffers": <?= $viewModel->isProductHasOffers($product); ?>
-                            }
-                        }
-                    }
-                </script>
-        <?php endif; ?>
+$_associatedProducts = $product->getTypeInstance()->getAssociatedProducts($product);
+$groupedProducts = [];
+$isProductsHasOffers = [];
+foreach ($_associatedProducts as $item) {
+    $groupedProducts[$item->getId()] = $item->getSku();
+    $isProductsHasOffers[$item->getId()] = $viewModel->isProductHasOffers($item);
+}
 
+?>
+<?php if ($product->isSaleable()): ?>
+    <div class="box-tocart">
         <div class="fieldset">
             <?php if ($block->shouldRenderQuantity()): ?>
                 <div class="field qty">
                     <label class="label" for="qty">
-                        <span><?= $escaper->escapeHtml(__('Qty')); ?></span>
+                        <span><?= $block->escapeHtml(__('Qty')); ?></span>
                     </label>
                     <div class="control">
                         <input type="number"
                                name="qty"
                                id="qty"
                                value="<?= (int)$block->getProductDefaultQty() * 1; ?>"
-                               title="<?= $escaper->escapeHtmlAttr(__('Qty')); ?>"
+                               title="<?= $block->escapeHtmlAttr(__('Qty')); ?>"
                                class="input-text qty"
-                               data-validate="<?= $escaper->escapeHtmlAttr(json_encode($block->getQuantityValidators())); ?>"
+                               data-validate="<?= $block->escapeHtmlAttr(json_encode($block->getQuantityValidators())); ?>"
                         />
                     </div>
                 </div>
             <?php endif; ?>
+            <hr>
+            <?php if ($viewModel->isExtendEnabled() && $product->getTypeId() !== 'grouped'): ?>
+                <div id="extend-offer"></div>
+                <script type="text/x-magento-init">
+                    {
+                        "#extend-offer": {
+                            "extendWarranties":{
+                                "productSku": "<?= $product->getTypeId() == 'configurable' ? '' : $block->escapeJs($product->getSku()); ?>",
+                                "isPdpOffersEnabled": "<?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
+                                "isInterstitialCartOffersEnabled": "<?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
+                                "isProductHasOffers": <?= $viewModel->isProductHasOffers($product); ?>
+                            }
+                        }
+                    }
+                </script>
+            <?php elseif ($product->getTypeId() === 'grouped'):?>
+                <div id="extend-offer"></div>
+                <script type="text/x-magento-init">
+                    {
+                        "#extend-offer": {
+                            "extendWarranties":{
+                                "productSku": "grouped",
+                                "isPdpOffersEnabled": "<?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled()); ?>",
+                                "isInterstitialCartOffersEnabled": "<?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled()); ?>",
+                                "isProductHasOffers": <?= json_encode($isProductsHasOffers); ?>,
+                                "groupedProducts": <?= json_encode($groupedProducts);?>
+                            }
+                        }
+                    }
+                </script>
+            <?php endif; ?>
             <div class="actions">
                 <button type="submit"
-                        title="<?= $escaper->escapeHtmlAttr(__('Add to Cart')); ?>"
+                        title="<?= $block->escapeHtmlAttr(__('Add to Cart')); ?>"
                         class="action primary tocart"
                         id="product-addtocart-button">
-                    <span><?= $escaper->escapeHtmlAttr(__('Add to Cart')); ?></span>
+                    <span><?= $block->escapeHtmlAttr(__('Add to Cart')); ?></span>
                 </button>
                 <?= $block->getChildHtml('', true); ?>
             </div>

@@ -7,130 +7,89 @@
  * @package     Warranty
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
+
+declare(strict_types=1);
+
 namespace Extend\Warranty\Observer\Warranty;
+
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Normalizer;
+use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Normalize
- * @package Extend\Warranty\Observer\Warranty
  */
-class Normalize implements \Magento\Framework\Event\ObserverInterface
+class Normalize implements ObserverInterface
 {
     /**
-     * @var \Extend\Warranty\Model\Normalizer
+     * Normalizer
+     *
+     * @var Normalizer
      */
-    protected $_normalizer;
+    private $normalizer;
 
     /**
-     * @var \Extend\Warranty\Helper\Api\Data
+     * Data Helper
+     *
+     * @var DataHelper
      */
-    protected $_apiHelper;
+    private $dataHelper;
 
     /**
-     * @var \Extend\Warranty\Helper\Tracking
+     * Checkout Session
+     *
+     * @var CheckoutSession
      */
-    protected $_trackingHelper;
-
-    protected $_groupedHelper;
+    private $checkoutSession;
 
     /**
-     * @var \Magento\Checkout\Model\Session
+     * LoggerInterface
+     *
+     * @var LoggerInterface
      */
-    protected $_checkoutSession;
-
+    private $logger;
 
     /**
-     * Normalize constructor.
-     * @param \Extend\Warranty\Model\Normalizer $normalizer
-     * @param \Extend\Warranty\Helper\Api\Data $apiHelper
-     * @param \Extend\Warranty\Helper\Tracking $trackingHelper
-     * @param \Extend\Warranty\Helper\Grouped $groupedHelper
-     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * Normalize constructor
+     *
+     * @param Normalizer $normalizer
+     * @param DataHelper $dataHelper
+     * @param CheckoutSession $checkoutSession
+     * @param LoggerInterface $logger
      */
     public function __construct(
-        \Extend\Warranty\Model\Normalizer $normalizer,
-        \Extend\Warranty\Helper\Api\Data $apiHelper,
-        \Extend\Warranty\Helper\Tracking $trackingHelper,
-        \Extend\Warranty\Helper\Grouped $groupedHelper,
-        \Magento\Checkout\Model\Session $checkoutSession
-
+        Normalizer $normalizer,
+        DataHelper $dataHelper,
+        CheckoutSession $checkoutSession,
+        LoggerInterface $logger
     ) {
-        $this->_normalizer = $normalizer;
-        $this->_apiHelper = $apiHelper;
-        $this->_trackingHelper = $trackingHelper;
-        $this->_groupedHelper = $groupedHelper;
-        $this->_checkoutSession = $checkoutSession;
+        $this->normalizer = $normalizer;
+        $this->dataHelper = $dataHelper;
+        $this->checkoutSession = $checkoutSession;
+        $this->logger = $logger;
     }
 
     /**
-     * @inheritDoc
-     * @noinspection PhpUnusedLocalVariableInspection
+     * Normalize on cart|quote update
+     *
+     * @param Observer $observer
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer): void
     {
-        if (!$this->_apiHelper->isBalancedCart()) {
+        if (!$this->dataHelper->isBalancedCart()) {
             return;
         }
-        /** @var \Magento\Checkout\Model\Cart $cart */
-        $cart = $observer->getData('cart');
-        /* Normalize on quote/cart update */
-        if (empty($cart)) {
-            try {
-                $this->_normalize($this->_checkoutSession->getQuote());
-            } catch (\Exception $e) {}
-        } else {
-            $this->_normalizer->normalize($cart);
-        }
-    }
 
-    /**
-     * @param \Magento\Quote\Model\Quote $quote
-     * @noinspection PhpDeprecationInspection
-     * @noinspection PhpUnusedLocalVariableInspection
-     */
-    private function _normalize(\Magento\Quote\Model\Quote $quote)
-    {
-        //split cart items into products and warranties
-        $warranties = [];
-        $products = [];
-        foreach ($quote->getAllItems() as $item) {
-            /** @var \Magento\Quote\Model\Quote\Item $item */
-            if ($item->getProductType() === \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
-                $warranties[$item->getItemId()] = $item;
-            } else {
-                $products[] = $item;
-            }
-        }
-        //loop over products to see if their qty is different from the warranty qty and adjust both to max
-        $hasChanges = false;
-        foreach ($products as $item) {
-            /** @var \Magento\Quote\Model\Quote\Item $item */
-            $sku = $item->getSku();
-            foreach ($warranties as $warrantyItem) {
-                /** @var \Magento\Quote\Model\Quote\Item $warrantyItem */
-                if (($warrantyItem->getOptionByCode('associated_product')->getValue() == $sku
-                    && ($item->getProductType() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE
-                        || is_null($item->getOptionByCode('parent_product_id')))) || $this->_groupedHelper->isGroupedWarranty($warrantyItem, $item))
-                {
-                    if ($warrantyItem->getQty() <> $item->getQty()) {
-                        if ($item->getQty() > 0) {
-                            //update warranty qty
-                            $warrantyItem->setQty($item->getQty());
-                            $warrantyItem->calcRowTotal();
-                            try {
-                                $warrantyItem->save();
-                                $hasChanges = true;
-                            } catch(\Exception $e) {}
-                        }
-                    }
-                }
-            }
-        }
-        //only collect totals and re-save the quote if something actually changed
-        if ($hasChanges) {
-            $quote->setTriggerRecollect(1);
-            try {
-                $quote->collectTotals()->save();
-            } catch (\Exception $e) {}
+        try {
+            $cart = $observer->getData('cart');
+            $quote = !empty($cart) ? $cart->getQuote() : $this->checkoutSession->getQuote();
+            $this->normalizer->normalize($quote);
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
         }
     }
 }

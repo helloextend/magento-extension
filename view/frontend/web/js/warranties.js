@@ -18,7 +18,7 @@ define([
                 Extend.buttons.render('#extend-offer-' + params.itemId, {
                     referenceId: params.productSku
                 });
-            } else {
+            } else if (params.productSku !== 'grouped') {
                 Extend.buttons.render('#extend-offer', {
                     referenceId: params.productSku
                 });
@@ -79,40 +79,34 @@ define([
             component.setActiveProduct(productSku);
         }
 
-        $(addButton(params.itemId)).click((event) => {
+        $('#product-addtocart-button').click((event) => {
             event.preventDefault();
 
             let form = $('#product_addtocart_form');
 
-            let sku = params.productSku !== '' ? params.productSku : selectedProduct(),
-                hasOffers = false;
+            if  (typeof params.groupedProducts !== 'undefined') {
 
-            if (params.isProductHasOffers.hasOwnProperty(sku)) {
-                hasOffers = params.isProductHasOffers[sku];
+                multipleWarrantySubmit(form, params.groupedProducts, params.isProductHasOffers);
+
+            } else if (typeof params.itemId === 'undefined') {
+                let sku = params.productSku !== '' ? params.productSku : selectedProduct(),
+                    hasOffers = false;
+
+                if (params.isProductHasOffers.hasOwnProperty(sku)) {
+                    hasOffers = params.isProductHasOffers[sku];
+                }
+
+                singleWarrantySubmit(form, sku, hasOffers, params.isPdpOffersEnabled,params.isInterstitialCartOffersEnabled);
             }
+        });
 
-            if (params.isPdpOffersEnabled) {
+        function singleWarrantySubmit(form, sku, hasOffers, isPdpOffersEnabled,isInterstitialCartOffersEnabled)
+        {
+            if (isPdpOffersEnabled) {
                 /** get the component instance rendered previously */
-                const component = getComponent(params.itemId);
-
+                const component = Extend.buttons.instance('#extend-offer');
                 /** get the users plan selection */
                 const plan = component.getPlanSelection();
-
-
-                //KEH grouped product
-                let form = $('#product_addtocart_form').closest('form');
-                let currentSimplePrices = $(form).find('.group-qty');
-                let popupQty = 1;
-                let dataSetFull;
-
-                dataSetFull = 'super_group[' + params.itemId + ']';
-                $.each(currentSimplePrices, function (key, item) {
-                    if (item.name !== dataSetFull) {
-                        item.value = 0;
-                    } else {
-                        popupQty = item.value;
-                    }
-                });
 
                 if (plan) {
                     addWarranty(plan, sku);
@@ -121,9 +115,8 @@ define([
                         .attr('name', 'warranty[component]')
                         .attr('value', 'buttons')
                         .appendTo('#product_addtocart_form');
-                    form.trigger('submit');
-                    form[0].reset();
-                } else if (params.isInterstitialCartOffersEnabled && hasOffers) {
+                    form.submit();
+                } else if (isInterstitialCartOffersEnabled && hasOffers) {
                     Extend.modal.open({
                         referenceId: sku,
                         onClose: function (plan) {
@@ -137,23 +130,13 @@ define([
                             } else {
                                 $("input[name^='warranty']").remove();
                             }
-                            if  (typeof params.itemId !== 'undefined') {
-                                form.trigger('submit');
-                                form[0].reset();
-                            } else {
-                                $('#product_addtocart_form').submit();
-                            }
+                            form.submit();
                         }
                     });
                 } else {
-                    if  (typeof params.itemId !== 'undefined') {
-                        form.trigger('submit');
-                        form[0].reset();
-                    } else {
-                        $('#product_addtocart_form').submit();
-                    }
+                    form.submit();
                 }
-            } else if (params.isInterstitialCartOffersEnabled && hasOffers) {
+            } else if (isInterstitialCartOffersEnabled && hasOffers) {
                 Extend.modal.open({
                     referenceId: sku,
                     onClose: function (plan) {
@@ -167,23 +150,30 @@ define([
                         } else {
                             $("input[name^='warranty']").remove();
                         }
-                        if  (typeof params.itemId !== 'undefined') {
-                            form.trigger('submit');
-                            form[0].reset();
-                        } else {
-                            $('#product_addtocart_form').submit();
-                        }
+                        form.submit();
                     }
                 });
             } else {
-                if  (typeof params.itemId !== 'undefined') {
-                    form.trigger('submit');
-                    form[0].reset();
-                } else {
-                    $('#product_addtocart_form').submit();
-                }
+                form.submit();
             }
-        });
+        }
+
+        function multipleWarrantySubmit(form,groupedProducts, isProductHasOffers)
+        {
+            $.each(groupedProducts, (id, sku) => {
+                let component = Extend.buttons.instance('#extend-offer-' + id),
+                    plan = component.getPlanSelection(),
+                    hasOffers = false;
+                if (isProductHasOffers.hasOwnProperty(id)) {
+                    hasOffers = isProductHasOffers[id];
+                }
+                if (hasOffers && plan) {
+                    addWarrantyGrouped(plan, sku, id);
+                }
+            });
+
+            form.submit();
+        }
 
         function addWarranty(plan, sku) {
             $.each(plan, (attribute, value) => {
@@ -198,18 +188,17 @@ define([
                 .appendTo('#product_addtocart_form');
         }
 
-        function addButton(itemId) {
-            if  (typeof itemId !== 'undefined') {
-                return '#submit-' + itemId;
-            }
-            return '#product-addtocart-button';
-        }
-
-        function getComponent(itemId) {
-            if  (typeof itemId !== 'undefined') {
-                return Extend.buttons.instance('#extend-offer-' + params.itemId);
-            }
-            return Extend.buttons.instance('#extend-offer');
+        function addWarrantyGrouped(plan, sku, itemId) {
+            $.each(plan, (attribute, value) => {
+                $('<input />').attr('type', 'hidden')
+                    .attr('name', 'warranty_' + itemId + '[' + attribute + ']')
+                    .attr('value', value)
+                    .appendTo('#product_addtocart_form');
+            });
+            $('<input />').attr('type', 'hidden')
+                .attr('name', 'warranty_' + itemId + '[product]')
+                .attr('value', sku)
+                .appendTo('#product_addtocart_form');
         }
     };
 });

@@ -1,73 +1,112 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Console\Command;
 
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\ProductSyncFlag;
 use Extend\Warranty\Model\ProductSyncProcess;
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\App\Area;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\State as AppState;
+use Magento\Framework\FlagManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Extend\Warranty\Api\SyncInterface as ProductBatch;
-use Magento\Framework\App\State;
-use Extend\Warranty\Model\SyncProcess;
-use Psr\Log\LoggerInterface;
+use Extend\Warranty\Api\SyncInterface as ProductSyncModel;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Helper\ProgressBar;
+use Exception;
 
+/**
+ * Class SyncProducts
+ */
 class SyncProducts extends Command
 {
-    const ARGUMENT_BATCH_SIZE = 'batch';
     /**
-     * @var State
+     * Batch size input key
      */
-    private $state;
-    /**
-     * @var ProductBatch
-     */
-    private $productBatch;
+    const INPUT_KEY_BATCH_SIZE = 'batch_size';
 
     /**
-     * @var SyncProcess
+     * App State
+     *
+     * @var AppState
      */
-    private $syncProcess;
+    private $appState;
 
     /**
-     * @var LoggerInterface
+     * Data Helper
+     *
+     * @var DataHelper
      */
-    private $logger;
+    private $dataHelper;
 
     /**
-     * ProductSyncProcess
+     * Flag Manager
+     *
+     * @var FlagManager
+     */
+    private $flagManager;
+
+    /**
+     * Product Sync Process
      *
      * @var ProductSyncProcess
      */
     private $productSyncProcess;
 
+    /**
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * SyncProducts constructor
+     *
+     * @param AppState $appState
+     * @param DataHelper $dataHelper
+     * @param FlagManager $flagManager
+     * @param ProductSyncProcess $productSyncProcess
+     * @param LoggerInterface $logger
+     * @param string|null $name
+     */
     public function __construct(
-        State $state,
-        ProductBatch $productBatch,
-        SyncProcess $syncProcess,
-        LoggerInterface $logger,
+        AppState $appState,
+        DataHelper $dataHelper,
+        FlagManager $flagManager,
         ProductSyncProcess $productSyncProcess,
-        $name = null
-    )
-    {
+        LoggerInterface $logger,
+        string $name = null
+    ) {
         parent::__construct($name);
-        $this->state = $state;
-        $this->productBatch = $productBatch;
-        $this->syncProcess = $syncProcess;
-        $this->logger = $logger;
+        $this->appState = $appState;
+        $this->dataHelper = $dataHelper;
+        $this->flagManager = $flagManager;
         $this->productSyncProcess = $productSyncProcess;
+        $this->logger = $logger;
     }
 
-    protected function configure()
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure(): void
     {
         $options = [
             new InputOption(
-                self::ARGUMENT_BATCH_SIZE,
+                self::INPUT_KEY_BATCH_SIZE,
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Set Product Batch Size'
+                'Set product batch size'
             )
         ];
 
@@ -78,59 +117,58 @@ class SyncProducts extends Command
         parent::configure();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $output->writeln("Starting Sync Process... ");
-
         try {
-            $this->state->setAreaCode('adminhtml');
-        } catch (LocalizedException $e) {
-            $this->logger->error('Error setting the area code', ['Exception' => $e->getMessage()]);
+            $this->appState->emulateAreaCode(
+                Area::AREA_ADMINHTML,
+                [$this, 'doExecute'],
+                [$input, $output]
+            );
+        } catch (Exception $exception) {
+            $this->logger->error($exception->getMessage());
+            $output->writeln('<error>' . $exception->getMessage() . '</error>');
+        }
+    }
+
+    /**
+     * Sync products
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    public function doExecute(InputInterface $input, OutputInterface $output): void
+    {
+        if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
+            $output->writeln("<error>Extension is disabled. Please, check the configuration settings.</error>");
+
+            return;
         }
 
-        if ($size = $input->getOption(self::ARGUMENT_BATCH_SIZE)) {
-            $batchSize = (int)$size;
+        if ((bool)$this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME)) {
+            $output->writeln("<error>Product sync has already started by another process.</error>");
 
-            if ($batchSize > 100 || $batchSize <= 0) {
-                $output->writeln('<error>Invalid batch size, value must be between 1-100.</error>');
-                return $this;
-            }
-            $this->productBatch->setBatchSize($batchSize);
-        } else {
-            $output->writeln('<info>Setting product batch to 100.</info>');
-            $this->productBatch->setBatchSize(100);
+            return;
         }
 
-        $totalBatches = $this->productBatch->getBatchesToProcess();
-        $progressBar = new ProgressBar($output, $totalBatches);
-        $progressBar->setFormat('verbose');
-        $noError = true;
+        $defaultBatchSize = abs((int)$input->getOption(self::INPUT_KEY_BATCH_SIZE));
+        if (!$defaultBatchSize) {
+            $defaultBatchSize = null;
+        } elseif ($defaultBatchSize > ProductSyncModel::DEFAULT_BATCH_SIZE) {
+            $output->writeln("<error>Invalid batch size, value must be between 1-100.</error>");
 
-        $progressBar->start();
-        for ($i = 1; $i <= $totalBatches; $i++) {
-            try {
-                $productsBatch = $this->productBatch->getProducts($i);
-                $this->syncProcess->sync($productsBatch, $i);
-            } catch (\Exception $e) {
-                if ($noError) {
-                    $noError = false;
-                }
-
-                $this->logger->error('Error found in products batch ' . $i, ['Exception' => $e->getMessage()]);
-            }
-            $progressBar->advance();
+            return;
         }
 
-        $progressBar->finish();
-        $output->writeln('');
+        $this->flagManager->saveFlag(ProductSyncFlag::FLAG_NAME, true);
+        $output->writeln("<comment>Process was started.</comment>");
 
-        if ($noError) {
-            $this->productSyncProcess->setLastSyncDate();
-            $output->writeln('<info>Synchronization completed.</info>');
-        } else {
-            $output->writeln('<error>Some batches have not sync correctly, unable to save last time sync time.</error>');
-        }
+        $this->productSyncProcess->execute($defaultBatchSize);
 
-        return $this;
+        $this->flagManager->deleteFlag(ProductSyncFlag::FLAG_NAME);
+        $output->writeln("<comment>Process was finished. See sync log for details.</comment>");
     }
 }

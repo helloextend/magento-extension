@@ -114,13 +114,13 @@ define(
                 if (isPartial) {
                     $("div#partial-contracts-list").html('');
 
-                    for (const property in contractId) {
-                        if (contractId[property]) {
-                            let contractItem = '<input type="checkbox" id="pl-contract' + property + '" name="pl-contract' + property + '" value="' + contractId[property] + '">' +
-                                '<label for="pl-contract' + property +'">' + contractId[property] + '</label><br>';
+                    $.each(contractId, function (index, value) {
+                        if (contractId[index]) {
+                            let contractItem = '<input type="checkbox" id="pl-contract' + index + '" name="pl-contract' + index + '" value="' + value + '">' +
+                                '<label for="pl-contract' + index +'">' + value + '</label><br>';
                             $("div#partial-contracts-list").append(contractItem);
                         }
-                    }
+                    })
 
                     let modalOptions = {
                         modalClass: 'extend-confirm-partial-modal',

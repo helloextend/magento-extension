@@ -22,72 +22,85 @@ $quote = $_item->getQuote();
 ?>
 <tbody class="cart item">
 <tr class="item-info">
-    <td data-th="<?= $block->escapeHtml(__('Product')) ?>" class="col item">
-        <?php if ($block->hasProductUrl()):?>
-        <a href="<?= /* @escapeNotVerified */ $block->getProductUrl() ?>"
+    <td data-th="<?= $block->escapeHtml(__('Item')) ?>" class="col item">
+        <?php if ($block->hasProductUrl()): ?>
+        <a href="<?= /* @escapeNotVerified */
+        $block->getProductUrl() ?>"
            title="<?= $block->escapeHtml($block->getProductName()) ?>"
            tabindex="-1"
            class="product-item-photo">
-            <?php else:?>
+            <?php else: ?>
             <span class="product-item-photo">
-            <?php endif;?>
-            <?= $block->getImage($block->getProductForThumbnail(), 'cart_page_product_thumbnail')->toHtml() ?>
-            <?php if ($block->hasProductUrl()):?>
+            <?php endif; ?>
+            <?= $block->getImage($block->getProductForThumbnail(), 'cart_page_product_thumbnail', $attributes)->toHtml() ?>
+            <?php if ($block->hasProductUrl()): ?>
         </a>
     <?php else: ?>
         </span>
     <?php endif; ?>
-    </td>
-
-    <td data-th="<?= $block->escapeHtml(__('Product')) ?>" class="col item">
         <div class="product-item-details">
             <strong class="product-item-name">
-                <?php if ($block->hasProductUrl()):?>
-                    <a href="<?= /* @escapeNotVerified */ $block->getProductUrl() ?>"><?= $block->escapeHtml($block->getProductName()) ?></a>
+                <?php if ($block->hasProductUrl()): ?>
+                    <a href="<?= /* @escapeNotVerified */
+                    $block->getProductUrl() ?>"><?= $block->escapeHtml($block->getProductName()) ?></a>
                 <?php else: ?>
                     <?= $block->escapeHtml($block->getProductName()) ?>
                 <?php endif; ?>
             </strong>
-            <span class="display-block">
-                    <small>
-                        <strong class="text-uppercase font-weight-bold"><?= $block->escapeHtml(__('SKU:'))?></strong>
-                        <?= $_item->getProduct()->getSku() ?>
-                    </small>
-                </span>
-            <?php if ($_options = $block->getOptionList()):?>
+            <?php if ($_options = $block->getOptionList()): ?>
                 <dl class="item-options">
                     <?php foreach ($_options as $_option) : ?>
                         <?php $_formatedOptionValue = $block->getFormatedOptionValue($_option) ?>
-                        <dt><?= $block->escapeHtml($_option['label']) ?></dt>
-                        <dd>
-                            <?php if (isset($_formatedOptionValue['full_view'])): ?>
-                                <?= /* @escapeNotVerified */ $_formatedOptionValue['full_view'] ?>
-                            <?php else: ?>
-                                <?= $block->escapeHtml($_formatedOptionValue['value'], ['span']) ?>
-                            <?php endif; ?>
-                        </dd>
+                        <?php if ($product->getTypeId() !== 'warranty'): ?>
+                            <dt><?= $block->escapeHtml($_option['label']) ?></dt>
+                            <dd>
+                                <?php if (isset($_formatedOptionValue['full_view'])): ?>
+                                    <?= /* @escapeNotVerified */
+                                    $_formatedOptionValue['full_view'] ?>
+                                <?php else: ?>
+                                    <?= $block->escapeHtml($_formatedOptionValue['value'], ['span']) ?>
+                                <?php endif; ?>
+                            </dd>
+                        <?php else: ?>
+                            <p>
+                                <?php if (isset($_formatedOptionValue['full_view'])): ?>
+                                    <?= /* @escapeNotVerified */
+                                    $_formatedOptionValue['full_view'] ?>
+                                <?php else: ?>
+                                    <?= $block->escapeHtml($_formatedOptionValue['value'], ['span']) ?>
+                                <?php endif; ?>
+                            </p>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </dl>
-            <?php endif;?>
+            <?php endif; ?>
             <?php if ($messages = $block->getMessages()): ?>
                 <?php foreach ($messages as $message): ?>
-                    <div class="cart item message <?= /* @escapeNotVerified */ $message['type'] ?>"><div><?= $block->escapeHtml($message['text']) ?></div></div>
+                    <div class="cart item message <?= /* @escapeNotVerified */
+                    $message['type'] ?>">
+                        <div><?= $block->escapeHtml($message['text']) ?></div>
+                    </div>
                 <?php endforeach; ?>
             <?php endif; ?>
             <?php $addInfoBlock = $block->getProductAdditionalInformationBlock(); ?>
             <?php if ($addInfoBlock): ?>
                 <?= $addInfoBlock->setItem($_item)->toHtml() ?>
-            <?php endif;?>
+            <?php endif; ?>
         </div>
     </td>
 
     <?php if ($canApplyMsrp): ?>
         <td class="col msrp" data-th="<?= $block->escapeHtml(__('Price')) ?>">
                 <span class="pricing msrp">
-                    <span class="msrp notice"><?= /* @escapeNotVerified */ __('See price before order confirmation.') ?></span>
+                    <span class="msrp notice"><?= /* @escapeNotVerified */
+                        __('See price before order confirmation.') ?></span>
                     <?php $helpLinkId = 'cart-msrp-help-' . $_item->getId(); ?>
-                    <a href="#" class="action help map" id="<?= /* @escapeNotVerified */ ($helpLinkId) ?>" data-mage-init='{"addToCart":{"helpLinkId": "#<?= /* @escapeNotVerified */ $helpLinkId ?>","productName": "<?= /* @escapeNotVerified */ $product->getName() ?>","showAddToCart": false}}'>
-                        <span><?= /* @escapeNotVerified */ __("What's this?") ?></span>
+                    <a href="#" class="action help map" id="<?= /* @escapeNotVerified */
+                    ($helpLinkId) ?>" data-mage-init='{"addToCart":{"helpLinkId": "#<?= /* @escapeNotVerified */
+                    $helpLinkId ?>","productName": "<?= /* @escapeNotVerified */
+                    $product->getName() ?>","showAddToCart": false}}'>
+                        <span><?= /* @escapeNotVerified */
+                            __("What's this?") ?></span>
                     </a>
                 </span>
         </td>
@@ -98,18 +111,23 @@ $quote = $_item->getQuote();
     <?php endif; ?>
     <td class="col qty" data-th="<?= $block->escapeHtml(__('Qty')) ?>">
         <div class="field qty">
-            <label class="label hide-all" for="cart-<?= /* @escapeNotVerified */ $_item->getId() ?>-qty">
-                <span><?= /* @escapeNotVerified */ __('Qty') ?></span>
+            <label class="label" for="cart-<?= /* @escapeNotVerified */
+            $_item->getId() ?>-qty">
+                    <span><?= /* @escapeNotVerified */
+                        __('Qty') ?></span>
             </label>
             <div class="control qty">
-                <input id="cart-<?= /* @escapeNotVerified */ $_item->getId() ?>-qty"
-                       name="cart[<?= /* @escapeNotVerified */ $_item->getId() ?>][qty]"
+                <input id="cart-<?= /* @escapeNotVerified */
+                $_item->getId() ?>-qty"
+                       name="cart[<?= /* @escapeNotVerified */
+                       $_item->getId() ?>][qty]"
                        data-cart-item-id="<?= $block->escapeHtml($_item->getSku()) ?>"
-                       value="<?= /* @escapeNotVerified */ $block->getQty() ?>"
+                       value="<?= /* @escapeNotVerified */
+                       $block->getQty() ?>"
                        type="number"
                        size="4"
                        title="<?= $block->escapeHtml(__('Qty')) ?>"
-                       class="qty"
+                       class="input-text qty"
                        data-validate="{required:true,'validate-greater-than-zero':true}"
                        data-role="cart-item-qty"/>
             </div>
@@ -123,10 +141,12 @@ $quote = $_item->getQuote();
             <?= $block->getRowTotalHtml($_item) ?>
         <?php endif; ?>
     </td>
-
-    <td>
+</tr>
+<tr class="item-actions">
+    <td colspan="4">
         <div class="actions-toolbar">
-            <?= /* @escapeNotVerified */ $block->getActions($_item) ?>
+            <?= /* @escapeNotVerified */
+            $block->getActions($_item) ?>
         </div>
     </td>
 </tr>
@@ -135,26 +155,19 @@ $quote = $_item->getQuote();
 <?php if ($product->getTypeId() !== 'warranty'): ?>
     <?php if ($inCartViewModel->isExtendEnabled() && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
         <?php
-        $_itemID = '';
-        $productTypeInstance = $product->getTypeInstance();
-        if ($product->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
-            $usedProducts = $productTypeInstance->getUsedProducts($product);
-            foreach ($usedProducts  as $child) {
-                if ($child->getSku() == $product->getSku()) {
-                    $_itemID = $child->getId();
-                }
+            $_itemID = '';
+            $productTypeInstance = $product->getTypeInstance();
+            if ($product->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
+                $usedProducts = $productTypeInstance->getUsedProducts($product);
+                 foreach ($usedProducts  as $child) {
+                     if ($child->getSku() == $product->getSku()) {
+                         $_itemID = $child->getId();
+                     }
+                 }
             }
-        }
 
-        $_itemID = empty($_itemID) ? $_item->getId() : $_itemID;
-        $_currentSku[$_itemID] = $product->getSku();
-        ?>
-
-        <?php
-        $groupedProduct = $block->getGroupedProduct();
-        if ($groupedProduct != null) {
-            $_currentSku[$_itemID] = $groupedProduct->getSku();
-        }
+            $_itemID = empty($_itemID) ? $_item->getId() : $_itemID;
+            $_currentSku[$_itemID] = $product->getSku();
         ?>
 
         <?php if (!$inCartViewModel->hasWarranty($quote, $_currentSku[$_itemID])): ?>
@@ -170,7 +183,8 @@ $quote = $_item->getQuote();
                             "productSku": "<?= $_currentSku[$_itemID] ?>",
                             "url" : "<?= $block->getUrl('warranty/cart/add') ?>",
                             "itemId" : "<?= $_itemID ?>",
-                            "parentId" : "<?= $_item->getOptionByCode('simple_product') ? $_item->getProductId() : '' ?>"
+                            "parentId" : "<?= $_item->getOptionByCode('simple_product') ? $_item->getProductId() : '' ?>",
+                            "isTrackingEnabled": "<?= $block->escapeJs($inCartViewModel->isTrackingEnabled()) ?>"
                         }
                     }
                 }

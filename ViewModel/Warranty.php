@@ -20,8 +20,8 @@ use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Quote\Api\Data\CartInterface;
-use Extend\Warranty\Helper\Api as ApiHelper;
-use InvalidArgumentException;
+use Extend\Warranty\Helper\Tracking as TrackingHelper;
+use Extend\Warranty\Model\Offers as OfferModel;
 
 /**
  * Class Warranty
@@ -34,13 +34,6 @@ class Warranty implements ArgumentInterface
      * @var DataHelper
      */
     private $dataHelper;
-
-    /**
-     * Api Helper
-     *
-     * @var ApiHelper
-     */
-    private $apiHelper;
 
     /**
      * Json Serializer
@@ -57,23 +50,40 @@ class Warranty implements ArgumentInterface
     private $linkManagement;
 
     /**
+     * Tracking Helper
+     *
+     * @var TrackingHelper
+     */
+    private $trackingHelper;
+
+    /**
+     * Offer Model
+     *
+     * @var OfferModel
+     */
+    private $offerModel;
+
+    /**
      * Warranty constructor
      *
      * @param DataHelper $dataHelper
-     * @param ApiHelper $apiHelper
      * @param JsonSerializer $jsonSerializer
      * @param LinkManagementInterface $linkManagement
+     * @param TrackingHelper $trackingHelper
+     * @param OfferModel $offerModel
      */
     public function __construct(
         DataHelper $dataHelper,
-        ApiHelper $apiHelper,
         JsonSerializer $jsonSerializer,
-        LinkManagementInterface $linkManagement
+        LinkManagementInterface $linkManagement,
+        TrackingHelper $trackingHelper,
+        OfferModel $offerModel
     ) {
         $this->dataHelper = $dataHelper;
-        $this->apiHelper = $apiHelper;
         $this->jsonSerializer = $jsonSerializer;
         $this->linkManagement = $linkManagement;
+        $this->trackingHelper = $trackingHelper;
+        $this->offerModel = $offerModel;
     }
 
     /**
@@ -156,12 +166,32 @@ class Warranty implements ArgumentInterface
             $items = $this->linkManagement->getChildren($productSku);
             foreach ($items as $item) {
                 $itemSku = $item->getSku();
-                $isProductHasOffers[$itemSku] = $this->apiHelper->isProductHasOffers($itemSku);
+                $isProductHasOffers[$itemSku] = $this->offerModel->hasOffers($itemSku);
             }
         } else {
-            $isProductHasOffers[$productSku] = $this->apiHelper->isProductHasOffers($productSku);
+            $isProductHasOffers[$productSku] = $this->offerModel->hasOffers($productSku);
         }
 
         return $this->jsonSerializer->serialize($isProductHasOffers);
+    }
+
+    /**
+     * Check if tracking enabled
+     *
+     * @return bool
+     */
+    public function isTrackingEnabled(): bool
+    {
+        return $this->trackingHelper->isTrackingEnabled();
+    }
+
+    /**
+     * Check is leads enabled
+     *
+     * @return bool
+     */
+    public function isLeadEnabled(): bool
+    {
+        return $this->dataHelper->isLeadEnabled();
     }
 }

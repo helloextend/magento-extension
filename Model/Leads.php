@@ -1,93 +1,105 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+declare(strict_types=1);
 
 namespace Extend\Warranty\Model;
 
-use Magento\Framework\Exception\NoSuchEntityException;
-use Extend\Warranty\Model\Api\Sync\Leads\LeadsRequest;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Api\Sync\Lead\LeadsRequest as ApiLeadModel;
 use Extend\Warranty\Model\Api\Request\LeadBuilder;
-use Extend\Warranty\Model\Api\Sync\Offers\OffersRequest;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class Leads
+ */
 class Leads
 {
     /**
-     * @var LeadsRequest
+     * Api Lead Model
+     *
+     * @var ApiLeadModel
      */
-    protected $leadsRequest;
+    private $apiLeadBuilder;
 
     /**
+     * Lead Builder
+     *
      * @var LeadBuilder
      */
-    protected $leadBuilder;
+    private $leadBuilder;
 
     /**
-     * @var OffersRequest
-     */
-    protected $offersRequest;
-
-    /**
+     * Logger Interface
+     *
      * @var LoggerInterface
      */
-    protected $logger;
+    private $logger;
 
-    public function __construct
-    (
-        LeadsRequest $leadsRequest,
+    /**
+     * Data Helper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
+
+    /**
+     * Leads constructor
+     *
+     * @param ApiLeadModel $apiLeadBuilder
+     * @param LeadBuilder $leadBuilder
+     * @param LoggerInterface $logger
+     * @param DataHelper $dataHelper
+     */
+    public function __construct(
+        ApiLeadModel $apiLeadBuilder,
         LeadBuilder $leadBuilder,
-        OffersRequest $offersRequest,
-        LoggerInterface $logger
-    )
-    {
-        $this->leadsRequest = $leadsRequest;
+        LoggerInterface $logger,
+        DataHelper $dataHelper
+    ) {
+        $this->apiLeadBuilder = $apiLeadBuilder;
         $this->leadBuilder = $leadBuilder;
-        $this->offersRequest = $offersRequest;
         $this->logger = $logger;
+        $this->dataHelper = $dataHelper;
     }
 
     /**
-     * @param $itemSku
-     * return array
+     * Create lead
+     *
+     * @param OrderInterface $order
+     * @param OrderItemInterface $item
+     * @return string
      */
-    public function getOffers($itemSku) {
-        $offers = $this->offersRequest->consult($itemSku);
-        if (!empty($offers) && isset($offers['plans'])
-            && is_array($offers['plans']) && count($offers['plans']) >= 1) {
-            return $offers['plans'];
-        }
-        return [];
-    }
-
-    /**
-     * @param $itemSky
-     */
-    public function hasOffers($itemSku) {
-        $offerPlans = $this->getOffers($itemSku);
-
-        if (
-            !empty($offerPlans)
-            && is_array($offerPlans)
-            && count($offerPlans) >= 1
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * $param $order
-     * $param $item
-     */
-    public function createLead($order, $item) {
+    public function createLead(OrderInterface $order, OrderItemInterface $item): string
+    {
         $lead = '';
         try {
-            $lead =  $this->leadsRequest->create(
-                $this->leadBuilder->prepareInfo($order, $item)
-            );
-        } catch(\Exception $e) {
-            $this->logger->error($e->getMessage(), ['exception' => $e]);
+            $storeId = $item->getStoreId();
+
+            $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
+            $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+            $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
+
+            $leadPayload = $this->leadBuilder->preparePayload($order, $item);
+            if (!empty($leadPayload)) {
+                $this->apiLeadBuilder->setConfig($apiUrl, $apiStoreId, $apiKey);
+                $lead = $this->apiLeadBuilder->create($leadPayload);
+            }
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
         }
 
-        return empty($lead) ? '' : $lead;
+        return $lead;
     }
 }
