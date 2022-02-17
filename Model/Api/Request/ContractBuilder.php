@@ -169,6 +169,12 @@ class ContractBuilder
             'planId'        => $warrantyId,
         ];
 
+        if (!empty($order->getCreatedAt())) {
+            $transactionData = strtotime($order->getCreatedAt());
+        } else {
+            $transactionData = (int)(microtime(true)*1000);
+        }
+
         $payload = [
             'transactionId'     => $order->getIncrementId(),
             'transactionTotal'  => $transactionTotal,
@@ -176,7 +182,7 @@ class ContractBuilder
             'product'           => $product,
             'currency'          => $currencyCode,
             'source'            => $source,
-            'transactionDate'   => strtotime($order->getCreatedAt()),
+            'transactionDate'   => $transactionData,
             'plan'              => $plan,
         ];
 
