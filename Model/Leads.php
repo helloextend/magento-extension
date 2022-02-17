@@ -95,6 +95,9 @@ class Leads
             if (!empty($leadPayload)) {
                 $this->apiLeadBuilder->setConfig($apiUrl, $apiStoreId, $apiKey);
                 $lead = $this->apiLeadBuilder->create($leadPayload);
+                if (!empty($lead)) {
+                    $lead = json_encode($lead);
+                }
             }
         } catch (LocalizedException $exception) {
             $this->logger->error($exception->getMessage());
