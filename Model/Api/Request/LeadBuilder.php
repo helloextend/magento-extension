@@ -59,7 +59,7 @@ class LeadBuilder
         $product = [
             'purchasePrice'     => $price,
             'referenceId'       => $orderItem->getSku(),
-            'transactionDate'   => time(),
+            'transactionDate'   => (int)(microtime(true)*1000),
             'transactionId'     => $order->getIncrementId(),
         ];
 
