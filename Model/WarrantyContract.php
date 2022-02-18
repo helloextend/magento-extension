@@ -32,6 +32,9 @@ use Exception;
  */
 class WarrantyContract
 {
+
+    const CONTRACT = 'contract';
+    const LEAD_CONTRACT = 'lead_contract';
     /**
      * API Contract Model
      *
@@ -120,7 +123,7 @@ class WarrantyContract
      * @throws NoSuchEntityException
      * @throws InvalidArgumentException
      */
-    public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced): string
+    public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced, $type = self::CONTRACT): string
     {
         $result = ContractCreate::STATUS_FAILED;
 
@@ -129,7 +132,7 @@ class WarrantyContract
             return $result;
         }
 
-        $contractPayload = $this->contractPayloadBuilder->preparePayload($order, $orderItem);
+        $contractPayload = $this->contractPayloadBuilder->preparePayload($order, $orderItem, $type);
 
         if (!empty($contractPayload)) {
             $storeId = $orderItem->getStoreId();
