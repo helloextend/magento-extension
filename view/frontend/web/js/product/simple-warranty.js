@@ -56,7 +56,7 @@ define([
         _initElements: function () {
             this.mainWrap = this.options.isInProductView ?
                 this.element.parents('.column.main') :
-                this.element.parents('.product-item-info');
+                this.element;
 
             this.addToCartForm = $(this.options.selectors.addToCartForm, this.mainWrap);
             this.addToCartButton = $(this.options.selectors.addToCartButton, this.mainWrap);
@@ -130,6 +130,7 @@ define([
             if (this.options.insertionPoint) {
                 elem = $(this.options.insertionPoint, this.element);
                 if (!elem.length) {
+                    elem = this.element;
                     method = 'appendTo';
                 }
             }
