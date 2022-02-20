@@ -141,6 +141,16 @@ class Warranty implements ArgumentInterface
     }
 
     /**
+     * Check if products list offers enabled
+     *
+     * @return bool
+     */
+    public function isProductsListOffersEnabled(): bool
+    {
+        return $this->dataHelper->isProductsListOffersEnabled();
+    }
+
+    /**
      * Check if interstitial cart offers enabled
      *
      * @return bool
