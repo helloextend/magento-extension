@@ -60,6 +60,7 @@ class Data extends AbstractHelper
      */
     const WARRANTY_OFFERS_SHOPPING_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableCartOffers';
     const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
+    const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
     const WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH = 'warranty/offers/interstitial_cart_enabled';
 
     /**
@@ -385,6 +386,21 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_OFFERS_PDP_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if products list offers enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isProductsListOffersEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH,
             ScopeInterface::SCOPE_STORES,
             $storeId
         );
