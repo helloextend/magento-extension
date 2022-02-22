@@ -326,7 +326,7 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_CONTRACTS_AUTO_REFUND_ENABLED_XML_PATH,
-            ScopeInterface::SCOPE_WEBSITES,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
@@ -341,7 +341,7 @@ class Data extends AbstractHelper
     {
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH,
-            ScopeInterface::SCOPE_WEBSITES,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
@@ -356,7 +356,7 @@ class Data extends AbstractHelper
     {
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH,
-            ScopeInterface::SCOPE_WEBSITES,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
