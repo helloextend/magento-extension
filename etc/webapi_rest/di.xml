@@ -17,4 +17,9 @@
                 type="Extend\Warranty\Plugin\Api\OrderItemRepositoryInterfacePlugin" />
     </type>
 
+    <type name="Magento\Sales\Api\OrderRepositoryInterface">
+        <plugin name="extend_warranty_plugin_api_order_repository_interface_plugin"
+                type="Extend\Warranty\Plugin\Api\OrderRepositoryInterfacePlugin" />
+    </type>
+
 </config>
