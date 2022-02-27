@@ -125,7 +125,7 @@ class ProductSyncProcess
      *
      * @param int|null $defaultBatchSize
      */
-    public function execute(?int $defaultBatchSize = null)
+    public function execute(int $defaultBatchSize = null)
     {
         $stores = $this->storeManager->getStores();
         foreach ($stores as $storeId => $store) {

@@ -113,7 +113,9 @@ class ProductsRequest extends AbstractRequest
                 } else {
                     $this->logger->error(sprintf('Product batch %s synchronization is failed.', $currentBatch));
                 }
-            } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
+            } catch (Zend_Http_Client_Exception $exception) {
+                $this->logger->error($exception->getMessage());
+            } catch (InvalidArgumentException $exception) {
                 $this->logger->error($exception->getMessage());
             }
         }
