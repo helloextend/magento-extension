@@ -82,7 +82,7 @@ class ProductsRequest extends AbstractRequest
      * @param array $products
      * @param int $currentBatch
      */
-    public function create(array $products, int $currentBatch = 1): void
+    public function create(array $products, int $currentBatch = 1)
     {
         $productData = [];
         foreach ($products as $product) {

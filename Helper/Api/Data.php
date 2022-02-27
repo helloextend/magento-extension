@@ -434,7 +434,7 @@ class Data extends AbstractHelper
         string $value,
         string $scopeType = ScopeInterface::SCOPE_STORES,
         $scopeId = null
-    ): void {
+    ) {
         $this->configResource->saveConfig(
             self::WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH,
             $value,

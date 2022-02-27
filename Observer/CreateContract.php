@@ -79,7 +79,7 @@ class CreateContract implements ObserverInterface
      *
      * @param Observer $observer
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $invoice = $event->getInvoice();

@@ -136,7 +136,7 @@ class RequestRefundObserver implements ObserverInterface
      *
      * @param Observer $observer
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $creditmemo = $event->getCreditmemo();
