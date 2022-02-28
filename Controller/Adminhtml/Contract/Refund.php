@@ -215,7 +215,7 @@ class Refund extends Action
      * @param int $orderItemId
      * @return OrderItemInterface|null
      */
-    private function getOrderItem(int $orderItemId): ?OrderItemInterface
+    private function getOrderItem(int $orderItemId)
     {
         try {
             $orderItem = $this->orderItemRepository->get($orderItemId);

@@ -52,7 +52,7 @@ class CreateContracts
     /**
      * Create warranty contracts
      */
-    public function execute(): void
+    public function execute()
     {
         if (
             !$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
