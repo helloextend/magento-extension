@@ -24,6 +24,7 @@ class OrderItemRepositoryInterfacePlugin
     const ASSOCIATED_PRODUCT = 'associated_product';
     const REFUND             = 'refund';
     const WARRANTY_TERM      = 'warranty_term';
+    const PLAN_TYPE          = 'plan_type';
 
     /**
      * Order Extension Attributes Factory
@@ -47,6 +48,7 @@ class OrderItemRepositoryInterfacePlugin
         self::ASSOCIATED_PRODUCT,
         self::REFUND,
         self::WARRANTY_TERM,
+        self::PLAN_TYPE,
     ];
 
     /**
@@ -101,6 +103,8 @@ class OrderItemRepositoryInterfacePlugin
         $extensionAttributes->setRefund((bool)$productOptions[self::REFUND]);
         /** @noinspection PhpUndefinedMethodInspection */
         $extensionAttributes->setTerm($productOptions[self::WARRANTY_TERM] ?? '');
+        /** @noinspection PhpUndefinedMethodInspection */
+        $extensionAttributes->setPlanType($productOptions[self::PLAN_TYPE] ?? '');
 
         $orderItem->setExtensionAttributes($extensionAttributes);
 
@@ -148,6 +152,8 @@ class OrderItemRepositoryInterfacePlugin
             $extensionAttributes->setRefund((bool)$productOptions[self::REFUND]);
             /** @noinspection PhpUndefinedMethodInspection */
             $extensionAttributes->setTerm($productOptions[self::WARRANTY_TERM] ?? '');
+            /** @noinspection PhpUndefinedMethodInspection */
+            $extensionAttributes->setPlanType($productOptions[self::PLAN_TYPE] ?? '');
 
             $orderItem->setExtensionAttributes($extensionAttributes);
         }
