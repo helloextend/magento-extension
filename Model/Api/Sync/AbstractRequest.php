@@ -96,7 +96,7 @@ abstract class AbstractRequest implements RequestInterface
      * @param string $apiKey
      * @throws InvalidArgumentException
      */
-    public function setConfig(string $apiUrl, string $storeId, string $apiKey): void
+    public function setConfig(string $apiUrl, string $storeId, string $apiKey)
     {
         if (empty($apiUrl) || empty($storeId) || empty($apiKey)) {
             throw new InvalidArgumentException(__('Credentials not set.'));

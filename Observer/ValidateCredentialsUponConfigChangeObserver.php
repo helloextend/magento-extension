@@ -91,7 +91,7 @@ class ValidateCredentialsUponConfigChangeObserver implements ObserverInterface
      *
      * @param Observer $observer
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;

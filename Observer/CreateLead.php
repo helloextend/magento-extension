@@ -98,7 +98,7 @@ class CreateLead implements ObserverInterface
      *
      * @param Observer $observer
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $order = $event->getOrder();
@@ -152,7 +152,7 @@ class CreateLead implements ObserverInterface
                 }
 
                 if (!$hasWarranty) {
-                    if ($this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                    if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                         $hasOffers = $this->offerModel->orderItemHasOffers($productItem);
                         if ($hasOffers) {
                             try {
@@ -167,7 +167,7 @@ class CreateLead implements ObserverInterface
                                 $this->logger->error('Error during lead creation. ' . $exception->getMessage());
                             }
                         }
-                    } elseif ($this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
+                    } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
                         try {
                             $leadToken = $this->extendOrder->createOrder($order, $productItem, intval($productItem->getQtyOrdered()), ExtendOrder::LEAD);
                             if ($leadToken) {

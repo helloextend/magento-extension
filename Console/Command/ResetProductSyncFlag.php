@@ -69,7 +69,7 @@ class ResetProductSyncFlag extends Command
     /**
      * {@inheritdoc}
      */
-    protected function configure(): void
+    protected function configure()
     {
         $this->setName('extend:sync-products:reset-flag');
         $this->setDescription('Reset product sync flag to unlock sync process');
@@ -79,7 +79,7 @@ class ResetProductSyncFlag extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
             $this->appState->emulateAreaCode(
@@ -99,7 +99,7 @@ class ResetProductSyncFlag extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    public function doExecute(InputInterface $input, OutputInterface $output): void
+    public function doExecute(InputInterface $input, OutputInterface $output)
     {
         $this->flagManager->deleteFlag(ProductSyncFlag::FLAG_NAME);
         $output->writeln("<comment>Product sync flag has been reset.</comment>");

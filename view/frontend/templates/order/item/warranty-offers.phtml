@@ -1,0 +1,47 @@
+<?php
+/**
+ * Extend Warranty - "Add Warranty" button for Lead Order
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+/**
+ * @var \Magento\Sales\Block\Order\Item\Renderer\DefaultRenderer $block
+ */
+
+/** @var \Magento\Quote\Model\Quote\Item\AbstractItem $_item */
+$_item = $block->getItem();
+/** @var \Magento\Catalog\Model\Product $product */
+$product = $_item->getProduct();
+/** @var \Magento\Quote\Model\Quote $quote */
+$quote = $_item->getQuote();
+/** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
+$viewModel = $block->getData('viewModel');
+
+$productType = $product->getTypeId();
+$isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
+
+$leadToken = $_item->getLeadToken();
+?>
+
+<?php if (!$isWarrantyItem && $viewModel->isProductDetailPageOffersEnabled() && $viewModel->isLeadEnabled() && isset($leadToken)): ?>
+    <div class="order-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>"></div>
+
+    <script type="text/x-magento-init">
+        {
+            "#warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>": {
+                "leadOrderWarranty":{
+                    "itemId": "<?= $block->escapeJs($_item->getId()) ?>",
+                    "productSku": "<?= $block->escapeJs($_item->getSku()) ?>",
+                    "qty": "<?= $block->escapeJs($_item->getQtyOrdered()) ?>",
+                    "leadToken": "<?= $block->escapeJs(implode(", ", json_decode($leadToken, true))) ?>",
+                    "addLeadUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/addlead')) ?>",
+                    "buttonEnabled": true,
+                    "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>
+                }
+            }
+        }
+    </script>
+<?php endif; ?>

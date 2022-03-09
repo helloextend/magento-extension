@@ -50,12 +50,12 @@ interface SyncInterface
      *
      * @param int $batchSize
      */
-    public function setBatchSize(int $batchSize): void;
+    public function setBatchSize(int $batchSize);
 
     /**
      * Set count of batches to process
      *
      * @param int $countOfProducts
      */
-    public function setCountOfBatches(int $countOfProducts): void;
+    public function setCountOfBatches(int $countOfProducts);
 }
