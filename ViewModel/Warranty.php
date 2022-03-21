@@ -20,6 +20,7 @@ use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Quote\Api\Data\CartInterface;
+use Magento\Store\Model\ScopeInterface;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Offers as OfferModel;
 
@@ -91,9 +92,9 @@ class Warranty implements ArgumentInterface
      *
      * @return bool
      */
-    public function isExtendEnabled(): bool
+    public function isExtendEnabled($storeId = null): bool
     {
-        return $this->dataHelper->isExtendEnabled();
+        return $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId);
     }
 
     /**
@@ -125,9 +126,9 @@ class Warranty implements ArgumentInterface
      *
      * @return bool
      */
-    public function isShoppingCartOffersEnabled(): bool
+    public function isShoppingCartOffersEnabled($storeId = null): bool
     {
-        return $this->dataHelper->isShoppingCartOffersEnabled();
+        return $this->dataHelper->isShoppingCartOffersEnabled($storeId);
     }
 
     /**

@@ -142,12 +142,6 @@ class SyncProducts extends Command
      */
     public function doExecute(InputInterface $input, OutputInterface $output)
     {
-        if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
-            $output->writeln("<error>Extension is disabled. Please, check the configuration settings.</error>");
-
-            return;
-        }
-
         if ((bool)$this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME)) {
             $output->writeln("<error>Product sync has already started by another process.</error>");
 

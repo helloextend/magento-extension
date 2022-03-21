@@ -9,12 +9,13 @@
  */
 /** @var \Extend\Warranty\ViewModel\Adminhtml\Installation $viewModel */
 $viewModel = $block->getData('viewModel');
+$storeId = $viewModel->getCurrentStoreId();
 ?>
-<script src="<?= $viewModel->getJsMode() ?>"></script>
-<script>
-    var BASE_URL = '<?= /* @noEscape */ $block->getUrl('*') ?>';
-    var FORM_KEY = '<?= /* @noEscape */ $block->getFormKey() ?>';
-    var require = {
-        "baseUrl": "<?= /* @noEscape */ $block->getViewFileUrl('/') ?>"
-    };
-</script>
+<?php if ($viewModel->isExtendEnabled($storeId)) : ?>
+    <?php $jsonConfig = $viewModel->getJsonConfig($storeId); ?>
+    <?php if ($jsonConfig): ?>
+        <script>
+            Extend.config(<?= $viewModel->getJsonConfig($storeId) ?>);
+        </script>
+    <?php endif; ?>
+<?php endif; ?>

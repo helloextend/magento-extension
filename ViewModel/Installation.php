@@ -17,6 +17,7 @@ use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use InvalidArgumentException;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class Installation
@@ -44,9 +45,10 @@ class Installation implements ArgumentInterface
      * @param JsonSerializer $jsonSerializer
      */
     public function __construct(
-        DataHelper $dataHelper,
+        DataHelper     $dataHelper,
         JsonSerializer $jsonSerializer
-    ) {
+    )
+    {
         $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
     }
@@ -56,9 +58,9 @@ class Installation implements ArgumentInterface
      *
      * @return bool
      */
-    public function isExtendEnabled(): bool
+    public function isExtendEnabled($storeId = null): bool
     {
-        return $this->dataHelper->isExtendEnabled();
+        return $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId);
     }
 
     /**
@@ -66,15 +68,15 @@ class Installation implements ArgumentInterface
      *
      * @return string
      */
-    public function getJsonConfig(): string
+    public function getJsonConfig($storeId = null): string
     {
         $jsonConfig = '';
 
-        $storeId = $this->dataHelper->getStoreId();
+        $storeId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
         if ($storeId) {
             $config = [
                 'storeId' => $storeId,
-                'environment' => $this->dataHelper->isExtendLive() ? AuthMode::LIVE : AuthMode::DEMO,
+                'environment' => $this->dataHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $storeId) ? AuthMode::LIVE : AuthMode::DEMO,
             ];
 
             try {
