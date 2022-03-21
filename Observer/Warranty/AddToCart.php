@@ -174,6 +174,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
 
             return;
         }
+        $warranty->load($warranty->getId());
         $warrantyData['qty'] = $qty;
         try {
             $cart->addProduct($warranty, $warrantyData);
