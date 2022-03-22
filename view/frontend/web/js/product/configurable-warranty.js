@@ -82,7 +82,7 @@ define([
             } else if (this.options.isInProductView) {
                 var selectedId = $('input[name=selected_configurable_option]', this.mainWrap).val();
                 if (selectedId && selectedId !== '') {
-                    var spConfig = this.addToCartForm.data('mageConfigurable').options.spConfig;
+                    var spConfig = this.addToCartForm.data('toolnutConfigurable').options.spConfig;
                     selectedSku = spConfig && spConfig.skus ? spConfig.skus[selectedId] : null;
                 }
             }
