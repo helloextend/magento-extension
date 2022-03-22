@@ -1,21 +1,29 @@
-<?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-
-    <virtualType name="Extend\Warranty\Block\System\Config\AccountLink" type="Extend\Warranty\Block\System\Config\Link">
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <virtualType name="Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\Pool">
         <arguments>
-            <argument name="url" xsi:type="string">https://merchants.extend.com</argument>
-            <argument name="label" xsi:type="string">Set up my Extend account</argument>
-            <argument name="class" xsi:type="string">action action-extend-external</argument>
+            <argument name="modifiers" xsi:type="array">
+                <item name="warranty_price" xsi:type="array">
+                    <item name="class" xsi:type="string">Extend\Warranty\Ui\DataProvider\Product\Form\Modifier\WarrantyPrice</item>
+                    <item name="sortOrder" xsi:type="number">200</item>
+                </item>
+            </argument>
         </arguments>
     </virtualType>
 
-    <virtualType name="Extend\Warranty\Block\System\Config\PortalLink" type="Extend\Warranty\Block\System\Config\Link">
-        <arguments>
-            <argument name="url" xsi:type="string">https://merchants.extend.com</argument>
-            <argument name="label" xsi:type="string">Go to my Extend merchant dashboard</argument>
-            <argument name="class" xsi:type="string">action action-extend-external</argument>
-        </arguments>
-    </virtualType>
-
+    <type name="Magento\Catalog\Controller\Adminhtml\Product\NewAction">
+        <plugin name="DisableCreateNewWarrantyPlugin"
+                type="Extend\Warranty\Plugin\Catalog\Controller\Adminhtml\Product\NewAction\DisableCreateNewWarrantyPlugin"
+                sortOrder="10" />
+    </type>
 </config>

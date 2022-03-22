@@ -59,7 +59,7 @@ class WarrantyRenderer extends DefaultRenderer
                         if ($this->canDisplayContainer()) {
                             $html .= '<div id="' . $this->getHtmlId() . '">';
                         }
-                        $html .= '<button type="button" class="action action-extend-refund"' . " data-mage-init='{$this->getDataInit($item)}' >Request Refund</button>";
+                        $html .= '<button type="button" class="action action-extend-refund"' . " data-mage-init='{$this->getDataInit($item, $this->canShowPartial($item))}' >Request Refund</button>";
                         if ($this->canDisplayContainer()) {
                             $html .= '</div>';
                         }
@@ -84,13 +84,22 @@ class WarrantyRenderer extends DefaultRenderer
         return $html;
     }
 
-    private function getDataInit($item)
+    private function getDataInit($item, $isPartial = false)
     {
         $contractID = json_decode($item->getContractId()) === NULL ? json_encode([$item->getContractId()]) : $item->getContractId();
+        $_elements = count(json_decode($contractID, true));
 
         return '{"refundWarranty": {"url": "' . $this->getUrl('extend/contract/refund') .
             '", "contractId": ' . $contractID .
+            ', "isPartial": "' . $isPartial . '"' .
+            ', "maxRefunds": "' . $_elements . '"' .
             ', "itemId": "' . $item->getId() . '" }}';
+    }
+
+    private function canShowPartial($item)
+    {
+        $contractID = json_decode($item->getContractId()) === NULL ? json_encode([$item->getContractId()]) : $item->getContractId();
+        return (count(json_decode($contractID, true)) > 1);
     }
 
     public function getHtmlId()

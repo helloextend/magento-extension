@@ -1,3 +1,11 @@
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
 define(
     [
         'jquery',
@@ -12,6 +20,7 @@ define(
         var shouldAbort = false;
         var synMsg = $("#sync-msg");
         var cancelSync = $("#cancel_sync");
+        var resetFlagUrl = '';
 
         function restore(button) {
             button.text('Sync Products');
@@ -38,11 +47,7 @@ define(
                 });
                 currentBatchesProcessed = data.currentBatchesProcessed;
                 totalBatches = data.totalBatches;
-                if (currentBatchesProcessed > totalBatches) {
-                    if (totalBatches > 0) {
-                        $("#sync-time").text(data.msg);
-                    }
-                }
+                $("#sync-time").text(data.msg);
             } while (currentBatchesProcessed <= totalBatches);
             restore(button);
         }
@@ -67,17 +72,28 @@ define(
                 })
             } else {
                 return new Promise((resolve, reject) => {
-                    resolve({
+                    var data = {
                         'totalBatches': 0,
                         'currentBatchesProcessed': 1
-                    });
+                    };
+                    $.get({
+                        url: resetFlagUrl,
+                        dataType: 'json',
+                        success: function (data) {
+                            resolve(data);
+                        },
+                        error: function (data) {
+                            reject(data);
+                        }
+                    })
                 })
             }
         }
 
         $.widget('extend.productSync', {
             options: {
-                url: ''
+                url: '',
+                resetFlagUrl: ''
             },
 
             _create: function () {
@@ -87,9 +103,11 @@ define(
 
             _bind: function () {
                 $(this.element).click(this.syncProducts.bind(this));
-                var cancelSync = $("#cancel_sync");
+                var cancelSync = $("#cancel_sync"),
+                    self = this;
                 $(cancelSync).bind("click", function () {
-                    shouldAbort = true
+                    shouldAbort = true;
+                    resetFlagUrl = self.options.resetFlagUrl;
                 });
 
             },

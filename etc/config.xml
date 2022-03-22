@@ -1,10 +1,64 @@
-<?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <warranty>
+            <enableExtend>
+                <enable>0</enable>
+                <enableBalance>1</enableBalance>
+                <enableCartOffers>1</enableCartOffers>
+                <enableRefunds>1</enableRefunds>
+                <enableLeads>1</enableLeads>
+                <logging_enabled>1</logging_enabled>
+            </enableExtend>
+            <contracts>
+                <create>1</create>
+                <mode>1</mode>
+                <cron>
+                    <frequency>*/5 * * * *</frequency>
+                </cron>
+                <batch_size>25</batch_size>
+                <storage_period>30</storage_period>
+                <auto_refund_enabled>1</auto_refund_enabled>
+            </contracts>
+            <offers>
+                <pdp_enabled>1</pdp_enabled>
+                <products_list_enabled>1</products_list_enabled>
+                <interstitial_cart_enabled>1</interstitial_cart_enabled>
+            </offers>
             <products>
                 <batch_size>100</batch_size>
+                <enable_cronjob>0</enable_cronjob>
+                <cron>
+                    <frequency>0 0 * * *</frequency>
+                </cron>
             </products>
+            <tracking>
+                <enabled>1</enabled>
+            </tracking>
+            <authentication>
+                <api_url>https://api.helloextend.com/</api_url>
+                <sandbox_api_url>https://api-demo.helloextend.com/</sandbox_api_url>
+            </authentication>
         </warranty>
+        <csp>
+            <policies>
+                <storefront>
+                    <frame-ancestors>
+                        <inline>0</inline>
+                    </frame-ancestors>
+                </storefront>
+            </policies>
+        </csp>
     </default>
 </config>

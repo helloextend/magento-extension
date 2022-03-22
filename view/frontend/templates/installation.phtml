@@ -1,22 +1,46 @@
 <?php
-/** @var $block Magento\Framework\View\Element\Template */
-/** @var $viewModel Extend\Warranty\ViewModel\Installation */
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+/** @var \Extend\Warranty\ViewModel\Installation $viewModel */
 $viewModel = $block->getData('viewModel');
-if ($viewModel) {
-    $viewModel->prepareBlockData();
-}
 ?>
-<?php if (isset($viewModel) && $viewModel->getExtendEnable()) : ?>
-    <script src="<?= $viewModel->getJsMode() ?>"></script>
+<?php if ($viewModel->isExtendEnabled()): ?>
+    <?php $jsonConfig = $viewModel->getJsonConfig(); ?>
+    <?php if ($jsonConfig): ?>
+        <?php
+        $libUrl = $block->escapeJs(str_replace('.js', '', $viewModel->getJsMode()));
+        $scriptString = <<<script
+        require.config({
+            paths: {
+                'extendSdk': '{$libUrl}'
+            }
+        });
+        require(['extendSdk'], function(Extend) {
+        //<![CDATA[
+            Extend.config({$jsonConfig});
+            window.Extend = Extend;
+        //]]>
+        });
+script;
+        ?>
+        <?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>
 
-    <script>
-        Extend.config(<?= $viewModel->getJsonConfig() ?>);
-    </script>
+        <?php if ($block->getTrackingEnabled()): ?>
+            <script type="text/x-magento-init">
+            {
+                "*": {
+                    "Extend_Warranty/js/tracking-service": {}
+                }
+            }
+            </script>
+        <?php endif; ?>
+    <?php endif; ?>
 <?php endif; ?>
-
-<script>
-    var BASE_URL = '<?= $block->escapeUrl($block->getBaseUrl()) ?>';
-    var require = {
-        "baseUrl": "<?= /* @escapeNotVerified */ $block->getViewFileUrl('/') ?>"
-    };
-</script>

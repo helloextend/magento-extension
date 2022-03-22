@@ -2,13 +2,15 @@
 $_item = $block->getItem();
 $_product = $_item->getProduct();
 
-/** @var Extend\Warranty\ViewModel\WarrantiesInCart $inCartViewModel */
+$quote = $_item->getQuote();
+
+/** @var Extend\Warranty\ViewModel\Warranty $inCartViewModel */
 $inCartViewModel = $block->getData('viewModel');
 ?>
 
 <?php if ($_product->getTypeId() !== 'warranty'): ?>
-    <?php if ($inCartViewModel->isDisplayOffersEnabled()): ?>
-        <?php if (!$inCartViewModel->hasWarranty($_product->getSku(), true)): ?>
+    <?php if ($inCartViewModel->isExtendEnabled() && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
+        <?php if (!$inCartViewModel->hasWarranty($quote, $_product->getSku())): ?>
             <tbody id="warranty-<?= $_item->getId() ?>">
                 <tr>
                     <td>
@@ -34,7 +36,7 @@ $inCartViewModel = $block->getData('viewModel');
                                         if (data.status == "success") {
                                             order.itemsUpdate();
                                         } else {
-                                            console.log("Error Adding Warranty.");
+                                            console.log("Oops! There was an error adding the protection plan.");
                                         }
                                     });
                                 }

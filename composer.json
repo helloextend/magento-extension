@@ -1,14 +1,15 @@
 {
   "name": "extend/module-warranty",
-  "description": "Extend Warranty module for magento 2",
+  "description": "Extend Module for Magento 2",
   "require": {
     "magento/framework": ">=101.0",
     "magento/module-catalog": ">=102.0",
     "magento/module-checkout": ">=100.2",
-    "magento/module-sales": ">=101.0"
+    "magento/module-sales": ">=101.0",
+    "magento/module-store": ">=100.2"
   },
   "type": "magento2-module",
-  "version": "100.2.0",
+  "version": "100.2.3",
   "license": [
     "OSL-3.0",
     "AFL-3.0"

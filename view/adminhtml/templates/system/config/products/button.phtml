@@ -1,20 +1,33 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: lazaro
- * Date: 19/12/18
- * Time: 04:09 PM
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-/** @var $block Extend\Warranty\Block\System\Config\Products\Button
+/**
+ * @var \Extend\Warranty\Block\System\Config\Products\Button $block
  */
+
+$scopeData = $block->getScopeData();
 ?>
 <div class="extend-sync-button-container">
-    <button id="syncBtn" data-mage-init='{"productSync": {"url": "<?= $block->getUrl('extend/products/sync') ?>"}}'>
-        <span>Sync Products</span>
+    <button id="syncBtn" data-mage-init='{"productSync": {
+            "url": "<?= $block->escapeJs($block->getUrl('extend/products/sync', [$scopeData['scopeType'] => $scopeData['scopeId']])) ?>",
+            "resetFlagUrl": "<?= $block->escapeJs($block->getUrl('extend/products_sync/resetFlag')) ?>"
+        }}' <?php if (!$block->isButtonEnabled()): ?>class="disabled"<?php endif; ?>>
+        <span><?= __('Sync Products') ?></span>
     </button>
     <div class="sync-info">
-        <p id="sync-msg"><strong><?=__('Last Sync:').' '?></strong><span id="sync-time"><?= !empty($block->getLastSync()) ? $block->getLastSync() : 'Never'?></span></p>
-        <a id="cancel_sync">Cancel Sync</a>
+        <p id="sync-msg">
+            <label for="sync-time"><?= __('Last Sync: ') ?></label>
+            <span id="sync-time"><?= !empty($block->getLastSync()) ? $block->getLastSync() : __('Never') ?></span>
+        </p>
+        <a id="cancel_sync">
+            <span><?= __('Cancel Sync') ?></span>
+        </a>
     </div>
 </div>

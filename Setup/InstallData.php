@@ -19,6 +19,7 @@ use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\App\Area;
+use Magento\Framework\Exception\LocalizedException;
 
 class InstallData implements InstallDataInterface
 {
@@ -86,7 +87,12 @@ class InstallData implements InstallDataInterface
 
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
-        $this->state->setAreaCode(Area::AREA_ADMINHTML);
+        try {
+            $this->state->setAreaCode(Area::AREA_ADMINHTML);
+        } catch (LocalizedException $e) {
+            //Intentionally Left Empty
+        }
+        // $this->state->setAreaCode(Area::AREA_ADMINHTML);
 
         $setup->startSetup();
         $eavSetup = $this->eavSetupFactory->create();
@@ -141,6 +147,7 @@ class InstallData implements InstallDataInterface
             ->setTypeId(Type::TYPE_CODE)
             ->setPrice(0.0)
             ->setTaxClassId(0) //None
+            ->setCreatedAt(strtotime('now'))
             ->setStockData([
                 'use_config_manage_stock' => 0,
                 'is_in_stock' => 1,
@@ -190,6 +197,15 @@ class InstallData implements InstallDataInterface
                 ',',
                 $eavSetup->getAttribute(Product::ENTITY, $field, 'apply_to')
             );
+
+            //If apply_to attribute is empty or single value, use default Magento values
+            if (empty($applyTo) || count($applyTo) <= 1) {
+                $defaultApplyTo = $field !== 'tier_price'
+                    ? 'simple,virtual,configurable,downloadable,bundle'
+                    : 'simple,virtual,bundle,downloadable';
+                $applyTo = explode(',', $defaultApplyTo);
+            }
+
             if (!in_array(Type::TYPE_CODE, $applyTo)) {
                 $applyTo[] = Type::TYPE_CODE;
                 $eavSetup->updateAttribute(

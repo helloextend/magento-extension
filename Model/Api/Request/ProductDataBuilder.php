@@ -1,165 +1,249 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+declare(strict_types=1);
 
 namespace Extend\Warranty\Model\Api\Request;
 
-use Extend\Warranty\Helper\Data;
-use Magento\Catalog\Api\Data\CategoryInterface;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Catalog\Model\Product;
+use Extend\Warranty\Helper\Data as Helper;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Magento\Catalog\Model\Product\Media\ConfigInterface;
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\Product\Media\ConfigInterface as ProductMediaConfig;
+use Magento\Catalog\Model\ResourceModel\Product as ProductResourceModel;
+use Magento\ConfigurableProduct\Model\ResourceModel\Attribute\OptionProvider;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Locale\Currency;
+use Magento\Store\Model\StoreManagerInterface;
 
+/**
+ * Class ProductDataBuilder
+ */
 class ProductDataBuilder
 {
     /**
+     * Delimiter in category path.
+     */
+    const DELIMITER_CATEGORY = '/';
+
+    /**
+     * Configuration identifier
+     */
+    const CONFIGURATION_IDENTIFIER = 'configurableChild';
+
+    /**
+     * Category Repository Interface
+     *
      * @var CategoryRepositoryInterface
      */
-    protected $categoryRepository;
+    private $categoryRepository;
 
     /**
-     * @var Configurable
+     * Helper
+     *
+     * @var Helper
      */
-    protected $configurableType;
+    private $helper;
 
     /**
-     * @var ProductRepositoryInterface
+     * Product Media Config
+     *
+     * @var ProductMediaConfig
      */
-    protected $productRepository;
+    private $configMedia;
 
     /**
-     * @var Data
+     * Store Manager Interface
+     *
+     * @var StoreManagerInterface
      */
-    protected $helper;
+    private $storeManager;
 
     /**
-     * @var ConfigInterface
+     * Product Resource Model
+     *
+     * @var ProductResourceModel
      */
-    protected $configMedia;
+    private $productResourceModel;
 
-    public function __construct
-    (
-        Configurable $configurableType,
+    /**
+     * Option Provider
+     *
+     * @var OptionProvider
+     */
+    private $optionProvider;
+
+    /**
+     * ProductDataBuilder constructor
+     *
+     * @param CategoryRepositoryInterface $categoryRepository
+     * @param ProductMediaConfig $configMedia
+     * @param Helper $helper
+     * @param ProductResourceModel $productResourceModel
+     * @param OptionProvider $optionProvider
+     * @param StoreManagerInterface $storeManager
+     */
+    public function __construct(
         CategoryRepositoryInterface $categoryRepository,
-        ProductRepositoryInterface $productRepository,
-        ConfigInterface $configMedia,
-        Data $helper
-    )
-    {
-        $this->productRepository = $productRepository;
-        $this->configurableType = $configurableType;
+        ProductMediaConfig $configMedia,
+        Helper $helper,
+        ProductResourceModel $productResourceModel,
+        OptionProvider $optionProvider,
+        StoreManagerInterface $storeManager
+    ) {
         $this->categoryRepository = $categoryRepository;
         $this->configMedia = $configMedia;
         $this->helper = $helper;
+        $this->productResourceModel = $productResourceModel;
+        $this->optionProvider = $optionProvider;
+        $this->storeManager = $storeManager;
     }
 
     /**
-     * @param $productSubject
+     * Prepare payload
+     *
+     * @param ProductInterface $product
      * @return array
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-
-    public function build($productSubject): array
+    public function preparePayload(ProductInterface $product): array
     {
-        $description = !empty($productSubject->getShortDescription()) ? (string)$productSubject->getShortDescription() : 'No description';
-        $imgUrl = $this->getMainImage($productSubject);
+        $categories = $this->getCategories($product);
 
-        $data = [
-            'title' => (string)$productSubject->getName(),
-            'description' => $description,
-            'price' => $this->helper->formatPrice($productSubject->getFinalPrice()),
-            'referenceId' => (string)$productSubject->getSku(),
-            'category' => $this->getCategories($productSubject),
-            'identifiers' => [
-                'sku' => (string)$productSubject->getSku(),
-                'type' => (string)$productSubject->getTypeId()
-            ]
+        $storeId = (int)$product->getStoreId();
+        $currencyCode = $this->getCurrencyCode($storeId);
+
+        $price = [
+            'amount'        => $this->helper->formatPrice($product->getPrice()),
+            'currencyCode'  => $currencyCode,
         ];
 
-        if (!empty($imgUrl)) {
-            $data['imageUrl'] = $imgUrl;
+        $identifiers = [
+            'sku'   => (string)$product->getSku(),
+            'type'  => (string)$product->getTypeId(),
+        ];
+
+        $payload = [
+            'category'          => $categories,
+            'description'       => (string)$product->getShortDescription() ?? __('No description'),
+            'price'             => $price,
+            'title'             => (string)$product->getName(),
+            'referenceId'       => (string)$product->getSku(),
+            'identifiers'       => $identifiers,
+        ];
+
+        $imageUrl = $this->getProductImageUrl($product);
+        if ($imageUrl) {
+            $payload['imageUrl'] = $imageUrl;
         }
 
-        $parentId = $this->configurableType->getParentIdsByChild($productSubject->getEntityId());
-        $parentId = reset($parentId);
-        if (!empty($parentId)) {
-            $data['identifiers']['parentSku'] = $this->productRepository->getById($parentId)->getSku();
-
-            $data['identifiers']['type'] = 'configurableChild';
+        $productId = (int)$product->getId();
+        $parentProductSku = $this->getParentSkuByChild($productId);
+        if ($parentProductSku) {
+            $payload['parentReferenceId'] = $parentProductSku;
+            $payload['identifiers']['parentSku'] = $parentProductSku;
+            $payload['identifiers']['type'] = self::CONFIGURATION_IDENTIFIER;
         }
-        return $data;
+
+        return $payload;
     }
 
     /**
-     * @param Product $productSubject
+     * Get categories
+     *
+     * @param ProductInterface $product
      * @return string
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    private function getCategories($productSubject): string
+    private function getCategories(ProductInterface $product): string
     {
-        $categoryIds = $productSubject->getCategoryIds();
+        $categories = [];
+        $categoryIds = $product->getCategoryIds();
+        foreach ($categoryIds as $categoryId) {
+            try {
+                $category = $this->categoryRepository->get((int)$categoryId);
+            } catch (NoSuchEntityException $exception) {
+                $category = null;
+            }
 
-        sort($categoryIds);
+            if ($category) {
+                $pathInStore = $category->getPathInStore();
+                $pathIds = array_reverse(explode(',', $pathInStore));
 
-        $names = [];
-        /**
-         * @var \Magento\Catalog\Model\Category $category
-         */
-        foreach ($categoryIds as $key => $categoryId) {
-            $category = $this->categoryRepository->get($categoryId);
-            if (!$category->hasChildren()) {
-                if (in_array($category->getEntityId(), $categoryIds)) {
-                    $names[] = $category->getName();
+                $parentCategories = $category->getParentCategories();
+
+                $names = [];
+                foreach ($pathIds as $id) {
+                    if (isset($parentCategories[$id]) && $parentCategories[$id]->getName()) {
+                        $names[] = $parentCategories[$id]->getName();
+                    }
                 }
-            } else {
-                $cat = $this->checkChildren($category, $category->getName(), $categoryIds);
-                if ($cat != null) {
-                    $names[] = $cat;
-                }
+                $categories[] = implode(self::DELIMITER_CATEGORY, $names);
             }
         }
 
-        return implode(",", $names);
+        return implode(',', $categories);
     }
 
     /**
-     * @param CategoryInterface $category
-     * @param string $catName
-     * @param array $ids
-     * @return string|null
-     */
-    private function checkChildren(CategoryInterface $category, string $catName, array &$ids): ?string
-    {
-        $names = [];
-        $children = $category->getChildrenCategories();
-        foreach ($children as $child) {
-            if (in_array($child->getEntityId(), $ids)) {
-                $new = $catName . '/' . $child->getName();
-                $ids[array_search($child->getEntityId(), $ids)] = '';
-                if (!$child->hasChildren()) {
-                    $names[] = $new;
-                } else {
-                    $names[] = $this->checkChildren($child, $new, $ids);
-                }
-            }
-        }
-        return !empty($names) ? implode(",", $names) : null;
-    }
-
-    /**
-     * @param $product
+     * Get product image url
+     *
+     * @param ProductInterface $product
      * @return string
      */
-    private function getMainImage($product) : string
+    private function getProductImageUrl(ProductInterface $product): string
     {
-        $imgPath = $product->getImage();
-
-        if (empty($imgPath)) {
-            return '';
+        $imageUrl = '';
+        $image = $product->getImage();
+        if (!empty($image)) {
+            $imageUrl = $this->configMedia->getBaseMediaUrl() . $image;
         }
 
-        $base = $this->configMedia->getBaseMediaUrl();
+        return $imageUrl;
+    }
 
-        return $base . $imgPath;
+    /**
+     * Get parent product sku by child id
+     *
+     * @param int $childId
+     * @return string
+     */
+    private function getParentSkuByChild(int $childId): string
+    {
+        $connection = $this->productResourceModel->getConnection();
+        $select = $connection->select();
+        $select->from(['cpsl' => $connection->getTableName('catalog_product_super_link')], []);
+        $select->join(
+            ['cpe' => $connection->getTableName('catalog_product_entity')],
+            'cpe.' . $this->optionProvider->getProductEntityLinkField() . ' = cpsl.parent_id',
+            ['cpe.sku']
+        );
+        $select->where('cpsl.product_id=?', $childId);
+
+        return (string)$connection->fetchOne($select);
+    }
+
+    /**
+     * Get currency code
+     *
+     * @param int $storeId
+     * @return string
+     */
+    private function getCurrencyCode(int $storeId): string
+    {
+        try {
+            $store = $this->storeManager->getStore($storeId);
+            $currentCurrency = $store->getCurrentCurrency();
+            $currentCurrencyCode = $currentCurrency->getCode();
+        } catch (LocalizedException $exception) {
+            $currentCurrencyCode = Currency::DEFAULT_CURRENCY;
+        }
+
+        return $currentCurrencyCode;
     }
 }

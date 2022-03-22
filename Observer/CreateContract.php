@@ -1,63 +1,125 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ */
+
+declare(strict_types=1);
 
 namespace Extend\Warranty\Observer;
 
+use Magento\Framework\Event\Observer;
 use Extend\Warranty\Model\Product\Type as WarrantyType;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Sales\Api\Data\OrderInterface;
 use Extend\Warranty\Model\WarrantyContract;
-use Magento\Quote\Api\CartRepositoryInterface;
+use Extend\Warranty\Model\Orders as ExtendOrder;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Config\Source\CreateContractApi;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class CreateContractApi
+ */
 class CreateContract implements ObserverInterface
 {
-    protected $productRepository;
-    protected $warrantyContract;
-    protected $quoteRepository;
-    protected $logger;
+    /**
+     * Warranty Contract
+     *
+     * @var WarrantyContract
+     */
+    private $warrantyContract;
 
-    public function __construct
-    (
-        ProductRepositoryInterface $productRepository,
+    /**
+     * @var ExtendOrder
+     */
+    private $extendOrder;
+
+    /**
+     * DataHelper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
+
+    /**
+     * Logger Interface
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * CreateContractApi constructor
+     *
+     * @param WarrantyContract $warrantyContract
+     * @param ExtendOrder $extendOrder
+     * @param DataHelper $dataHelper
+     * @param LoggerInterface $logger
+     */
+    public function __construct(
         WarrantyContract $warrantyContract,
-        CartRepositoryInterface $quoteRepository,
+        ExtendOrder $extendOrder,
+        DataHelper $dataHelper,
         LoggerInterface $logger
-    )
-    {
-        $this->productRepository = $productRepository;
+    ) {
         $this->warrantyContract = $warrantyContract;
-        $this->quoteRepository = $quoteRepository;
+        $this->extendOrder = $extendOrder;
+        $this->dataHelper = $dataHelper;
         $this->logger = $logger;
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
-     * @return void
+     * Create warranty contract for order item if item is invoiced
+     *
+     * @param Observer $observer
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer)
     {
-        $invoice = $observer->getEvent()->getInvoice();
-        /** @var OrderInterface $order */
+        $event = $observer->getEvent();
+        $invoice = $event->getInvoice();
         $order = $invoice->getOrder();
 
-        $warranties = [];
+        $storeId = $order->getStoreId();
 
-        $flag = 0;
+        if (
+            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            && $this->dataHelper->isWarrantyContractEnabled($storeId)
+            && !$this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)
+        ) {
+            foreach ($invoice->getAllItems() as $invoiceItem) {
+                $orderItem = $invoiceItem->getOrderItem();
 
-        foreach ($order->getAllItems() as $key => $item) {
-            /** @var \Magento\Sales\Model\Order\Item $item */
-            if ($item->getProductType() == WarrantyType::TYPE_CODE) {
-                if (!$flag) {
-                    $flag = 1;
+                if ($orderItem->getProductType() === WarrantyType::TYPE_CODE) {
+                    $qtyInvoiced = intval($invoiceItem->getQty());
+                    if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                        try {
+                            if ($orderItem->getLeadToken() != null && implode(", ", json_decode($orderItem->getLeadToken(), true)) != null) {
+                                $this->warrantyContract->create($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\WarrantyContract::LEAD_CONTRACT);
+                            } else {
+                                $this->warrantyContract->create($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\WarrantyContract::CONTRACT);
+                            }
+                        } catch (LocalizedException $exception) {
+                            $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
+                        }
+                    } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
+                        try {
+                            if ($orderItem->getLeadToken() != null && implode(", ", json_decode($orderItem->getLeadToken(), true)) != null) {
+                                $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\Orders::LEAD_CONTRACT);
+                            } else {
+                                $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\Orders::CONTRACT);
+                            }
+                        } catch (LocalizedException $exception) {
+                            $this->logger->error('Error during warranty order api contract creation. ' . $exception->getMessage());
+                        }
+                    }
                 }
-                $warranties[$key] = $item;
             }
-        }
-
-        if ($flag) {
-            $this->warrantyContract->createContract($order, $warranties);
         }
     }
 }
