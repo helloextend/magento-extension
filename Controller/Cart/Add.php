@@ -188,6 +188,7 @@ class Add extends Cart implements HttpPostActionInterface
                 return $this->jsonResponse($responseData);
             }
 
+            $warranty->load($warranty->getId());
             $relatedProduct = $warrantyData['product'];
             $qty = 1;
 
