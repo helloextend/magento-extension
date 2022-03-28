@@ -62,6 +62,8 @@ class Data extends AbstractHelper
     const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
     const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
     const WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH = 'warranty/offers/interstitial_cart_enabled';
+    const LEADS_MODAL_ENABLED_XML_PATH = 'warranty/offers/leads_modal_enabled';
+    const ORDER_OFFERS_ENABLED_XML_PATH = 'warranty/offers/order_offers_enabled';
 
     /**
      * Products settings
@@ -416,6 +418,36 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if Post Purchase Leads Modal enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isLeadsModalEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::LEADS_MODAL_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if Order Information Offers enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isOrderOffersEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::ORDER_OFFERS_ENABLED_XML_PATH,
             ScopeInterface::SCOPE_STORES,
             $storeId
         );
