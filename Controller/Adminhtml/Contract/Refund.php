@@ -16,7 +16,6 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Math\FloatComparator;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
@@ -38,6 +37,13 @@ class Refund extends Action
      * Authorization level of a basic admin session
      */
     const ADMIN_RESOURCE = 'Extend_Warranty::refund_warranty';
+
+    /**
+     * Precision for floats comparing.
+     *
+     * @var float
+     */
+    private static $epsilon = 0.00001;
 
     /**
      * API Contract Model
@@ -73,13 +79,6 @@ class Refund extends Action
     private $helper;
 
     /**
-     * Float Comparator
-     *
-     * @var FloatComparator
-     */
-    private $floatComparator;
-
-    /**
      * Json Serializer
      *
      * @var Json
@@ -109,7 +108,6 @@ class Refund extends Action
      * @param OrdersApiRefund $ordersApiRefund
      * @param DataHelper $dataHelper
      * @param Helper $helper
-     * @param FloatComparator $floatComparator
      * @param Json $jsonSerializer
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param LoggerInterface $logger
@@ -121,7 +119,6 @@ class Refund extends Action
         OrdersApiRefund $ordersApiRefund,
         DataHelper $dataHelper,
         Helper $helper,
-        FloatComparator $floatComparator,
         Json $jsonSerializer,
         OrderItemRepositoryInterface $orderItemRepository,
         LoggerInterface $logger
@@ -131,7 +128,6 @@ class Refund extends Action
         $this->ordersApiRefund = $ordersApiRefund;
         $this->dataHelper = $dataHelper;
         $this->helper = $helper;
-        $this->floatComparator = $floatComparator;
         $this->jsonSerializer = $jsonSerializer;
         $this->orderItemRepository = $orderItemRepository;
         $this->logger = $logger;
@@ -245,7 +241,7 @@ class Refund extends Action
                     $refundData = $this->apiContractModel->validateRefund($contractId);
                     if (
                         isset($refundData['refundAmount']['amount'])
-                        && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
+                        && $this->greaterThan((float)$refundData['refundAmount']['amount'], 0)
                     ) {
                         $amountValidated += $refundData['refundAmount']['amount'];
                     }
@@ -253,7 +249,7 @@ class Refund extends Action
                     $refundData = $this->ordersApiRefund->validateRefund($contractId);
                     if (
                         isset($refundData['refundAmounts']['customer'])
-                        && $this->floatComparator->greaterThan((float)$refundData['refundAmounts']['customer'], 0)
+                        && $this->greaterThan((float)$refundData['refundAmounts']['customer'], 0)
                     ) {
                         $amountValidated += $refundData['refundAmounts']['customer'];
                     }
@@ -332,5 +328,10 @@ class Refund extends Action
         }
 
         return $data;
+    }
+
+    private function greaterThan(float $a, float $b): bool
+    {
+        return ($a - $b) > self::$epsilon;
     }
 }
