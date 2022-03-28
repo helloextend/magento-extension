@@ -1,34 +1,23 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 -->
-<page layout="1column" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-    <update handle="sales_order_item_renderers"/>
-    <update handle="sales_order_item_price"/>
-    <update handle="sales_order_guest_info_links"/>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="extend_warranty_installation" />
     <body>
-        <referenceBlock name="require.js">
-            <arguments>
-                <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Installation</argument>
-            </arguments>
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Extend_Warranty::installation.phtml</argument>
-            </action>
-        </referenceBlock>
-        <referenceContainer name="content">
-
-            <referenceBlock name="order_items">
-                <action method="setTemplate">
-                    <argument name="template" xsi:type="string">Extend_Warranty::order/items.phtml</argument>
-                </action>
+        <block class="Magento\Framework\View\Element\Template" name="additional.product.info" template="Extend_Warranty::order/item/additional-info.phtml" after="content">
+            <block class="Magento\Sales\Block\Order\Item\Renderer\DefaultRenderer" name="order.item.warranty" template="Extend_Warranty::order/item/warranty-offers.phtml" after="-">
                 <arguments>
-                    <argument name="view_model" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
+                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
                 </arguments>
-            </referenceBlock>
-
-        </referenceContainer>
+            </block>
+        </block>
     </body>
 </page>

@@ -86,7 +86,7 @@ class Normalizer
      * @throws InputException
      * @throws NoSuchEntityException
      */
-    public function normalize(CartInterface $quote): void
+    public function normalize(CartInterface $quote)
     {
         $productItems = $warrantyItems = [];
 

@@ -229,7 +229,7 @@ class OrderBuilder
      * @param string $sku
      * @return ProductInterface|null
      */
-    protected function getProduct(string $sku): ?ProductInterface
+    protected function getProduct(string $sku)
     {
         try {
             $product = $this->productRepository->get($sku);

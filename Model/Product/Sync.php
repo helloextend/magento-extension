@@ -123,7 +123,7 @@ class Sync implements SyncInterface
      *
      * @param int $batchSize
      */
-    public function setBatchSize(int $batchSize): void
+    public function setBatchSize(int $batchSize)
     {
         $this->batchSize = $batchSize;
     }
@@ -133,7 +133,7 @@ class Sync implements SyncInterface
      *
      * @param int $countOfProducts
      */
-    public function setCountOfBatches(int $countOfProducts): void
+    public function setCountOfBatches(int $countOfProducts)
     {
         $batchSize = $this->getBatchSize();
         $this->countOfBatches = (int)ceil($countOfProducts/$batchSize);

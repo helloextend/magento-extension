@@ -60,6 +60,7 @@ class Data extends AbstractHelper
      */
     const WARRANTY_OFFERS_SHOPPING_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableCartOffers';
     const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
+    const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
     const WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH = 'warranty/offers/interstitial_cart_enabled';
 
     /**
@@ -325,7 +326,7 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_CONTRACTS_AUTO_REFUND_ENABLED_XML_PATH,
-            ScopeInterface::SCOPE_WEBSITES,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
@@ -340,7 +341,7 @@ class Data extends AbstractHelper
     {
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH,
-            ScopeInterface::SCOPE_WEBSITES,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
@@ -355,7 +356,7 @@ class Data extends AbstractHelper
     {
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH,
-            ScopeInterface::SCOPE_WEBSITES,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
@@ -385,6 +386,21 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_OFFERS_PDP_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if products list offers enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isProductsListOffersEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH,
             ScopeInterface::SCOPE_STORES,
             $storeId
         );
@@ -434,7 +450,7 @@ class Data extends AbstractHelper
         string $value,
         string $scopeType = ScopeInterface::SCOPE_STORES,
         $scopeId = null
-    ): void {
+    ) {
         $this->configResource->saveConfig(
             self::WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH,
             $value,

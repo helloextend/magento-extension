@@ -47,7 +47,7 @@ class RecurringData implements InstallDataInterface
      * @param ModuleDataSetupInterface $setup
      * @param ModuleContextInterface $context
      */
-    public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context): void
+    public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
         $flagData = $this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME);
         if ($flagData && is_string($flagData)) {
