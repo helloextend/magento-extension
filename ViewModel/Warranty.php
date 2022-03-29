@@ -5,7 +5,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
 declare(strict_types=1);
@@ -22,6 +22,7 @@ use Extend\Warranty\Model\Product\Type;
 use Magento\Quote\Api\Data\CartInterface;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Offers as OfferModel;
+use Magento\Framework\App\Request\Http;
 
 /**
  * Class Warranty
@@ -64,6 +65,13 @@ class Warranty implements ArgumentInterface
     private $offerModel;
 
     /**
+     * Request
+     *
+     * @var Http
+     */
+    private $request;
+
+    /**
      * Warranty constructor
      *
      * @param DataHelper $dataHelper
@@ -71,19 +79,22 @@ class Warranty implements ArgumentInterface
      * @param LinkManagementInterface $linkManagement
      * @param TrackingHelper $trackingHelper
      * @param OfferModel $offerModel
+     * @param Http $request
      */
     public function __construct(
         DataHelper $dataHelper,
         JsonSerializer $jsonSerializer,
         LinkManagementInterface $linkManagement,
         TrackingHelper $trackingHelper,
-        OfferModel $offerModel
+        OfferModel $offerModel,
+        Http $request
     ) {
         $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
         $this->linkManagement = $linkManagement;
         $this->trackingHelper = $trackingHelper;
         $this->offerModel = $offerModel;
+        $this->request = $request;
     }
 
     /**
@@ -203,5 +214,25 @@ class Warranty implements ArgumentInterface
     public function isLeadEnabled(): bool
     {
         return $this->dataHelper->isLeadEnabled();
+    }
+
+    /**
+     * Check is post purchase lead modal enabled
+     *
+     * @return bool
+     */
+    public function isPostPurchaseLeadModalEnabled(): bool
+    {
+        return $this->dataHelper->isLeadsModalEnabled();
+    }
+
+    /**
+     * Get Lead Token From Url
+     *
+     * @return string
+     */
+    public function getLeadTokenFromUrl(): string
+    {
+        return $this->request->getParam(DataHelper::LEAD_TOKEN_URL_PARAM) ?? '';
     }
 }

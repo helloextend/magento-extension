@@ -5,7 +5,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
 declare(strict_types=1);
@@ -76,6 +76,11 @@ class Data extends AbstractHelper
      * Leads settings
      */
     const WARRANTY_ENABLE_EXTEND_ENABLE_LEADS_XML_PATH = 'warranty/enableExtend/enableLeads';
+
+    /**
+     * Lead token url param
+     */
+    const LEAD_TOKEN_URL_PARAM = 'leadToken';
 
     /**
      * Module name
