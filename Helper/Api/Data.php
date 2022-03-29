@@ -444,7 +444,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * Check if Order Information Offers enabled
+     * Check if Order Warranty Information Offers enabled
      *
      * @param string|int|null $storeId
      * @return bool

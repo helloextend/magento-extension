@@ -227,6 +227,16 @@ class Warranty implements ArgumentInterface
     }
 
     /**
+     * Check is warranty information order offers enabled
+     *
+     * @return bool
+     */
+    public function isOrderOffersEnabled(): bool
+    {
+        return $this->dataHelper->isOrderOffersEnabled();
+    }
+
+    /**
      * Get Lead Token From Url
      *
      * @return string
