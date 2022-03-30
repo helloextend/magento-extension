@@ -15,8 +15,6 @@
 $_item = $block->getItem();
 /** @var \Magento\Catalog\Model\Product $product */
 $product = $_item->getProduct();
-/** @var \Magento\Quote\Model\Quote $quote */
-$quote = $_item->getQuote();
 /** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getData('viewModel');
 
@@ -27,6 +25,7 @@ $leadToken = $_item->getLeadToken();
 ?>
 
 <?php if (!$isWarrantyItem && $viewModel->isProductDetailPageOffersEnabled() && $viewModel->isLeadEnabled() && isset($leadToken)): ?>
+    <?php if (!$viewModel->isWarrantyInQuoteForSku($_item->getSku())): ?>
     <div class="order-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>"></div>
 
     <script type="text/x-magento-init">
@@ -44,4 +43,5 @@ $leadToken = $_item->getLeadToken();
             }
         }
     </script>
+    <?php endif; ?>
 <?php endif; ?>
