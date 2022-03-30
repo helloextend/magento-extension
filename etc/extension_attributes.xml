@@ -19,6 +19,7 @@
         <attribute code="associated_product" type="string" />
         <attribute code="term" type="string" />
         <attribute code="refund" type="boolean" />
+        <attribute code="lead_token" type="string" />
     </extension_attributes>
 
 </config>
