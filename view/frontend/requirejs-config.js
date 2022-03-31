@@ -17,7 +17,10 @@ var config = {
         mixins: {
             'Magento_Checkout/js/view/minicart': {
                 'Extend_Warranty/js/view/minicart-mixin': true
-            }
+            },
+            'Magento_Checkout/js/sidebar': {
+                'Extend_Warranty/js/sidebar-mixin': true
+            },
         }
     }
 };

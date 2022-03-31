@@ -25,7 +25,8 @@ define([
             addLeadUrl: null,
             addLeadEvent: null,
             buttonEnabled: true,
-            trackingEnabled: true
+            trackingEnabled: true,
+            isWarrantyInQuoteForSku: false
         },
 
         /**
@@ -34,6 +35,12 @@ define([
          */
         _create: function () {
             this.renderSimpleButton(this._addToCart.bind(this));
+
+            var $element = $(this.element.get(0));
+            this._addProductSku($element);
+            if (this.options.isWarrantyInQuoteForSku) {
+                this._hideOffersButton($element);
+            }
         },
 
         /**
@@ -97,6 +104,29 @@ define([
 
             // reload Customer cart data
             customerData.reload(['cart'], false);
+
+            var $element = $(this.element.get(0));
+            this._hideOffersButton($element);
+        },
+
+        /**
+         * Add product sku to data attribute
+         *
+         * @param {jQuery.element} $element
+         * @private
+         */
+        _addProductSku: function ($element) {
+            $element.attr('data-product-sku', this.options.productSku);
+        },
+
+        /**
+         * Hide offers button
+         *
+         * @param {jQuery.element} $element
+         * @private
+         */
+        _hideOffersButton: function ($element) {
+            $element.addClass('hidden');
         },
 
         /**

@@ -25,9 +25,7 @@ $leadToken = $_item->getLeadToken();
 ?>
 
 <?php if (!$isWarrantyItem && $viewModel->isProductDetailPageOffersEnabled() && $viewModel->isLeadEnabled() && isset($leadToken)): ?>
-    <?php if (!$viewModel->isWarrantyInQuoteForSku($_item->getSku())): ?>
     <div class="order-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>"></div>
-
     <script type="text/x-magento-init">
         {
             "#warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>": {
@@ -38,10 +36,10 @@ $leadToken = $_item->getLeadToken();
                     "leadToken": "<?= $block->escapeJs(implode(", ", json_decode($leadToken, true))) ?>",
                     "addLeadUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/addlead')) ?>",
                     "buttonEnabled": true,
-                    "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>
+                    "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>,
+                    "isWarrantyInQuoteForSku": <?= (int)$viewModel->isWarrantyInQuoteForSku($_item->getSku()) ?>
                 }
             }
         }
     </script>
-    <?php endif; ?>
 <?php endif; ?>
