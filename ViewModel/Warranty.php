@@ -74,7 +74,7 @@ class Warranty implements ArgumentInterface
     private $checkoutSession;
 
     /**
-    * Request
+     * Request
      *
      * @var Http
      */
