@@ -24,7 +24,7 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
 $leadToken = $_item->getLeadToken();
 ?>
 
-<?php if (!$isWarrantyItem && $viewModel->isProductDetailPageOffersEnabled() && $viewModel->isLeadEnabled() && isset($leadToken)): ?>
+<?php if (!$isWarrantyItem && $viewModel->isOrderOffersEnabled() && $viewModel->isLeadEnabled() && isset($leadToken)): ?>
     <div class="order-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>"></div>
     <script type="text/x-magento-init">
         {

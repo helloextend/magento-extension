@@ -24,6 +24,7 @@ use Magento\Quote\Api\Data\CartInterface;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Offers as OfferModel;
 use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Framework\App\Request\Http;
 
 /**
  * Class Warranty
@@ -73,6 +74,13 @@ class Warranty implements ArgumentInterface
     private $checkoutSession;
 
     /**
+    * Request
+     *
+     * @var Http
+     */
+    private $request;
+
+    /**
      * Warranty constructor
      *
      * @param DataHelper $dataHelper
@@ -81,6 +89,7 @@ class Warranty implements ArgumentInterface
      * @param TrackingHelper $trackingHelper
      * @param OfferModel $offerModel
      * @param CheckoutSession $checkoutSession
+     * @param Http $request
      */
     public function __construct(
         DataHelper $dataHelper,
@@ -88,7 +97,8 @@ class Warranty implements ArgumentInterface
         LinkManagementInterface $linkManagement,
         TrackingHelper $trackingHelper,
         OfferModel $offerModel,
-        CheckoutSession $checkoutSession
+        CheckoutSession $checkoutSession,
+        Http $request
     ) {
         $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
@@ -96,6 +106,7 @@ class Warranty implements ArgumentInterface
         $this->trackingHelper = $trackingHelper;
         $this->offerModel = $offerModel;
         $this->checkoutSession = $checkoutSession;
+        $this->request = $request;
     }
 
     /**
@@ -236,5 +247,35 @@ class Warranty implements ArgumentInterface
         }
 
         return $hasWarranty ?? false;
+    }
+
+    /**
+     * Check is post purchase lead modal enabled
+     *
+     * @return bool
+     */
+    public function isPostPurchaseLeadModalEnabled(): bool
+    {
+        return $this->dataHelper->isLeadsModalEnabled();
+    }
+
+    /**
+     * Check is warranty information order offers enabled
+     *
+     * @return bool
+     */
+    public function isOrderOffersEnabled(): bool
+    {
+        return $this->dataHelper->isOrderOffersEnabled();
+    }
+
+    /**
+     * Get Lead Token From Url
+     *
+     * @return string
+     */
+    public function getLeadTokenFromUrl(): string
+    {
+        return $this->request->getParam(DataHelper::LEAD_TOKEN_URL_PARAM) ?? '';
     }
 }
