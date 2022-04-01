@@ -183,6 +183,7 @@
 
     <type name="Extend\Warranty\ViewModel\Warranty">
         <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
             <argument name="request" xsi:type="object">Magento\Framework\App\Request\Http\Proxy</argument>
         </arguments>
     </type>
