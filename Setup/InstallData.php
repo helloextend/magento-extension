@@ -20,9 +20,21 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\App\Area;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Catalog\Model\Product\Gallery\EntryFactory;
+use Magento\Catalog\Model\Product\Gallery\GalleryManagement;
+use Magento\Framework\Api\ImageContentFactory;
+use Magento\Framework\Exception\StateException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\FileSystemException;
 
 class InstallData implements InstallDataInterface
 {
+    /**
+     * warranty product sku
+     */
+    const WARRANTY_PRODUCT_SKU = 'WARRANTY-1';
+
     /**
      * @var ProductFactory
      */
@@ -63,6 +75,22 @@ class InstallData implements InstallDataInterface
      */
     protected $productRepository;
 
+    /**
+     * @var EntryFactory
+     */
+    private $mediaGalleryEntryFactory;
+
+    /**
+     * @var GalleryManagement
+     */
+    private $mediaGalleryManagement;
+
+    /**
+     * @var ImageContentFactory
+     */
+    private $imageContentFactory;
+
+
     public function __construct
     (
         ProductFactory $productFactory,
@@ -72,7 +100,10 @@ class InstallData implements InstallDataInterface
         File $file,
         Reader $reader,
         DirectoryList $directoryList,
-        ProductRepositoryInterface $productRepository
+        ProductRepositoryInterface $productRepository,
+        EntryFactory $mediaGalleryEntryFactory,
+        GalleryManagement $mediaGalleryManagement,
+        ImageContentFactory $imageContentFactory
     )
     {
         $this->productFactory = $productFactory;
@@ -83,6 +114,9 @@ class InstallData implements InstallDataInterface
         $this->reader = $reader;
         $this->directoryList = $directoryList;
         $this->productRepository = $productRepository;
+        $this->mediaGalleryEntryFactory = $mediaGalleryEntryFactory;
+        $this->mediaGalleryManagement = $mediaGalleryManagement;
+        $this->imageContentFactory = $imageContentFactory;
     }
 
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
@@ -92,7 +126,6 @@ class InstallData implements InstallDataInterface
         } catch (LocalizedException $e) {
             //Intentionally Left Empty
         }
-        // $this->state->setAreaCode(Area::AREA_ADMINHTML);
 
         $setup->startSetup();
         $eavSetup = $this->eavSetupFactory->create();
@@ -109,16 +142,70 @@ class InstallData implements InstallDataInterface
         $setup->endSetup();
     }
 
+    /**
+     * Get image to pub media
+     *
+     * @return void
+     *
+     * @throws FileSystemException
+     */
     public function addImageToPubMedia()
     {
-        $imagePath = $this->reader->getModuleDir(\Magento\Framework\Module\Dir::MODULE_VIEW_DIR, 'Extend_Warranty');
-        $imagePath .= '/../Setup/Resource/Extend_icon.png';
+        $imagePath = $this->reader->getModuleDir('', 'Extend_Warranty');
+        $imagePath .= '/Setup/Resource/Extend_icon.png';
 
-        $media = $this->directoryList->getPath('media');
-        $media .= '/Extend_icon.png';
+        $media = $this->getMediaImagePath();
 
         $this->file->cp($imagePath, $media);
     }
+
+    /**
+     * Process media gallery entry
+     *
+     * @param $filePath
+     * @param $sku
+     *
+     * @return void
+     *
+     * @throws NoSuchEntityException
+     * @throws StateException
+     * @throws InputException
+     */
+    public function processMediaGalleryEntry($filePath, $sku)
+    {
+        $entry = $this->mediaGalleryEntryFactory->create();
+
+        $entry->setFile($filePath);
+        $entry->setMediaType('image');
+        $entry->setDisabled(false);
+        $entry->setTypes(['thumbnail', 'image', 'small_image']);
+
+        $imageContent = $this->imageContentFactory->create();
+        $imageContent
+            ->setType(mime_content_type($filePath))
+            ->setName('Extend Protection Plan')
+            ->setBase64EncodedData(base64_encode(file_get_contents($filePath)));
+
+        $entry->setContent($imageContent);
+
+        $this->mediaGalleryManagement->create($sku, $entry);
+    }
+
+    /**
+     * Get media image path
+     *
+     * @return string
+     *
+     * @throws FileSystemException
+     */
+    public function getMediaImagePath()
+    {
+        $path = $this->directoryList->getPath('media');
+        $path .= '/Extend_icon.png';
+
+        return $path;
+    }
+
 
     public function getWarrantyAttributeSet($warranty)
     {
@@ -138,7 +225,7 @@ class InstallData implements InstallDataInterface
         $attributeSetId = $this->getWarrantyAttributeSet($warranty);
         $websites = $this->storeManager->getWebsites();
 
-        $warranty->setSku('WARRANTY-1')
+        $warranty->setSku(self::WARRANTY_PRODUCT_SKU)
             ->setName('Extend Protection Plan')
             ->setWebsiteIds(array_keys($websites))
             ->setAttributeSetId($attributeSetId)
@@ -156,10 +243,11 @@ class InstallData implements InstallDataInterface
                 'use_config_notify_stock_qty' => 0
             ]);
 
-        $imagePath = 'Extend_icon.png';
-        $warranty->addImageToMediaGallery($imagePath, array('image', 'small_image', 'thumbnail'), false, false);
+        $imagePath = $this->getMediaImagePath();
 
         $this->productRepository->save($warranty);
+
+        $this->processMediaGalleryEntry($imagePath, self::WARRANTY_PRODUCT_SKU);
     }
 
     public function addSyncAttribute($eavSetup)
