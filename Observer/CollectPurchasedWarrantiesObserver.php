@@ -20,6 +20,7 @@ use Magento\Framework\Event\ObserverInterface;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\ContractCreateFactory;
 use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Exception;
@@ -35,7 +36,7 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
     const INVOICE_ITEM_ID = 'invoice_item_id';
 
     /**
-     * DataHelper
+     * Data Helper
      *
      * @var DataHelper
      */
@@ -56,7 +57,7 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
     private $contractCreateResource;
 
     /**
-     * LoggerInterface
+     * Logger Interface
      *
      * @var LoggerInterface
      */
@@ -70,7 +71,7 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
      * @param ContractCreateResource $contractCreateResource
      * @param LoggerInterface $logger
      */
-    public function __construct (
+    public function __construct(
         DataHelper $dataHelper,
         ContractCreateFactory $contractCreateFactory,
         ContractCreateResource $contractCreateResource,
@@ -88,12 +89,16 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
      * @param Observer $observer
      * @throws Exception
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
-        if ($this->dataHelper->isExtendEnabled() && !$this->dataHelper->isWarrantyContractEnabled()) {
-            $event = $observer->getEvent();
-            $invoice = $event->getData(InvoiceItemInterface::INVOICE);
+        $event = $observer->getEvent();
+        $invoice = $event->getData(InvoiceItemInterface::INVOICE);
+        $storeId = $invoice->getStoreId();
 
+        if (
+            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            && $this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)
+        ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();
                 $productType = $orderItem->getProductType();

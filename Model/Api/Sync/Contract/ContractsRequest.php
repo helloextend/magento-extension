@@ -8,19 +8,20 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
+declare(strict_types=1);
+
 namespace Extend\Warranty\Model\Api\Sync\Contract;
 
-use Extend\Warranty\Api\ConnectorInterface;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Serialize\Serializer\Json;
-use Psr\Log\LoggerInterface;
+use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Zend_Http_Client;
 use Zend_Http_Response;
+use Zend_Http_Client_Exception;
+use InvalidArgumentException;
 
 /**
  * Class ContractsRequest
  */
-class ContractsRequest
+class ContractsRequest extends AbstractRequest
 {
     /**
      * Create a warranty contract
@@ -38,44 +39,6 @@ class ContractsRequest
     const STATUS_CODE_SUCCESS = 201;
 
     /**
-     * Connector Interface
-     *
-     * @var ConnectorInterface
-     */
-    private $connector;
-
-    /**
-     * Json Serializer
-     *
-     * @var Json
-     */
-    private $jsonSerializer;
-
-    /**
-     * Logger Interface
-     *
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * ContractsRequest constructor
-     *
-     * @param ConnectorInterface $connector
-     * @param Json $jsonSerializer
-     * @param LoggerInterface $logger
-     */
-    public function __construct(
-        ConnectorInterface $connector,
-        Json $jsonSerializer,
-        LoggerInterface $logger
-    ) {
-        $this->connector = $connector;
-        $this->jsonSerializer = $jsonSerializer;
-        $this->logger = $logger;
-    }
-
-    /**
      * Create a warranty contract
      *
      * @param array $contractData
@@ -86,8 +49,9 @@ class ContractsRequest
         $contractId = '';
         try {
             $response = $this->connector->call(
-                self::CREATE_CONTRACT_ENDPOINT,
+                $this->buildUrl(self::CREATE_CONTRACT_ENDPOINT),
                 Zend_Http_Client::POST,
+                [self::ACCESS_TOKEN_HEADER => $this->apiKey],
                 $contractData
             );
             $responseBody = $this->processResponse($response);
@@ -98,7 +62,7 @@ class ContractsRequest
             } else {
                 $this->logger->error('Contract creation is failed.');
             }
-        } catch (LocalizedException $exception) {
+        } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
             $this->logger->error($exception->getMessage());
         }
 
@@ -117,7 +81,11 @@ class ContractsRequest
         $isRefundRequested = false;
 
         try {
-            $response = $this->connector->call($endpoint, Zend_Http_Client::POST);
+            $response = $this->connector->call(
+                $this->buildUrl($endpoint),
+                Zend_Http_Client::POST,
+                [self::ACCESS_TOKEN_HEADER => $this->apiKey]
+            );
             $this->processResponse($response);
 
             if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
@@ -126,7 +94,7 @@ class ContractsRequest
             } else {
                 $this->logger->error('Refund request is failed. ContractID: ' . $contractId);
             }
-        } catch (LocalizedException $exception) {
+        } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
             $this->logger->error($exception->getMessage());
         }
 
@@ -142,19 +110,22 @@ class ContractsRequest
     public function validateRefund(string $contractId): array
     {
         $endpoint = sprintf(self::REFUND_CONTRACT_ENDPOINT, $contractId) . '?commit=false';
+        $responseBody = [];
 
         try {
-            $response = $this->connector->call($endpoint, Zend_Http_Client::POST);
+            $response = $this->connector->call(
+                $this->buildUrl($endpoint),
+                Zend_Http_Client::POST,
+                [self::ACCESS_TOKEN_HEADER => $this->apiKey]
+            );
             $responseBody = $this->processResponse($response);
 
             if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
                 $this->logger->info('Refund is validated successfully. ContractID: ' . $contractId);
             } else {
-                $responseBody = [];
                 $this->logger->error('Refund validation is failed. ContractID: ' . $contractId);
             }
-        } catch (LocalizedException $exception) {
-            $responseBody = [];
+        } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
             $this->logger->error($exception->getMessage());
         }
 

@@ -43,11 +43,13 @@ class Data extends AbstractHelper
     const WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH = 'warranty/authentication/sandbox_api_key';
     const WARRANTY_AUTHENTICATION_API_URL_XML_PATH = 'warranty/authentication/api_url';
     const WARRANTY_AUTHENTICATION_SANDBOX_API_URL_XML_PATH = 'warranty/authentication/sandbox_api_url';
+    const WARRANTY_AUTHENTICATION_STORE_NAME = 'warranty/authentication/store_name';
 
     /**
      * Contracts settings
      */
-    const WARRANTY_CONTRACTS_ENABLED_XML_PATH = 'warranty/contracts/enabled';
+    const WARRANTY_CONTRACTS_ENABLED_XML_PATH = 'warranty/contracts/create';
+    const WARRANTY_CONTRACTS_MODE_XML_PATH = 'warranty/contracts/mode';
     const WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH = 'warranty/contracts/batch_size';
     const WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH = 'warranty/contracts/storage_period';
     const WARRANTY_CONTRACTS_REFUND_ENABLED_XML_PATH = 'warranty/enableExtend/enableRefunds';
@@ -58,6 +60,7 @@ class Data extends AbstractHelper
      */
     const WARRANTY_OFFERS_SHOPPING_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableCartOffers';
     const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
+    const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
     const WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH = 'warranty/offers/interstitial_cart_enabled';
 
     /**
@@ -131,17 +134,20 @@ class Data extends AbstractHelper
     }
 
     /**
-     * Check if Extend module enabled
+     * Check if enabled
      *
-     * @param string|int|null $storeId
+     * @param string $scopeType
+     * @param string|int|null $scopeId
      * @return bool
      */
-    public function isExtendEnabled($storeId = null): bool
-    {
+    public function isExtendEnabled(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): bool {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_ENABLE_EXTEND_ENABLE_XML_PATH,
-            ScopeInterface::SCOPE_STORES,
-            $storeId
+            $scopeType,
+            $scopeId
         );
     }
 
@@ -249,10 +255,49 @@ class Data extends AbstractHelper
      */
     public function isWarrantyContractEnabled($storeId = null): bool
     {
-        return $this->scopeConfig->isSetFlag(
+        if ($this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_ENABLED_XML_PATH,
             ScopeInterface::SCOPE_STORES,
-            $storeId
+            $storeId) > 0
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get contract crete API
+     *
+     * @param string $scopeType
+     * @param $storeId
+     * @return int
+     */
+    public function getContractCreateApi(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $storeId = null): int
+    {
+        return (int)$this->scopeConfig->getValue(
+                self::WARRANTY_CONTRACTS_ENABLED_XML_PATH,
+                $scopeType,
+                $storeId);
+    }
+
+    /**
+     * Get contract creating mode
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return bool
+     */
+    public function isContractCreateModeScheduled(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ): bool {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_CONTRACTS_MODE_XML_PATH,
+            $scopeType,
+            $scopeId
         );
     }
 
@@ -281,7 +326,7 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_CONTRACTS_AUTO_REFUND_ENABLED_XML_PATH,
-            ScopeInterface::SCOPE_WEBSITES,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
@@ -296,7 +341,7 @@ class Data extends AbstractHelper
     {
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH,
-            ScopeInterface::SCOPE_WEBSITES,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
@@ -311,7 +356,7 @@ class Data extends AbstractHelper
     {
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH,
-            ScopeInterface::SCOPE_WEBSITES,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
@@ -341,6 +386,21 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_OFFERS_PDP_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if products list offers enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isProductsListOffersEnabled($storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH,
             ScopeInterface::SCOPE_STORES,
             $storeId
         );
@@ -390,7 +450,7 @@ class Data extends AbstractHelper
         string $value,
         string $scopeType = ScopeInterface::SCOPE_STORES,
         $scopeId = null
-    ): void {
+    ) {
         $this->configResource->saveConfig(
             self::WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH,
             $value,
@@ -438,6 +498,24 @@ class Data extends AbstractHelper
             self::WARRANTY_ENABLE_EXTEND_ENABLE_LEADS_XML_PATH,
             ScopeInterface::SCOPE_STORES,
             $storeId
+        );
+    }
+
+    /**
+     * Get store name
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getStoreName(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $scopeId = null
+    ): string {
+        return (string)$this->scopeConfig->getValue(
+            self::WARRANTY_AUTHENTICATION_STORE_NAME,
+            $scopeType,
+            $scopeId
         );
     }
 }

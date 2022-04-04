@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Extend\Warranty\Model;
 
+use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Math\FloatComparator;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
@@ -19,15 +20,21 @@ use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest as ApiContractModel
 use Extend\Warranty\Model\Api\Request\ContractBuilder as ContractPayloadBuilder;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\InvalidArgumentException;
+use Exception;
 
 /**
  * Class WarrantyContract
  */
 class WarrantyContract
 {
+
+    const CONTRACT = 'contract';
+    const LEAD_CONTRACT = 'lead_contract';
     /**
      * API Contract Model
      *
@@ -71,7 +78,14 @@ class WarrantyContract
     private $floatComparator;
 
     /**
-     * WarrantyContract constructor
+     * DataHelper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
+
+    /**
+     * Contracts constructor
      *
      * @param ApiContractModel $apiContractModel
      * @param ContractPayloadBuilder $contractPayloadBuilder
@@ -79,6 +93,7 @@ class WarrantyContract
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param LoggerInterface $logger
      * @param FloatComparator $floatComparator
+     * @param DataHelper $dataHelper
      */
     public function __construct(
         ApiContractModel $apiContractModel,
@@ -86,7 +101,8 @@ class WarrantyContract
         JsonSerializer $jsonSerializer,
         OrderItemRepositoryInterface $orderItemRepository,
         LoggerInterface $logger,
-        FloatComparator $floatComparator
+        FloatComparator $floatComparator,
+        DataHelper $dataHelper
     ) {
         $this->apiContractModel = $apiContractModel;
         $this->contractPayloadBuilder = $contractPayloadBuilder;
@@ -94,6 +110,7 @@ class WarrantyContract
         $this->orderItemRepository = $orderItemRepository;
         $this->logger = $logger;
         $this->floatComparator = $floatComparator;
+        $this->dataHelper = $dataHelper;
     }
 
     /**
@@ -104,8 +121,9 @@ class WarrantyContract
      * @param int $qtyInvoiced
      * @return string
      * @throws NoSuchEntityException
+     * @throws InvalidArgumentException
      */
-    public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced): string
+    public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced, $type = self::CONTRACT): string
     {
         $result = ContractCreate::STATUS_FAILED;
 
@@ -114,9 +132,16 @@ class WarrantyContract
             return $result;
         }
 
-        $contractPayload = $this->contractPayloadBuilder->preparePayload($order, $orderItem);
+        $contractPayload = $this->contractPayloadBuilder->preparePayload($order, $orderItem, $type);
 
         if (!empty($contractPayload)) {
+            $storeId = $orderItem->getStoreId();
+            $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
+            $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+            $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
+
+            $this->apiContractModel->setConfig($apiUrl, $apiStoreId, $apiKey);
+
             $newContractIds = [];
             $qty = 1;
             do {
@@ -143,7 +168,7 @@ class WarrantyContract
                 try {
                     $this->orderItemRepository->save($orderItem);
                     $result = count($newContractIds) === $qtyInvoiced ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;
-                } catch (LocalizedException $exception) {
+                } catch (Exception $exception) {
                     $this->logger->error($exception->getMessage());
                 }
             }
@@ -158,7 +183,7 @@ class WarrantyContract
      * @param OrderItemInterface $orderItem
      * @return array
      */
-    protected function getContractIds(OrderItemInterface $orderItem): array
+    public function getContractIds(OrderItemInterface $orderItem): array
     {
         try {
             $contractIdsJson = $orderItem->getContractId();
@@ -187,5 +212,25 @@ class WarrantyContract
         $warrantyQty = count($contractIds) + count($refundResponsesLogEntries);
 
         return $this->floatComparator->greaterThan($qtyInvoiced, (float)$warrantyQty);
+    }
+
+    /**
+     * Update order item options
+     *
+     * @param OrderItemInterface $orderItem
+     * @param array $productOptions
+     * @return OrderItemInterface
+     */
+    public function updateOrderItemOptions(OrderItemInterface $orderItem, array $productOptions): OrderItemInterface
+    {
+        $options = $orderItem->getProductOptions();
+        $refundResponsesLog = $options['refund_responses_log'] ?? [];
+        $refundResponsesLog = array_merge($refundResponsesLog, $productOptions['refund_responses_log']);
+        $options['refund_responses_log'] = $refundResponsesLog;
+        $options['refund'] = $productOptions['refund'];
+
+        $orderItem->setProductOptions($options);
+
+        return $orderItem;
     }
 }

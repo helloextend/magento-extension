@@ -17,6 +17,7 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Locale\Currency;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -69,7 +70,7 @@ class ContractBuilder
      * @param CountryInformationAcquirerInterface $countryInformationAcquirer
      * @param DataHelper $helper
      */
-    public function __construct (
+    public function __construct(
         StoreManagerInterface $storeManager,
         ProductRepositoryInterface $productRepository,
         CountryInformationAcquirerInterface $countryInformationAcquirer,
@@ -89,7 +90,7 @@ class ContractBuilder
      * @return array
      * @throws NoSuchEntityException
      */
-    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem): array
+    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem, $type): array
     {
         $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
         $productSku = is_array($productSku) ? array_shift($productSku) : $productSku;
@@ -103,12 +104,18 @@ class ContractBuilder
 
         $product = $this->getProduct($productSku);
 
+        if ($type == \Extend\Warranty\Model\WarrantyContract::LEAD_CONTRACT) {
+            $leadToken = '';
+            if ($orderItem->getLeadToken()) {
+                $leadToken = implode(", ", json_decode($orderItem->getLeadToken(), true));
+            }
+        }
+
         if (!$product) {
             return [];
         }
 
-        $store = $this->storeManager->getStore();
-        $currencyCode = $store->getBaseCurrencyCode();
+        $currencyCode = $order->getOrderCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
 
         $transactionTotal = [
             'currencyCode'  => $currencyCode,
@@ -131,7 +138,6 @@ class ContractBuilder
                 'countryCode'   => $billingCountryInfo->getThreeLetterAbbreviation(),
                 'postalCode'    => $billingAddress->getPostcode(),
             ],
-            'shippingAddress'   => [],
         ];
 
         $shippingAddress = $order->getShippingAddress();
@@ -169,16 +175,31 @@ class ContractBuilder
             'planId'        => $warrantyId,
         ];
 
-        $payload = [
-            'transactionId'     => $order->getIncrementId(),
-            'transactionTotal'  => $transactionTotal,
-            'customer'          => $customer,
-            'product'           => $product,
-            'currency'          => $currencyCode,
-            'source'            => $source,
-            'transactionDate'   => strtotime($order->getCreatedAt()),
-            'plan'              => $plan,
-        ];
+        if ($type == \Extend\Warranty\Model\WarrantyContract::CONTRACT) {
+            $payload = [
+                'transactionId' => $order->getIncrementId(),
+                'transactionTotal' => $transactionTotal,
+                'customer' => $customer,
+                'product' => $product,
+                'currency' => $currencyCode,
+                'source' => $source,
+                'transactionDate' => strtotime($order->getCreatedAt()),
+                'plan' => $plan,
+            ];
+        }
+
+        if ($type == \Extend\Warranty\Model\WarrantyContract::LEAD_CONTRACT) {
+            $payload = [
+                'transactionId' => $order->getIncrementId(),
+                'transactionTotal' => $transactionTotal,
+                'customer' => $customer,
+                'leadToken' => $leadToken,
+                'currency' => $currencyCode,
+                'source' => $source,
+                'transactionDate' => strtotime($order->getCreatedAt()),
+                'plan' => $plan,
+            ];
+        }
 
         return $payload;
     }
@@ -207,7 +228,7 @@ class ContractBuilder
      * @param string $sku
      * @return ProductInterface|null
      */
-    protected function getProduct(string $sku): ?ProductInterface
+    protected function getProduct(string $sku)
     {
         try {
             $product = $this->productRepository->get($sku);

@@ -1,30 +1,32 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Block\Adminhtml\Order\Create\Items;
 
-class Warranties extends \Magento\Backend\Block\Template
+use Magento\Backend\Block\Template;
+use Magento\Quote\Model\Quote\Item;
+
+/**
+ * Class Warranties
+ */
+class Warranties extends Template
 {
-
     /**
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param array $data
-     */
-    public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
-        array $data = []
-    )
-    {
-        parent::__construct($context, $data);
-    }
-
-    /**
-     * Get order item
+     * Get order item object from parent block
      *
-     * @return \Magento\Quote\Model\Quote\Item
-     * @codeCoverageIgnore
+     * @return Item
      */
     public function getItem()
     {
-        return $this->getParentBlock()->getData('item');
+        $parentBlock = $this->getParentBlock();
+
+        return $parentBlock->getItem();
     }
 }
