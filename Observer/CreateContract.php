@@ -79,7 +79,7 @@ class CreateContract implements ObserverInterface
      *
      * @param Observer $observer
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $invoice = $event->getInvoice();
@@ -99,7 +99,11 @@ class CreateContract implements ObserverInterface
                     $qtyInvoiced = intval($invoiceItem->getQty());
                     if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                         try {
-                            $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+                            if ($orderItem->getLeadToken() != null && implode(", ", json_decode($orderItem->getLeadToken(), true)) != null) {
+                                $this->warrantyContract->create($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\WarrantyContract::LEAD_CONTRACT);
+                            } else {
+                                $this->warrantyContract->create($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\WarrantyContract::CONTRACT);
+                            }
                         } catch (LocalizedException $exception) {
                             $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
                         }

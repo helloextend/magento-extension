@@ -1,0 +1,26 @@
+<?php
+/**
+ * Extend Warranty - Checkout Success page tracking
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+/**
+ * @var \Extend\Warranty\Block\Tracking $block
+ */
+?>
+
+<?php if ($block->getTrackingEnabled()): ?>
+    <?php $cartTotal = $block->getCartTotal(); ?>
+    <script>
+        require(['Extend_Warranty/js/tracking/actions', 'extendSdk'], function(actions) {
+            //<![CDATA[
+            actions.trackCheckoutSuccess({
+                cartTotal: <?= $block->escapeJs($cartTotal) ?>
+            });
+            //]]>
+        });
+    </script>
+<?php endif; ?>

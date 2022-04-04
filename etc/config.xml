@@ -33,6 +33,7 @@
             </contracts>
             <offers>
                 <pdp_enabled>1</pdp_enabled>
+                <products_list_enabled>1</products_list_enabled>
                 <interstitial_cart_enabled>1</interstitial_cart_enabled>
             </offers>
             <products>

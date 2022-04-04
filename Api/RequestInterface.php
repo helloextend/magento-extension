@@ -27,7 +27,7 @@ interface RequestInterface
      * @param string $apiKey
      * @throws InvalidArgumentException
      */
-    public function setConfig(string $apiUrl, string $storeId, string $apiKey): void;
+    public function setConfig(string $apiUrl, string $storeId, string $apiKey);
 
     /**
      * Build url

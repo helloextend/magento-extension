@@ -89,7 +89,7 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
      * @param Observer $observer
      * @throws Exception
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $invoice = $event->getData(InvoiceItemInterface::INVOICE);

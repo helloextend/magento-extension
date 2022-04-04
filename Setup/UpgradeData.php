@@ -88,7 +88,7 @@ class UpgradeData implements UpgradeDataInterface
      * @param ModuleContextInterface $context
      * @throws Exception
      */
-    public function upgrade(ModuleDataSetupInterface $setup, ModuleContextInterface $context): void
+    public function upgrade(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
         if (version_compare($context->getVersion(), '1.2.4', '<')) {
             $this->appState->emulateAreaCode(
@@ -101,7 +101,7 @@ class UpgradeData implements UpgradeDataInterface
     /**
      * Apply tax class attribute to warranty product type
      */
-    public function applyTaxClassAttrToWarrantyProduct(): void
+    public function applyTaxClassAttrToWarrantyProduct()
     {
         try {
             $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
