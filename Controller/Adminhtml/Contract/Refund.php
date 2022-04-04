@@ -16,7 +16,7 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Math\FloatComparator;
+use Extend\Warranty\Helper\FloatComparator;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;

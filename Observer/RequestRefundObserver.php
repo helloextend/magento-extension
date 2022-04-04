@@ -19,7 +19,7 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Magento\Framework\Math\FloatComparator;
+use Extend\Warranty\Helper\FloatComparator;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
