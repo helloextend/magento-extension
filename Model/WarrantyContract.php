@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Magento\Framework\Math\FloatComparator;
+use Extend\Warranty\Helper\FloatComparator;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest as ApiContractModel;
