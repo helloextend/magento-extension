@@ -32,7 +32,7 @@ use Magento\Framework\Exception\LocalizedException;
 /**
  * Class Add
  */
-class AddLead extends Cart implements HttpPostActionInterface
+class AddLead extends Cart
 {
     /**
      * Product Repository Interface

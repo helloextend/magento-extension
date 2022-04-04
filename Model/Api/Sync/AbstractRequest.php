@@ -14,7 +14,7 @@ namespace Extend\Warranty\Model\Api\Sync;
 
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Api\RequestInterface;
-use Magento\Framework\Exception\InvalidArgumentException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Response;
@@ -94,12 +94,12 @@ abstract class AbstractRequest implements RequestInterface
      * @param string $apiUrl
      * @param string $storeId
      * @param string $apiKey
-     * @throws InvalidArgumentException
+     * @throws LocalizedException
      */
     public function setConfig(string $apiUrl, string $storeId, string $apiKey)
     {
         if (empty($apiUrl) || empty($storeId) || empty($apiKey)) {
-            throw new InvalidArgumentException(__('Credentials not set.'));
+            throw new LocalizedException(__('Credentials not set.'));
         }
 
         $this->apiUrl = $apiUrl;

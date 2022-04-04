@@ -19,6 +19,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
 use Zend_Http_Response;
+use InvalidArgumentException;
 
 /**
  * Class RefundRequest

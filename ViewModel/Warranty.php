@@ -22,6 +22,7 @@ use Extend\Warranty\Model\Product\Type;
 use Magento\Quote\Api\Data\CartInterface;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Offers as OfferModel;
+use InvalidArgumentException;
 
 /**
  * Class Warranty
@@ -165,7 +166,7 @@ class Warranty implements ArgumentInterface
      *
      * @param ProductInterface $product
      * @return string
-     * @thrown InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function isProductHasOffers(ProductInterface $product): string
     {
