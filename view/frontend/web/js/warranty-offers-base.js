@@ -9,7 +9,7 @@
 define([
     'jquery',
     'extendSdk',
-    'jquery-ui-modules/widget'
+    'jquery/ui'
 ], function ($, Extend) {
     'use strict';
 
