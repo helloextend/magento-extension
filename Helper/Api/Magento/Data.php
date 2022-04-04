@@ -32,6 +32,7 @@ class Data extends AbstractHelper
     const ASSOCIATED_PRODUCT = 'associated_product';
     const REFUND             = 'refund';
     const WARRANTY_TERM      = 'warranty_term';
+    const PLAN_TYPE          = 'plan_type';
 
     /**
      * Order Extension Attributes Factory
@@ -55,6 +56,7 @@ class Data extends AbstractHelper
         self::ASSOCIATED_PRODUCT,
         self::REFUND,
         self::WARRANTY_TERM,
+        self::PLAN_TYPE,
     ];
 
     /**
@@ -107,6 +109,8 @@ class Data extends AbstractHelper
         $extensionAttributes->setRefund((bool)$productOptions[self::REFUND]);
         /** @noinspection PhpUndefinedMethodInspection */
         $extensionAttributes->setTerm($productOptions[self::WARRANTY_TERM] ?? '');
+        /** @noinspection PhpUndefinedMethodInspection */
+        $extensionAttributes->setPlanType($productOptions[self::PLAN_TYPE] ?? '');
 
         $orderItem->setExtensionAttributes($extensionAttributes);
     }
