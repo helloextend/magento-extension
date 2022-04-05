@@ -230,7 +230,7 @@ class InstallData implements InstallDataInterface
             ->setWebsiteIds(array_keys($websites))
             ->setAttributeSetId($attributeSetId)
             ->setStatus(Status::STATUS_ENABLED)
-            ->setVisibility(Visibility::VISIBILITY_NOT_VISIBLE)
+            ->setVisibility(Visibility::VISIBILITY_BOTH)
             ->setTypeId(Type::TYPE_CODE)
             ->setPrice(0.0)
             ->setTaxClassId(0) //None
