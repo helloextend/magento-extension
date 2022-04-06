@@ -30,6 +30,7 @@ class Type extends AbstractType
     const WARRANTY_ID = 'warranty_id';
     const ASSOCIATED_PRODUCT = 'associated_product';
     const TERM = 'warranty_term';
+    const PLAN_TYPE = 'plan_type';
     const BUY_REQUEST = 'info_buyRequest';
 
     /**
@@ -98,6 +99,7 @@ class Type extends AbstractType
         $product->addCustomOption(self::WARRANTY_ID, $buyRequest->getData('planId'));
         $product->addCustomOption(self::ASSOCIATED_PRODUCT, $buyRequest->getProduct());
         $product->addCustomOption(self::TERM, $buyRequest->getTerm());
+        $product->addCustomOption(self::PLAN_TYPE, $buyRequest->getData('coverageType'));
         $product->addCustomOption(self::BUY_REQUEST, $this->serializer->serialize($buyRequest->getData()));
 
         if ($this->_isStrictProcessMode($processMode)) {
@@ -122,6 +124,10 @@ class Type extends AbstractType
 
         if ($term = $product->getCustomOption(self::TERM)) {
             $options[self::TERM] = $term->getValue();
+        }
+
+        if ($planType = $product->getCustomOption(self::PLAN_TYPE)) {
+            $options[self::PLAN_TYPE] = $planType->getValue();
         }
         return $options;
     }
