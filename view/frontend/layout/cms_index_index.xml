@@ -12,6 +12,16 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <referenceContainer name="after.body.start">
+            <block class="Magento\Framework\View\Element\Template" name="extend.warranty.js" template="Extend_Warranty::installation.phtml" ifconfig="warranty/offers/leads_modal_enabled">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Installation</argument>
+                </arguments>
+                <action method="setTrackingEnabled" ifconfig="warranty/tracking/enabled">
+                    <argument name="trackingEnabled" xsi:type="boolean">true</argument>
+                </action>
+            </block>
+        </referenceContainer>
         <referenceContainer name="content">
             <block class="Magento\Framework\View\Element\Template"
                    name="post_purchase_lead_token"
