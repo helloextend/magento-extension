@@ -31,7 +31,7 @@
 
     <virtualType
             name="Extend\Warranty\Model\ResourceModel\Indexer\Price"
-            type="Magento\Catalog\Model\ResourceModel\Product\Indexer\Price\SimpleProductPrice"/>
+            type="Magento\Catalog\Model\ResourceModel\Product\Indexer\Price\DefaultPrice"/>
 
     <virtualType name="ProductSyncLogHandler" type="Magento\Framework\Logger\Handler\Base">
         <arguments>
