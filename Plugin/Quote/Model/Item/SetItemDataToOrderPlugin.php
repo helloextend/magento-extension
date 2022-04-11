@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Plugin\Quote\Model\Item;
 
 use Extend\Warranty\Helper\Api\Magento\Data;

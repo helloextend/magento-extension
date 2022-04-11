@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Helper\Api\Magento;
 
 use Magento\Framework\App\Helper\AbstractHelper;
