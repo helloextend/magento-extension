@@ -14,6 +14,7 @@ namespace Extend\Warranty\ViewModel;
 
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\ConfigurableProduct\Api\LinkManagementInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
@@ -22,6 +23,7 @@ use Extend\Warranty\Model\Product\Type;
 use Magento\Quote\Api\Data\CartInterface;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Offers as OfferModel;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Request\Http;
 
 /**
@@ -65,6 +67,13 @@ class Warranty implements ArgumentInterface
     private $offerModel;
 
     /**
+     * Checkout Session
+     *
+     * @var CheckoutSession
+     */
+    private $checkoutSession;
+
+    /**
      * Request
      *
      * @var Http
@@ -79,6 +88,7 @@ class Warranty implements ArgumentInterface
      * @param LinkManagementInterface $linkManagement
      * @param TrackingHelper $trackingHelper
      * @param OfferModel $offerModel
+     * @param CheckoutSession $checkoutSession
      * @param Http $request
      */
     public function __construct(
@@ -87,6 +97,7 @@ class Warranty implements ArgumentInterface
         LinkManagementInterface $linkManagement,
         TrackingHelper $trackingHelper,
         OfferModel $offerModel,
+        CheckoutSession $checkoutSession,
         Http $request
     ) {
         $this->dataHelper = $dataHelper;
@@ -94,6 +105,7 @@ class Warranty implements ArgumentInterface
         $this->linkManagement = $linkManagement;
         $this->trackingHelper = $trackingHelper;
         $this->offerModel = $offerModel;
+        $this->checkoutSession = $checkoutSession;
         $this->request = $request;
     }
 
@@ -214,6 +226,27 @@ class Warranty implements ArgumentInterface
     public function isLeadEnabled(): bool
     {
         return $this->dataHelper->isLeadEnabled();
+    }
+
+    /**
+     * Check does quote have warranty item for the item
+     *
+     * @param string $sku
+     * @return bool
+     */
+    public function isWarrantyInQuoteForSku(string $sku): bool
+    {
+        try {
+            $quote = $this->checkoutSession->getQuote();
+        } catch (LocalizedException $exception) {
+            $quote = null;
+        }
+
+        if ($quote) {
+            $hasWarranty = $this->hasWarranty($quote, $sku);
+        }
+
+        return $hasWarranty ?? false;
     }
 
     /**

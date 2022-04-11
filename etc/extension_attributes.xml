@@ -23,5 +23,6 @@
     </extension_attributes>
     <extension_attributes for="Magento\Quote\Api\Data\CartItemInterface">
         <attribute code="lead_token" type="string" />
+        <attribute code="plan_type" type="string" />
     </extension_attributes>
 </config>
