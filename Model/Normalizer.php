@@ -24,6 +24,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Quote\Api\CartItemRepositoryInterface;
 use Magento\Quote\Api\Data\CartInterface;
+use Magento\Quote\Api\Data\CartItemExtension;
 
 /**
  * Class Normalizer
@@ -103,8 +104,14 @@ class Normalizer
         foreach ($productItems as $productItem) {
             $sku = $productItem->getSku();
             $warranties = [];
+
             foreach ($warrantyItems as $warrantyItem) {
+                if (!empty($warrantyItem->getLeadToken())) {
+                    continue;
+                }
+
                 $associatedProductOption = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
+
                 if ($associatedProductOption && $associatedProductOption->getValue()) {
                     $associatedSku = $associatedProductOption->getValue();
                     if (

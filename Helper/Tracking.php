@@ -138,21 +138,16 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
             if ($item->getProductType() !== \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
                 continue;
             } else {
-                $buyRequest = $item->getBuyRequest();
+                $leadToken = $item->getLeadToken();
 
-                if (isset($buyRequest) && isset($buyRequest['leadToken'])) {
+                if (empty($leadToken)) {
                     $warrantySku = (string)$item->getOptionByCode('associated_product')->getValue();
 
                     if ($warrantySku == $sku) {
                         $possibleItem = $item;
                     }
-                    continue;
+                    break;
                 }
-            }
-            $warrantySku = (string)$item->getOptionByCode('associated_product')->getValue();
-
-            if ($warrantySku == $sku) {
-                $possibleItem = $item;
             }
         }
 

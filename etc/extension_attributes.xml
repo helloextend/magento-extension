@@ -21,5 +21,7 @@
         <attribute code="refund" type="boolean" />
         <attribute code="lead_token" type="string" />
     </extension_attributes>
-
+    <extension_attributes for="Magento\Quote\Api\Data\CartItemInterface">
+        <attribute code="lead_token" type="string" />
+    </extension_attributes>
 </config>
