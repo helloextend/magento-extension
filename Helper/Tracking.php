@@ -5,7 +5,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 namespace Extend\Warranty\Helper;
 
@@ -114,8 +114,7 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
             if ($item->getSku() == $productSku
                 && ($item->getProductType() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE
                     || is_null($item->getOptionByCode('parent_product_id')))
-            )
-            {
+            ) {
                 return $item;
             }
         }
@@ -129,20 +128,29 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getWarrantyItemForQuoteItem(\Magento\Quote\Model\Quote\Item $quoteItem)
     {
+        $possibleItem = false;
         $sku = $quoteItem->getSku();
         /** @var \Magento\Quote\Model\Quote $quote */
         $quote = $quoteItem->getQuote();
         foreach ($quote->getAllItems() as $item) {
             /** @var \Magento\Quote\Model\Quote\Item $item */
+
             if ($item->getProductType() !== \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
                 continue;
-            }
-            $warrantySku = (string)$item->getOptionByCode('associated_product')->getValue();
-            if ($warrantySku == $sku) {
-                return $item;
+            } else {
+                $leadToken = $item->getLeadToken();
+
+                if (empty($leadToken)) {
+                    $warrantySku = (string)$item->getOptionByCode('associated_product')->getValue();
+
+                    if ($warrantySku == $sku) {
+                        $possibleItem = $item;
+                    }
+                    break;
+                }
             }
         }
 
-        return false;
+        return $possibleItem;
     }
 }

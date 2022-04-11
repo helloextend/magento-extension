@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Plugin\Catalog\Controller\Adminhtml\Product\NewAction;
 
 use Extend\Warranty\Helper\Data;

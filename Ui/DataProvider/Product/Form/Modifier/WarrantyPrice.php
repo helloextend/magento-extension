@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Ui\DataProvider\Product\Form\Modifier;
 
 use Extend\Warranty\Model\Product\Type;
