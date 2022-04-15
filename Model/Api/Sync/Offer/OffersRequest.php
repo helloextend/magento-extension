@@ -34,7 +34,7 @@ class OffersRequest extends AbstractRequest
      */
     public function getOfferInformation(string $productSku): array
     {
-        $url = $this->apiUrl . sprintf(self::GET_OFFER_INFO_ENDPOINT, $this->storeId, $productSku);
+        $url = $this->apiUrl . sprintf(self::GET_OFFER_INFO_ENDPOINT, $this->storeId, $this->encode($productSku));
 
         try {
             $response = $this->connector->call(
