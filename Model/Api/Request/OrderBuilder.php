@@ -13,6 +13,7 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Extend\Warranty\Model\Product\Type;
+use Exception;
 
 class OrderBuilder
 {
@@ -124,10 +125,16 @@ class OrderBuilder
                 'product'     => $product
             ];
         } elseif ($type == \Extend\Warranty\Model\Orders::LEAD_CONTRACT) {
-            $productSku = $orderItem->getSku();
-            $product = $this->prepareProductPayload($productSku);
-
             $plan = $this->getPlan($orderItem);
+            $leadToken = $orderItem->getLeadToken() ?? '';
+
+            if (!empty($leadToken)) {
+                try {
+                    $leadToken = implode(", ", $this->helper->unserialize($leadToken));
+                } catch (Exception $exception) {
+                    $leadToken = '';
+                }
+            }
 
             $lineItem = [
                 'status'      => $this->getStatus(),
@@ -135,7 +142,7 @@ class OrderBuilder
                 'storeId'     => $this->apiHelper->getStoreId(),
                 'warrantable' => true,
                 'plan'        => $plan,
-                'leadToken'     => implode(", ", json_decode($orderItem->getLeadToken(), true))
+                'leadToken'     => $leadToken
             ];
         }
 
