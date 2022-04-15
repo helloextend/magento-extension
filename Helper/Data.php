@@ -11,6 +11,8 @@
 namespace Extend\Warranty\Helper;
 
 use Extend\Warranty\Model\Product\Type;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Exception;
 
 /**
  * Class Data
@@ -34,6 +36,22 @@ class Data
         Type::TYPE_CODE,
     ];
 
+    /**
+     * Json serializer
+     *
+     * @var JsonSerializer
+     */
+    private $jsonSerializer;
+
+    /**
+     * Data constructor.
+     *
+     * @param JsonSerializer $jsonSerializer
+     */
+    public function __construct(JsonSerializer $jsonSerializer)
+    {
+        $this->jsonSerializer = $jsonSerializer;
+    }
     /**
      * Format price
      *
@@ -95,5 +113,23 @@ class Data
         }
 
         return $isValid ?? count($cronExprArray) === 5;
+    }
+
+    /**
+     * Decode data
+     *
+     * @param string|null $data
+     *
+     * @return string|null
+     */
+    public function unserialize($data)
+    {
+        try {
+            $result = $this->jsonSerializer->unserialize($data);
+        } catch (Exception $exception) {
+            $result = null;
+        }
+
+        return $result;
     }
 }
