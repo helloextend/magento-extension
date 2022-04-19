@@ -23,6 +23,7 @@ use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Offers as OfferModel;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Request\Http;
+use Magento\Sales\Model\Order\Item;
 use Exception;
 
 /**
@@ -294,6 +295,27 @@ class Warranty implements ArgumentInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Get Lead Token
+     *
+     * @param Item $item
+     * @return string
+     */
+    public function getLeadToken(Item $item)
+    {
+        $leadToken = $item->getLeadToken() ?? '';
+
+        if (!empty($leadToken)) {
+            try {
+                $leadToken = implode(", ", $this->unserialize($leadToken));
+            } catch (Exception $exception) {
+                $leadToken = '';
+            }
+        }
+
+        return $leadToken;
     }
 }
 
