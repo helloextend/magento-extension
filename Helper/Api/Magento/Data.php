@@ -10,6 +10,7 @@
 
 namespace Extend\Warranty\Helper\Api\Magento;
 
+use Exception;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Serialize\Serializer\Json;
@@ -87,13 +88,24 @@ class Data extends AbstractHelper
     ): void {
         $contractId = (string)$orderItem->getData(self::CONTRACT_ID);
 
-        $buyRequest = $orderItem->getBuyRequest();
+        $leadToken = $orderItem->getData(self::LEAD_TOKEN) ?? '';
 
-        if ($buyRequest && isset($buyRequest['leadToken'])) {
-            $leadToken = $buyRequest['leadToken'];
-        } else {
-            $leadToken = '';
+        if (!empty($leadToken)) {
+            try {
+                $leadToken = implode(", ", $this->unserialize($leadToken));
+            } catch (Exception $exception) {
+                $leadToken = '';
+            }
         }
+
+        if (empty($leadToken)) {
+            $buyRequest = $orderItem->getBuyRequest();
+
+            if ($buyRequest && isset($buyRequest['leadToken'])) {
+                $leadToken = $buyRequest['leadToken'] ?? '';
+            }
+        }
+
         $productOptions = (array)$orderItem->getProductOptions();
         $productOptionsJson = (string)$this->getProductOptionsJson($orderItem, $productOptions);
 
@@ -148,5 +160,23 @@ class Data extends AbstractHelper
         }
 
         return $productOptionsJson;
+    }
+
+    /**
+     * Decode data
+     *
+     * @param string|null $data
+     *
+     * @return string|null
+     */
+    public function unserialize($data)
+    {
+        try {
+            $result = $this->_jsonSerializer->unserialize($data);
+        } catch (Exception $exception) {
+            $result = null;
+        }
+
+        return $result;
     }
 }
