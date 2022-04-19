@@ -14,6 +14,7 @@ use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Api\RequestInterface;
 use Magento\Framework\Exception\InvalidArgumentException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Framework\Url\EncoderInterface;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Response;
 
@@ -40,6 +41,13 @@ abstract class AbstractRequest implements RequestInterface
      * @var JsonSerializer
      */
     protected $jsonSerializer;
+
+    /**
+     * Url Encoder
+     *
+     * @var EncoderInterface
+     */
+    private $encoder;
 
     /**
      * Logger Interface
@@ -74,15 +82,18 @@ abstract class AbstractRequest implements RequestInterface
      *
      * @param ConnectorInterface $connector
      * @param JsonSerializer $jsonSerializer
+     * @param EncoderInterface $encoder
      * @param LoggerInterface $logger
      */
     public function __construct(
         ConnectorInterface $connector,
         JsonSerializer $jsonSerializer,
+        EncoderInterface $encoder,
         LoggerInterface $logger
     ) {
         $this->connector = $connector;
         $this->jsonSerializer = $jsonSerializer;
+        $this->encoder = $encoder;
         $this->logger = $logger;
     }
 
@@ -151,5 +162,17 @@ abstract class AbstractRequest implements RequestInterface
             mt_rand(0, 0x3fff) | 0x8000,
             mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
         );
+    }
+
+    /**
+     * Encode url
+     *
+     * @param string $url
+     *
+     * @return string
+     */
+    protected function encode(string $url)
+    {
+        return $this->encoder->encode($url);
     }
 }

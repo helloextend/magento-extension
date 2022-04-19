@@ -23,6 +23,7 @@ use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Offers as OfferModel;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Request\Http;
+use Exception;
 
 /**
  * Class Warranty
@@ -276,4 +277,23 @@ class Warranty implements ArgumentInterface
     {
         return $this->request->getParam(DataHelper::LEAD_TOKEN_URL_PARAM) ?? '';
     }
+
+    /**
+     * Decode data
+     *
+     * @param string|null $data
+     *
+     * @return string|null
+     */
+    public function unserialize($data)
+    {
+        try {
+            $result = $this->jsonSerializer->unserialize($data);
+        } catch (Exception $exception) {
+            $result = null;
+        }
+
+        return $result;
+    }
 }
+

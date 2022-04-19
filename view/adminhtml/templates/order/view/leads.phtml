@@ -14,16 +14,16 @@
 $viewModel = $block->getViewModel();
 $parentBlock = $block->getParentBlock();
 $item = $parentBlock->getItem();
-$leadToken = json_decode($item->getLeadToken()) === NULL ? [] : json_decode($item->getLeadToken(), true);
+$leadToken = $viewModel->unserialize($item->getLeadToken()) ?? [];
 ?>
 
 <?php if ($viewModel->isExtendEnabled() && $viewModel->isLeadEnabled() && !empty($leadToken)): ?>
     <td>
-        <div id="extend-offer-<?= $item->getSku(); ?>"></div>
+        <div id="extend-offer-<?= str_replace([' ','"'], '', $item->getSku()); ?>"></div>
     </td>
     <script type="text/javascript">
         require(['jquery','mage/url'], function($, urlBuilder){
-            Extend.buttons.renderSimpleOffer('#extend-offer-<?= $item->getSku() ?>', {
+            Extend.buttons.renderSimpleOffer('#extend-offer-<?= str_replace([' ','"'], '', $item->getSku()) ?>', {
                 referenceId: '<?= $item->getSku() ?>',
                 onAddToCart: function (opts) {
 

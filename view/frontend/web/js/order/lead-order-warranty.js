@@ -116,7 +116,14 @@ define([
          * @private
          */
         _addProductSku: function ($element) {
-            $element.attr('data-product-sku', this.options.productSku);
+            var sku = this.options.productSku;
+            $element.attr('data-product-sku', sku);
+            if (sku) {
+                var escapedSku = sku.replace(' ', '');
+                escapedSku = escapedSku.replace('"', '');
+                $element.attr('data-product-sku-escaped', escapedSku);
+            }
+
         },
 
         /**

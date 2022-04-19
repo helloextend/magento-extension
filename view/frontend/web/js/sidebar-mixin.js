@@ -51,7 +51,9 @@ define([
                 if (_.isArray(options)) {
                     $.each(options, function(ix, option) {
                         if (option.label === 'Product' && option.value) {
-                            jQuery('[data-product-sku=' + option.value + ']').removeClass('hidden');
+                            var escapedSku = option.value.replace(' ', '');
+                            escapedSku = escapedSku.replace('"', '');
+                            jQuery('[data-product-sku-escaped=' + escapedSku + ']').removeClass('hidden');
                         }
                     });
                 }
