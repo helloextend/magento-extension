@@ -18,7 +18,6 @@ use Extend\Warranty\Model\Api\Sync\Product\ProductsRequest as ApiProductModel;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Exception\InvalidArgumentException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
@@ -142,7 +141,7 @@ class ProductSyncProcess
 
             try {
                 $this->apiProductModel->setConfig($apiUrl, $apiStoreId, $apiKey);
-            } catch (InvalidArgumentException $exception) {
+            } catch (LocalizedException $exception) {
                 $this->syncLogger->error($exception->getMessage());
                 continue;
             }

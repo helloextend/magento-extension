@@ -24,7 +24,6 @@ use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Exception\InvalidArgumentException;
 use Exception;
 
 /**
@@ -121,7 +120,7 @@ class WarrantyContract
      * @param int $qtyInvoiced
      * @return string
      * @throws NoSuchEntityException
-     * @throws InvalidArgumentException
+     * @throws LocalizedException
      */
     public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced, $type = self::CONTRACT): string
     {

@@ -26,7 +26,6 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Exception\InvalidArgumentException;
 
 /**
  * Class RequestRefundObserver
@@ -177,7 +176,7 @@ class RequestRefundObserver implements ObserverInterface
                         }
 
                         $validContracts = $this->validateRefund($refundItems, $storeId);
-                    } catch (\InvalidArgumentException $exception) {
+                    } catch (LocalizedException $exception) {
                         $this->logger->error($exception->getMessage());
                     }
 

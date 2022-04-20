@@ -26,7 +26,6 @@ use Extend\Warranty\Model\Api\Sync\Orders\RefundRequest as OrdersApiRefund;
 use Extend\Warranty\Helper\Data as Helper;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Exception\InvalidArgumentException;
 use Magento\Store\Model\ScopeInterface;
 
 /**
@@ -175,7 +174,7 @@ class Refund extends Action
                 } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
                     $this->ordersApiRefund->setConfig($apiUrl,$apiStoreId,$apiKey);
                 }
-            } catch (InvalidArgumentException $exception) {
+            } catch (LocalizedException $exception) {
                 $this->logger->error($exception->getMessage());
                 $data = [
                     'success'   => false,
