@@ -60,7 +60,7 @@
                 <!-- ko template: {name: getTemplate(), data: item.product_price, as: 'price'} --><!-- /ko -->
                 <!-- /ko -->
                 <!-- /ko -->
-                <div class="qty">
+                <div class="qty" data-bind="attr: {id: 'cart-item-'+item_id+'-qty'}">
                     x <span data-bind="text: qty"></span>
                 </div>
 
