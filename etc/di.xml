@@ -61,6 +61,11 @@
             <argument name="logger" xsi:type="object">ExtendLogger</argument>
         </arguments>
     </type>
+    <type name="\Extend\Warranty\Model\Product\Type">
+        <arguments>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
+        </arguments>
+    </type>
 
     <type name="Extend\Warranty\Model\ProductSyncProcess">
         <arguments>

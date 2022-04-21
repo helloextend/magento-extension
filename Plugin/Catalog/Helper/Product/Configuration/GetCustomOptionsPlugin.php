@@ -33,6 +33,14 @@ class GetCustomOptionsPlugin
         if ($product && $product->getTypeId() === Type::TYPE_CODE) {
             $customOptions = [];
 
+            $associatedProductNameOption = $product->getCustomOption(Type::ASSOCIATED_PRODUCT_NAME);
+            if ($associatedProductNameOption && $associatedProductNameOption->getValue()) {
+                $customOptions[] = [
+                    'label' => __(Type::ASSOCIATED_PRODUCT_NAME_LABEL),
+                    'value' => $associatedProductNameOption->getValue(),
+                ];
+            }
+
             $associatedProductOption = $product->getCustomOption(Type::ASSOCIATED_PRODUCT);
             if ($associatedProductOption && $associatedProductOption->getValue()) {
                 $customOptions[] = [
