@@ -10,7 +10,7 @@
 
 namespace Extend\Warranty\Api;
 
-use Magento\Framework\Exception\InvalidArgumentException;
+use Magento\Framework\Exception\LocalizedException;
 
 /**
  * Interface RequestInterface
@@ -23,7 +23,7 @@ interface RequestInterface
      * @param string $apiUrl
      * @param string $storeId
      * @param string $apiKey
-     * @throws InvalidArgumentException
+     * @throws LocalizedException
      */
     public function setConfig(string $apiUrl, string $storeId, string $apiKey);
 
