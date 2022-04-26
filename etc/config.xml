@@ -31,6 +31,13 @@
                 <storage_period>30</storage_period>
                 <auto_refund_enabled>1</auto_refund_enabled>
             </contracts>
+            <send_orders>
+                <enable_cron>1</enable_cron>
+                <cron>
+                    <frequency>0 * * * *</frequency>
+                </cron>
+                <batch_size>25</batch_size>
+            </send_orders>
             <offers>
                 <pdp_enabled>1</pdp_enabled>
                 <products_list_enabled>1</products_list_enabled>

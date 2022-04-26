@@ -18,4 +18,9 @@
             <config_path>warranty/contracts/cron/frequency</config_path>
         </job>
     </group>
+    <group id="extend_send_orders">
+        <job name="extend_warranty_send_orders_cronjob" instance="Extend\Warranty\Cron\SendOrders" method="execute">
+            <config_path>warranty/send_orders/cron/frequency</config_path>
+        </job>
+    </group>
 </config>
