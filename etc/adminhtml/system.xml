@@ -6,7 +6,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
  -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
@@ -269,6 +269,50 @@
                         <label>Frequency</label>
                         <comment>Cron schedule expression</comment>
                         <backend_model>Extend\Warranty\Model\Config\Backend\ProductSyncCronSchedule</backend_model>
+                        <validate>validate-cron-expression</validate>
+                    </field>
+                </group>
+            </group>
+
+            <group id="send_orders" translate="label comment" sortOrder="75" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <label>Sync Orders</label>
+                <comment>
+                    Send historical orders to Orders API
+                </comment>
+                <depends>
+                    <field id="warranty/enableExtend/enable">1</field>
+                </depends>
+                <field id="batch_size" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Batch Size</label>
+                    <source_model>Extend\Warranty\Model\Config\Source\BatchSize</source_model>
+                    <comment>
+                        Save the configuration and flush the cache before running the sync process.
+                    </comment>
+                </field>
+                <field id="date_criteria" translate="label comment" type="date" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
+                    <label>After Date</label>
+                    <frontend_model>Extend\Warranty\Block\System\Config\DatePicker</frontend_model>
+                    <comment>
+                        Date from which historical orders are sent ('yyyy-MM-dd')
+                    </comment>
+                </field>
+                <field id="syncbutton" translate="label comment" type="button" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
+                    <frontend_model>Extend\Warranty\Block\System\Config\Orders\Button</frontend_model>
+                </field>
+                <field id="enable_cron" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Enable Synchronization by Cron</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Orders can be synchronized automatically using this functionality.</comment>
+                </field>
+                <group id="cron" translate="label comment" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Cron Settings</label>
+                    <depends>
+                        <field id="warranty/send_orders/enable_cron">1</field>
+                    </depends>
+                    <field id="frequency" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                        <label>Frequency</label>
+                        <comment>Cron schedule expression</comment>
+                        <backend_model>Extend\Warranty\Model\Config\Backend\OrdersSyncCronSchedule</backend_model>
                         <validate>validate-cron-expression</validate>
                     </field>
                 </group>

@@ -1,0 +1,33 @@
+<?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+
+/**
+ * @var \Extend\Warranty\Block\System\Config\Orders\Button $block
+ */
+
+$scopeData = $block->getScopeData();
+?>
+<div class="extend-sync-button-container">
+    <button id="syncOrderBtn" data-mage-init='{"ordersSync": {
+            "url": "<?= $block->escapeJs($block->getUrl('extend/orders/sync', [$scopeData['scopeType'] => $scopeData['scopeId']])) ?>",
+            "resetFlagUrl": "<?= $block->escapeJs($block->getUrl('extend/orders_sync/resetFlag')) ?>"
+        }}' <?php if (!$block->isButtonEnabled()): ?>class="disabled"<?php endif; ?>>
+        <span><?= __('Sync Orders') ?></span>
+    </button>
+    <div class="sync-info">
+        <p id="sync-order-msg">
+            <label for="sync-order-time"><?= __('Last Sync: ') ?></label>
+            <span id="sync-order-time"><?= !empty($block->getLastSync()) ? $block->getLastSync() : __('Never') ?></span>
+        </p>
+        <a id="cancel-order-sync">
+            <span><?= __('Cancel Sync') ?></span>
+        </a>
+    </div>
+</div>

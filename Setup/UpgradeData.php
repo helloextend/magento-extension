@@ -5,7 +5,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Setup;
@@ -18,6 +18,8 @@ use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\UpgradeDataInterface;
 use Magento\Eav\Setup\EavSetupFactory;
+use Magento\Framework\App\Config\Storage\WriterInterface;
+use Extend\Warranty\Model\GetAfterDate;
 use Psr\Log\LoggerInterface;
 use Exception;
 
@@ -53,6 +55,20 @@ class UpgradeData implements UpgradeDataInterface
     private $moduleDataSetup;
 
     /**
+     * Config Writer
+     *
+     * @var WriterInterface
+     */
+    private $configWriter;
+
+    /**
+     * Get After Date
+     *
+     * @var GetAfterDate
+     */
+    private $getAfterDate;
+
+    /**
      * Logger Interface
      *
      * @var LoggerInterface
@@ -65,17 +81,23 @@ class UpgradeData implements UpgradeDataInterface
      * @param AppState $appState
      * @param ModuleDataSetupInterface $moduleDataSetup
      * @param EavSetupFactory $taxSetupFactory
+     * @param WriterInterface $configWriter
+     * @param GetAfterDate $getAfterDate
      * @param LoggerInterface $logger
      */
     public function __construct(
         AppState $appState,
         ModuleDataSetupInterface $moduleDataSetup,
         EavSetupFactory $taxSetupFactory,
+        WriterInterface $configWriter,
+        GetAfterDate $getAfterDate,
         LoggerInterface $logger
     ) {
         $this->appState = $appState;
         $this->moduleDataSetup = $moduleDataSetup;
         $this->eavSetupFactory = $taxSetupFactory;
+        $this->configWriter = $configWriter;
+        $this->getAfterDate = $getAfterDate;
         $this->logger = $logger;
     }
 
@@ -92,6 +114,13 @@ class UpgradeData implements UpgradeDataInterface
             $this->appState->emulateAreaCode(
                 Area::AREA_ADMINHTML,
                 [$this, 'applyTaxClassAttrToWarrantyProduct']
+            );
+        }
+
+        if (version_compare($context->getVersion(), '1.2.6', '<')) {
+            $this->appState->emulateAreaCode(
+                Area::AREA_ADMINHTML,
+                [$this, 'setAfterDateSendOrders']
             );
         }
     }
@@ -125,5 +154,14 @@ class UpgradeData implements UpgradeDataInterface
         } catch (Exception $exception) {
             $this->logger->error($exception->getMessage());
         }
+    }
+
+    /**
+     * Apply after date value for send history orders
+     */
+    public function setAfterDateSendOrders()
+    {
+        $afterDate = $this->getAfterDate->getAfterDateTwoYears();
+        $this->configWriter->save(GetAfterDate::XML_PATH_AFTER_DATE, $afterDate);
     }
 }
