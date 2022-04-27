@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Api\SyncInterface as ProductSyncModel;
@@ -17,13 +15,15 @@ use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Api\Sync\Product\ProductsRequest as ApiProductModel;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
-use Magento\Framework\Exception\InvalidArgumentException;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
+use Exception;
 
 /**
  * Class ProductSyncProcess
@@ -123,7 +123,7 @@ class ProductSyncProcess
      *
      * @param int|null $defaultBatchSize
      */
-    public function execute(?int $defaultBatchSize = null): void
+    public function execute(int $defaultBatchSize = null)
     {
         $stores = $this->storeManager->getStores();
         foreach ($stores as $storeId => $store) {
@@ -140,7 +140,7 @@ class ProductSyncProcess
 
             try {
                 $this->apiProductModel->setConfig($apiUrl, $apiStoreId, $apiKey);
-            } catch (InvalidArgumentException $exception) {
+            } catch (Exception $exception) {
                 $this->syncLogger->error($exception->getMessage());
                 continue;
             }
@@ -176,6 +176,7 @@ class ProductSyncProcess
             } while ($currentBatch <= $countOfBathes);
 
             $this->dataHelper->setLastProductSyncDate($currentDate, ScopeInterface::SCOPE_STORES, $storeId);
+            $this->dataHelper->setLastProductSyncDate($currentDate, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, Store::DEFAULT_STORE_ID);
             $this->syncLogger->info(sprintf('Finish sync products for %s store.', $storeCode));
         }
     }

@@ -8,16 +8,15 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Sync;
 
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Api\RequestInterface;
-use Magento\Framework\Exception\InvalidArgumentException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Framework\Url\EncoderInterface;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Response;
+use Magento\Framework\Exception\LocalizedException;
 
 /**
  * Class AbstractRequest
@@ -42,6 +41,13 @@ abstract class AbstractRequest implements RequestInterface
      * @var JsonSerializer
      */
     protected $jsonSerializer;
+
+    /**
+     * Url Encoder
+     *
+     * @var EncoderInterface
+     */
+    private $encoder;
 
     /**
      * Logger Interface
@@ -76,15 +82,18 @@ abstract class AbstractRequest implements RequestInterface
      *
      * @param ConnectorInterface $connector
      * @param JsonSerializer $jsonSerializer
+     * @param EncoderInterface $encoder
      * @param LoggerInterface $logger
      */
     public function __construct(
         ConnectorInterface $connector,
         JsonSerializer $jsonSerializer,
+        EncoderInterface $encoder,
         LoggerInterface $logger
     ) {
         $this->connector = $connector;
         $this->jsonSerializer = $jsonSerializer;
+        $this->encoder = $encoder;
         $this->logger = $logger;
     }
 
@@ -94,12 +103,12 @@ abstract class AbstractRequest implements RequestInterface
      * @param string $apiUrl
      * @param string $storeId
      * @param string $apiKey
-     * @throws InvalidArgumentException
+     * @throws LocalizedException
      */
-    public function setConfig(string $apiUrl, string $storeId, string $apiKey): void
+    public function setConfig(string $apiUrl, string $storeId, string $apiKey)
     {
         if (empty($apiUrl) || empty($storeId) || empty($apiKey)) {
-            throw new InvalidArgumentException(__('Credentials not set.'));
+            throw new LocalizedException(__('Credentials not set.'));
         }
 
         $this->apiUrl = $apiUrl;
@@ -137,5 +146,33 @@ abstract class AbstractRequest implements RequestInterface
         }
 
         return $responseBody;
+    }
+
+    /**
+     * Generate Idempotent Requests key
+     *
+     * @return string
+     */
+    protected function getUuid4()
+    {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+    }
+
+    /**
+     * Encode url
+     *
+     * @param string $url
+     *
+     * @return string
+     */
+    protected function encode(string $url)
+    {
+        return $this->encoder->encode($url);
     }
 }

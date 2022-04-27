@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Observer\Warranty;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -78,7 +76,7 @@ class Normalize implements ObserverInterface
      *
      * @param Observer $observer
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         if (!$this->dataHelper->isBalancedCart()) {
             return;

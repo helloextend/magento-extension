@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Observer;
 
 use Magento\Framework\Event\Observer;
@@ -79,7 +77,7 @@ class CreateContract implements ObserverInterface
      *
      * @param Observer $observer
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $invoice = $event->getInvoice();
@@ -90,7 +88,7 @@ class CreateContract implements ObserverInterface
         if (
             $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isWarrantyContractEnabled($storeId)
-            && !$this->dataHelper->getContractCreateMode(ScopeInterface::SCOPE_STORES, $storeId)
+            && !$this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)
         ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();
@@ -99,7 +97,11 @@ class CreateContract implements ObserverInterface
                     $qtyInvoiced = intval($invoiceItem->getQty());
                     if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                         try {
-                            $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+                            if ($orderItem->getLeadToken() != null && implode(", ", json_decode($orderItem->getLeadToken(), true)) != null) {
+                                $this->warrantyContract->create($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\WarrantyContract::LEAD_CONTRACT);
+                            } else {
+                                $this->warrantyContract->create($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\WarrantyContract::CONTRACT);
+                            }
                         } catch (LocalizedException $exception) {
                             $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
                         }

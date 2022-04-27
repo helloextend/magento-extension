@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Request;
 
 use Extend\Warranty\Helper\Data as Helper;
@@ -59,7 +57,7 @@ class LeadBuilder
         $product = [
             'purchasePrice'     => $price,
             'referenceId'       => $orderItem->getSku(),
-            'transactionDate'   => time(),
+            'transactionDate'   => (int)(microtime(true)*1000),
             'transactionId'     => $order->getIncrementId(),
         ];
 

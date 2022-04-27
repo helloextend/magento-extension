@@ -7,10 +7,10 @@
 // phpcs:disable Magento2.Templates.ThisInTemplate
 ?>
 <?php
-/* @var $block \Magento\Sales\Block\Adminhtml\Items\Column\Name */
+/* @var Magento\Sales\Block\Adminhtml\Items\Column\Name $block */
+/* @var Extend\Warranty\ViewModel\Warranty $viewModel */
+$viewModel = $block->getViewModel();
 ?>
-
-
 
 <?php if ($_item = $block->getItem()) : ?>
     <div id="order_item_<?= (int) $_item->getId() ?>_title"
@@ -25,7 +25,8 @@
         <?php
         $_productOptions = $_item->getProductOptions();
         $_planId = isset($_productOptions["warranty_id"]) ? $_productOptions["warranty_id"] : '';
-        $_contractID = json_decode($_item->getContractId()) === NULL ? [$_item->getContractId()] : json_decode($_item->getContractId(), true);
+
+        $_contractID = $viewModel->unserialize($_item->getContractId()) ?? [];
         $_contractID = is_array($_contractID) ? $_contractID : [$_contractID];
 
         $_refunded = (isset($_productOptions["refund"]) && true == $_productOptions["refund"])
@@ -72,6 +73,17 @@
                 </dd>
             <?php endforeach; ?>
         </dl>
+    <?php endif; ?>
+
+    <?php if ($viewModel->isLeadEnabled()) : ?>
+        <?php $leadToken = $viewModel->getLeadToken($_item); ?>
+
+        <?php if (!empty($leadToken)) : ?>
+            <div class="product-lead-token-block">
+                <span><?= $block->escapeHtml(__('Lead Token'))?>: </span>
+                <span><?= $block->escapeHtml($leadToken) ?></span>
+            </div>
+        <?php endif; ?>
     <?php endif; ?>
     <?= $block->escapeHtml($_item->getDescription()) ?>
 <?php endif; ?>

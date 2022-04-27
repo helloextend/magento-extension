@@ -110,7 +110,7 @@ class CreateContracts extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    public function doExecute(InputInterface $input, OutputInterface $output): void
+    public function doExecute(InputInterface $input, OutputInterface $output)
     {
         if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
             $output->writeln("<error>Extension is disabled. Please, check the configuration settings.</error>");

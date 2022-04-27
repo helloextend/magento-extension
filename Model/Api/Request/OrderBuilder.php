@@ -5,28 +5,26 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
-
-declare(strict_types=1);
 
 namespace Extend\Warranty\Model\Api\Request;
 
+use Extend\Warranty\Helper\Api\Data as ApiDataHelper;
+use Extend\Warranty\Helper\Data as DataHelper;
+use Extend\Warranty\Model\Offers;
+use Extend\Warranty\Model\Orders as ExtendOrder;
+use Extend\Warranty\Model\Product\Type;
 use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Locale\Currency;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Directory\Api\CountryInformationAcquirerInterface;
-use Magento\Framework\Locale\Currency;
-use Extend\Warranty\Model\Orders as ExtendOrder;
-use Extend\Warranty\Model\Product\Type;
-use Extend\Warranty\Helper\Data as DataHelper;
-use Extend\Warranty\Helper\Api\Data as ApiDataHelper;
-use Extend\Warranty\Model\Offers;
 
 class OrderBuilder
 {
@@ -85,7 +83,7 @@ class OrderBuilder
      * @param ApiDataHelper $apiHelper
      * @param Offers $offers
      */
-    public function __construct (
+    public function __construct(
         StoreManagerInterface $storeManager,
         ProductRepositoryInterface $productRepository,
         CountryInformationAcquirerInterface $countryInformationAcquirer,
@@ -192,7 +190,7 @@ class OrderBuilder
                 $lineItem = [
                     'status'      => $this->getStatus(),
                     'quantity'    => $qty,
-                    'storeId'     => $this->apiHelper->getStoreId(ScopeInterface::SCOPE_STORES,$storeId),
+                    'storeId'     => $this->apiHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId),
                     'warrantable' => true,
                     'product'     => $product,
                     'plan'        => $plan
@@ -205,7 +203,7 @@ class OrderBuilder
                 $lineItem = [
                     'status'      => $this->getStatus(),
                     'quantity'    => $qty,
-                    'storeId'     => $this->apiHelper->getStoreId(ScopeInterface::SCOPE_STORES,$storeId),
+                    'storeId'     => $this->apiHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId),
                     'warrantable' => true,
                     'product'     => $product
                 ];

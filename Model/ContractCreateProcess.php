@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -131,7 +129,7 @@ class ContractCreateProcess
     /**
      * Process records
      */
-    public function execute(): void
+    public function execute()
     {
         $batchSize = $this->dataHelper->getContractsBatchSize();
         $offset = 0;
@@ -162,7 +160,7 @@ class ContractCreateProcess
                 $qtyInvoiced = intval($contractCreateRecord[OrderItemInterface::QTY_INVOICED]);
 
                 try {
-                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API && $this->dataHelper->getContractCreateMode()) {
+                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API && $this->dataHelper->isContractCreateModeScheduled()) {
                         $processedContractCreateRecords[$recordId] = $this->extendOrdersApi->createOrder($order, $orderItem, $qtyInvoiced);
                     } else {
                         $processedContractCreateRecords[$recordId] = $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
@@ -205,7 +203,7 @@ class ContractCreateProcess
      *
      * @param array $processedRecords
      */
-    protected function updateContractCreateRecords(array $processedRecords): void
+    protected function updateContractCreateRecords(array $processedRecords)
     {
         $connection = $this->contractCreateResource->getConnection();
         $tableName = $connection->getTableName('extend_warranty_contract_create');
@@ -222,7 +220,7 @@ class ContractCreateProcess
     /**
      * Purge old records
      */
-    protected function purgeOldContractCreateRecords(): void
+    protected function purgeOldContractCreateRecords()
     {
         $storagePeriod = $this->dataHelper->getStoragePeriod();
         if (!$storagePeriod) {
@@ -253,7 +251,7 @@ class ContractCreateProcess
      * @param int $orderItemId
      * @return OrderItemInterface|null
      */
-    protected function getOrderItem(int $orderItemId): ?OrderItemInterface
+    protected function getOrderItem(int $orderItemId)
     {
         try {
             $orderItem = $this->orderItemRepository->get($orderItemId);
@@ -271,7 +269,7 @@ class ContractCreateProcess
      * @param int $orderId
      * @return OrderInterface|null
      */
-    protected function getOrder(int $orderId): ?OrderInterface
+    protected function getOrder(int $orderId)
     {
         try {
             $order = $this->orderRepository->get($orderId);

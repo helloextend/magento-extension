@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -95,6 +93,9 @@ class Leads
             if (!empty($leadPayload)) {
                 $this->apiLeadBuilder->setConfig($apiUrl, $apiStoreId, $apiKey);
                 $lead = $this->apiLeadBuilder->create($leadPayload);
+                if (!empty($lead)) {
+                    $lead = json_encode([$lead]);
+                }
             }
         } catch (LocalizedException $exception) {
             $this->logger->error($exception->getMessage());

@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Cron;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -52,7 +50,7 @@ class CreateContracts
     /**
      * Create warranty contracts
      */
-    public function execute(): void
+    public function execute()
     {
         if (
             !$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
@@ -61,7 +59,7 @@ class CreateContracts
             return;
         }
 
-        if (!$this->dataHelper->getContractCreateMode(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
+        if (!$this->dataHelper->isContractCreateModeScheduled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
             return;
         }
 

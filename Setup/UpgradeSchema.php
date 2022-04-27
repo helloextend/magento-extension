@@ -104,7 +104,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
      * @param SchemaSetupInterface $setup
      * @throws Zend_Db_Exception
      */
-    protected function createExtendWarrantyContractCreateTable(SchemaSetupInterface $setup): void
+    protected function createExtendWarrantyContractCreateTable(SchemaSetupInterface $setup)
     {
         $connection = $setup->getConnection();
 

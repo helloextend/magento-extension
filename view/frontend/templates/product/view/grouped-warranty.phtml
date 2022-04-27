@@ -1,0 +1,52 @@
+<?php
+/**
+ * Extend Warranty - Grouped product warranty offers block
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+/**
+ * @var \Magento\GroupedProduct\Block\Product\View\Type\Grouped $block
+ */
+
+/** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
+$viewModel = $block->getData('viewModel');
+/** @var string $offerTypeArea */
+$offerTypeArea = $block->getData('offerTypeArea');
+$_renderWarranty = $viewModel->isExtendEnabled() && $viewModel->isProductDetailPageOffersEnabled();
+
+/** @var \Magento\Catalog\Model\Product $product */
+$product = $block->getProduct();
+
+$_associatedProducts = $block->getAssociatedProducts();
+$_hasAssociatedProducts = count($_associatedProducts) > 0;
+
+$_productsData = [];
+?>
+<?php if ($_renderWarranty && $_hasAssociatedProducts && $product->isSaleable()): ?>
+    <?php foreach ($_associatedProducts as $_item) : ?>
+        <?php if ($_item->isSaleable()): ?>
+            <?php $_productsData[] = [
+                'id' => $_item->getId(),
+                'sku' => $_item->getSku()
+            ]; ?>
+        <?php endif; ?>
+    <?php endforeach; ?>
+
+    <?php if (count($_productsData) > 0): ?>
+    <script type="text/x-magento-init">
+    {
+        "#super-product-table": {
+            "groupedProductWarranty": {
+                "isInProductView": true,
+                "products": <?= /* @noEscape */ json_encode($_productsData) ?>,
+                "buttonEnabled": <?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled() ? 1 : 0) ?>,
+                "modalEnabled": false
+            }
+        }
+    }
+    </script>
+    <?php endif; ?>
+<?php endif; ?>

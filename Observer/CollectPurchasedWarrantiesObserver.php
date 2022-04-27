@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Observer;
 
 use Magento\Sales\Api\Data\OrderItemInterface;
@@ -89,7 +87,7 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
      * @param Observer $observer
      * @throws Exception
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $invoice = $event->getData(InvoiceItemInterface::INVOICE);
@@ -97,7 +95,7 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
 
         if (
             $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
-            && $this->dataHelper->getContractCreateMode(ScopeInterface::SCOPE_STORES, $storeId)
+            && $this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)
         ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();

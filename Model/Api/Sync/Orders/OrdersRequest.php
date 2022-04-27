@@ -67,6 +67,13 @@ class OrdersRequest extends AbstractRequest
             $orderApiId = $responseBody['id'] ?? '';
             if ($orderApiId) {
                 $this->logger->info('Order is created successfully. OrderApiID: ' . $orderApiId);
+                if (!empty($contractsIds)) {
+                    $this->logger->info('Contracts is created successfully. OrderApiID: ' . $orderApiId . ' Contracts: ' . implode(', ', $contractsIds));
+                }
+
+                if (!empty($leadsTokens)) {
+                    $this->logger->info('Leads is created successfully. OrderApiID: ' . $orderApiId . ' Leads: ' . implode(', ', $leadsTokens));
+                }
             } else {
                 $this->logger->error('Order creation is failed.');
             }
@@ -75,17 +82,6 @@ class OrdersRequest extends AbstractRequest
         }
 
         return $result;
-    }
-
-    protected function getUuid4()
-    {
-        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-        );
     }
 
     /**

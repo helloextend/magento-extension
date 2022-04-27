@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Api;
 
 /**
@@ -50,12 +48,12 @@ interface SyncInterface
      *
      * @param int $batchSize
      */
-    public function setBatchSize(int $batchSize): void;
+    public function setBatchSize(int $batchSize);
 
     /**
      * Set count of batches to process
      *
      * @param int $countOfItems
      */
-    public function setCountOfBatches(int $countOfItems): void;
+    public function setCountOfBatches(int $countOfItems);
 }

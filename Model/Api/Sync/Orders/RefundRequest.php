@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Sync\Orders;
 
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
@@ -34,6 +32,7 @@ class RefundRequest extends AbstractRequest
      * Response status codes
      */
     const STATUS_CODE_SUCCESS = 201;
+    const STATUS_CODE_SUCCESS_200 = 200;
 
     /**
      * Cancel a warranty contract and request a refund
@@ -52,7 +51,8 @@ class RefundRequest extends AbstractRequest
                 [
                     'Accept'                  => 'application/json; version=2021-07-01',
                     'Content-Type'            => 'application/json',
-                    self::ACCESS_TOKEN_HEADER => $this->apiKey
+                    self::ACCESS_TOKEN_HEADER => $this->apiKey,
+                    'X-Idempotency-Key'       => $this->getUuid4()
                 ],
                 ['contractId' => $contractId]
             );
@@ -92,9 +92,9 @@ class RefundRequest extends AbstractRequest
                     self::ACCESS_TOKEN_HEADER => $this->apiKey
                 ]
             );
-            $responseBody = $this->processResponse($response);
 
-            if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
+            if ($response->getStatus() === self::STATUS_CODE_SUCCESS || $response->getStatus() === self::STATUS_CODE_SUCCESS_200) {
+                $responseBody = $this->processResponse($response);
                 $this->logger->info('Refund is validated successfully. ContractID: ' . $contractId);
             } else {
                 $this->logger->error('Refund validation is failed. ContractID: ' . $contractId);
