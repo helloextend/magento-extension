@@ -204,6 +204,12 @@ div.extend-sync-button-container .sync-info #cancel_sync {
     font-weight: bold;
 }
 
+div.extend-sync-button-container .sync-info #cancel-order-sync {
+    color: red;
+    display: none;
+    font-weight: bold;
+}
+
 .modal-popup.extend-confirm-partial-modal p {
     text-align: center;
 }

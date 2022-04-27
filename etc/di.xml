@@ -19,6 +19,9 @@
     <preference for="Extend\Warranty\Api\ConnectorInterface"
                 type="Extend\Warranty\Model\Api\Connector"/>
 
+    <preference for="Extend\Warranty\Api\Data\HistoricalOrderInterface"
+                type="Extend\Warranty\Model\HistoricalOrder"/>
+
     <type name="Magento\ConfigurableProduct\Block\Product\View\Type\Configurable">
         <plugin name="addSkuToJsonConfig" type="Extend\Warranty\Plugin\Block\Product\View\Type\Configurable" sortOrder="10" />
     </type>
@@ -91,6 +94,7 @@
                 <item name="extendWarrantySyncProductsCommand" xsi:type="object">Extend\Warranty\Console\Command\SyncProducts</item>
                 <item name="extendWarrantyCreateWarrantyContractCommand" xsi:type="object">Extend\Warranty\Console\Command\CreateContracts</item>
                 <item name="extendWarrantyResetProductSyncFlagCommand" xsi:type="object">Extend\Warranty\Console\Command\ResetProductSyncFlag</item>
+                <item name="extendWarrantySendOrdersCommand" xsi:type="object">Extend\Warranty\Console\Command\SendOrders</item>
             </argument>
         </arguments>
     </type>

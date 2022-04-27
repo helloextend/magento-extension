@@ -95,6 +95,14 @@ class UpgradeSchema implements UpgradeSchemaInterface
             }
         }
 
+        if (version_compare($context->getVersion(), '1.2.5', '<')) {
+            try {
+                $this->createExtendWarrantyHistoricalOrdersCreateTable($setup);
+            } catch (Zend_Db_Exception $exception) {
+                $this->logger->critical($exception->getMessage());
+            }
+        }
+
         $setup->endSetup();
     }
 
@@ -196,6 +204,53 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $uniqueIndexName,
             ['order_item_id', 'invoice_item_id'],
             ['type' => AdapterInterface::INDEX_TYPE_UNIQUE]
+        );
+
+        $connection->createTable($table);
+    }
+
+    /**
+     * Create `extend_historical_orders` table
+     *
+     * @param SchemaSetupInterface $setup
+     *
+     * @throws Zend_Db_Exception
+     */
+    protected function createExtendWarrantyHistoricalOrdersCreateTable(SchemaSetupInterface $setup)
+    {
+        $connection = $setup->getConnection();
+
+        $table = $connection->newTable($setup->getTable('extend_historical_orders'));
+
+        $table->addColumn(
+            'entity_id',
+            Table::TYPE_INTEGER,
+            null,
+            ['identity' => true, 'nullable' => false, 'unsigned' => true, 'primary' => true],
+            'Order ID'
+        );
+
+        $table->addColumn(
+            'was_sent',
+            Table::TYPE_BOOLEAN,
+            null,
+            ['nullable' => false, 'unsigned' => true],
+            'Order Sent'
+        );
+
+        $salesOrderForeignKeyName = $setup->getFkName(
+            'extend_historical_orders',
+            'entity_id',
+            'sales_order',
+            'entity_id'
+        );
+
+        $table->addForeignKey(
+            $salesOrderForeignKeyName,
+            'entity_id',
+            $setup->getTable('sales_order'),
+            'entity_id',
+            Table::ACTION_CASCADE
         );
 
         $connection->createTable($table);
