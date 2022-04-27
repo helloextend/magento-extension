@@ -28,7 +28,7 @@ use Extend\Warranty\Api\SyncInterface as ProductSyncModel;
 use Extend\Warranty\Model\ProductSyncFlag;
 use Magento\Framework\FlagManager;
 use Extend\Warranty\Model\Api\Sync\Product\ProductsRequest as ApiProductModel;
-use Magento\Framework\Exception\InvalidArgumentException;
+use Exception;
 
 /**
  * Class Sync
@@ -146,7 +146,7 @@ class Sync extends Action
      * Sync product batch
      *
      * @return ResultInterface
-     * @throws InvalidArgumentException
+     * @throws Exception
      */
     public function execute(): ResultInterface
     {
