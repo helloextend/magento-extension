@@ -74,7 +74,8 @@ define([
                 var swatchRenderer = swatchesElem.data('mageSwatchRenderer');
 
                 if (swatchRenderer) {
-                    var selectedId = swatchRenderer.getProductId();
+                    var selectedProducts = swatchRenderer._CalcProducts();
+                    var selectedId = _.isArray(selectedProducts) && selectedProducts.length === 1 ? selectedProducts[0] : null;
                     if (selectedId && selectedId !== '') {
                         selectedSku = swatchRenderer.options.jsonConfig.skus[selectedId];
                     }
