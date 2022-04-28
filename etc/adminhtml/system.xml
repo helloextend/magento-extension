@@ -255,9 +255,6 @@
                 <field id="syncbutton" translate="label comment" type="button" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
                     <frontend_model>Extend\Warranty\Block\System\Config\Products\Button</frontend_model>
                 </field>
-                <field id="historical_orders_sync_button" translate="label comment" type="button" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="0">
-                    <frontend_model>Extend\Warranty\Block\System\Config\HistoricalOrders\Button</frontend_model>
-                </field>
                 <field id="cron_sync_enabled" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Enable Synchronization by Cron</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

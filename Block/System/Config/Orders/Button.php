@@ -99,16 +99,13 @@ class Button extends Field
      * @return string
      * @throws Exception
      */
-    public function getLastSync(): string
+    public function getSyncPeriod(): string
     {
         $scopeData = $this->getScopeData();
 
-        $lastSyncDate = $this->dataHelper->getLastProductSyncDate($scopeData['scopeType'], $scopeData['scopeId']);
-        if (!empty($lastSyncDate)) {
-            $lastSyncDate = $this->timezone->formatDate($lastSyncDate, 1, true);
-        }
+        $period = $this->dataHelper->getHistoricalOrdersSyncPeriod($scopeData['scopeType'], $scopeData['scopeId']);
 
-        return $lastSyncDate;
+        return $period;
     }
 
     /**
@@ -149,6 +146,6 @@ class Button extends Field
         $scopeData = $this->getScopeData();
 
         return $this->dataHelper->getStoreId($scopeData['scopeType'], $scopeData['scopeId'])
-                && $this->dataHelper->getApiKey($scopeData['scopeType'], $scopeData['scopeId']);
+            && $this->dataHelper->getApiKey($scopeData['scopeType'], $scopeData['scopeId']);
     }
 }
