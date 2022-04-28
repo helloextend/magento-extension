@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Plugin\Catalog\Helper\Product\Configuration;
 
 use Magento\Catalog\Helper\Product\Configuration;
@@ -34,6 +32,14 @@ class GetCustomOptionsPlugin
         $product = $item->getProduct();
         if ($product && $product->getTypeId() === Type::TYPE_CODE) {
             $customOptions = [];
+
+            $associatedProductNameOption = $product->getCustomOption(Type::ASSOCIATED_PRODUCT_NAME);
+            if ($associatedProductNameOption && $associatedProductNameOption->getValue()) {
+                $customOptions[] = [
+                    'label' => __(Type::ASSOCIATED_PRODUCT_NAME_LABEL),
+                    'value' => $associatedProductNameOption->getValue(),
+                ];
+            }
 
             $associatedProductOption = $product->getCustomOption(Type::ASSOCIATED_PRODUCT);
             if ($associatedProductOption && $associatedProductOption->getValue()) {

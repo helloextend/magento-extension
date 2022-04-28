@@ -8,14 +8,13 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Sync\Product;
 
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Model\Api\Request\ProductDataBuilder as ProductPayloadBuilder;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Framework\Url\EncoderInterface;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
 use Zend_Http_Client_Exception;
@@ -56,6 +55,13 @@ class ProductsRequest extends AbstractRequest
     private $syncLogger;
 
     /**
+     * Url Encoder
+     *
+     * @var EncoderInterface
+     */
+    private $encoder;
+
+    /**
      * ProductsRequest constructor
      *
      * @param ConnectorInterface $connector
@@ -63,17 +69,19 @@ class ProductsRequest extends AbstractRequest
      * @param LoggerInterface $logger
      * @param ProductPayloadBuilder $productPayloadBuilder
      * @param LoggerInterface $syncLogger
+     * @param EncoderInterface $encoder
      */
     public function __construct(
         ConnectorInterface $connector,
         JsonSerializer $jsonSerializer,
         LoggerInterface $logger,
         ProductPayloadBuilder $productPayloadBuilder,
-        LoggerInterface $syncLogger
+        LoggerInterface $syncLogger,
+        EncoderInterface $encoder
     ) {
         $this->productPayloadBuilder = $productPayloadBuilder;
         $this->syncLogger = $syncLogger;
-        parent::__construct($connector, $jsonSerializer, $logger);
+        parent::__construct($connector, $jsonSerializer, $encoder, $logger);
     }
 
     /**

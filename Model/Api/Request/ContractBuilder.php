@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Request;
 
 use Extend\Warranty\Helper\Data as DataHelper;
@@ -23,6 +21,7 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Extend\Warranty\Model\Product\Type;
+use Exception;
 
 /**
  * Class ContractBuilder
@@ -105,9 +104,14 @@ class ContractBuilder
         $product = $this->getProduct($productSku);
 
         if ($type == \Extend\Warranty\Model\WarrantyContract::LEAD_CONTRACT) {
-            $leadToken = '';
-            if ($orderItem->getLeadToken()) {
-                $leadToken = implode(", ", json_decode($orderItem->getLeadToken(), true));
+            $leadToken = $orderItem->getLeadToken() ?? '';
+
+            if (!empty($leadToken)) {
+                try {
+                    $leadToken = implode(", ", $this->helper->unserialize($leadToken));
+                } catch (Exception $exception) {
+                    $leadToken = '';
+                }
             }
         }
 

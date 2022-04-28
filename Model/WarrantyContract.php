@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -22,9 +20,6 @@ use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Exception\InvalidArgumentException;
 use Exception;
 
 /**
@@ -120,8 +115,8 @@ class WarrantyContract
      * @param OrderItemInterface $orderItem
      * @param int $qtyInvoiced
      * @return string
-     * @throws NoSuchEntityException
-     * @throws InvalidArgumentException
+     *
+     * @throws Exception
      */
     public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced, $type = self::CONTRACT): string
     {
@@ -188,7 +183,7 @@ class WarrantyContract
         try {
             $contractIdsJson = $orderItem->getContractId();
             $contractIds = $contractIdsJson ? $this->jsonSerializer->unserialize($contractIdsJson) : [];
-        } catch (LocalizedException $exception) {
+        } catch (Exception $exception) {
             $contractIds = [];
         }
 

@@ -5,17 +5,18 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
-
-declare(strict_types=1);
 
 namespace Extend\Warranty\Helper\Api\Magento;
 
+use Exception;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Sales\Api\Data\OrderItemExtensionFactory;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Sales\Api\Data\OrderItemExtensionFactory;
+use Magento\Sales\Api\Data\OrderItemInterface;
+use Magento\Sales\Model\Order\Item;
 
 /**
  * Helper class for adding Extend warranty extension attributes to order item
@@ -32,6 +33,8 @@ class Data extends AbstractHelper
     const ASSOCIATED_PRODUCT = 'associated_product';
     const REFUND             = 'refund';
     const WARRANTY_TERM      = 'warranty_term';
+    const LEAD_TOKEN         = 'lead_token';
+    const PLAN_TYPE          = 'plan_type';
 
     /**
      * Order Extension Attributes Factory
@@ -55,6 +58,7 @@ class Data extends AbstractHelper
         self::ASSOCIATED_PRODUCT,
         self::REFUND,
         self::WARRANTY_TERM,
+        self::PLAN_TYPE,
     ];
 
     /**
@@ -76,14 +80,32 @@ class Data extends AbstractHelper
     /**
      * Set "contract_id & product_options" extension attributes to order item
      *
-     * @param \Magento\Sales\Api\Data\OrderItemInterface $orderItem
+     * @param OrderItemInterface $orderItem
      * @return void
      */
     public function setOrderItemExtensionAttributes(
-        \Magento\Sales\Api\Data\OrderItemInterface $orderItem
-    ): void
-    {
+        OrderItemInterface $orderItem
+    ): void {
         $contractId = (string)$orderItem->getData(self::CONTRACT_ID);
+
+        $leadToken = $orderItem->getData(self::LEAD_TOKEN) ?? '';
+
+        if (!empty($leadToken)) {
+            try {
+                $leadToken = implode(", ", $this->unserialize($leadToken));
+            } catch (Exception $exception) {
+                $leadToken = '';
+            }
+        }
+
+        if (empty($leadToken)) {
+            $buyRequest = $orderItem->getBuyRequest();
+
+            if ($buyRequest && isset($buyRequest['leadToken'])) {
+                $leadToken = $buyRequest['leadToken'] ?? '';
+            }
+        }
+
         $productOptions = (array)$orderItem->getProductOptions();
         $productOptionsJson = (string)$this->getProductOptionsJson($orderItem, $productOptions);
 
@@ -98,6 +120,8 @@ class Data extends AbstractHelper
         /** @noinspection PhpUndefinedMethodInspection */
         $extensionAttributes->setContractId($contractId);
         /** @noinspection PhpUndefinedMethodInspection */
+        $extensionAttributes->setLeadToken($leadToken);
+        /** @noinspection PhpUndefinedMethodInspection */
         $extensionAttributes->setProductOptions($productOptionsJson);
         /** @noinspection PhpUndefinedMethodInspection */
         $extensionAttributes->setWarrantyId($productOptions[self::WARRANTY_ID] ?? '');
@@ -107,6 +131,8 @@ class Data extends AbstractHelper
         $extensionAttributes->setRefund((bool)$productOptions[self::REFUND]);
         /** @noinspection PhpUndefinedMethodInspection */
         $extensionAttributes->setTerm($productOptions[self::WARRANTY_TERM] ?? '');
+        /** @noinspection PhpUndefinedMethodInspection */
+        $extensionAttributes->setPlanType($productOptions[self::PLAN_TYPE] ?? '');
 
         $orderItem->setExtensionAttributes($extensionAttributes);
     }
@@ -114,17 +140,16 @@ class Data extends AbstractHelper
     /**
      * Get product options JSON
      *
-     * @param \Magento\Sales\Api\Data\OrderItemInterface $orderItem
+     * @param OrderItemInterface $orderItem
      * @param array $productOptions
      * @return string
      * @noinspection PhpUnusedLocalVariableInspection
      */
     private function getProductOptionsJson(
-        \Magento\Sales\Api\Data\OrderItemInterface $orderItem,
+        OrderItemInterface $orderItem,
         array $productOptions
-    ): string
-    {
-        /** @var \Magento\Sales\Model\Order\Item $orderItem */
+    ): string {
+        /** @var Item $orderItem */
         try {
             $productOptionsJson = $orderItem->getData(self::PRODUCT_OPTIONS);
             if (!is_string($productOptionsJson)) {
@@ -135,5 +160,23 @@ class Data extends AbstractHelper
         }
 
         return $productOptionsJson;
+    }
+
+    /**
+     * Decode data
+     *
+     * @param string|null $data
+     *
+     * @return string|null
+     */
+    public function unserialize($data)
+    {
+        try {
+            $result = $this->_jsonSerializer->unserialize($data);
+        } catch (Exception $exception) {
+            $result = null;
+        }
+
+        return $result;
     }
 }

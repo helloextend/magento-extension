@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Observer;
 
 use Extend\Warranty\Model\WarrantyContract as WarrantyContractModel;
@@ -26,7 +24,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Exception\InvalidArgumentException;
+use Exception;
 
 /**
  * Class RequestRefundObserver
@@ -177,10 +175,9 @@ class RequestRefundObserver implements ObserverInterface
                         }
 
                         $validContracts = $this->validateRefund($refundItems, $storeId);
-                    } catch (\InvalidArgumentException $exception) {
+                    } catch (Exception $exception) {
                         $this->logger->error($exception->getMessage());
                     }
-
                 }
 
                 if (!empty($validContracts)) {

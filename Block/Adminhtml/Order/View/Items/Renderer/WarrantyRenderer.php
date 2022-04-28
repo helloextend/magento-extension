@@ -1,4 +1,12 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Block\Adminhtml\Order\View\Items\Renderer;
 
@@ -11,6 +19,8 @@ use Magento\Framework\Registry;
 use Magento\GiftMessage\Helper\Message;
 use Magento\Checkout\Helper\Data;
 use Extend\Warranty\Helper\Api\Data as ExtendData;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Exception;
 
 class WarrantyRenderer extends DefaultRenderer
 {
@@ -19,6 +29,26 @@ class WarrantyRenderer extends DefaultRenderer
      */
     protected $extendHelper;
 
+    /**
+     * Serializer
+     *
+     * @var JsonSerializer
+     */
+    private $serializer;
+
+    /**
+     * WarrantyRenderer constructor.
+     *
+     * @param Context $context
+     * @param StockRegistryInterface $stockRegistry
+     * @param StockConfigurationInterface $stockConfiguration
+     * @param Registry $registry
+     * @param Message $messageHelper
+     * @param Data $checkoutHelper
+     * @param ExtendData $extendHelper
+     * @param JsonSerializer $serializer
+     * @param array $data
+     */
     public function __construct
     (
         Context $context,
@@ -28,9 +58,9 @@ class WarrantyRenderer extends DefaultRenderer
         Message $messageHelper,
         Data $checkoutHelper,
         ExtendData $extendHelper,
+        JsonSerializer $serializer,
         array $data = []
-    )
-    {
+    ) {
         parent::__construct
         (
             $context,
@@ -41,8 +71,8 @@ class WarrantyRenderer extends DefaultRenderer
             $checkoutHelper,
             $data
         );
-
         $this->extendHelper = $extendHelper;
+        $this->serializer = $serializer;
     }
 
     public function getColumnHtml(\Magento\Framework\DataObject $item, $column, $field = null)
@@ -86,8 +116,14 @@ class WarrantyRenderer extends DefaultRenderer
 
     private function getDataInit($item, $isPartial = false)
     {
-        $contractID = json_decode($item->getContractId()) === NULL ? json_encode([$item->getContractId()]) : $item->getContractId();
-        $_elements = count(json_decode($contractID, true));
+        $contractIDData = $this->getContractIDData($item);
+
+        if (empty($contractIDData)) {
+            $contractID = $this->serializer->serialize([]);
+        } else {
+            $contractID = $item->getContractId();
+        }
+        $_elements = count($contractIDData);
 
         return '{"refundWarranty": {"url": "' . $this->getUrl('extend/contract/refund') .
             '", "contractId": ' . $contractID .
@@ -98,8 +134,9 @@ class WarrantyRenderer extends DefaultRenderer
 
     private function canShowPartial($item)
     {
-        $contractID = json_decode($item->getContractId()) === NULL ? json_encode([$item->getContractId()]) : $item->getContractId();
-        return (count(json_decode($contractID, true)) > 1);
+        $contractIDData = $this->getContractIDData($item);
+
+        return (count($contractIDData) > 1);
     }
 
     public function getHtmlId()
@@ -107,4 +144,26 @@ class WarrantyRenderer extends DefaultRenderer
         return 'return_order_item_' . $this->getItem()->getId();
     }
 
+    /**
+     * Get contract id data
+     *
+     * @param Item $item
+     *
+     * @return array
+     */
+    private function getContractIDData(Item $item)
+    {
+        $contractID = $item->getContractId();
+        if (!empty($contractID)) {
+            try {
+                $contractIDData = $this->serializer->unserialize($contractID);
+            } catch (Exception $exception) {
+                $contractIDData = [];
+            }
+        } else {
+            $contractIDData = [];
+        }
+
+        return $contractIDData;
+    }
 }

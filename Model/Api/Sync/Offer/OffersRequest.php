@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Sync\Offer;
 
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
@@ -36,7 +34,7 @@ class OffersRequest extends AbstractRequest
      */
     public function getOfferInformation(string $productSku): array
     {
-        $url = $this->apiUrl . sprintf(self::GET_OFFER_INFO_ENDPOINT, $this->storeId, $productSku);
+        $url = $this->apiUrl . sprintf(self::GET_OFFER_INFO_ENDPOINT, $this->storeId, $this->encode($productSku));
 
         try {
             $response = $this->connector->call(

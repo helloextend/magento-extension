@@ -7,12 +7,14 @@
  * @package     Warranty
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
+
 namespace Extend\Warranty\Model\Product;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Catalog\Model\Product;
 use Extend\Warranty\Helper\Data;
+use \Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class Type
@@ -29,13 +31,17 @@ class Type extends AbstractType
      */
     const WARRANTY_ID = 'warranty_id';
     const ASSOCIATED_PRODUCT = 'associated_product';
+    const ASSOCIATED_PRODUCT_NAME = 'associated_product_name';
     const TERM = 'warranty_term';
+    const PLAN_TYPE = 'plan_type';
     const BUY_REQUEST = 'info_buyRequest';
 
     /**
      * Custom option labels
      */
-    const ASSOCIATED_PRODUCT_LABEL = 'Product';
+    const ASSOCIATED_PRODUCT_LABEL = 'SKU';
+
+    const ASSOCIATED_PRODUCT_NAME_LABEL = 'Name';
     const TERM_LABEL = 'Term';
 
     /**
@@ -45,17 +51,17 @@ class Type extends AbstractType
 
     public function __construct
     (
-        \Magento\Catalog\Model\Product\Option $catalogProductOption,
-        \Magento\Eav\Model\Config $eavConfig,
-        \Magento\Catalog\Model\Product\Type $catalogProductType,
-        \Magento\Framework\Event\ManagerInterface $eventManager,
+        \Magento\Catalog\Model\Product\Option              $catalogProductOption,
+        \Magento\Eav\Model\Config                          $eavConfig,
+        \Magento\Catalog\Model\Product\Type                $catalogProductType,
+        \Magento\Framework\Event\ManagerInterface          $eventManager,
         \Magento\MediaStorage\Helper\File\Storage\Database $fileStorageDb,
-        \Magento\Framework\Filesystem $filesystem,
-        \Magento\Framework\Registry $coreRegistry,
-        \Psr\Log\LoggerInterface $logger,
-        ProductRepositoryInterface $productRepository,
-        Data $helper,
-        \Magento\Framework\Serialize\Serializer\Json $serializer = null
+        \Magento\Framework\Filesystem                      $filesystem,
+        \Magento\Framework\Registry                        $coreRegistry,
+        \Psr\Log\LoggerInterface                           $logger,
+        ProductRepositoryInterface                         $productRepository,
+        Data                                               $helper,
+        \Magento\Framework\Serialize\Serializer\Json       $serializer = null
     )
     {
         $this->helper = $helper;
@@ -95,9 +101,16 @@ class Type extends AbstractType
 
         $buyRequest->setData('custom_price', $price);
 
+        try {
+            $relatedProduct = $this->productRepository->get($buyRequest->getProduct());
+            $product->addCustomOption(self::ASSOCIATED_PRODUCT_NAME, $relatedProduct->getName());
+        } catch (NoSuchEntityException $e) {
+            $this->_logger->error(sprintf(__('Warrantable Product not found. Sku: %s'), $buyRequest->getProduct()));
+        }
         $product->addCustomOption(self::WARRANTY_ID, $buyRequest->getData('planId'));
         $product->addCustomOption(self::ASSOCIATED_PRODUCT, $buyRequest->getProduct());
         $product->addCustomOption(self::TERM, $buyRequest->getTerm());
+        $product->addCustomOption(self::PLAN_TYPE, $buyRequest->getData('coverageType'));
         $product->addCustomOption(self::BUY_REQUEST, $this->serializer->serialize($buyRequest->getData()));
 
         if ($this->_isStrictProcessMode($processMode)) {
@@ -122,6 +135,10 @@ class Type extends AbstractType
 
         if ($term = $product->getCustomOption(self::TERM)) {
             $options[self::TERM] = $term->getValue();
+        }
+
+        if ($planType = $product->getCustomOption(self::PLAN_TYPE)) {
+            $options[self::PLAN_TYPE] = $planType->getValue();
         }
         return $options;
     }

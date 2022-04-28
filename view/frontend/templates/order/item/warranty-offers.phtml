@@ -15,8 +15,6 @@
 $_item = $block->getItem();
 /** @var \Magento\Catalog\Model\Product $product */
 $product = $_item->getProduct();
-/** @var \Magento\Quote\Model\Quote $quote */
-$quote = $_item->getQuote();
 /** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getData('viewModel');
 
@@ -26,9 +24,8 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
 $leadToken = $_item->getLeadToken();
 ?>
 
-<?php if (!$isWarrantyItem && $viewModel->isProductDetailPageOffersEnabled() && $viewModel->isLeadEnabled() && isset($leadToken)): ?>
+<?php if (!$isWarrantyItem && $viewModel->isOrderOffersEnabled() && $viewModel->isLeadEnabled() && isset($leadToken)): ?>
     <div class="order-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>"></div>
-
     <script type="text/x-magento-init">
         {
             "#warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>": {
@@ -36,10 +33,11 @@ $leadToken = $_item->getLeadToken();
                     "itemId": "<?= $block->escapeJs($_item->getId()) ?>",
                     "productSku": "<?= $block->escapeJs($_item->getSku()) ?>",
                     "qty": "<?= $block->escapeJs($_item->getQtyOrdered()) ?>",
-                    "leadToken": "<?= $block->escapeJs(implode(", ", json_decode($leadToken, true))) ?>",
+                    "leadToken": "<?= $block->escapeJs(implode(", ", $viewModel->unserialize($leadToken))) ?>",
                     "addLeadUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/addlead')) ?>",
                     "buttonEnabled": true,
-                    "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>
+                    "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>,
+                    "isWarrantyInQuoteForSku": <?= (int)$viewModel->isWarrantyInQuoteForSku($_item->getSku()) ?>
                 }
             }
         }
