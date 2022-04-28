@@ -7,6 +7,7 @@
                     <resource id="Extend_Warranty::product_manual_sync" title="Manual Customer Sync" translate="title" sortOrder="10"/>
                     <resource id="Extend_Warranty::refund_warranty" title="Refund Warranty" translate="title" sortOrder="20"/>
                     <resource id="Extend_Warranty::warranty_admin_add" title="Add Warranty from Admin" translate="title" sortOrder="30"/>
+                    <resource id="Extend_Warranty::orders_manual_sync" title="Manual Orders Sync" translate="title" sortOrder="30"/>
                 </resource>
             </resource>
         </resources>

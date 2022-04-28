@@ -27,7 +27,7 @@ class ResetFlag extends Action
     /**
      * Authorization level of a basic admin session
      */
-    const ADMIN_RESOURCE = 'Extend_Warranty::product_manual_sync';
+    const ADMIN_RESOURCE = 'Extend_Warranty::orders_manual_sync';
 
     /**
      * Flag Manager

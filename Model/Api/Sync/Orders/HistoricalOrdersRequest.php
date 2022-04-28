@@ -5,18 +5,17 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
-
-declare(strict_types=1);
 
 namespace Extend\Warranty\Model\Api\Sync\Orders;
 
-use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Model\Api\Request\OrderBuilder as ExtendOrderBuilder;
+use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\Url\EncoderInterface;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
 use Zend_Http_Response;
@@ -42,14 +41,32 @@ class HistoricalOrdersRequest extends AbstractRequest
      */
     private $syncLogger;
 
+    /**
+     * Url Encoder
+     *
+     * @var EncoderInterface
+     */
+    private $encoder;
+
+    /**
+     * HistoricalOrdersRequest constructor
+     *
+     * @param ConnectorInterface $connector
+     * @param Json $jsonSerializer
+     * @param ExtendOrderBuilder $orderApiBuilder
+     * @param LoggerInterface $logger
+     * @param LoggerInterface $syncLogger
+     * @param EncoderInterface $encoder
+     */
     public function __construct(
         ConnectorInterface $connector,
         Json $jsonSerializer,
         ExtendOrderBuilder $orderApiBuilder,
         LoggerInterface $logger,
-        LoggerInterface $syncLogger
+        LoggerInterface $syncLogger,
+        EncoderInterface $encoder
     ) {
-        parent::__construct($connector, $jsonSerializer, $logger);
+        parent::__construct($connector, $jsonSerializer, $encoder, $logger);
         $this->syncLogger = $syncLogger;
         $this->orderApiBuilder = $orderApiBuilder;
     }
@@ -83,7 +100,6 @@ class HistoricalOrdersRequest extends AbstractRequest
             if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
                 $this->logger->info(sprintf('Orders batch %s is synchronized successfully.', $currentBatch));
                 $this->syncLogger->info('Synced ' . count($ordersData) . ' order(s) in batch ' . $currentBatch);
-
             } else {
                 $this->logger->error(sprintf('Order batch %s synchronization is failed.', $currentBatch));
             }
@@ -94,12 +110,16 @@ class HistoricalOrdersRequest extends AbstractRequest
 
     protected function getUuid4()
     {
-        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
             mt_rand(0, 0xffff),
             mt_rand(0, 0x0fff) | 0x4000,
             mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
         );
     }
 

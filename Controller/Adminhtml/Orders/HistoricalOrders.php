@@ -10,31 +10,29 @@
 
 namespace Extend\Warranty\Controller\Adminhtml\Orders;
 
+use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Api\Sync\Orders\HistoricalOrdersRequest;
 use Extend\Warranty\Model\HistoricalOrdersSyncFlag;
 use Extend\Warranty\Model\Orders\HistoricalOrdersSync;
-use Extend\Warranty\Model\Api\Sync\Orders\HistoricalOrdersRequest;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\FlagManager;
 use Magento\Framework\Stdlib\DateTime;
-use Magento\Framework\Controller\ResultFactory;
-use Magento\Framework\Controller\ResultInterface;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
-use Magento\Sales\Api\Data\OrderInterfaceFactory;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Psr\Log\LoggerInterface;
-use Extend\Warranty\Helper\Api\Data as DataHelper;
 
 class HistoricalOrders extends Action
 {
     /**
      * Authorization level of a basic admin session
      */
-    const ADMIN_RESOURCE = 'Extend_Warranty::product_manual_sync';
+    const ADMIN_RESOURCE = 'Extend_Warranty::orders_manual_sync';
 
     /**
      * Status
@@ -167,7 +165,7 @@ class HistoricalOrders extends Action
             $this->apiHistoricalOrdersModel->setConfig($apiUrl, $apiStoreId, $apiKey);
 
 //            $batchSize = $this->dataHelper->getProductsBatchSize($scopeType, $scopeId);
-//Current orders API max batch size is 10
+            //Current orders API max batch size is 10
             $batchSize = 10;
             $this->historicalOrdersSync->setBatchSize($batchSize);
 
