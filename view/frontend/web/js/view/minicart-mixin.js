@@ -62,7 +62,7 @@ define([
             }
 
             if (!warrantyElem.length) {
-                warrantyElem = $('<div />').attr('id', blockID).addClass(this.warrantyClass);
+                warrantyElem = $('<div>').attr('id', blockID).addClass(this.warrantyClass);
                 $('div.product-item-details', element).append(warrantyElem);
             }
 

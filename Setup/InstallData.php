@@ -1,5 +1,5 @@
 <?php
-
+// phpcs:ignoreFile -- InstallData scripts are obsolete
 
 namespace Extend\Warranty\Setup;
 

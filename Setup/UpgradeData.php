@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile -- UpgradeData scripts are obsolete
 /**
  * Extend Warranty
  *

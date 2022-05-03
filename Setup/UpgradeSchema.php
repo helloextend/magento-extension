@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile -- UpgradeSchema scripts are obsolete
 /**
  * Extend Warranty
  *

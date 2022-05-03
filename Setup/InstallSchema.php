@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile -- InstallSchema scripts are obsolete
 
 namespace Extend\Warranty\Setup;
 
