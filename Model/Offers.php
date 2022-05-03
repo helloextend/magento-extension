@@ -197,8 +197,7 @@ class Offers
                                     $errors[] = __('Invalid price.');
                                 }
 
-                                if (
-                                    isset($offer['contract']['termLength'])
+                                if (isset($offer['contract']['termLength'])
                                     && (int)$warrantyData['term'] !== $offer['contract']['termLength']
                                 ) {
                                     $errors[] = __('Invalid warranty term.');

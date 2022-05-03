@@ -26,8 +26,7 @@ class Add implements \Magento\Framework\Event\ObserverInterface
      */
     public function __construct(
         \Extend\Warranty\Helper\Tracking $trackingHelper
-    )
-    {
+    ) {
         $this->_trackingHelper = $trackingHelper;
     }
 

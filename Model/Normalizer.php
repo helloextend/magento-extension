@@ -112,8 +112,7 @@ class Normalizer
 
                 if ($associatedProductOption && $associatedProductOption->getValue()) {
                     $associatedSku = $associatedProductOption->getValue();
-                    if (
-                        $sku === $associatedSku
+                    if ($sku === $associatedSku
                         && (
                             $productItem->getProductType() === Configurable::TYPE_CODE
                             || is_null($productItem->getOptionByCode('parent_product_id'))

@@ -63,8 +63,7 @@ class InstallData implements InstallDataInterface
      */
     protected $productRepository;
 
-    public function __construct
-    (
+    public function __construct(
         ProductFactory $productFactory,
         EavSetupFactory $eavSetupFactory,
         State $state,
@@ -73,8 +72,7 @@ class InstallData implements InstallDataInterface
         Reader $reader,
         DirectoryList $directoryList,
         ProductRepositoryInterface $productRepository
-    )
-    {
+    ) {
         $this->productFactory = $productFactory;
         $this->eavSetupFactory = $eavSetupFactory;
         $this->state = $state;
@@ -157,7 +155,7 @@ class InstallData implements InstallDataInterface
             ]);
 
         $imagePath = 'Extend_icon.png';
-        $warranty->addImageToMediaGallery($imagePath, array('image', 'small_image', 'thumbnail'), false, false);
+        $warranty->addImageToMediaGallery($imagePath, ['image', 'small_image', 'thumbnail'], false, false);
 
         $this->productRepository->save($warranty);
     }

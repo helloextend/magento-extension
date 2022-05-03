@@ -15,7 +15,6 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\SerializerInterface;
 
-
 class Add extends Action
 {
     const ADMIN_RESOURCE = 'Extend_Warranty::warranty_admin_add';
@@ -91,5 +90,4 @@ class Add extends Action
 
         return $this->resultFactory->create(ResultFactory::TYPE_JSON)->setHttpResponseCode(200)->setData($data);
     }
-
 }

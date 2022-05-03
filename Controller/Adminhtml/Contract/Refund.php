@@ -152,8 +152,7 @@ class Refund extends Action
         $orderItem = $this->getOrderItem($orderItemId);
         if ($orderItem) {
             $storeId = (int)$orderItem->getStoreId();
-            if (
-                !$this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            if (!$this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
                 || !$this->dataHelper->isRefundEnabled($storeId)
             ) {
                 $data = [
@@ -173,7 +172,7 @@ class Refund extends Action
                 if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                     $this->apiContractModel->setConfig($apiUrl, $apiStoreId, $apiKey);
                 } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
-                    $this->ordersApiRefund->setConfig($apiUrl,$apiStoreId,$apiKey);
+                    $this->ordersApiRefund->setConfig($apiUrl, $apiStoreId, $apiKey);
                 }
             } catch (Exception $exception) {
                 $this->logger->error($exception->getMessage());
@@ -243,16 +242,14 @@ class Refund extends Action
             foreach ($contractIds as $contractId) {
                 if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                     $refundData = $this->apiContractModel->validateRefund($contractId);
-                    if (
-                        isset($refundData['refundAmount']['amount'])
+                    if (isset($refundData['refundAmount']['amount'])
                         && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
                     ) {
                         $amountValidated += $refundData['refundAmount']['amount'];
                     }
                 } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
                     $refundData = $this->ordersApiRefund->validateRefund($contractId);
-                    if (
-                        isset($refundData['refundAmounts']['customer'])
+                    if (isset($refundData['refundAmounts']['customer'])
                         && $this->floatComparator->greaterThan((float)$refundData['refundAmounts']['customer'], 0)
                     ) {
                         $amountValidated += $refundData['refundAmounts']['customer'];

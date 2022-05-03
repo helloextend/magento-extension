@@ -141,8 +141,7 @@ class RequestRefundObserver implements ObserverInterface
         $order = $creditmemo->getOrder();
         $storeId = $order->getStoreId();
 
-        if (
-            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+        if ($this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isRefundEnabled($storeId)
             && $this->dataHelper->isAutoRefundEnabled($storeId)
         ) {
@@ -181,7 +180,7 @@ class RequestRefundObserver implements ObserverInterface
                 }
 
                 if (!empty($validContracts)) {
-                    $refundedContracts = $this->refund($validContracts,$storeId);
+                    $refundedContracts = $this->refund($validContracts, $storeId);
                 }
 
                 if (!empty($refundedContracts)) {
@@ -223,16 +222,14 @@ class RequestRefundObserver implements ObserverInterface
             foreach ($item as $key => $contractId) {
                 if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
                     $refundData = $this->apiContractModel->validateRefund($contractId);
-                    if (
-                        isset($refundData['refundAmount']['amount'])
+                    if (isset($refundData['refundAmount']['amount'])
                         && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
                     ) {
                         $validContracts[$itemId][$key] = $contractId;
                     }
                 } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
                     $refundData = $this->ordersApiRefund->validateRefund($contractId);
-                    if (
-                        isset($refundData['refundAmounts']['customer'])
+                    if (isset($refundData['refundAmounts']['customer'])
                         && $this->floatComparator->greaterThan((float)$refundData['refundAmounts']['customer'], 0)
                     ) {
                         $validContracts[$itemId][$key] = $contractId;

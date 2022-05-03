@@ -56,8 +56,7 @@ class Orders
      * @param JsonSerializer $jsonSerializer
      * @param LoggerInterface $logger
      */
-    public function __construct
-    (
+    public function __construct(
         OrdersRequest $ordersRequest,
         OrderBuilder $orderBuilder,
         DataHelper $dataHelper,
@@ -88,16 +87,16 @@ class Orders
         $orderExtend = '';
         try {
             $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qty, $type);
-            $this->ordersRequest->setConfig($apiUrl,$apiStoreId,$apiKey);
+            $this->ordersRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
             $response =  $this->ordersRequest->create($orderData, $type);
             if (!empty($response) && ($type == self::CONTRACT || $type == self::LEAD_CONTRACT)) {
                 $orderExtend = $this->saveContract($orderItem, $qty, $response);
-            } elseif(!empty($response) && $type == self::LEAD) {
+            } elseif (!empty($response) && $type == self::LEAD) {
                 $orderExtend = $this->prepareLead($response);
             } elseif (empty($response) && $this->dataHelper->isContractCreateModeScheduled()) {
                 $orderExtend = 'Scheduled';
             }
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
         }
 

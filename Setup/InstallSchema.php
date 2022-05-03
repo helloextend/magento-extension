@@ -29,7 +29,6 @@ class InstallSchema implements InstallSchemaInterface
                 'nullable' => true,
                 'comment' => 'Extend Contract ID'
             ]
-
         );
 
         $setup->endSetup();

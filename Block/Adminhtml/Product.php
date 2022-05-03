@@ -13,8 +13,7 @@ class Product extends SuperBlock
         $types = $this->_typeFactory->create()->getTypes();
         uasort(
             $types,
-            function ($elementOne, $elementTwo)
-            {
+            function ($elementOne, $elementTwo) {
                 return ($elementOne['sort_order'] < $elementTwo['sort_order']) ? -1 : 1;
             }
         );

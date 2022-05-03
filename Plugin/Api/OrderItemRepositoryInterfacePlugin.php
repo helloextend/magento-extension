@@ -45,8 +45,7 @@ class OrderItemRepositoryInterfacePlugin
     public function afterGet(
         \Magento\Sales\Api\OrderItemRepositoryInterface $subject,
         \Magento\Sales\Api\Data\OrderItemInterface $orderItem
-    ): \Magento\Sales\Api\Data\OrderItemInterface
-    {
+    ): \Magento\Sales\Api\Data\OrderItemInterface {
         $this->magentoApiHelper->setOrderItemExtensionAttributes($orderItem);
         return $orderItem;
     }
@@ -62,8 +61,7 @@ class OrderItemRepositoryInterfacePlugin
     public function afterGetList(
         \Magento\Sales\Api\OrderItemRepositoryInterface $subject,
         \Magento\Sales\Api\Data\OrderItemSearchResultInterface $searchResult
-    ): \Magento\Sales\Api\Data\OrderItemSearchResultInterface
-    {
+    ): \Magento\Sales\Api\Data\OrderItemSearchResultInterface {
         $ordersItems = $searchResult->getItems();
 
         foreach ($ordersItems as $orderItem) {

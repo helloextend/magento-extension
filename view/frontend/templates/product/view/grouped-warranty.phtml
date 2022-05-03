@@ -26,7 +26,7 @@ $_hasAssociatedProducts = count($_associatedProducts) > 0;
 $_productsData = [];
 ?>
 <?php if ($_renderWarranty && $_hasAssociatedProducts && $product->isSaleable()): ?>
-    <?php foreach ($_associatedProducts as $_item) : ?>
+    <?php foreach ($_associatedProducts as $_item): ?>
         <?php if ($_item->isSaleable()): ?>
             <?php $_productsData[] = [
                 'id' => $_item->getId(),

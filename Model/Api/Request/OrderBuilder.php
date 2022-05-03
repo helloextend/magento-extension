@@ -66,7 +66,7 @@ class OrderBuilder
      * @param DataHelper $helper
      * @param ApiDataHelper $apiHelper
      */
-    public function __construct (
+    public function __construct(
         StoreManagerInterface $storeManager,
         ProductRepositoryInterface $productRepository,
         CountryInformationAcquirerInterface $countryInformationAcquirer,
@@ -96,7 +96,7 @@ class OrderBuilder
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
         $lineItem = [];
 
-        if ( $type == \Extend\Warranty\Model\Orders::CONTRACT) {
+        if ($type == \Extend\Warranty\Model\Orders::CONTRACT) {
             $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
             $productSku = is_array($productSku) ? array_shift($productSku) : $productSku;
 

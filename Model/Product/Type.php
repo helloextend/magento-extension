@@ -49,8 +49,7 @@ class Type extends AbstractType
      */
     protected $helper;
 
-    public function __construct
-    (
+    public function __construct(
         \Magento\Catalog\Model\Product\Option              $catalogProductOption,
         \Magento\Eav\Model\Config                          $eavConfig,
         \Magento\Catalog\Model\Product\Type                $catalogProductType,
@@ -62,11 +61,9 @@ class Type extends AbstractType
         ProductRepositoryInterface                         $productRepository,
         Data                                               $helper,
         \Magento\Framework\Serialize\Serializer\Json       $serializer = null
-    )
-    {
+    ) {
         $this->helper = $helper;
-        parent::__construct
-        (
+        parent::__construct(
             $catalogProductOption,
             $eavConfig,
             $catalogProductType,

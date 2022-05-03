@@ -35,8 +35,7 @@ class Tracking extends \Magento\Framework\View\Element\Template
         \Magento\Framework\View\Element\Template\Context $context,
         \Extend\Warranty\Helper\Tracking $trackingHelper,
         \Magento\Checkout\Model\Session $checkoutSession
-    )
-    {
+    ) {
         $this->_trackingHelper = $trackingHelper;
         $this->_checkoutSession = $checkoutSession;
 

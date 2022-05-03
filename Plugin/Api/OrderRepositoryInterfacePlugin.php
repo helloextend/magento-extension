@@ -45,8 +45,7 @@ class OrderRepositoryInterfacePlugin
     public function afterGet(
         \Magento\Sales\Api\OrderRepositoryInterface $subject,
         \Magento\Sales\Api\Data\OrderInterface $order
-    ): \Magento\Sales\Api\Data\OrderInterface
-    {
+    ): \Magento\Sales\Api\Data\OrderInterface {
         $ordersItems = $order->getItems();
 
         foreach ($ordersItems as $orderItem) {
@@ -67,8 +66,7 @@ class OrderRepositoryInterfacePlugin
     public function afterGetList(
         \Magento\Sales\Api\OrderRepositoryInterface $subject,
         \Magento\Sales\Api\Data\OrderSearchResultInterface $searchResult
-    ): \Magento\Sales\Api\Data\OrderSearchResultInterface
-    {
+    ): \Magento\Sales\Api\Data\OrderSearchResultInterface {
         $orders = $searchResult->getItems();
 
         foreach ($orders as $order) {

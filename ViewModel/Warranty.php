@@ -318,4 +318,3 @@ class Warranty implements ArgumentInterface
         return $leadToken;
     }
 }
-

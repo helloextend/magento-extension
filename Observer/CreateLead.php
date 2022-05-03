@@ -102,8 +102,7 @@ class CreateLead implements ObserverInterface
         $order = $event->getOrder();
         $storeId = $order->getStoreId();
 
-        if (
-            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+        if ($this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isLeadEnabled($storeId)
         ) {
             $productItems = $warrantyItems = [];
@@ -119,7 +118,7 @@ class CreateLead implements ObserverInterface
                 $leadToken = [];
                 foreach ($warrantyItems as $warrantyItem) {
                     try {
-                        if (array_key_exists('leadToken',$warrantyItem->getProductOptionByCode('info_buyRequest'))) {
+                        if (array_key_exists('leadToken', $warrantyItem->getProductOptionByCode('info_buyRequest'))) {
                             $leadToken[] = $warrantyItem->getProductOptionByCode('info_buyRequest')['leadToken'];
                             if ($leadToken) {
                                 $warrantyItem->setLeadToken(json_encode($leadToken));
@@ -136,8 +135,7 @@ class CreateLead implements ObserverInterface
                 $hasWarranty = false;
                 foreach ($warrantyItems as $warrantyItem) {
                     $associatedSku = $warrantyItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
-                    if (
-                        $associatedSku
+                    if ($associatedSku
                         && $sku === $associatedSku
                         && (
                             $productItem->getProductType() === Configurable::TYPE_CODE

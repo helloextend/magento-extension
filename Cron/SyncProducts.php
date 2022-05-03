@@ -75,8 +75,7 @@ class SyncProducts
      */
     public function execute()
     {
-        if (
-            !$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
+        if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
             || !$this->dataHelper->isProductSyncByCronEnabled()
         ) {
             return;

@@ -221,7 +221,7 @@ class Data extends AbstractHelper
         string $scopeType = ScopeInterface::SCOPE_STORES,
         $scopeId = null
     ): string {
-       $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_API_URL_XML_PATH
+        $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_API_URL_XML_PATH
             : self::WARRANTY_AUTHENTICATION_SANDBOX_API_URL_XML_PATH;
 
         return (string)$this->scopeConfig->getValue($path);
@@ -263,7 +263,8 @@ class Data extends AbstractHelper
         if ($this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_ENABLED_XML_PATH,
             ScopeInterface::SCOPE_STORES,
-            $storeId) > 0
+            $storeId
+        ) > 0
         ) {
             return true;
         }
@@ -280,12 +281,13 @@ class Data extends AbstractHelper
      */
     public function getContractCreateApi(
         string $scopeType = ScopeInterface::SCOPE_STORES,
-        $storeId = null): int
-    {
+        $storeId = null
+    ): int {
         return (int)$this->scopeConfig->getValue(
-                self::WARRANTY_CONTRACTS_ENABLED_XML_PATH,
-                $scopeType,
-                $storeId);
+            self::WARRANTY_CONTRACTS_ENABLED_XML_PATH,
+            $scopeType,
+            $storeId
+        );
     }
 
     /**
@@ -297,7 +299,7 @@ class Data extends AbstractHelper
      */
     public function isContractCreateModeScheduled(
         string $scopeType = ScopeInterface::SCOPE_STORES,
-               $scopeId = null
+        $scopeId = null
     ): bool {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_CONTRACTS_MODE_XML_PATH,

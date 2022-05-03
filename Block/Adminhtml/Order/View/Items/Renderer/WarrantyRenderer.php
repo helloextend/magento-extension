@@ -49,8 +49,7 @@ class WarrantyRenderer extends DefaultRenderer
      * @param JsonSerializer $serializer
      * @param array $data
      */
-    public function __construct
-    (
+    public function __construct(
         Context $context,
         StockRegistryInterface $stockRegistry,
         StockConfigurationInterface $stockConfiguration,
@@ -61,8 +60,7 @@ class WarrantyRenderer extends DefaultRenderer
         JsonSerializer $serializer,
         array $data = []
     ) {
-        parent::__construct
-        (
+        parent::__construct(
             $context,
             $stockRegistry,
             $stockConfiguration,
@@ -93,7 +91,7 @@ class WarrantyRenderer extends DefaultRenderer
                         if ($this->canDisplayContainer()) {
                             $html .= '</div>';
                         }
-                    } else if (isset($options['refund']) && $options['refund'] === true) {
+                    } elseif (isset($options['refund']) && $options['refund'] === true) {
                         if ($this->canDisplayContainer()) {
                             $html .= '<div id="' . $this->getHtmlId() . '">';
                         }

@@ -33,9 +33,7 @@ class Tracking implements \Magento\Customer\CustomerData\SectionSourceInterface
     public function __construct(
         \Extend\Warranty\Helper\Tracking $trackingHelper,
         \Psr\Log\LoggerInterface $logger
-
-    )
-    {
+    ) {
         $this->_trackingHelper = $trackingHelper;
         $this->_logger = $logger;
     }
