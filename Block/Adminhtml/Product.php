@@ -7,6 +7,11 @@ use Extend\Warranty\Helper\Data;
 
 class Product extends SuperBlock
 {
+    /**
+     * Get add product button options
+     *
+     * @return array
+     */
     protected function _getAddProductButtonOptions()
     {
         $splitButtonOptions = [];

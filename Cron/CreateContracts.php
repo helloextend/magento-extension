@@ -16,18 +16,20 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
  * Class CreateContracts
+ *
+ * Create Contracts Cron
  */
 class CreateContracts
 {
     /**
-     * Contract Create Process
+     * Contract Create Process Model
      *
      * @var ContractCreateProcess
      */
     private $contractCreateProcess;
 
     /**
-     * Data Helper
+     * Warranty Api Helper
      *
      * @var DataHelper
      */

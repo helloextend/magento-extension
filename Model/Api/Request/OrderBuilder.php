@@ -20,7 +20,7 @@ class OrderBuilder
     /**
      * Platform code
      */
-    const PLATFORM_CODE = 'magento';
+    public const PLATFORM_CODE = 'magento';
 
     /**
      * Product Repository Interface
@@ -86,11 +86,17 @@ class OrderBuilder
      * @param OrderInterface $order
      * @param OrderItemInterface $orderItem
      * @param int $qty
+     * @param string $type
+     *
      * @return array
      * @throws NoSuchEntityException
      */
-    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem, int $qty, $type = 'contract'): array
-    {
+    public function preparePayload(
+        OrderInterface $order,
+        OrderItemInterface $orderItem,
+        int $qty,
+        string $type = 'contract'
+    ): array {
         $store = $this->storeManager->getStore();
         $currencyCode = $store->getBaseCurrencyCode();
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
@@ -169,10 +175,12 @@ class OrderBuilder
     }
 
     /**
-     * @param $productSku
+     * Prepare product payload
+     *
+     * @param string|null $productSku
      * @return array
      */
-    protected function prepareProductPayload($productSku) :array
+    protected function prepareProductPayload(?string $productSku) :array
     {
         if (empty($productSku)) {
             return [];
@@ -195,12 +203,13 @@ class OrderBuilder
     }
 
     /**
+     * Get plan
+     *
      * @param OrderItemInterface $orderItem
      * @return array
      */
     protected function getPlan(OrderItemInterface $orderItem): array
     {
-        $plan = [];
         $warrantyId = $orderItem->getProductOptionByCode(Type::WARRANTY_ID);
         $warrantyId = is_array($warrantyId) ? array_shift($warrantyId) : $warrantyId;
 

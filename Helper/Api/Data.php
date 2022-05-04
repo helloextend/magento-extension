@@ -21,86 +21,88 @@ use Extend\Warranty\Model\Config\Source\AuthMode;
 
 /**
  * Class Data
+ *
+ * Warranty Api Helper
  */
 class Data extends AbstractHelper
 {
     /**
      * General settings
      */
-    const WARRANTY_ENABLE_EXTEND_ENABLE_XML_PATH = 'warranty/enableExtend/enable';
-    const WARRANTY_ENABLE_EXTEND_ENABLE_BALANCE_XML_PATH = 'warranty/enableExtend/enableBalance';
-    const WARRANTY_ENABLE_EXTEND_LOGGING_ENABLED_XML_PATH = 'warranty/enableExtend/logging_enabled';
+    public const WARRANTY_ENABLE_EXTEND_ENABLE_XML_PATH = 'warranty/enableExtend/enable';
+    public const WARRANTY_ENABLE_EXTEND_ENABLE_BALANCE_XML_PATH = 'warranty/enableExtend/enableBalance';
+    public const WARRANTY_ENABLE_EXTEND_LOGGING_ENABLED_XML_PATH = 'warranty/enableExtend/logging_enabled';
 
     /**
      * Authentication settings
      */
-    const WARRANTY_AUTHENTICATION_AUTH_MODE_XML_PATH = 'warranty/authentication/auth_mode';
-    const WARRANTY_AUTHENTICATION_STORE_ID_XML_PATH = 'warranty/authentication/store_id';
-    const WARRANTY_AUTHENTICATION_API_KEY_XML_PATH = 'warranty/authentication/api_key';
-    const WARRANTY_AUTHENTICATION_SANDBOX_STORE_ID_XML_PATH = 'warranty/authentication/sandbox_store_id';
-    const WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH = 'warranty/authentication/sandbox_api_key';
-    const WARRANTY_AUTHENTICATION_API_URL_XML_PATH = 'warranty/authentication/api_url';
-    const WARRANTY_AUTHENTICATION_SANDBOX_API_URL_XML_PATH = 'warranty/authentication/sandbox_api_url';
-    const WARRANTY_AUTHENTICATION_STORE_NAME = 'warranty/authentication/store_name';
+    public const WARRANTY_AUTHENTICATION_AUTH_MODE_XML_PATH = 'warranty/authentication/auth_mode';
+    public const WARRANTY_AUTHENTICATION_STORE_ID_XML_PATH = 'warranty/authentication/store_id';
+    public const WARRANTY_AUTHENTICATION_API_KEY_XML_PATH = 'warranty/authentication/api_key';
+    public const WARRANTY_AUTHENTICATION_SANDBOX_STORE_ID_XML_PATH = 'warranty/authentication/sandbox_store_id';
+    public const WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH = 'warranty/authentication/sandbox_api_key';
+    public const WARRANTY_AUTHENTICATION_API_URL_XML_PATH = 'warranty/authentication/api_url';
+    public const WARRANTY_AUTHENTICATION_SANDBOX_API_URL_XML_PATH = 'warranty/authentication/sandbox_api_url';
+    public const WARRANTY_AUTHENTICATION_STORE_NAME = 'warranty/authentication/store_name';
 
     /**
      * Contracts settings
      */
-    const WARRANTY_CONTRACTS_ENABLED_XML_PATH = 'warranty/contracts/create';
-    const WARRANTY_CONTRACTS_MODE_XML_PATH = 'warranty/contracts/mode';
-    const WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH = 'warranty/contracts/batch_size';
-    const WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH = 'warranty/contracts/storage_period';
-    const WARRANTY_CONTRACTS_REFUND_ENABLED_XML_PATH = 'warranty/enableExtend/enableRefunds';
-    const WARRANTY_CONTRACTS_AUTO_REFUND_ENABLED_XML_PATH = 'warranty/contracts/auto_refund_enabled';
+    public const WARRANTY_CONTRACTS_ENABLED_XML_PATH = 'warranty/contracts/create';
+    public const WARRANTY_CONTRACTS_MODE_XML_PATH = 'warranty/contracts/mode';
+    public const WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH = 'warranty/contracts/batch_size';
+    public const WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH = 'warranty/contracts/storage_period';
+    public const WARRANTY_CONTRACTS_REFUND_ENABLED_XML_PATH = 'warranty/enableExtend/enableRefunds';
+    public const WARRANTY_CONTRACTS_AUTO_REFUND_ENABLED_XML_PATH = 'warranty/contracts/auto_refund_enabled';
 
     /**
      * Offers settings
      */
-    const WARRANTY_OFFERS_SHOPPING_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableCartOffers';
-    const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
-    const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
-    const WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH = 'warranty/offers/interstitial_cart_enabled';
-    const LEADS_MODAL_ENABLED_XML_PATH = 'warranty/offers/leads_modal_enabled';
-    const ORDER_OFFERS_ENABLED_XML_PATH = 'warranty/offers/order_offers_enabled';
+    public const WARRANTY_OFFERS_SHOPPING_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableCartOffers';
+    public const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
+    public const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
+    public const WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH = 'warranty/offers/interstitial_cart_enabled';
+    public const LEADS_MODAL_ENABLED_XML_PATH = 'warranty/offers/leads_modal_enabled';
+    public const ORDER_OFFERS_ENABLED_XML_PATH = 'warranty/offers/order_offers_enabled';
 
     /**
      * Products settings
      */
-    const WARRANTY_PRODUCTS_BATCH_SIZE_XML_PATH = 'warranty/products/batch_size';
-    const WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH = 'warranty/products/lastSync';
-    const WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/products/cron_sync_enabled';
+    public const WARRANTY_PRODUCTS_BATCH_SIZE_XML_PATH = 'warranty/products/batch_size';
+    public const WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH = 'warranty/products/lastSync';
+    public const WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/products/cron_sync_enabled';
 
     /**
      * Leads settings
      */
-    const WARRANTY_ENABLE_EXTEND_ENABLE_LEADS_XML_PATH = 'warranty/enableExtend/enableLeads';
+    public const WARRANTY_ENABLE_EXTEND_ENABLE_LEADS_XML_PATH = 'warranty/enableExtend/enableLeads';
 
     /**
      * Lead token url param
      */
-    const LEAD_TOKEN_URL_PARAM = 'leadToken';
+    public const LEAD_TOKEN_URL_PARAM = 'leadToken';
 
     /**
      * Module name
      */
-    const MODULE_NAME = 'Extend_Warranty';
+    public const MODULE_NAME = 'Extend_Warranty';
 
     /**
-     * Module List Interface
+     * Module List Model
      *
      * @var ModuleListInterface
      */
     private $moduleList;
 
     /**
-     * Config Resource
+     * Config Resource Model
      *
      * @var ConfigResource
      */
     private $configResource;
 
     /**
-     * Cache Manager
+     * Cache Manager Model
      *
      * @var CacheManager
      */
@@ -276,7 +278,7 @@ class Data extends AbstractHelper
      * Get contract crete API
      *
      * @param string $scopeType
-     * @param $storeId
+     * @param int|string|null $storeId
      * @return int
      */
     public function getContractCreateApi(
@@ -526,7 +528,7 @@ class Data extends AbstractHelper
     /**
      * Check if leads enabled
      *
-     * @param null $storeId
+     * @param int|string|null $storeId
      * @return bool
      */
     public function isLeadEnabled($storeId = null): bool

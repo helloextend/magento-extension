@@ -20,6 +20,7 @@ use Magento\GiftMessage\Helper\Message;
 use Magento\Checkout\Helper\Data;
 use Extend\Warranty\Helper\Api\Data as ExtendData;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Framework\DataObject;
 use Exception;
 
 class WarrantyRenderer extends DefaultRenderer
@@ -30,7 +31,7 @@ class WarrantyRenderer extends DefaultRenderer
     protected $extendHelper;
 
     /**
-     * Serializer
+     * Json Serializer
      *
      * @var JsonSerializer
      */
@@ -51,7 +52,7 @@ class WarrantyRenderer extends DefaultRenderer
      */
     public function __construct(
         Context $context,
-        StockRegistryInterface $stockRegistry,
+        StockRegistryInterface $stockRegistry, //phpcs:ignore
         StockConfigurationInterface $stockConfiguration,
         Registry $registry,
         Message $messageHelper,
@@ -73,7 +74,10 @@ class WarrantyRenderer extends DefaultRenderer
         $this->serializer = $serializer;
     }
 
-    public function getColumnHtml(\Magento\Framework\DataObject $item, $column, $field = null)
+    /**
+     * @inheritDoc
+     */
+    public function getColumnHtml(DataObject $item, $column, $field = null)
     {
         if (!$this->extendHelper->isExtendEnabled() || !$this->extendHelper->isRefundEnabled()) {
             return parent::getColumnHtml($item, $column, $field);
@@ -87,7 +91,9 @@ class WarrantyRenderer extends DefaultRenderer
                         if ($this->canDisplayContainer()) {
                             $html .= '<div id="' . $this->getHtmlId() . '">';
                         }
-                        $html .= '<button type="button" class="action action-extend-refund"' . " data-mage-init='{$this->getDataInit($item, $this->canShowPartial($item))}' >Request Refund</button>";
+                        $html .= '<button type="button" class="action action-extend-refund"' .
+                            " data-mage-init='{$this->getDataInit($item, $this->canShowPartial($item))}' >" .
+                            "Request Refund</button>";
                         if ($this->canDisplayContainer()) {
                             $html .= '</div>';
                         }
@@ -112,6 +118,14 @@ class WarrantyRenderer extends DefaultRenderer
         return $html;
     }
 
+    /**
+     * Get Data Init
+     *
+     * @param Item $item
+     * @param bool $isPartial
+     *
+     * @return string
+     */
     private function getDataInit($item, $isPartial = false)
     {
         $contractIDData = $this->getContractIDData($item);
@@ -130,13 +144,25 @@ class WarrantyRenderer extends DefaultRenderer
             ', "itemId": "' . $item->getId() . '" }}';
     }
 
-    private function canShowPartial($item)
+    /**
+     * Can show partial
+     *
+     * @param Item $item
+     *
+     * @return bool
+     */
+    private function canShowPartial(Item $item)
     {
         $contractIDData = $this->getContractIDData($item);
 
         return (count($contractIDData) > 1);
     }
 
+    /**
+     * Get Html Id
+     *
+     * @return string
+     */
     public function getHtmlId()
     {
         return 'return_order_item_' . $this->getItem()->getId();

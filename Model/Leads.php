@@ -21,6 +21,8 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class Leads
+ *
+ * Warranty Leads Model
  */
 class Leads
 {
@@ -32,21 +34,21 @@ class Leads
     private $apiLeadBuilder;
 
     /**
-     * Lead Builder
+     * Lead Builder Model
      *
      * @var LeadBuilder
      */
     private $leadBuilder;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
     private $logger;
 
     /**
-     * Data Helper
+     * Warranty Data Helper
      *
      * @var DataHelper
      */

@@ -18,7 +18,7 @@ interface SyncInterface
     /**
      * Default batch size
      */
-    const DEFAULT_BATCH_SIZE = 100;
+    public const DEFAULT_BATCH_SIZE = 100;
 
     /**
      * Get products

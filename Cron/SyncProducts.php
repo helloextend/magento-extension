@@ -19,32 +19,34 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class SyncProducts
+ *
+ * SyncProducts cron
  */
 class SyncProducts
 {
     /**
-     * Product Sync Process
+     * Product Sync Process Model
      *
      * @var ProductSyncProcess
      */
     private $productSyncProcess;
 
     /**
-     * Data Helper
+     * Warranty Api Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Flag Manager
+     * Flag Manager Model
      *
      * @var FlagManager
      */
     private $flagManager;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */

@@ -22,6 +22,8 @@ use Magento\Store\Model\Store;
 
 /**
  * Class Button
+ *
+ * Renders Button Field
  */
 class Button extends Field
 {
@@ -38,7 +40,7 @@ class Button extends Field
     private $timezone;
 
     /**
-     * Data Helper
+     * Warranty Api Helper
      *
      * @var DataHelper
      */

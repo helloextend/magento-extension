@@ -9,26 +9,29 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
 use Zend_Http_Response;
+use Zend_Http_Client_Exception;
 
 class OrdersRequest extends AbstractRequest
 {
     /**
      * Create a warranty contract
      */
-    const CREATE_ORDER_ENDPOINT = 'orders';
+    public const CREATE_ORDER_ENDPOINT = 'orders';
 
     /**
      * Response status codes
      */
-    const STATUS_CODE_SUCCESS = 200;
+    public const STATUS_CODE_SUCCESS = 200;
 
     /**
      * Create an order
      *
      * @param array $orderData
+     * @param string|null $type
      * @return array
+     * @throws Zend_Http_Client_Exception
      */
-    public function create(array $orderData, $type = 'contract'): array
+    public function create(array $orderData, ?string $type = 'contract'): array
     {
         $result = [];
         $url = $this->apiUrl . self::CREATE_ORDER_ENDPOINT;
@@ -46,7 +49,9 @@ class OrdersRequest extends AbstractRequest
             );
             $responseBody = $this->processResponse($response);
 
-            if ($type == \Extend\Warranty\Model\Orders::CONTRACT || $type == \Extend\Warranty\Model\Orders::LEAD_CONTRACT) {
+            if ($type == \Extend\Warranty\Model\Orders::CONTRACT
+                || $type == \Extend\Warranty\Model\Orders::LEAD_CONTRACT
+            ) {
                 $contractsIds = [];
                 foreach ($responseBody['lineItems'] as $lineItem) {
                     if ($lineItem['status'] != 'unfulfilled') {
@@ -68,11 +73,13 @@ class OrdersRequest extends AbstractRequest
             if ($orderApiId) {
                 $this->logger->info('Order is created successfully. OrderApiID: ' . $orderApiId);
                 if (!empty($contractsIds)) {
-                    $this->logger->info('Contracts is created successfully. OrderApiID: ' . $orderApiId . ' Contracts: ' . implode(', ', $contractsIds));
+                    $this->logger->info('Contracts is created successfully. OrderApiID: ' . $orderApiId .
+                        ' Contracts: ' . implode(', ', $contractsIds));
                 }
 
                 if (!empty($leadsTokens)) {
-                    $this->logger->info('Leads is created successfully. OrderApiID: ' . $orderApiId . ' Leads: ' . implode(', ', $leadsTokens));
+                    $this->logger->info('Leads is created successfully.
+                     OrderApiID: ' . $orderApiId . ' Leads: ' . implode(', ', $leadsTokens));
                 }
             } else {
                 $this->logger->error('Order creation is failed.');

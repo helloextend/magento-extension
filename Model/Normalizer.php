@@ -26,32 +26,34 @@ use Magento\Quote\Api\Data\CartItemExtension;
 
 /**
  * Class Normalizer
+ *
+ * Warranty Normalizer Model
  */
 class Normalizer
 {
     /**
-     * Tracking Helper
+     * Warranty Tracking Helper
      *
      * @var TrackingHelper
      */
     private $trackingHelper;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
     private $jsonSerializer;
 
     /**
-     * Cart Item Repository Interface
+     * Cart Item Repository Model
      *
      * @var CartItemRepositoryInterface
      */
     private $quoteItemRepository;
 
     /**
-     * Cart Helper
+     * Cart Helper Model
      *
      * @var CartHelper
      */
@@ -115,7 +117,7 @@ class Normalizer
                     if ($sku === $associatedSku
                         && (
                             $productItem->getProductType() === Configurable::TYPE_CODE
-                            || is_null($productItem->getOptionByCode('parent_product_id'))
+                            || null === $productItem->getOptionByCode('parent_product_id')
                         )
                     ) {
                         $warranties[$warrantyItem->getItemId()] = $warrantyItem;

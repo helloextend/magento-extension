@@ -22,26 +22,28 @@ use InvalidArgumentException;
 
 /**
  * Class ProductsRequest
+ *
+ * Warranty ProductsRequest
  */
 class ProductsRequest extends AbstractRequest
 {
     /**
      * Create / update a product
      */
-    const CREATE_PRODUCT_ENDPOINT = 'products/';
+    public const CREATE_PRODUCT_ENDPOINT = 'products/';
 
     /**
      * Get a product
      */
-    const GET_PRODUCT_ENDPOINT = 'products/';
+    public const GET_PRODUCT_ENDPOINT = 'products/';
 
     /**
      * Response status codes
      */
-    const STATUS_CODE_SUCCESS = 201;
+    public const STATUS_CODE_SUCCESS = 201;
 
     /**
-     * Product Payload Builder
+     * Product Payload Builder Model
      *
      * @var ProductPayloadBuilder
      */

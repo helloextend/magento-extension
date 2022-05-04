@@ -114,11 +114,13 @@ class WarrantyContract
      * @param OrderInterface $order
      * @param OrderItemInterface $orderItem
      * @param int $qtyInvoiced
+     * @param string|null $type
+     *
      * @return string
      *
      * @throws Exception
      */
-    public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced, $type = self::CONTRACT): string
+    public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced, ?string $type = self::CONTRACT): string
     {
         $result = ContractCreate::STATUS_FAILED;
 

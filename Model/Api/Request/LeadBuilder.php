@@ -17,11 +17,13 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 
 /**
  * Class LeadBuilder
+ *
+ * Warranty LeadBuilder
  */
 class LeadBuilder
 {
     /**
-     * Helper
+     * Warranty Helper
      *
      * @var Helper
      */

@@ -16,28 +16,30 @@ use Exception;
 
 /**
  * Class Data
+ *
+ * Warranty Helper
  */
 class Data
 {
     /**
      * `Contract ID` field
      */
-    const CONTRACT_ID = 'contract_id';
+    public const CONTRACT_ID = 'contract_id';
 
     /**
      * Cron regular expressions
      */
-    const CRON_REG_EXP = '/^(?:[1-9]?\d|\*)(?:(?:[\/-][1-9]?\d)|(?:,[1-9]?\d)+)?$/';
+    public const CRON_REG_EXP = '/^(?:[1-9]?\d|\*)(?:(?:[\/-][1-9]?\d)|(?:,[1-9]?\d)+)?$/';
 
     /**
      * List of not allowed product types
      */
-    const NOT_ALLOWED_TYPES = [
+    public const NOT_ALLOWED_TYPES = [
         Type::TYPE_CODE,
     ];
 
     /**
-     * Json serializer
+     * Json serializer Model
      *
      * @var JsonSerializer
      */
@@ -55,7 +57,7 @@ class Data
     /**
      * Format price
      *
-     * @param $price
+     * @param string|int|float|null $price
      * @return float
      */
     public function formatPrice($price): float

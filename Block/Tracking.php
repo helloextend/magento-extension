@@ -11,22 +11,28 @@ namespace Extend\Warranty\Block;
 
 /**
  * Class Tracking
- * @package Extend\Warranty\Block
+ *
+ * Warranty Tracking Block
  */
 class Tracking extends \Magento\Framework\View\Element\Template
 {
     /**
+     * Warranty Tracking Helper
+     *
      * @var \Extend\Warranty\Helper\Tracking
      */
     private $_trackingHelper;
 
     /**
+     * Checkout Session Model
+     *
      * @var \Magento\Checkout\Model\Session
      */
     private $_checkoutSession;
 
     /**
      * Tracking constructor.
+     *
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Extend\Warranty\Helper\Tracking $trackingHelper
      * @param \Magento\Checkout\Model\Session $checkoutSession
@@ -45,6 +51,8 @@ class Tracking extends \Magento\Framework\View\Element\Template
     }
 
     /**
+     * Get cart total
+     *
      * @return string
      */
     public function getCartTotal()
@@ -57,6 +65,8 @@ class Tracking extends \Magento\Framework\View\Element\Template
     }
 
     /**
+     * Get html string
+     *
      * @return string
      */
     protected function _toHtml()

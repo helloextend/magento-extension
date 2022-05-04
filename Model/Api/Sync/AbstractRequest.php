@@ -26,7 +26,7 @@ abstract class AbstractRequest implements RequestInterface
     /**
      * 'X-Extend-Access-Token' header
      */
-    const ACCESS_TOKEN_HEADER = 'X-Extend-Access-Token';
+    public const ACCESS_TOKEN_HEADER = 'X-Extend-Access-Token';
 
     /**
      * Connector Interface
@@ -36,7 +36,7 @@ abstract class AbstractRequest implements RequestInterface
     protected $connector;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
@@ -57,21 +57,21 @@ abstract class AbstractRequest implements RequestInterface
     protected $logger;
 
     /**
-     * API url
+     * API url param
      *
      * @var string
      */
     protected $apiUrl = '';
 
     /**
-     * Store ID
+     * Store ID param
      *
      * @var string
      */
     protected $storeId = '';
 
     /**
-     * API key
+     * API key param
      *
      * @var string
      */

@@ -22,25 +22,27 @@ use Exception;
 
 /**
  * Class ResetProductSyncFlag
+ *
+ * Reset the flag indicating that the products are being synchronized
  */
 class ResetProductSyncFlag extends Command
 {
     /**
-     * App State
+     * Application State
      *
      * @var AppState
      */
     private $appState;
 
     /**
-     * Flag Manager
+     * Flag Manager Model
      *
      * @var FlagManager
      */
     private $flagManager;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -67,7 +69,7 @@ class ResetProductSyncFlag extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     protected function configure()
     {
@@ -77,7 +79,7 @@ class ResetProductSyncFlag extends Command
         parent::configure();
     }
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {

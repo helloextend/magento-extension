@@ -19,22 +19,23 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Model\Order\Item;
 
 /**
- * Helper class for adding Extend warranty extension attributes to order item
  * Class Data
+ *
+ * Helper class for adding Extend warranty extension attributes to order item
  */
 class Data extends AbstractHelper
 {
     /**
      * Extension attributes
      */
-    const CONTRACT_ID        = 'contract_id';
-    const PRODUCT_OPTIONS    = 'product_options';
-    const WARRANTY_ID        = 'warranty_id';
-    const ASSOCIATED_PRODUCT = 'associated_product';
-    const REFUND             = 'refund';
-    const WARRANTY_TERM      = 'warranty_term';
-    const LEAD_TOKEN         = 'lead_token';
-    const PLAN_TYPE          = 'plan_type';
+    public const CONTRACT_ID        = 'contract_id';
+    public const PRODUCT_OPTIONS    = 'product_options';
+    public const WARRANTY_ID        = 'warranty_id';
+    public const ASSOCIATED_PRODUCT = 'associated_product';
+    public const REFUND             = 'refund';
+    public const WARRANTY_TERM      = 'warranty_term';
+    public const LEAD_TOKEN         = 'lead_token';
+    public const PLAN_TYPE          = 'plan_type';
 
     /**
      * Order Extension Attributes Factory
@@ -44,7 +45,7 @@ class Data extends AbstractHelper
     private $_extensionFactory;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var Json
      */
@@ -53,7 +54,7 @@ class Data extends AbstractHelper
     /**
      * List of product options
      */
-    const PRODUCT_OPTION_LIST = [
+    public const PRODUCT_OPTION_LIST = [
         self::WARRANTY_ID,
         self::ASSOCIATED_PRODUCT,
         self::REFUND,
