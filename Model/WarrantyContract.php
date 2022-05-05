@@ -11,6 +11,7 @@
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Math\FloatComparator;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
@@ -24,56 +25,59 @@ use Exception;
 
 /**
  * Class WarrantyContract
+ *
+ * Warranty Contract Model
  */
 class WarrantyContract
 {
+    public const CONTRACT = 'contract';
 
-    const CONTRACT = 'contract';
-    const LEAD_CONTRACT = 'lead_contract';
+    public const LEAD_CONTRACT = 'lead_contract';
+
     /**
-     * API Contract Model
+     * API Contract
      *
      * @var ApiContractModel
      */
     private $apiContractModel;
 
     /**
-     * Contract Payload Builder
+     * Contract Payload Builder Model
      *
      * @var ContractPayloadBuilder
      */
     private $contractPayloadBuilder;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
     private $jsonSerializer;
 
     /**
-     * Order Item Repository Interface
+     * Order Item Repository Model
      *
      * @var OrderItemRepositoryInterface
      */
     private $orderItemRepository;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
     private $logger;
 
     /**
-     * Float Comparator
+     * Float Comparator Model
      *
      * @var FloatComparator
      */
     private $floatComparator;
 
     /**
-     * DataHelper
+     * Warranty Api DataHelper
      *
      * @var DataHelper
      */
@@ -118,10 +122,14 @@ class WarrantyContract
      *
      * @return string
      *
-     * @throws Exception
+     * @throws LocalizedException
      */
-    public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced, ?string $type = self::CONTRACT): string
-    {
+    public function create(
+        OrderInterface $order,
+        OrderItemInterface $orderItem,
+        int $qtyInvoiced,
+        ?string $type = self::CONTRACT
+    ): string {
         $result = ContractCreate::STATUS_FAILED;
 
         if (!$this->canCreateWarranty($orderItem)) {
@@ -155,7 +163,11 @@ class WarrantyContract
                     $this->getContractIds($orderItem),
                     $newContractIds
                 );
-                $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+                try {
+                    $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+                } catch (Exception $exception) {
+                    $this->logger->error($exception->getMessage());
+                }
                 $orderItem->setContractId($contractIdsJson);
 
                 $options = $orderItem->getProductOptions();
@@ -164,7 +176,8 @@ class WarrantyContract
 
                 try {
                     $this->orderItemRepository->save($orderItem);
-                    $result = count($newContractIds) === $qtyInvoiced ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;
+                    $result = count($newContractIds) === $qtyInvoiced ? ContractCreate::STATUS_SUCCESS :
+                        ContractCreate::STATUS_PARTIAL;
                 } catch (Exception $exception) {
                     $this->logger->error($exception->getMessage());
                 }

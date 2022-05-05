@@ -5,18 +5,20 @@ namespace Extend\Warranty\Model;
 use Extend\Warranty\Model\Api\Request\OrderBuilder;
 use Extend\Warranty\Model\Api\Sync\Orders\OrdersRequest;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
+use Exception;
 
 class Orders
 {
-
-    const CONTRACT = 'contract';
-    const LEAD = 'lead';
-    const LEAD_CONTRACT = 'lead_contract';
+    public const CONTRACT = 'contract';
+    public const LEAD = 'lead';
+    public const LEAD_CONTRACT = 'lead_contract';
 
     /**
      * @var OrdersRequest
@@ -73,20 +75,29 @@ class Orders
     }
 
     /**
-     * @param $orderMagento
-     * @param $orderItem
-     * @param $qtyInvoiced
+     * Create Order
+     *
+     * @param OrderInterface $orderMagento
+     * @param OrderItemInterface $orderItem
+     * @param int $qty
+     * @param string|null $type
      * @return string
+     *
+     * @throws LocalizedException
      */
-    public function createOrder($orderMagento, $orderItem, $qty, $type = self::CONTRACT) :string
-    {
+    public function createOrder(
+        OrderInterface $orderMagento,
+        OrderItemInterface $orderItem,
+        int $qty,
+        ?string $type = self::CONTRACT
+    ) :string {
         $storeId = $orderItem->getStoreId();
         $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
         $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
         $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
         $orderExtend = '';
+        $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qty, $type);
         try {
-            $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qty, $type);
             $this->ordersRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
             $response =  $this->ordersRequest->create($orderData, $type);
             if (!empty($response) && ($type == self::CONTRACT || $type == self::LEAD_CONTRACT)) {
@@ -96,19 +107,21 @@ class Orders
             } elseif (empty($response) && $this->dataHelper->isContractCreateModeScheduled()) {
                 $orderExtend = 'Scheduled';
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
         }
 
         return empty($orderExtend) ? '' : $orderExtend;
     }
     /**
-     * @param $orderItem
-     * @param $qty
-     * @param $contractIds
+     * Save Contract
+     *
+     * @param OrderItemInterface $orderItem
+     * @param int $qty
+     * @param array $contractIds
      * @return string
      */
-    private function saveContract($orderItem, $qty, $contractIds): string
+    private function saveContract(OrderItemInterface $orderItem, int $qty, array $contractIds): string
     {
         $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
         $orderItem->setContractId($contractIdsJson);
@@ -121,10 +134,12 @@ class Orders
     }
 
     /**
-     * @param $leadTokens
+     * Prepare Lead
+     *
+     * @param array $leadTokens
      * @return bool|string
      */
-    private function prepareLead($leadTokens)
+    private function prepareLead(array $leadTokens)
     {
         return $this->jsonSerializer->serialize($leadTokens);
     }

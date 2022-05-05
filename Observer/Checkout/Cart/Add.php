@@ -11,7 +11,8 @@ namespace Extend\Warranty\Observer\Checkout\Cart;
 
 /**
  * Class Add
- * @package Extend\Warranty\Observer\Checkout\Cart
+ *
+ * Checkout Cart Add Observer
  */
 class Add implements \Magento\Framework\Event\ObserverInterface
 {
@@ -22,6 +23,7 @@ class Add implements \Magento\Framework\Event\ObserverInterface
 
     /**
      * Add constructor.
+     *
      * @param \Extend\Warranty\Helper\Tracking $trackingHelper
      */
     public function __construct(
@@ -31,6 +33,8 @@ class Add implements \Magento\Framework\Event\ObserverInterface
     }
 
     /**
+     * Observer execute
+     *
      * @param \Magento\Framework\Event\Observer $observer
      * @return void
      */

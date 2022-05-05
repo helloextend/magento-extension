@@ -11,17 +11,21 @@ namespace Extend\Warranty\Observer\Checkout\Cart;
 
 /**
  * Class UpdateItemComplete
- * @package Extend\Warranty\Observer\Checkout\Cart
+ *
+ * Checkout Cart UpdateItemComplete Observer
  */
 class UpdateItemComplete implements \Magento\Framework\Event\ObserverInterface
 {
     /**
+     * Warranty Tracking Helper
+     *
      * @var \Extend\Warranty\Helper\Tracking
      */
     private $_trackingHelper;
 
     /**
-     * UpdateItemComplete constructor.
+     * UpdateItemComplete constructor
+     *
      * @param \Extend\Warranty\Helper\Tracking $trackingHelper
      */
     public function __construct(
@@ -31,6 +35,8 @@ class UpdateItemComplete implements \Magento\Framework\Event\ObserverInterface
     }
 
     /**
+     * Observer execute
+     *
      * @param \Magento\Framework\Event\Observer $observer
      */
     public function execute(\Magento\Framework\Event\Observer $observer)

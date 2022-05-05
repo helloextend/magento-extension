@@ -16,11 +16,13 @@ use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource
 
 /**
  * Class Collection
+ *
+ * ContractCreate Resource Collection
  */
 class Collection extends AbstractCollection
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     protected function _construct()
     {
