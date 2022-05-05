@@ -17,6 +17,8 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 
 /**
  * Class SetItemDataToOrderPlugin
+ *
+ * SetItemDataToOrderPlugin plugin
  */
 class SetItemDataToOrderPlugin
 {

@@ -17,6 +17,8 @@ use Exception;
 
 /**
  * Class SetItemDataPlugin
+ *
+ * SetItemDataPlugin plugin
  */
 class SetItemDataPlugin
 {

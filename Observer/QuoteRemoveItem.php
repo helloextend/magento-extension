@@ -11,7 +11,8 @@ namespace Extend\Warranty\Observer;
 
 /**
  * Class QuoteRemoveItem
- * @package Extend\Warranty\Observer
+ *
+ * QuoteRemoveItem Observer
  */
 class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
 {
@@ -31,6 +32,8 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
     }
 
     /**
+     * Observer execute
+     *
      * @param \Magento\Framework\Event\Observer $observer
      */
     public function execute(\Magento\Framework\Event\Observer $observer)

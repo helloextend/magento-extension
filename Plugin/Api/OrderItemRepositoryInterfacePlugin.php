@@ -14,7 +14,8 @@ use Extend\Warranty\Helper\Api\Magento\Data;
 
 /**
  * Class OrderItemRepositoryInterfacePlugin
- * @package Extend\Warranty\Plugin\Api
+ *
+ * OrderItemRepositoryInterfacePlugin plugin
  */
 class OrderItemRepositoryInterfacePlugin
 {
@@ -35,7 +36,10 @@ class OrderItemRepositoryInterfacePlugin
     }
 
     /**
-     * Add "contract_id & product_options" extension attributes to order item data object to make it accessible in API data
+     * Add "contract_id & product_options"
+     *
+     * Add "contract_id & product_options" extension attributes to order item data object
+     * to make it accessible in API data
      *
      * @param \Magento\Sales\Api\OrderItemRepositoryInterface $subject
      * @param \Magento\Sales\Api\Data\OrderItemInterface $orderItem
@@ -51,7 +55,10 @@ class OrderItemRepositoryInterfacePlugin
     }
 
     /**
-     * Add "contract_id & product_options" extension attributes to order item data object to make it accessible in API data
+     * Add "contract_id & product_options"
+     *
+     * Add "contract_id & product_options" extension attributes to order item data object
+     * to make it accessible in API data
      *
      * @param \Magento\Sales\Api\OrderItemRepositoryInterface $subject
      * @param \Magento\Sales\Api\Data\OrderItemSearchResultInterface $searchResult

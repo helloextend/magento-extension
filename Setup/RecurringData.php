@@ -18,11 +18,13 @@ use Magento\Framework\Setup\ModuleDataSetupInterface;
 
 /**
  * Class RecurringData
+ *
+ *  RecurringData Setup Flag
  */
 class RecurringData implements InstallDataInterface
 {
     /**
-     * Flag Manager
+     * Flag Manager Model
      *
      * @var FlagManager
      */

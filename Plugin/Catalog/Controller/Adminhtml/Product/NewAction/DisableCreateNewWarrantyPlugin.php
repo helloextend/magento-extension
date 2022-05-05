@@ -18,6 +18,8 @@ use Magento\Framework\Message\ManagerInterface;
 
 /**
  * Class DisableCreateNewWarrantyPlugin
+ *
+ * DisableCreateNewWarrantyPlugin plugin
  */
 class DisableCreateNewWarrantyPlugin
 {
@@ -29,7 +31,7 @@ class DisableCreateNewWarrantyPlugin
     private $messageManager;
 
     /**
-     * Result Redirect Factory
+     * Result Redirect Factory Model
      *
      * @var ResultRedirectFactory
      */

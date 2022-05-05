@@ -97,6 +97,17 @@ class Type extends AbstractType
     }
 
     /**
+     * Delete type specific data
+     *
+     * @param Product $product
+     * @return void
+     */
+    public function deleteTypeSpecificData(Product $product)
+    {
+        return null;
+    }
+
+    /**
      * Is virtual
      *
      * @param Product $product

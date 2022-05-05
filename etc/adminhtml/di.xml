@@ -9,12 +9,15 @@
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
  -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <virtualType name="Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\Pool">
         <arguments>
             <argument name="modifiers" xsi:type="array">
                 <item name="warranty_price" xsi:type="array">
-                    <item name="class" xsi:type="string">Extend\Warranty\Ui\DataProvider\Product\Form\Modifier\WarrantyPrice</item>
+                    <item name="class" xsi:type="string">
+                        Extend\Warranty\Ui\DataProvider\Product\Form\Modifier\WarrantyPrice
+                    </item>
                     <item name="sortOrder" xsi:type="number">200</item>
                 </item>
             </argument>
@@ -23,7 +26,7 @@
 
     <type name="Magento\Catalog\Controller\Adminhtml\Product\NewAction">
         <plugin name="DisableCreateNewWarrantyPlugin"
-                type="Extend\Warranty\Plugin\Catalog\Controller\Adminhtml\Product\NewAction\DisableCreateNewWarrantyPlugin"
-                sortOrder="10" />
+            type="Extend\Warranty\Plugin\Catalog\Controller\Adminhtml\Product\NewAction\DisableCreateNewWarrantyPlugin"
+            sortOrder="10" />
     </type>
 </config>
