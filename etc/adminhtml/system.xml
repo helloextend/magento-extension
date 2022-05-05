@@ -441,7 +441,7 @@
                        showInDefault="1"
                        showInWebsite="1"
                        showInStore="1"
-                       anRestore="1">
+                       canRestore="1">
                     <label>Enable Interstitial Cart Offers</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
