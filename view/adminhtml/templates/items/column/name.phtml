@@ -18,7 +18,10 @@ $viewModel = $block->getViewModel();
         <?= $block->escapeHtml($_item->getName()) ?>
     </div>
     <div class="product-sku-block">
-        <span><?= $block->escapeHtml(__('SKU'))?>:</span> <?= /* @noEscape */ implode('<br />', $this->helper(\Magento\Catalog\Helper\Data::class)->splitSku($block->escapeHtml($block->getSku()))) ?>
+        <span><?= $block->escapeHtml(__('SKU'))?>:</span>
+        <?= /* @noEscape */ implode('<br />', $this->helper(\Magento\Catalog\Helper\Data::class)->splitSku(
+            $block->escapeHtml($block->getSku())
+        )) ?>
     </div>
 
     <?php if ($_item->getProductType() == "warranty"): ?>
@@ -59,14 +62,24 @@ $viewModel = $block->getViewModel();
                             <?php $dots = 'dots' . uniqid(); ?>
                             <span id="<?= /* @noEscape */ $dots; ?>"> ...</span>
                             <?php  $id = 'id' . uniqid(); ?>
-                            <span id="<?= /* @noEscape */ $id; ?>"><?= $block->escapeHtml($_option['remainder']) ?></span>
+                            <span id="<?= /* @noEscape */ $id; ?>">
+                                <?= $block->escapeHtml($_option['remainder']) ?>
+                            </span>
                             <script>
                                 require(['prototype'], function(){
                                     $('<?= /* @noEscape */ $id; ?>').hide();
-                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseover', function(){$('<?= /* @noEscape */ $id; ?>').show();});
-                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseover', function(){$('<?= /* @noEscape */ $dots; ?>').hide();});
-                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseout',  function(){$('<?= /* @noEscape */ $id; ?>').hide();});
-                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseout',  function(){$('<?= /* @noEscape */ $dots; ?>').show();});
+                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseover', function(){
+                                        $('<?= /* @noEscape */ $id; ?>').show();
+                                    });
+                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseover', function(){
+                                        $('<?= /* @noEscape */ $dots; ?>').hide();
+                                    });
+                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseout',  function(){
+                                        $('<?= /* @noEscape */ $id; ?>').hide();
+                                    });
+                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseout',  function(){
+                                        $('<?= /* @noEscape */ $dots; ?>').show();
+                                    });
                                 });
                             </script>
                         <?php endif; ?>

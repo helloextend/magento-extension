@@ -116,7 +116,7 @@ define([
 
             $.each(data, function (attribute, value) {
                 inputs.push(
-                    $('<input />').attr('type', 'hidden')
+                    $('<input>').attr('type', 'hidden')
                     .attr('name', this.options.formInputName + '[' + attribute + ']')
                     .attr('value', value)
                 );

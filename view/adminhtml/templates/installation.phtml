@@ -14,9 +14,9 @@ $viewModel = $block->getData('viewModel');
 <?php if ($viewModel->isExtendEnabled()): ?>
     <?php $jsonConfig = $viewModel->getJsonConfig(); ?>
     <?php if ($jsonConfig): ?>
-        <script src="<?= $viewModel->getJsMode() ?>"></script>
+        <script src="<?= /* @noEscape */ $viewModel->getJsMode() ?>"></script>
         <script>
-            Extend.config(<?= $viewModel->getJsonConfig() ?>);
+            Extend.config(<?=/* @noEscape */ $viewModel->getJsonConfig() ?>);
         </script>
     <?php endif; ?>
 <?php endif; ?>
