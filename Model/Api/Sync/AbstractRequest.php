@@ -13,10 +13,11 @@ namespace Extend\Warranty\Model\Api\Sync;
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Api\RequestInterface;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
-use Magento\Framework\Url\EncoderInterface;
+use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Response;
 use Magento\Framework\Exception\LocalizedException;
+use Exception;
 
 /**
  * Class AbstractRequest
@@ -43,9 +44,9 @@ abstract class AbstractRequest implements RequestInterface
     protected $jsonSerializer;
 
     /**
-     * Url Encoder
+     * Url encoder
      *
-     * @var EncoderInterface
+     * @var ZendEscaper
      */
     private $encoder;
 
@@ -82,13 +83,13 @@ abstract class AbstractRequest implements RequestInterface
      *
      * @param ConnectorInterface $connector
      * @param JsonSerializer $jsonSerializer
-     * @param EncoderInterface $encoder
+     * @param ZendEscaper $encoder
      * @param LoggerInterface $logger
      */
     public function __construct(
         ConnectorInterface $connector,
         JsonSerializer $jsonSerializer,
-        EncoderInterface $encoder,
+        ZendEscaper $encoder,
         LoggerInterface $logger
     ) {
         $this->connector = $connector;
@@ -152,6 +153,8 @@ abstract class AbstractRequest implements RequestInterface
      * Generate Idempotent Requests key
      *
      * @return string
+     * @return string
+     * @throws Exception
      */
     protected function getUuid4()
     {
@@ -177,6 +180,6 @@ abstract class AbstractRequest implements RequestInterface
      */
     protected function encode(string $url)
     {
-        return $this->encoder->encode($url);
+        return $this->encoder->escapeUrl($url);
     }
 }
