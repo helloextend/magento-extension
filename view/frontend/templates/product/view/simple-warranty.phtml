@@ -25,7 +25,7 @@ $product = $block->getProduct();
             "simpleProductWarranty": {
                 "isInProductView": true,
                 "productId": "<?= $block->escapeJs($product->getId()) ?>",
-                "productSku": "<?= $block->escapeJs($product->getSku()) ?>",
+                "productSku": "<?= $block->escapeJs(trim($product->getSku())) ?>",
                 "buttonEnabled": <?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled() ? 1 : 0) ?>,
                 "modalEnabled": <?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled() ? 1 : 0) ?>
             }

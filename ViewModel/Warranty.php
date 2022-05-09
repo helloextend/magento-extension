@@ -177,10 +177,10 @@ class Warranty implements ArgumentInterface
             $items = $this->linkManagement->getChildren($productSku);
             foreach ($items as $item) {
                 $itemSku = $item->getSku();
-                $isProductHasOffers[$itemSku] = $this->offerModel->hasOffers($itemSku);
+                $isProductHasOffers[$itemSku] = $this->offerModel->hasOffers(trim($itemSku));
             }
         } else {
-            $isProductHasOffers[$productSku] = $this->offerModel->hasOffers($productSku);
+            $isProductHasOffers[$productSku] = $this->offerModel->hasOffers(trim($productSku));
         }
 
         return $this->jsonSerializer->serialize($isProductHasOffers);

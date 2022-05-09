@@ -130,7 +130,7 @@ class Offers
 
         try {
             $this->apiOfferModel->setConfig($apiUrl, $apiStoreId, $apiKey);
-            $productSku = $item->getSku();
+            $productSku = trim($item->getSku());
             $offers = $this->apiOfferModel->getOfferInformation($productSku);
         } catch (LocalizedException $exception) {
             $this->logger->error($exception->getMessage());
