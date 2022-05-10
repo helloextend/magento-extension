@@ -13,6 +13,7 @@ namespace Extend\Warranty\Helper;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Exception;
+use Magento\Sales\Api\Data\OrderInterface;
 
 /**
  * Class Data
@@ -131,5 +132,41 @@ class Data
         }
 
         return $result;
+    }
+
+    /**
+     * Get store name
+     *
+     * @param OrderInterface $order
+     *
+     * @return string
+     */
+    public function getCustomerFullName(OrderInterface $order)
+    {
+        $firstName = $order->getCustomerFirstname();
+        $lastName = $order->getCustomerLastname();
+
+        if (empty($firstName) || empty($lastName)) {
+            $billingAddress = $order->getBillingAddress();
+            $shippingAddress = $order->getShippingAddress();
+
+            if (empty($firstName) && $shippingAddress) {
+                $firstName = $shippingAddress->getFirstname();
+
+                if (empty($firstName) && $billingAddress) {
+                    $firstName = $billingAddress->getFirstname() ?? '';
+                }
+            }
+
+            if (empty($lastName) && $shippingAddress) {
+                $lastName = $shippingAddress->getLastname();
+
+                if (empty($lastName) && $billingAddress) {
+                    $lastName = $billingAddress->getLastname() ?? '';
+                }
+            }
+        }
+
+        return $firstName . ' ' . $lastName;
     }
 }

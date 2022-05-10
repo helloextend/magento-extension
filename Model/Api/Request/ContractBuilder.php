@@ -127,18 +127,12 @@ class ContractBuilder
         ];
 
         $billingAddress = $order->getBillingAddress();
-
-        $firstName = $order->getCustomerFirstname() ?? $billingAddress->getFirstname();
-        $firstName = $firstName ?? '';
-        $lastName = $order->getCustomerLastname() ?? $billingAddress->getLastname();
-        $lastName = $lastName ?? '';
-
         $billingCountryId = $billingAddress->getCountryId();
         $billingCountryInfo = $this->countryInformationAcquirer->getCountryInfo($billingCountryId);
         $billingStreet = $this->formatStreet($billingAddress->getStreet());
 
         $customer = [
-            'name'      => $firstName . ' ' . $lastName,
+            'name'      => $this->helper->getCustomerFullName($order),
             'email'     => $order->getCustomerEmail(),
             'phone'     => $billingAddress->getTelephone(),
             'billingAddress'    => [
