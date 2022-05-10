@@ -158,10 +158,12 @@ class OrderBuilder
             'platform'  => self::PLATFORM_CODE,
         ];
 
+        $createdAt = $order->getCreatedAt();
+
         $payload = [
             'isTest'            => !$this->apiHelper->isExtendLive(),
             'currency'          => $currencyCode,
-            'createdAt'         => strtotime($order->getCreatedAt()),
+            'createdAt'         => $createdAt ? strtotime($createdAt) : 0,
             'customer'          => $this->getCustomerData($order),
             'lineItems'         => $lineItems,
             'total'             => $transactionTotal,

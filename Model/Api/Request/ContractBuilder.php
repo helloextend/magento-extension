@@ -183,6 +183,8 @@ class ContractBuilder
             'planId'        => $warrantyId,
         ];
 
+        $createdAt = $order->getCreatedAt();
+
         if ($type == \Extend\Warranty\Model\WarrantyContract::CONTRACT) {
             $payload = [
                 'transactionId' => $order->getIncrementId(),
@@ -191,7 +193,7 @@ class ContractBuilder
                 'product' => $product,
                 'currency' => $currencyCode,
                 'source' => $source,
-                'transactionDate' => strtotime($order->getCreatedAt()),
+                'transactionDate' => $createdAt ? strtotime($createdAt) : 0,
                 'plan' => $plan,
             ];
         }
@@ -204,7 +206,7 @@ class ContractBuilder
                 'leadToken' => $leadToken,
                 'currency' => $currencyCode,
                 'source' => $source,
-                'transactionDate' => strtotime($order->getCreatedAt()),
+                'transactionDate' => $createdAt ? strtotime($createdAt) : 0,
                 'plan' => $plan,
             ];
         }
