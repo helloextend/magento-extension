@@ -136,7 +136,7 @@ class ContractBuilder
         $billingStreet = $this->formatStreet($billingAddress->getStreet());
 
         $customer = [
-            'name'      => $order->getCustomerFirstname() . ' ' . $order->getCustomerLastname(),
+            'name'      => $this->helper->getCustomerFullName($order),
             'email'     => $order->getCustomerEmail(),
             'phone'     => $billingAddress->getTelephone(),
             'billingAddress'    => [
