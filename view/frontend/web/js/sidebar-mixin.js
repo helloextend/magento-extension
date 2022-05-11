@@ -9,14 +9,14 @@
 
 define([
     'jquery',
-    'underscore'
-], function ($, _) {
+    'underscore',
+    'Magento_Customer/js/customer-data',
+], function ($, _, customerData) {
     return function (originalWidget) {
         /**
          * Extends catalogAddToCart widget.
          */
         $.widget('mage.sidebar', originalWidget, {
-
             /**
              * @override
              */
@@ -57,7 +57,20 @@ define([
                         }
                     });
                 }
-            }
+            },
+
+            /**
+             * Retrieves product data by Id.
+             *
+             * @param {Number} productId - product Id
+             * @returns {Object|undefined}
+             * @private
+             */
+            _getProductById: function (productId) {
+                return _.find(customerData.get('cart')().items, function (item) {
+                    return productId === Number(item['item_id']);
+                });
+            },
 
         });
 
