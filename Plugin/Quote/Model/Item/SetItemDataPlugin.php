@@ -10,6 +10,7 @@
 
 namespace Extend\Warranty\Plugin\Quote\Model\Item;
 
+use Magento\Quote\Api\Data\CartItemExtensionInterfaceFactory;
 use Magento\Quote\Model\Quote\Item;
 use Extend\Warranty\Helper\Api\Magento\Data;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
@@ -30,14 +31,24 @@ class SetItemDataPlugin
     private $serializer;
 
     /**
+     * Cart extension factory
+     *
+     * @var CartItemExtensionInterfaceFactory
+     */
+    private $extensionFactory;
+
+    /**
      * SetItemDataPlugin constructor.
      *
      * @param JsonSerializer $serializer
+     * @param CartItemExtensionInterfaceFactory $extensionFactory
      */
     public function __construct(
-        JsonSerializer $serializer
+        JsonSerializer $serializer,
+        CartItemExtensionInterfaceFactory $extensionFactory
     ) {
         $this->serializer = $serializer;
+        $this->extensionFactory = $extensionFactory;
     }
 
     /**
@@ -66,6 +77,10 @@ class SetItemDataPlugin
 
             $extensionAttributes = $result->getExtensionAttributes();
 
+            if ($extensionAttributes === null) {
+                $extensionAttributes = $this->extensionFactory->create();
+            }
+
             if ($leadToken) {
                 $extensionAttributes->setData(Data::LEAD_TOKEN, $leadToken);
             }
@@ -85,6 +100,11 @@ class SetItemDataPlugin
     public function afterBeforeSave(Item $item): Item
     {
         $extensionAttributes = $item->getExtensionAttributes();
+
+        if ($extensionAttributes === null) {
+            $extensionAttributes = $this->extensionFactory->create();
+        }
+
         $leadToken = $extensionAttributes->getLeadToken();
         $item->setData(Data::LEAD_TOKEN, $leadToken);
 
