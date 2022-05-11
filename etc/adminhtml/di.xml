@@ -15,9 +15,8 @@
         <arguments>
             <argument name="modifiers" xsi:type="array">
                 <item name="warranty_price" xsi:type="array">
-                    <item name="class" xsi:type="string">
-                        Extend\Warranty\Ui\DataProvider\Product\Form\Modifier\WarrantyPrice
-                    </item>
+                    <item name="class"
+                          xsi:type="string">Extend\Warranty\Ui\DataProvider\Product\Form\Modifier\WarrantyPrice</item>
                     <item name="sortOrder" xsi:type="number">200</item>
                 </item>
             </argument>

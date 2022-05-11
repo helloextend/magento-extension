@@ -13,7 +13,6 @@ namespace Extend\Warranty\Controller\Cart;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Checkout\Controller\Cart;
-use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Checkout\Model\Session as CheckoutSession;
@@ -34,7 +33,7 @@ use Magento\Framework\Exception\LocalizedException;
  *
  * Add Cart Controller
  */
-class Add extends Cart implements HttpPostActionInterface
+class Add extends Cart
 {
     /**
      * Product Repository Model
