@@ -50,7 +50,7 @@ define([
             _showOffersButton: function(options) {
                 if (_.isArray(options)) {
                     $.each(options, function(ix, option) {
-                        if (option.label === 'Product' && option.value) {
+                        if ((option.label === 'Product' || option.label === 'SKU') && option.value) {
                             var escapedSku = option.value.replace(' ', '');
                             escapedSku = escapedSku.replace('"', '');
                             jQuery('[data-product-sku-escaped=' + escapedSku + ']').removeClass('hidden');
