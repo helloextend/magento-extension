@@ -17,6 +17,8 @@ use Extend\Warranty\Helper\Api\Data as DataHelper;
 
 /**
  * Class Intro
+ *
+ * Renders Intro Field
  */
 class Intro extends Field
 {
@@ -28,7 +30,7 @@ class Intro extends Field
     protected $_template = 'Extend_Warranty::system/config/intro.phtml';
 
     /**
-     * Data Helper
+     * Warranty Api Helper
      *
      * @var DataHelper
      */

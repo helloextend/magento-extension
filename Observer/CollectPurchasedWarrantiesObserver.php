@@ -25,37 +25,39 @@ use Exception;
 
 /**
  * Class CollectPurchasedWarrantiesObserver
+ *
+ * Warranty CollectPurchased Observer
  */
 class CollectPurchasedWarrantiesObserver implements ObserverInterface
 {
     /**
      * `Invoice Item ID` field
      */
-    const INVOICE_ITEM_ID = 'invoice_item_id';
+    public const INVOICE_ITEM_ID = 'invoice_item_id';
 
     /**
-     * Data Helper
+     * Warranty Api Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Contract Create Factory
+     * Warranty Contract Create Factory
      *
      * @var ContractCreateFactory
      */
     private $contractCreateFactory;
 
     /**
-     * Contract Create Resource
+     * Warranty Contract Create Resource
      *
      * @var ContractCreateResource
      */
     private $contractCreateResource;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -93,8 +95,7 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
         $invoice = $event->getData(InvoiceItemInterface::INVOICE);
         $storeId = $invoice->getStoreId();
 
-        if (
-            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+        if ($this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)
         ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {

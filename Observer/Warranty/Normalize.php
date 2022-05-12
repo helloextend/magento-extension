@@ -20,32 +20,34 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class Normalize
+ *
+ * Normalize observer
  */
 class Normalize implements ObserverInterface
 {
     /**
-     * Normalizer
+     * Normalizer Model
      *
      * @var Normalizer
      */
     private $normalizer;
 
     /**
-     * Data Helper
+     * Warranty Api Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Checkout Session
+     * Checkout Session Model
      *
      * @var CheckoutSession
      */
     private $checkoutSession;
 
     /**
-     * LoggerInterface
+     * Logger Model
      *
      * @var LoggerInterface
      */

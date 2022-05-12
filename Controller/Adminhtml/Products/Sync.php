@@ -32,76 +32,78 @@ use Exception;
 
 /**
  * Class Sync
+ *
+ * Warranty adminhtml sync products controller
  */
 class Sync extends Action
 {
     /**
      * Authorization level of a basic admin session
      */
-    const ADMIN_RESOURCE = 'Extend_Warranty::product_manual_sync';
+    public const ADMIN_RESOURCE = 'Extend_Warranty::product_manual_sync';
 
     /**
      * Status
      */
-    const STATUS_SUCCESS = 'SUCCESS';
-    const STATUS_FAIL = 'FAIL';
+    public const STATUS_SUCCESS = 'SUCCESS';
+    public const STATUS_FAIL = 'FAIL';
 
     /**
      * Website ID filter
      */
-    const WEBSITE_ID = 'website_id';
+    public const WEBSITE_ID = 'website_id';
 
     /**
-     * Flag Manager
+     * Flag Manager Model
      *
      * @var FlagManager
      */
     private $flagManager;
 
     /**
-     * Date Time
+     * Date Time Model
      *
      * @var DateTime
      */
     private $dateTime;
 
     /**
-     * Date
+     * Date Model
      *
      * @var Date
      */
     private $date;
 
     /**
-     * Data Helper
+     * Warranty Api Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Product Sync Model
+     * Sync Model
      *
      * @var ProductSyncModel
      */
     private $productSyncModel;
 
     /**
-     * Api Product Model
+     * Product Api Model
      *
      * @var ApiProductModel
      */
     private $apiProductModel;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
     private $logger;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */

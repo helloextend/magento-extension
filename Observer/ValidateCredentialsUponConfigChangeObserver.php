@@ -23,39 +23,41 @@ use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class ValidateCredentialsUponConfigChangeObserver
+ *
+ * ValidateCredentialsUponConfigChangeObserver Observer
  */
 class ValidateCredentialsUponConfigChangeObserver implements ObserverInterface
 {
     /**
-     * Context
+     * Context Model
      *
      * @var Context
      */
     private $context;
 
     /**
-     * Message Manager Interface
+     * Message Manager Model
      *
      * @var ManagerInterface
      */
     private $messageManager;
 
     /**
-     * Array Manager
+     * Array Manager Model
      *
      * @var ArrayManager
      */
     private $arrayManager;
 
     /**
-     * Data Helper
+     * Warranty Api Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Api Product Model
+     * Api Product
      *
      * @var ApiProductModel
      */

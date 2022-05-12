@@ -18,18 +18,20 @@ use InvalidArgumentException;
 
 /**
  * Class Installation
+ *
+ * Warranty Installation ViewModel
  */
 class Installation implements ArgumentInterface
 {
     /**
-     * DataHelper
+     * Warranty Api DataHelper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */

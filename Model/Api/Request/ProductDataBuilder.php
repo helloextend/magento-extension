@@ -23,18 +23,20 @@ use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class ProductDataBuilder
+ *
+ * Warranty ProductDataBuilder
  */
 class ProductDataBuilder
 {
     /**
      * Delimiter in category path.
      */
-    const DELIMITER_CATEGORY = '/';
+    public const DELIMITER_CATEGORY = '/';
 
     /**
      * Configuration identifier
      */
-    const CONFIGURATION_IDENTIFIER = 'configurableChild';
+    public const CONFIGURATION_IDENTIFIER = 'configurableChild';
 
     /**
      * Category Repository Interface
@@ -44,35 +46,35 @@ class ProductDataBuilder
     private $categoryRepository;
 
     /**
-     * Helper
+     * Warranty Helper
      *
      * @var Helper
      */
     private $helper;
 
     /**
-     * Product Media Config
+     * Product Media Config Model
      *
      * @var ProductMediaConfig
      */
     private $configMedia;
 
     /**
-     * Store Manager Interface
+     * Store Manager Model
      *
      * @var StoreManagerInterface
      */
     private $storeManager;
 
     /**
-     * Product Resource Model
+     * Product Resource
      *
      * @var ProductResourceModel
      */
     private $productResourceModel;
 
     /**
-     * Option Provider
+     * Option Provider Model
      *
      * @var OptionProvider
      */

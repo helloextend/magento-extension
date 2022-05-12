@@ -14,6 +14,8 @@ use Magento\Framework\Data\OptionSourceInterface;
 
 /**
  * Class BatchSize
+ *
+ * BatchSize Source Model
  */
 class BatchSize implements OptionSourceInterface
 {

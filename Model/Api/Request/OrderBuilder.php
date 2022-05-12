@@ -20,7 +20,7 @@ class OrderBuilder
     /**
      * Platform code
      */
-    const PLATFORM_CODE = 'magento';
+    public const PLATFORM_CODE = 'magento';
 
     /**
      * Product Repository Interface
@@ -66,7 +66,7 @@ class OrderBuilder
      * @param DataHelper $helper
      * @param ApiDataHelper $apiHelper
      */
-    public function __construct (
+    public function __construct(
         StoreManagerInterface $storeManager,
         ProductRepositoryInterface $productRepository,
         CountryInformationAcquirerInterface $countryInformationAcquirer,
@@ -86,17 +86,23 @@ class OrderBuilder
      * @param OrderInterface $order
      * @param OrderItemInterface $orderItem
      * @param int $qty
+     * @param string $type
+     *
      * @return array
      * @throws NoSuchEntityException
      */
-    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem, int $qty, $type = 'contract'): array
-    {
+    public function preparePayload(
+        OrderInterface $order,
+        OrderItemInterface $orderItem,
+        int $qty,
+        string $type = 'contract'
+    ): array {
         $store = $this->storeManager->getStore();
         $currencyCode = $store->getBaseCurrencyCode();
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
         $lineItem = [];
 
-        if ( $type == \Extend\Warranty\Model\Orders::CONTRACT) {
+        if ($type == \Extend\Warranty\Model\Orders::CONTRACT) {
             $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
             $productSku = is_array($productSku) ? array_shift($productSku) : $productSku;
 
@@ -152,10 +158,12 @@ class OrderBuilder
             'platform'  => self::PLATFORM_CODE,
         ];
 
+        $createdAt = $order->getCreatedAt();
+
         $payload = [
             'isTest'            => !$this->apiHelper->isExtendLive(),
             'currency'          => $currencyCode,
-            'createdAt'         => strtotime($order->getCreatedAt()),
+            'createdAt'         => $createdAt ? strtotime($createdAt) : 0,
             'customer'          => $this->getCustomerData($order),
             'lineItems'         => $lineItems,
             'total'             => $transactionTotal,
@@ -169,10 +177,12 @@ class OrderBuilder
     }
 
     /**
-     * @param $productSku
+     * Prepare product payload
+     *
+     * @param string|null $productSku
      * @return array
      */
-    protected function prepareProductPayload($productSku) :array
+    protected function prepareProductPayload(?string $productSku) :array
     {
         if (empty($productSku)) {
             return [];
@@ -195,12 +205,13 @@ class OrderBuilder
     }
 
     /**
+     * Get plan
+     *
      * @param OrderItemInterface $orderItem
      * @return array
      */
     protected function getPlan(OrderItemInterface $orderItem): array
     {
-        $plan = [];
         $warrantyId = $orderItem->getProductOptionByCode(Type::WARRANTY_ID);
         $warrantyId = is_array($warrantyId) ? array_shift($warrantyId) : $warrantyId;
 
@@ -262,7 +273,7 @@ class OrderBuilder
         $billingStreet = $this->formatStreet($billingAddress->getStreet());
 
         $customer = [
-            'name'      => $order->getCustomerFirstname() . ' ' . $order->getCustomerLastname(),
+            'name'      => $this->helper->getCustomerFullName($order),
             'email'     => $order->getCustomerEmail(),
             'phone'     => $billingAddress->getTelephone(),
             'billingAddress'    => [

@@ -13,7 +13,9 @@ $moduleVersion = $block->getModuleVersion();
 ?>
 
 <div class="extend__intro">
-    <img id="extend-logo" src="<?= $this->getViewFileUrl('Extend_Warranty::images/Extend_logo_slogan.svg'); ?>" alt="Logo Image">
+    <img id="extend-logo"
+         src="<?= /* @noEscape */ $block->getViewFileUrl('Extend_Warranty::images/Extend_logo_slogan.svg'); ?>"
+         alt="Logo Image">
     <div class="extend__info">
         <p id="extend-intro">
             Extend generates new revenue for your store, increases overall purchase
@@ -21,8 +23,10 @@ $moduleVersion = $block->getModuleVersion();
         <p><a href="https://extend.com/merchants">Learn more</a></p>
         <?php if (!empty($moduleVersion)): ?>
             <br />
-            <strong>Ver. <?= $moduleVersion ?></strong>
+            <strong>Ver. <?= /* @noEscape */ $moduleVersion ?></strong>
         <?php endif; ?>
     </div>
-    <img id="extend-mobile" src="<?= $this->getViewFileUrl('Extend_Warranty::images/mobile-offer.svg'); ?>" alt="Mobile Image">
+    <img id="extend-mobile"
+         src="<?= /* @noEscape */ $block->getViewFileUrl('Extend_Warranty::images/mobile-offer.svg'); ?>"
+         alt="Mobile Image">
 </div>

@@ -43,4 +43,10 @@
                 type="Extend\Warranty\Plugin\Checkout\CustomerData\AbstractItemPlugin"
                 sortOrder="10" />
     </type>
+
+    <type name="Magento\Checkout\CustomerData\Cart">
+        <plugin name="showNoVisibleProductInSidebarCart"
+                type="Extend\Warranty\Plugin\Checkout\CustomerData\CartPlugin"
+                sortOrder="10" />
+    </type>
 </config>

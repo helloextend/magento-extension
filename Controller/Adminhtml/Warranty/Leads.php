@@ -6,86 +6,116 @@ use Magento\Backend\App\Action;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
-
 use Magento\Sales\Model\AdminOrder\Create as OrderCreate;
-
 use Extend\Warranty\Model\Product\Type as WarrantyType;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\SerializerInterface;
-
 use Magento\Sales\Model\OrderRepository;
 use Magento\Quote\Model\QuoteManagement;
 use Magento\Quote\Model\QuoteRepository;
-
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Customer\Api\Data\CustomerInterfaceFactory;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\DataObject\Factory as DataObjectFactory;
+use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\Result\Json;
+use Magento\Framework\Controller\ResultInterface;
+use Exception;
 
 class Leads extends Action
 {
-    const ADMIN_RESOURCE = 'Extend_Warranty::warranty_admin_add';
+    public const ADMIN_RESOURCE = 'Extend_Warranty::warranty_admin_add';
 
     /**
+     * ProductRepository Model
+     *
      * @var ProductRepositoryInterface
      */
     protected $productRepository;
 
     /**
+     * OrderCreate Model
+     *
      * @var OrderCreate
      */
     protected $orderCreate;
 
     /**
+     * SearchCriteriaBuilder Model
+     *
      * @var SearchCriteriaBuilder
      */
     protected $searchCriteriaBuilder;
 
     /**
+     * Serializer Model
+     *
      * @var SerializerInterface
      */
     protected $serializer;
 
+    /**
+     * Store Manager Model
+     *
+     * @var StoreManagerInterface
+     */
     protected $storeManager;
 
     /**
+     * OrderRepository Model
+     *
      * @var OrderRepository
      */
     protected $orderRepository;
 
     /**
+     * QuoteManagement Model
+     *
      * @var QuoteManagement
      */
     protected $quoteManagement;
 
     /**
+     * QuoteFactory Model
+     *
      * @var QuoteFactory
      */
     protected $quoteFactory;
 
     /**
+     * CustomerFactory Model
+     *
      * @var CustomerInterfaceFactory
      */
     protected $customerFactory;
 
     /**
+     * CustomerRepository Model
+     *
      * @var CustomerRepositoryInterface
      */
     protected $customerRepository;
 
     /**
+     * QuoteRepository Model
+     *
      * @var QuoteRepository
      */
     protected $quoteRepository;
 
     /**
+     * DataObjectFactory Model
+     *
      * @var DataObjectFactory
      */
     protected $dataObjectFactory;
 
     /**
+     * Leads constructor
+     *
      * @param Action\Context $context
      * @param ScopeConfigInterface $scopeConfig
      * @param StoreManagerInterface $storeManager
@@ -134,6 +164,8 @@ class Leads extends Action
     }
 
     /**
+     * Init warranty
+     *
      * @return false|mixed
      */
     protected function initWarranty()
@@ -149,9 +181,13 @@ class Leads extends Action
     }
 
     /**
-     * @return false|mixed
+     * Get Customer by email
+     *
+     * @param string $customerEmail
+     * @return CustomerInterface
+     * @throws LocalizedException
      */
-    protected function getCustomer($customerEmail)
+    protected function getCustomer(string $customerEmail)
     {
         $this->searchCriteriaBuilder
             ->setPageSize(1)->addFilter('email', $customerEmail);
@@ -164,7 +200,9 @@ class Leads extends Action
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\ResultInterface
+     * Add warranty leads product
+     *
+     * @return ResponseInterface|Json|ResultInterface
      */
     public function execute()
     {
@@ -216,9 +254,12 @@ class Leads extends Action
 
             $order = $this->quoteManagement->submit($quote);
 
-            $data = ["status"=>"success", "redirect" => $this->_url->getUrl('sales/order/view/', ['order_id' => $order->getId()]) ];
+            $data = [
+                "status"=>"success",
+                "redirect" => $this->_url->getUrl('sales/order/view/', ['order_id' => $order->getId()])
+            ];
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $data = ["status"=>"fail"];
         }
 

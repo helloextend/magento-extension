@@ -89,7 +89,7 @@ define([
                 this.warrantyBlock.remove();
             }
 
-            var warrantyBlock = $('<div />').attr('id', blockID).addClass(this.options.blockClass);
+            var warrantyBlock = $('<div>').attr('id', blockID).addClass(this.options.blockClass);
 
             var insertion = this._getWarrantyOffersInsertion(productId, productSku);
             warrantyBlock[insertion.method](insertion.element);

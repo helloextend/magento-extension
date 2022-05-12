@@ -28,18 +28,20 @@ use Exception;
 
 /**
  * Class Warranty
+ *
+ * Warranty ViewModel
  */
 class Warranty implements ArgumentInterface
 {
     /**
-     * Data Helper
+     * Data Helper Model
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
@@ -53,28 +55,28 @@ class Warranty implements ArgumentInterface
     private $linkManagement;
 
     /**
-     * Tracking Helper
+     * Warranty Tracking Helper
      *
      * @var TrackingHelper
      */
     private $trackingHelper;
 
     /**
-     * Offer Model
+     * Offer
      *
      * @var OfferModel
      */
     private $offerModel;
 
     /**
-     * Checkout Session
+     * Checkout Session Model
      *
      * @var CheckoutSession
      */
     private $checkoutSession;
 
     /**
-     * Request
+     * Request Model
      *
      * @var Http
      */
@@ -318,4 +320,3 @@ class Warranty implements ArgumentInterface
         return $leadToken;
     }
 }
-

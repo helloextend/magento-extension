@@ -16,7 +16,7 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Math\FloatComparator;
+use Extend\Warranty\Helper\FloatComparator;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
@@ -31,70 +31,74 @@ use Exception;
 
 /**
  * Class Refund
+ *
+ * Refund Contract Adminhtml Controller
  */
 class Refund extends Action
 {
     /**
      * Authorization level of a basic admin session
      */
-    const ADMIN_RESOURCE = 'Extend_Warranty::refund_warranty';
+    public const ADMIN_RESOURCE = 'Extend_Warranty::refund_warranty';
 
     /**
-     * API Contract Model
+     * API Contract
      *
      * @var ApiContractModel
      */
     private $apiContractModel;
 
     /**
-     * Warranty Contract Model
+     * Warranty Contract
      *
      * @var WarrantyContractModel
      */
     private $warrantyContractModel;
 
     /**
+     * Orders Refund
+     *
      * @var OrdersApiRefund
      */
     private $ordersApiRefund;
 
     /**
-     * Data Helper
+     * Warranty Api Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Helper
+     * Warranty Helper
      *
      * @var Helper
      */
     private $helper;
 
     /**
-     * Float Comparator
+     * Float Comparator Model
      *
      * @var FloatComparator
      */
     private $floatComparator;
 
     /**
-     * Json Serializer
+     * Serializer
      *
      * @var Json
      */
     private $jsonSerializer;
 
     /**
-     * Order Item Repository Interface
+     * Order Item Repository Model
      *
      * @var OrderItemRepositoryInterface
      */
     private $orderItemRepository;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -152,8 +156,7 @@ class Refund extends Action
         $orderItem = $this->getOrderItem($orderItemId);
         if ($orderItem) {
             $storeId = (int)$orderItem->getStoreId();
-            if (
-                !$this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            if (!$this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
                 || !$this->dataHelper->isRefundEnabled($storeId)
             ) {
                 $data = [
@@ -170,10 +173,14 @@ class Refund extends Action
             $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
 
             try {
-                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::CONTACTS_API
+                ) {
                     $this->apiContractModel->setConfig($apiUrl, $apiStoreId, $apiKey);
-                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
-                    $this->ordersApiRefund->setConfig($apiUrl,$apiStoreId,$apiKey);
+                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::ORDERS_API
+                ) {
+                    $this->ordersApiRefund->setConfig($apiUrl, $apiStoreId, $apiKey);
                 }
             } catch (Exception $exception) {
                 $this->logger->error($exception->getMessage());
@@ -241,18 +248,20 @@ class Refund extends Action
         try {
             $amountValidated = 0;
             foreach ($contractIds as $contractId) {
-                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::CONTACTS_API
+                ) {
                     $refundData = $this->apiContractModel->validateRefund($contractId);
-                    if (
-                        isset($refundData['refundAmount']['amount'])
+                    if (isset($refundData['refundAmount']['amount'])
                         && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
                     ) {
                         $amountValidated += $refundData['refundAmount']['amount'];
                     }
-                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
+                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::ORDERS_API
+                ) {
                     $refundData = $this->ordersApiRefund->validateRefund($contractId);
-                    if (
-                        isset($refundData['refundAmounts']['customer'])
+                    if (isset($refundData['refundAmounts']['customer'])
                         && $this->floatComparator->greaterThan((float)$refundData['refundAmounts']['customer'], 0)
                     ) {
                         $amountValidated += $refundData['refundAmounts']['customer'];
@@ -278,6 +287,8 @@ class Refund extends Action
      * Request a refund
      *
      * @param OrderItemInterface $orderItem
+     * @param int $storeId
+     *
      * @return array
      */
     private function refund(OrderItemInterface $orderItem, int $storeId): array
@@ -290,9 +301,13 @@ class Refund extends Action
 
         try {
             foreach ($refundedContractIds as $contractId) {
-                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::CONTACTS_API
+                ) {
                     $status = $this->apiContractModel->refund($contractId);
-                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
+                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::ORDERS_API
+                ) {
                     $status = $this->ordersApiRefund->refund($contractId);
                 }
                 $options['refund_responses_log'][] = [
