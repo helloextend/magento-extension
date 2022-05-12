@@ -40,11 +40,11 @@ $viewModel = $block->getViewModel();
             <br />
             <?php if (empty($_refunded)): ?>
                 <span><?= $block->escapeHtml(__('Contract ID'))?>: </span>
-                <?= implode(", ", $_contractID); ?>
+                <?= /* @noEscape */ implode(", ", $_contractID); ?>
             <?php else: ?>
                 <?= $block->escapeHtml($_refunded); ?>
             <?php endif; ?>
-            <br /><span><?= $block->escapeHtml(__('Plan ID'))?>: </span><?= $_planId ?>
+            <br /><span><?= /* @noEscape */ $block->escapeHtml(__('Plan ID'))?>: </span><?= /* @noEscape */ $_planId ?>
         </div>
     <?php endif; ?>
 

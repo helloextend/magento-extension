@@ -12,6 +12,8 @@ namespace Extend\Warranty\Helper;
 
 /**
  * Class FloatComparator
+ *
+ * Helper to compare floats
  */
 class FloatComparator
 {

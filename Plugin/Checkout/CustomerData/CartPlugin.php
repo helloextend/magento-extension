@@ -16,6 +16,8 @@ use Magento\Framework\DataObject;
 
 /**
  * Class CartPlugin
+ *
+ * Fix no visible products in minicart
  */
 class CartPlugin extends Cart
 {
