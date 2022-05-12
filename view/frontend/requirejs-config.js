@@ -23,5 +23,8 @@ var config = {
                 'Extend_Warranty/js/sidebar-mixin': true
             },
         }
+    },
+    paths: {
+        'extendSdk': 'Extend_Warranty/js/extend-sdk-mock'
     }
 };
