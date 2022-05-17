@@ -17,6 +17,8 @@ use Extend\Warranty\Model\Product\Type;
 
 /**
  * Class PriceBackend
+ *
+ * Warranty Price Validation Plugin
  */
 class PriceBackend
 {

@@ -13,31 +13,34 @@ namespace Extend\Warranty\Helper;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Exception;
+use Magento\Sales\Api\Data\OrderInterface;
 
 /**
  * Class Data
+ *
+ * Warranty Helper
  */
 class Data
 {
     /**
      * `Contract ID` field
      */
-    const CONTRACT_ID = 'contract_id';
+    public const CONTRACT_ID = 'contract_id';
 
     /**
      * Cron regular expressions
      */
-    const CRON_REG_EXP = '/^(?:[1-9]?\d|\*)(?:(?:[\/-][1-9]?\d)|(?:,[1-9]?\d)+)?$/';
+    public const CRON_REG_EXP = '/^(?:[1-9]?\d|\*)(?:(?:[\/-][1-9]?\d)|(?:,[1-9]?\d)+)?$/';
 
     /**
      * List of not allowed product types
      */
-    const NOT_ALLOWED_TYPES = [
+    public const NOT_ALLOWED_TYPES = [
         Type::TYPE_CODE,
     ];
 
     /**
-     * Json serializer
+     * Json serializer Model
      *
      * @var JsonSerializer
      */
@@ -55,7 +58,7 @@ class Data
     /**
      * Format price
      *
-     * @param $price
+     * @param string|int|float|null $price
      * @return float
      */
     public function formatPrice($price): float
@@ -131,5 +134,41 @@ class Data
         }
 
         return $result;
+    }
+
+    /**
+     * Get store name
+     *
+     * @param OrderInterface $order
+     *
+     * @return string
+     */
+    public function getCustomerFullName(OrderInterface $order)
+    {
+        $firstName = $order->getCustomerFirstname();
+        $lastName = $order->getCustomerLastname();
+
+        if (empty($firstName) || empty($lastName)) {
+            $billingAddress = $order->getBillingAddress();
+            $shippingAddress = $order->getShippingAddress();
+
+            if (empty($firstName) && $shippingAddress) {
+                $firstName = $shippingAddress->getFirstname();
+
+                if (empty($firstName) && $billingAddress) {
+                    $firstName = $billingAddress->getFirstname() ?? '';
+                }
+            }
+
+            if (empty($lastName) && $shippingAddress) {
+                $lastName = $shippingAddress->getLastname();
+
+                if (empty($lastName) && $billingAddress) {
+                    $lastName = $billingAddress->getLastname() ?? '';
+                }
+            }
+        }
+
+        return $firstName . ' ' . $lastName;
     }
 }

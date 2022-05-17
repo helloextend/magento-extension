@@ -14,7 +14,7 @@ use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Model\Api\Request\ProductDataBuilder as ProductPayloadBuilder;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
-use Magento\Framework\Url\EncoderInterface;
+use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
 use Zend_Http_Client_Exception;
@@ -22,26 +22,28 @@ use InvalidArgumentException;
 
 /**
  * Class ProductsRequest
+ *
+ * Warranty ProductsRequest
  */
 class ProductsRequest extends AbstractRequest
 {
     /**
      * Create / update a product
      */
-    const CREATE_PRODUCT_ENDPOINT = 'products/';
+    public const CREATE_PRODUCT_ENDPOINT = 'products/';
 
     /**
      * Get a product
      */
-    const GET_PRODUCT_ENDPOINT = 'products/';
+    public const GET_PRODUCT_ENDPOINT = 'products/';
 
     /**
      * Response status codes
      */
-    const STATUS_CODE_SUCCESS = 201;
+    public const STATUS_CODE_SUCCESS = 201;
 
     /**
-     * Product Payload Builder
+     * Product Payload Builder Model
      *
      * @var ProductPayloadBuilder
      */
@@ -57,7 +59,7 @@ class ProductsRequest extends AbstractRequest
     /**
      * Url Encoder
      *
-     * @var EncoderInterface
+     * @var ZendEscaper
      */
     private $encoder;
 
@@ -69,7 +71,7 @@ class ProductsRequest extends AbstractRequest
      * @param LoggerInterface $logger
      * @param ProductPayloadBuilder $productPayloadBuilder
      * @param LoggerInterface $syncLogger
-     * @param EncoderInterface $encoder
+     * @param ZendEscaper $encoder
      */
     public function __construct(
         ConnectorInterface $connector,
@@ -77,7 +79,7 @@ class ProductsRequest extends AbstractRequest
         LoggerInterface $logger,
         ProductPayloadBuilder $productPayloadBuilder,
         LoggerInterface $syncLogger,
-        EncoderInterface $encoder
+        ZendEscaper $encoder
     ) {
         $this->productPayloadBuilder = $productPayloadBuilder;
         $this->syncLogger = $syncLogger;

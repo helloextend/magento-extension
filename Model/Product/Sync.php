@@ -17,32 +17,34 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 
 /**
  * Class Sync
+ *
+ * Sync Product Model
  */
 class Sync implements SyncInterface
 {
     /**
-     * Product Repository Interface
+     * Product Repository Model
      *
      * @var ProductRepositoryInterface
      */
     private $productRepository;
 
     /**
-     * Search Criteria Builder
+     * Search Criteria Builder Model
      *
      * @var SearchCriteriaBuilder
      */
     private $searchCriteriaBuilder;
 
     /**
-     * Batch size
+     * Batch size prop
      *
      * @var int
      */
     private $batchSize;
 
     /**
-     * Count of batches
+     * Count of batches prop
      *
      * @var int
      */

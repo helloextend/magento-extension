@@ -18,13 +18,15 @@ use InvalidArgumentException;
 
 /**
  * Class OffersRequest
+ *
+ * Warranty OffersRequest
  */
 class OffersRequest extends AbstractRequest
 {
     /**
      * Get offer information
      */
-    const GET_OFFER_INFO_ENDPOINT = 'offers?storeId=%s&productId=%s';
+    public const GET_OFFER_INFO_ENDPOINT = 'offers?storeId=%s&productId=%s';
 
     /**
      * Get offer information

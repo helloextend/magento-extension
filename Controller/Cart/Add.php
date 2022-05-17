@@ -13,7 +13,6 @@ namespace Extend\Warranty\Controller\Cart;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Checkout\Controller\Cart;
-use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Checkout\Model\Session as CheckoutSession;
@@ -31,39 +30,41 @@ use Magento\Framework\Exception\LocalizedException;
 
 /**
  * Class Add
+ *
+ * Add Cart Controller
  */
-class Add extends Cart implements HttpPostActionInterface
+class Add extends Cart
 {
     /**
-     * Product Repository Interface
+     * Product Repository Model
      *
      * @var ProductRepositoryInterface
      */
     private $productRepository;
 
     /**
-     * Search Criteria Builder
+     * Search Criteria Builder Model
      *
      * @var SearchCriteriaBuilder
      */
     private $searchCriteriaBuilder;
 
     /**
-     * Tracking Helper
+     * Warranty Tracking Helper
      *
      * @var TrackingHelper
      */
     private $trackingHelper;
 
     /**
-     * Offer Model
+     * Offer
      *
      * @var OfferModel
      */
     private $offerModel;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -144,7 +145,9 @@ class Add extends Cart implements HttpPostActionInterface
             $this->messageManager->addErrorMessage(
                 __('Sorry! We can\'t add this product protection to your shopping cart right now.')
             );
-            $this->logger->error('Invalid form key. Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData));
+            $this->logger->error(
+                'Invalid form key. Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData)
+            );
             $responseData = [
                 'status' => false,
                 'error' => 'Invalid form key',
@@ -160,12 +163,14 @@ class Add extends Cart implements HttpPostActionInterface
                     __('Sorry! We can\'t add this product protection to your shopping cart right now.')
                 );
                 $this->logger->error(
-                    'Oops! There was an error finding the protection plan product, please ensure the protection plan product is in your catalog and is enabled! '
+                    'Oops! There was an error finding the protection plan product,' .
+                    ' please ensure the protection plan product is in your catalog and is enabled! '
                     . 'Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData)
                 );
                 $responseData = [
                     'status' => false,
-                    'error' => 'Oops! There was an error finding the protection plan product, please ensure the protection plan product is in your catalog and is enabled!',
+                    'error' => 'Oops! There was an error finding the protection plan product,' .
+                        ' please ensure the protection plan product is in your catalog and is enabled!'
                 ];
 
                 return $this->jsonResponse($responseData);
@@ -178,7 +183,8 @@ class Add extends Cart implements HttpPostActionInterface
                 );
                 $errorsAsString = implode(' ', $errors);
                 $this->logger->error(
-                    'Invalid warranty data. ' . $errorsAsString . ' Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData)
+                    'Invalid warranty data. ' . $errorsAsString . ' Warranty data: ' .
+                    $this->offerModel->getWarrantyDataAsString($warrantyData)
                 );
                 $responseData = [
                     'status' => false,

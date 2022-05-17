@@ -77,8 +77,8 @@ define([
             // create new row for the warranty offers right after product row
             var productRow = elem.closest('tr');
             if (productRow.length) {
-                var newRow = $('<tr />').addClass('warranty-offers-row');
-                var newCol = $('<td />').attr('colspan', productRow.children().length);
+                var newRow = $('<tr>').addClass('warranty-offers-row');
+                var newCol = $('<td>').attr('colspan', productRow.children().length);
 
                 newRow.append(newCol)
                 .insertAfter(productRow);

@@ -25,30 +25,32 @@ use Exception;
 
 /**
  * Class ContractBuilder
+ *
+ * Warranty ContractBuilder
  */
 class ContractBuilder
 {
     /**
      * Platform code
      */
-    const PLATFORM_CODE = 'magento';
+    public const PLATFORM_CODE = 'magento';
 
     /**
-     * Product Repository Interface
+     * Product Repository Model
      *
      * @var ProductRepositoryInterface
      */
     private $productRepository;
 
     /**
-     * Store Manager Interface
+     * Store Manager Model
      *
      * @var StoreManagerInterface
      */
     private $storeManager;
 
     /**
-     * Country Information Acquirer Interface
+     * Country Information Acquirer Model
      *
      * @var CountryInformationAcquirerInterface
      */
@@ -86,10 +88,12 @@ class ContractBuilder
      *
      * @param OrderInterface $order
      * @param OrderItemInterface $orderItem
+     * @param string $type
+     *
      * @return array
      * @throws NoSuchEntityException
      */
-    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem, $type): array
+    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem, string $type): array
     {
         $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
         $productSku = is_array($productSku) ? array_shift($productSku) : $productSku;
@@ -132,7 +136,7 @@ class ContractBuilder
         $billingStreet = $this->formatStreet($billingAddress->getStreet());
 
         $customer = [
-            'name'      => $order->getCustomerFirstname() . ' ' . $order->getCustomerLastname(),
+            'name'      => $this->helper->getCustomerFullName($order),
             'email'     => $order->getCustomerEmail(),
             'phone'     => $billingAddress->getTelephone(),
             'billingAddress'    => [
@@ -179,6 +183,8 @@ class ContractBuilder
             'planId'        => $warrantyId,
         ];
 
+        $createdAt = $order->getCreatedAt();
+
         if ($type == \Extend\Warranty\Model\WarrantyContract::CONTRACT) {
             $payload = [
                 'transactionId' => $order->getIncrementId(),
@@ -187,7 +193,7 @@ class ContractBuilder
                 'product' => $product,
                 'currency' => $currencyCode,
                 'source' => $source,
-                'transactionDate' => strtotime($order->getCreatedAt()),
+                'transactionDate' => $createdAt ? strtotime($createdAt) : 0,
                 'plan' => $plan,
             ];
         }
@@ -200,7 +206,7 @@ class ContractBuilder
                 'leadToken' => $leadToken,
                 'currency' => $currencyCode,
                 'source' => $source,
-                'transactionDate' => strtotime($order->getCreatedAt()),
+                'transactionDate' => $createdAt ? strtotime($createdAt) : 0,
                 'plan' => $plan,
             ];
         }

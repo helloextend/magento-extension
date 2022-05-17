@@ -21,30 +21,32 @@ use InvalidArgumentException;
 
 /**
  * Class Connector
+ *
+ * Warranty Connector
  */
 class Connector implements ConnectorInterface
 {
     /**
      * Timeout
      */
-    const TIMEOUT = 20;
+    public const TIMEOUT = 20;
 
     /**
-     * ZendClient
+     * Zend Http Client
      *
      * @var ZendClient
      */
     private $httpClient;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
     private $jsonSerializer;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */

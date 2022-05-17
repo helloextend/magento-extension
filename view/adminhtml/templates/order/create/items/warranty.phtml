@@ -11,23 +11,24 @@ $inCartViewModel = $block->getData('viewModel');
 <?php if ($_product->getTypeId() !== 'warranty'): ?>
     <?php if ($inCartViewModel->isExtendEnabled() && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
         <?php if (!$inCartViewModel->hasWarranty($quote, $_product->getSku())): ?>
-            <tbody id="warranty-<?= $_item->getId() ?>">
+            <tbody id="warranty-<?= /* @noEscape */ $_item->getId() ?>">
                 <tr>
                     <td>
-                        <div id="extend-offer-<?= $_item->getId() ?>"></div>
+                        <div id="extend-offer-<?= /* @noEscape */ $_item->getId() ?>"></div>
                     </td>
                 </tr>
-                <script type="text/javascript">
+                <script>
                     require(['jquery'], function($){
-                        Extend.buttons.renderSimpleOffer('#extend-offer-<?= $_item->getId() ?>', {
-                            referenceId: '<?= $_item->getSku() ?>',
+                        Extend.buttons.renderSimpleOffer('#extend-offer-<?= /* @noEscape */ $_item->getId() ?>', {
+                            referenceId: '<?= /* @noEscape */ $_item->getSku() ?>',
                             onAddToCart: function (opts) {
 
                                 const plan = opts.plan;
                                 if (plan) {
-                                    let parentId = "<?= $_item->getOptionByCode('simple_product') ? $_item->getProductId() : '' ?>";
-                                    let url      = "<?= $block->getUrl('extend/warranty/add') ?>";
-                                    plan.product = '<?= $_item->getSku() ?>';
+                                    let parentId = "<?= /* @noEscape */ $_item->getOptionByCode('simple_product') ?
+                                        $_item->getProductId() : '' ?>";
+                                    let url      = "<?= /* @noEscape */ $block->getUrl('extend/warranty/add') ?>";
+                                    plan.product = '<?= /* @noEscape */ $_item->getSku() ?>';
 
                                    $.post(url, {
                                         warranty: plan,

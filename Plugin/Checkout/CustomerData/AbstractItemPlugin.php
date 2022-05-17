@@ -15,34 +15,39 @@ use Magento\Checkout\CustomerData\AbstractItem;
 use Extend\Warranty\Model\Product\Type;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
+use Magento\Quote\Model\Quote\Item;
 
 /**
  * Class AbstractItemPlugin
+ *
+ * AbstractItemPlugin plugin
  */
 class AbstractItemPlugin
 {
     /**
-     * Url builder
+     * Url builder Model
      *
      * @var UrlInterface
      */
     private $urlBuilder;
 
     /**
-     * Data Helper
+     * Warranty Api Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Tracking Helper
+     * Warranty Tracking Helper
      *
      * @var TrackingHelper
      */
     private $trackingHelper;
 
     /**
+     * AbstractItemPlugin constructor
+     *
      * @param UrlInterface $urlBuilder
      * @param DataHelper $dataHelper
      * @param TrackingHelper $trackingHelper
@@ -58,17 +63,17 @@ class AbstractItemPlugin
     }
 
     /**
-     * Set 'isWarranty' flag for product image
-     * Set data for render add warranty button on minicart
+     * Set 'isWarranty' flag for product image. Set data for render add warranty button on minicart
      *
      * @param AbstractItem $subject
      * @param array $result
-     * @param $item
+     * @param Item $item
      * @return array
      */
-    public function afterGetItemData(AbstractItem $subject, array $result, $item): array
+    public function afterGetItemData(AbstractItem $subject, array $result, Item $item): array
     {
-        $result['product_image']['isWarranty'] = isset($result['product_type']) && $result['product_type'] === Type::TYPE_CODE;
+        $result['product_image']['isWarranty'] = isset($result['product_type'])
+            && $result['product_type'] === Type::TYPE_CODE;
 
         if ($this->isShoppingCartOffersEnabled() && !$this->hasWarranty($item)) {
             $result['product_can_add_warranty'] = true;
@@ -85,10 +90,10 @@ class AbstractItemPlugin
     /**
      * Check if has warranty in cart
      *
-     * @param $item
+     * @param Item $item
      * @return bool
      */
-    private function hasWarranty($item): bool
+    private function hasWarranty(Item $item): bool
     {
         $hasWarranty = false;
         $quote = $item->getQuote();
@@ -107,6 +112,8 @@ class AbstractItemPlugin
     }
 
     /**
+     * Get Warranty Cart Add Url
+     *
      * @return string
      */
     private function getWarrantyAddUrl(): string
@@ -115,10 +122,12 @@ class AbstractItemPlugin
     }
 
     /**
-     * @param $item
+     * Get Parent Product Id
+     *
+     * @param Item $item
      * @return string
      */
-    private function getParentId($item): string
+    private function getParentId(Item $item): string
     {
         return $item->getOptionByCode('simple_product') ? $item->getProductId() : '';
     }

@@ -14,7 +14,8 @@ use Extend\Warranty\Helper\Api\Magento\Data;
 
 /**
  * Class OrderRepositoryInterfacePlugin
- * @package Extend\Warranty\Plugin\Api
+ *
+ * OrderRepositoryInterfacePlugin plugin
  */
 class OrderRepositoryInterfacePlugin
 {
@@ -35,7 +36,10 @@ class OrderRepositoryInterfacePlugin
     }
 
     /**
-     * Add "contract_id & product_options" extension attributes to order item data object to make it accessible in API data
+     * Add "contract_id & product_options"
+     *
+     * Add "contract_id & product_options" extension attributes to order item data object
+     * to make it accessible in API data
      *
      * @param \Magento\Sales\Api\OrderRepositoryInterface $subject
      * @param \Magento\Sales\Api\Data\OrderInterface $order
@@ -45,8 +49,7 @@ class OrderRepositoryInterfacePlugin
     public function afterGet(
         \Magento\Sales\Api\OrderRepositoryInterface $subject,
         \Magento\Sales\Api\Data\OrderInterface $order
-    ): \Magento\Sales\Api\Data\OrderInterface
-    {
+    ): \Magento\Sales\Api\Data\OrderInterface {
         $ordersItems = $order->getItems();
 
         foreach ($ordersItems as $orderItem) {
@@ -57,7 +60,10 @@ class OrderRepositoryInterfacePlugin
     }
 
     /**
-     * Add "contract_id & product_options" extension attributes to order item data object to make it accessible in API data
+     * Add "contract_id & product_options"
+     *
+     * Add "contract_id & product_options" extension attributes to order item data object
+     * to make it accessible in API data
      *
      * @param \Magento\Sales\Api\OrderRepositoryInterface $subject
      * @param \Magento\Sales\Api\Data\OrderSearchResultInterface $searchResult
@@ -67,8 +73,7 @@ class OrderRepositoryInterfacePlugin
     public function afterGetList(
         \Magento\Sales\Api\OrderRepositoryInterface $subject,
         \Magento\Sales\Api\Data\OrderSearchResultInterface $searchResult
-    ): \Magento\Sales\Api\Data\OrderSearchResultInterface
-    {
+    ): \Magento\Sales\Api\Data\OrderSearchResultInterface {
         $orders = $searchResult->getItems();
 
         foreach ($orders as $order) {

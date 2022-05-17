@@ -11,16 +11,21 @@ namespace Extend\Warranty\CustomerData;
 
 /**
  * Class Tracking
- * @package Extend\Warranty\CustomerData
+ *
+ * Warranty Tracking
  */
 class Tracking implements \Magento\Customer\CustomerData\SectionSourceInterface
 {
     /**
+     * Logger Model
+     *
      * @var \Psr\Log\LoggerInterface
      */
     protected $_logger;
 
     /**
+     * Warranty Tracking Helper
+     *
      * @var \Extend\Warranty\Helper\Tracking
      */
     protected $_trackingHelper;
@@ -33,14 +38,14 @@ class Tracking implements \Magento\Customer\CustomerData\SectionSourceInterface
     public function __construct(
         \Extend\Warranty\Helper\Tracking $trackingHelper,
         \Psr\Log\LoggerInterface $logger
-
-    )
-    {
+    ) {
         $this->_trackingHelper = $trackingHelper;
         $this->_logger = $logger;
     }
 
     /**
+     * Get Section Data
+     *
      * @return array
      */
     public function getSectionData()

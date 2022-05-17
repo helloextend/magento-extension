@@ -15,6 +15,8 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 
 /**
  * Class Button
+ *
+ * Button Config Block
  */
 class Button extends Field
 {

@@ -19,7 +19,7 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Magento\Framework\Math\FloatComparator;
+use Extend\Warranty\Helper\FloatComparator;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -28,60 +28,62 @@ use Exception;
 
 /**
  * Class RequestRefundObserver
+ *
+ * RequestRefundObserver Observer
  */
 class RequestRefundObserver implements ObserverInterface
 {
     /**
-     * API Contract Model
+     * API Contract
      *
      * @var ApiContractModel
      */
     private $apiContractModel;
 
     /**
-     * Data Helper
+     * Warranty Api Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Message Manager Interface
+     * Message Manager Model
      *
      * @var MessageManagerInterface
      */
     private $messageManager;
 
     /**
-     * Float Comparator
+     * Float Comparator Model
      *
      * @var FloatComparator
      */
     private $floatComparator;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var Json
      */
     private $jsonSerializer;
 
     /**
-     * Order Item Repository Interface
+     * Order Item Repository Model
      *
      * @var OrderItemRepositoryInterface
      */
     private $orderItemRepository;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
     private $logger;
 
     /**
-     * Warranty Contract Model
+     * Warranty Contract
      *
      * @var WarrantyContractModel
      */
@@ -141,8 +143,7 @@ class RequestRefundObserver implements ObserverInterface
         $order = $creditmemo->getOrder();
         $storeId = $order->getStoreId();
 
-        if (
-            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+        if ($this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isRefundEnabled($storeId)
             && $this->dataHelper->isAutoRefundEnabled($storeId)
         ) {
@@ -168,9 +169,11 @@ class RequestRefundObserver implements ObserverInterface
 
                 if (!empty($refundItems)) {
                     try {
-                        if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                        $contractCreateApi =
+                            $this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId);
+                        if ($contractCreateApi == CreateContractApi::CONTACTS_API) {
                             $this->apiContractModel->setConfig($apiUrl, $apiStoreId, $apiKey);
-                        } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
+                        } elseif ($contractCreateApi == CreateContractApi::ORDERS_API) {
                             $this->ordersApiRefund->setConfig($apiUrl, $apiStoreId, $apiKey);
                         }
 
@@ -181,7 +184,7 @@ class RequestRefundObserver implements ObserverInterface
                 }
 
                 if (!empty($validContracts)) {
-                    $refundedContracts = $this->refund($validContracts,$storeId);
+                    $refundedContracts = $this->refund($validContracts, $storeId);
                 }
 
                 if (!empty($refundedContracts)) {
@@ -189,20 +192,22 @@ class RequestRefundObserver implements ObserverInterface
                         $orderItem = $creditmemoItem->getOrderItem();
                         $contractIds = $this->warrantyContactModel->getContractIds($orderItem);
 
-                        if (array_key_exists($orderItem->getId(), $refundedContracts)) {
-                            foreach ($refundedContracts as $refundedContractsData) {
-                                $contractIds = array_diff($contractIds, $refundedContractsData['contractIds']);
-                                $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
-                                $options = $refundedContractsData['options'];
-                                $orderItem->setContractId($contractIdsJson);
-                                $options['refund'] = empty($contractIds);
-                                $orderItem = $this->warrantyContactModel->updateOrderItemOptions($orderItem, $options);
-                                $this->orderItemRepository->save($orderItem);
-                            }
+                        if (!array_key_exists($orderItem->getId(), $refundedContracts)) {
+                            continue;
+                        }
+
+                        foreach ($refundedContracts as $refundedContractsData) {
+                            $contractIds = array_diff($contractIds, $refundedContractsData['contractIds']);
+                            $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+                            $options = $refundedContractsData['options'];
+                            $orderItem->setContractId($contractIdsJson);
+                            $options['refund'] = empty($contractIds);
+                            $orderItem = $this->warrantyContactModel->updateOrderItemOptions($orderItem, $options);
+                            $this->orderItemRepository->save($orderItem);
                         }
                     }
                 }
-            } catch (LocalizedException $exception) {
+            } catch (Exception $exception) {
                 $this->logger->error($exception->getMessage());
             }
         }
@@ -221,18 +226,20 @@ class RequestRefundObserver implements ObserverInterface
 
         foreach ($refundItems as $itemId => $item) {
             foreach ($item as $key => $contractId) {
-                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::CONTACTS_API
+                ) {
                     $refundData = $this->apiContractModel->validateRefund($contractId);
-                    if (
-                        isset($refundData['refundAmount']['amount'])
+                    if (isset($refundData['refundAmount']['amount'])
                         && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
                     ) {
                         $validContracts[$itemId][$key] = $contractId;
                     }
-                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
+                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::ORDERS_API
+                ) {
                     $refundData = $this->ordersApiRefund->validateRefund($contractId);
-                    if (
-                        isset($refundData['refundAmounts']['customer'])
+                    if (isset($refundData['refundAmounts']['customer'])
                         && $this->floatComparator->greaterThan((float)$refundData['refundAmounts']['customer'], 0)
                     ) {
                         $validContracts[$itemId][$key] = $contractId;
@@ -263,9 +270,13 @@ class RequestRefundObserver implements ObserverInterface
 
         foreach ($validContracts as $itemId => $item) {
             foreach ($item as $key => $contractId) {
-                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
+                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::CONTACTS_API
+                ) {
                     $status = $this->apiContractModel->refund($contractId);
-                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
+                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::ORDERS_API
+                ) {
                     $status = $this->ordersApiRefund->refund($contractId);
                 }
 

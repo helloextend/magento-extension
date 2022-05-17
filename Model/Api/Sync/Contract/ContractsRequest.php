@@ -18,23 +18,25 @@ use InvalidArgumentException;
 
 /**
  * Class ContractsRequest
+ *
+ * Warranty ContractsRequest
  */
 class ContractsRequest extends AbstractRequest
 {
     /**
      * Create a warranty contract
      */
-    const CREATE_CONTRACT_ENDPOINT = 'contracts/';
+    public const CREATE_CONTRACT_ENDPOINT = 'contracts/';
 
     /**
      * Cancel a warranty contract and request a refund
      */
-    const REFUND_CONTRACT_ENDPOINT = 'contracts/%s/refund';
+    public const REFUND_CONTRACT_ENDPOINT = 'contracts/%s/refund';
 
     /**
      * Response status codes
      */
-    const STATUS_CODE_SUCCESS = 201;
+    public const STATUS_CODE_SUCCESS = 201;
 
     /**
      * Create a warranty contract

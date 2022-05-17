@@ -24,22 +24,27 @@ use Extend\Warranty\Model\Offers as OfferModel;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Request\Http;
 use Magento\Sales\Model\Order\Item;
+use Magento\Sales\Api\OrderItemRepositoryInterface;
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Sales\Api\Data\OrderItemSearchResultInterface;
 use Exception;
 
 /**
  * Class Warranty
+ *
+ * Warranty ViewModel
  */
 class Warranty implements ArgumentInterface
 {
     /**
-     * Data Helper
+     * Data Helper Model
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
@@ -53,32 +58,46 @@ class Warranty implements ArgumentInterface
     private $linkManagement;
 
     /**
-     * Tracking Helper
+     * Warranty Tracking Helper
      *
      * @var TrackingHelper
      */
     private $trackingHelper;
 
     /**
-     * Offer Model
+     * Offer
      *
      * @var OfferModel
      */
     private $offerModel;
 
     /**
-     * Checkout Session
+     * Checkout Session Model
      *
      * @var CheckoutSession
      */
     private $checkoutSession;
 
     /**
-     * Request
+     * Request Model
      *
      * @var Http
      */
     private $request;
+
+    /**
+     * Order Item Repository Model
+     *
+     * @var OrderItemRepositoryInterface
+     */
+    private $orderItemRepository;
+
+    /**
+     * Search Criteria Builder Model
+     *
+     * @var SearchCriteriaBuilder
+     */
+    private $searchCriteriaBuilder;
 
     /**
      * Warranty constructor
@@ -90,6 +109,8 @@ class Warranty implements ArgumentInterface
      * @param OfferModel $offerModel
      * @param CheckoutSession $checkoutSession
      * @param Http $request
+     * @param OrderItemRepositoryInterface $orderItemRepository
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
      */
     public function __construct(
         DataHelper $dataHelper,
@@ -98,7 +119,9 @@ class Warranty implements ArgumentInterface
         TrackingHelper $trackingHelper,
         OfferModel $offerModel,
         CheckoutSession $checkoutSession,
-        Http $request
+        Http $request,
+        OrderItemRepositoryInterface $orderItemRepository,
+        SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
         $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
@@ -107,6 +130,8 @@ class Warranty implements ArgumentInterface
         $this->offerModel = $offerModel;
         $this->checkoutSession = $checkoutSession;
         $this->request = $request;
+        $this->orderItemRepository = $orderItemRepository;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
     /**
@@ -234,7 +259,7 @@ class Warranty implements ArgumentInterface
      * @param string $sku
      * @return bool
      */
-    public function isWarrantyInQuoteForSku(string $sku): bool
+    public function isWarrantyInQuote(string $sku): bool
     {
         try {
             $quote = $this->checkoutSession->getQuote();
@@ -247,6 +272,54 @@ class Warranty implements ArgumentInterface
         }
 
         return $hasWarranty ?? false;
+    }
+
+    /**
+     * Check does later orders have warranty item for the item
+     *
+     * @param Item $item
+     * @return bool
+     */
+    public function isWarrantyInLaterOrders(Item $item): bool
+    {
+        $isWarrantyInLaterOrders = false;
+        $leadToken = $item->getLeadToken();
+        $createdAt = $item->getCreatedAt();
+
+        if (!empty($leadToken)) {
+            $orderItems = $this->getOrderItemsByLeadToken($leadToken, $createdAt);
+
+            if (count($orderItems) > 0) {
+                $isWarrantyInLaterOrders = true;
+            }
+        }
+
+        return $isWarrantyInLaterOrders;
+    }
+
+    /**
+     * Get order items created later than the current by lead token
+     *
+     * @param string $leadToken
+     * @param string $createdAt
+     *
+     * @return OrderItemSearchResultInterface
+     */
+    private function getOrderItemsByLeadToken(string $leadToken, string $createdAt)
+    {
+        $this->searchCriteriaBuilder->addFilter(
+            'lead_token',
+            $leadToken,
+            'eq'
+        );
+        $this->searchCriteriaBuilder->addFilter(
+            'created_at',
+            $createdAt,
+            'gt'
+        );
+        $searchCriteria = $this->searchCriteriaBuilder->create();
+
+        return $this->orderItemRepository->getList($searchCriteria);
     }
 
     /**
@@ -318,4 +391,3 @@ class Warranty implements ArgumentInterface
         return $leadToken;
     }
 }
-

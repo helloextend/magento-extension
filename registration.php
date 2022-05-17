@@ -6,6 +6,7 @@
  * Time: 03:42 PM
  */
 use Magento\Framework\Component\ComponentRegistrar;
+
 ComponentRegistrar::register(
     ComponentRegistrar::MODULE,
     'Extend_Warranty',

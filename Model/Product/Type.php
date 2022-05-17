@@ -18,39 +18,57 @@ use \Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class Type
+ *
+ * Warranty Product Type Model
  */
 class Type extends AbstractType
 {
     /**
      * Product type code
      */
-    const TYPE_CODE = 'warranty';
+    public const TYPE_CODE = 'warranty';
 
     /**
      * Custom option codes
      */
-    const WARRANTY_ID = 'warranty_id';
-    const ASSOCIATED_PRODUCT = 'associated_product';
-    const ASSOCIATED_PRODUCT_NAME = 'associated_product_name';
-    const TERM = 'warranty_term';
-    const PLAN_TYPE = 'plan_type';
-    const BUY_REQUEST = 'info_buyRequest';
+    public const WARRANTY_ID = 'warranty_id';
+    public const ASSOCIATED_PRODUCT = 'associated_product';
+    public const ASSOCIATED_PRODUCT_NAME = 'associated_product_name';
+    public const TERM = 'warranty_term';
+    public const PLAN_TYPE = 'plan_type';
+    public const BUY_REQUEST = 'info_buyRequest';
 
     /**
      * Custom option labels
      */
-    const ASSOCIATED_PRODUCT_LABEL = 'SKU';
+    public const ASSOCIATED_PRODUCT_LABEL = 'SKU';
 
-    const ASSOCIATED_PRODUCT_NAME_LABEL = 'Name';
-    const TERM_LABEL = 'Term';
+    public const ASSOCIATED_PRODUCT_NAME_LABEL = 'Name';
+    public const TERM_LABEL = 'Term';
 
     /**
+     * Warranty Helper
+     *
      * @var Data
      */
     protected $helper;
 
-    public function __construct
-    (
+    /**
+     * Type constructor.
+     *
+     * @param Product\Option $catalogProductOption
+     * @param \Magento\Eav\Model\Config $eavConfig
+     * @param Product\Type $catalogProductType
+     * @param \Magento\Framework\Event\ManagerInterface $eventManager
+     * @param \Magento\MediaStorage\Helper\File\Storage\Database $fileStorageDb
+     * @param \Magento\Framework\Filesystem $filesystem
+     * @param \Magento\Framework\Registry $coreRegistry
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param ProductRepositoryInterface $productRepository
+     * @param Data $helper
+     * @param \Magento\Framework\Serialize\Serializer\Json|null $serializer
+     */
+    public function __construct(
         \Magento\Catalog\Model\Product\Option              $catalogProductOption,
         \Magento\Eav\Model\Config                          $eavConfig,
         \Magento\Catalog\Model\Product\Type                $catalogProductType,
@@ -62,11 +80,9 @@ class Type extends AbstractType
         ProductRepositoryInterface                         $productRepository,
         Data                                               $helper,
         \Magento\Framework\Serialize\Serializer\Json       $serializer = null
-    )
-    {
+    ) {
         $this->helper = $helper;
-        parent::__construct
-        (
+        parent::__construct(
             $catalogProductOption,
             $eavConfig,
             $catalogProductType,
@@ -80,21 +96,46 @@ class Type extends AbstractType
         );
     }
 
+    /**
+     * Delete type specific data
+     *
+     * @param Product $product
+     * @return void
+     */
     public function deleteTypeSpecificData(Product $product)
     {
-        return;
+        return null;
     }
 
+    /**
+     * Is virtual
+     *
+     * @param Product $product
+     * @return bool
+     */
     public function isVirtual($product)
     {
         return true;
     }
 
+    /**
+     * Has weight
+     *
+     * @return bool
+     */
     public function hasWeight()
     {
         return false;
     }
 
+    /**
+     * Prepare product
+     *
+     * @param \Magento\Framework\DataObject $buyRequest
+     * @param Product $product
+     * @param string $processMode
+     * @return array|Product|Product[]|string
+     */
     protected function _prepareProduct(\Magento\Framework\DataObject $buyRequest, $product, $processMode)
     {
         $price = $this->helper->removeFormatPrice($buyRequest->getPrice());
@@ -121,6 +162,12 @@ class Type extends AbstractType
         return $product;
     }
 
+    /**
+     * Get order options
+     *
+     * @param Product $product
+     * @return array
+     */
     public function getOrderOptions($product)
     {
         $options = parent::getOrderOptions($product);

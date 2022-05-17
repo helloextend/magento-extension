@@ -13,7 +13,7 @@ define([
     'Magento_Customer/js/customer-data',
     'Extend_Warranty/js/tracking/actions',
     'jquery/jquery-storageapi',
-    'jquery-ui-modules/widget'
+    'jquery/ui'
 ], function ($, sectionConfig, customerData, actions) {
     'use strict';
 

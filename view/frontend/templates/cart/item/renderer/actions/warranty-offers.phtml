@@ -31,7 +31,7 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
     $productTypeInstance = $product->getTypeInstance();
     if ($isConfigurable) {
         $usedProducts = $productTypeInstance->getUsedProducts($product);
-        foreach ($usedProducts  as $child) {
+        foreach ($usedProducts as $child) {
             if ($child->getSku() == $product->getSku()) {
                 $_itemID = $child->getId();
             }

@@ -15,6 +15,8 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 
 /**
  * Class Note
+ *
+ * Renders Note Field
  */
 class Note extends Field
 {
@@ -41,6 +43,7 @@ class Note extends Field
      */
     protected function _getElementHtml(AbstractElement $element): string
     {
-        return '<p class="note"><span>For more information or help, contact <a href="mailto:support@extend.com">support@extend.com</a>.<span></p>';
+        return '<p class="note"><span>For more information or help, contact ' .
+            '<a href="mailto:support@extend.com">support@extend.com</a>.<span></p>';
     }
 }
