@@ -235,4 +235,12 @@
                 type="Extend\Warranty\Plugin\Quote\Model\Item\SetItemDataToOrderPlugin"
                 sortOrder="10" />
     </type>
+
+    <type name="Extend\Warranty\Model\Api\Request\ContractBuilder">
+        <plugin name="extend_warranty_contractbuilder_plugin" type="Extend\Warranty\Plugin\Model\Api\Request\ContractBuilderPlugin" sortOrder="10"/>
+    </type>
+
+    <type name="Extend\Warranty\Model\Api\Request\OrderBuilder">
+        <plugin name="extend_warranty_orderbuilder_plugin" type="Extend\Warranty\Plugin\Model\Api\Request\OrderBuilderPlugin" sortOrder="10"/>
+    </type>
 </config>
