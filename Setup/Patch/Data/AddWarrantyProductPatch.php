@@ -5,6 +5,7 @@ namespace Extend\Warranty\Setup\Patch\Data;
 use Magento\Framework\Phrase;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchRevertableInterface;
+use Magento\Framework\Setup\Patch\NonTransactionableInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Catalog\Model\ProductFactory;
 use Extend\Warranty\Model\Product\Type;
@@ -32,7 +33,7 @@ use Magento\Framework\Exception\FileSystemException;
  *
  * Add warranty product
  */
-class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInterface
+class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInterface, NonTransactionableInterface
 {
     /**
      * warranty product sku
@@ -170,14 +171,6 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
     {
         $this->moduleDataSetup->getConnection()->startSetup();
 
-        try {
-            $this->productRepository->deleteById(self::WARRANTY_PRODUCT_SKU);
-        } catch (NoSuchEntityException $e) {
-            throw new LocalizedException(
-                new Phrase('The product with SKU "%1" doesn\'t exist.', [self::WARRANTY_PRODUCT_SKU])
-            );
-        }
-
         $this->deleteImageFromPubMedia();
 
         $this->moduleDataSetup->getConnection()->endSetup();
@@ -292,31 +285,31 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
     public function createWarrantyProduct()
     {
         $warranty = $this->productFactory->create();
-        $attributeSetId = $this->getWarrantyAttributeSet($warranty);
-        $websites = $this->storeManager->getWebsites();
+        if (!$warranty->getIdBySku(self::WARRANTY_PRODUCT_SKU)) {
+            $attributeSetId = $this->getWarrantyAttributeSet($warranty);
+            $websites = $this->storeManager->getWebsites();
 
-        $warranty->setSku(self::WARRANTY_PRODUCT_SKU)
-            ->setName('Extend Protection Plan')
-            ->setWebsiteIds(array_keys($websites))
-            ->setAttributeSetId($attributeSetId)
-            ->setStatus(Status::STATUS_ENABLED)
-            ->setVisibility(Visibility::VISIBILITY_NOT_VISIBLE)
-            ->setTypeId(Type::TYPE_CODE)
-            ->setPrice(0.0)
-            ->setTaxClassId(0) //None
-            ->setCreatedAt(strtotime('now'))
-            ->setStockData([
-                'use_config_manage_stock' => 0,
-                'is_in_stock' => 1,
-                'qty' => 1,
-                'manage_stock' => 0,
-                'use_config_notify_stock_qty' => 0
-            ]);
+            $warranty->setSku(self::WARRANTY_PRODUCT_SKU)
+                ->setName('Extend Protection Plan')
+                ->setWebsiteIds(array_keys($websites))
+                ->setAttributeSetId($attributeSetId)
+                ->setStatus(Status::STATUS_ENABLED)
+                ->setVisibility(Visibility::VISIBILITY_NOT_VISIBLE)
+                ->setTypeId(Type::TYPE_CODE)
+                ->setPrice(0.0)
+                ->setTaxClassId(0) //None
+                ->setCreatedAt(strtotime('now'))
+                ->setStockData([
+                    'use_config_manage_stock' => 0,
+                    'is_in_stock' => 1,
+                    'qty' => 1,
+                    'manage_stock' => 0,
+                    'use_config_notify_stock_qty' => 0
+                ]);
 
-//        $imagePath = $this->reader->getModuleDir('', 'Extend_Warranty');
-//        $imagePath .= '/Setup/Resource/Extend_icon.png';
-        $this->productRepository->save($warranty);
-        $this->processMediaGalleryEntry($this->getMediaImagePath(), $warranty->getSku());
+            $this->productRepository->save($warranty);
+            $this->processMediaGalleryEntry($this->getMediaImagePath(), $warranty->getSku());
+        }
     }
 
     /**

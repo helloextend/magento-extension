@@ -6,6 +6,7 @@ use Extend\Warranty\Model\Product\Type;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchRevertableInterface;
+use Magento\Framework\Setup\Patch\NonTransactionableInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Eav\Setup\EavSetupFactory;
 use Psr\Log\LoggerInterface;
@@ -16,7 +17,7 @@ use Exception;
  *
  * Add tax class to warranty product
  */
-class ApplyTaxClassAttrToWarrantyProductPatch implements DataPatchInterface, PatchRevertableInterface
+class ApplyTaxClassAttrToWarrantyProductPatch implements DataPatchInterface, PatchRevertableInterface, NonTransactionableInterface
 {
     /**
      * Attribute code
