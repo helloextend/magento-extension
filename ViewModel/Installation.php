@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\ViewModel;
 
 use Extend\Warranty\Model\Config\Source\AuthMode;
@@ -20,18 +18,20 @@ use InvalidArgumentException;
 
 /**
  * Class Installation
+ *
+ * Warranty Installation ViewModel
  */
 class Installation implements ArgumentInterface
 {
     /**
-     * DataHelper
+     * Warranty Api DataHelper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */

@@ -8,28 +8,28 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
 
 /**
  * Class AuthMode
+ *
+ * AuthMode Source Model
  */
 class AuthMode implements OptionSourceInterface
 {
     /**
      * Auth mode values
      */
-    const DEMO_VALUE = 0;
-    const LIVE_VALUE = 1;
+    public const DEMO_VALUE = 0;
+    public const LIVE_VALUE = 1;
 
     /**
      * Auth modes
      */
-    const DEMO = 'demo';
-    const LIVE = 'live';
+    public const DEMO = 'demo';
+    public const LIVE = 'live';
 
     /**
      * Return array of options as value-label pairs

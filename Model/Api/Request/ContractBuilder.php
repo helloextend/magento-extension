@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Request;
 
 use Extend\Warranty\Helper\Data as DataHelper;
@@ -23,33 +21,36 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Extend\Warranty\Model\Product\Type;
+use Exception;
 
 /**
  * Class ContractBuilder
+ *
+ * Warranty ContractBuilder
  */
 class ContractBuilder
 {
     /**
      * Platform code
      */
-    const PLATFORM_CODE = 'magento';
+    public const PLATFORM_CODE = 'magento';
 
     /**
-     * Product Repository Interface
+     * Product Repository Model
      *
      * @var ProductRepositoryInterface
      */
     private $productRepository;
 
     /**
-     * Store Manager Interface
+     * Store Manager Model
      *
      * @var StoreManagerInterface
      */
     private $storeManager;
 
     /**
-     * Country Information Acquirer Interface
+     * Country Information Acquirer Model
      *
      * @var CountryInformationAcquirerInterface
      */
@@ -87,10 +88,12 @@ class ContractBuilder
      *
      * @param OrderInterface $order
      * @param OrderItemInterface $orderItem
+     * @param string $type
+     *
      * @return array
      * @throws NoSuchEntityException
      */
-    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem): array
+    public function preparePayload(OrderInterface $order, OrderItemInterface $orderItem, string $type): array
     {
         $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
         $productSku = is_array($productSku) ? array_shift($productSku) : $productSku;
@@ -103,6 +106,18 @@ class ContractBuilder
         }
 
         $product = $this->getProduct($productSku);
+
+        if ($type == \Extend\Warranty\Model\WarrantyContract::LEAD_CONTRACT) {
+            $leadToken = $orderItem->getLeadToken() ?? '';
+
+            if (!empty($leadToken)) {
+                try {
+                    $leadToken = implode(", ", $this->helper->unserialize($leadToken));
+                } catch (Exception $exception) {
+                    $leadToken = '';
+                }
+            }
+        }
 
         if (!$product) {
             return [];
@@ -121,7 +136,7 @@ class ContractBuilder
         $billingStreet = $this->formatStreet($billingAddress->getStreet());
 
         $customer = [
-            'name'      => $order->getCustomerFirstname() . ' ' . $order->getCustomerLastname(),
+            'name'      => $this->helper->getCustomerFullName($order),
             'email'     => $order->getCustomerEmail(),
             'phone'     => $billingAddress->getTelephone(),
             'billingAddress'    => [
@@ -131,7 +146,6 @@ class ContractBuilder
                 'countryCode'   => $billingCountryInfo->getThreeLetterAbbreviation(),
                 'postalCode'    => $billingAddress->getPostcode(),
             ],
-            'shippingAddress'   => [],
         ];
 
         $shippingAddress = $order->getShippingAddress();
@@ -169,16 +183,33 @@ class ContractBuilder
             'planId'        => $warrantyId,
         ];
 
-        $payload = [
-            'transactionId'     => $order->getIncrementId(),
-            'transactionTotal'  => $transactionTotal,
-            'customer'          => $customer,
-            'product'           => $product,
-            'currency'          => $currencyCode,
-            'source'            => $source,
-            'transactionDate'   => strtotime($order->getCreatedAt()),
-            'plan'              => $plan,
-        ];
+        $createdAt = $order->getCreatedAt();
+
+        if ($type == \Extend\Warranty\Model\WarrantyContract::CONTRACT) {
+            $payload = [
+                'transactionId' => $order->getIncrementId(),
+                'transactionTotal' => $transactionTotal,
+                'customer' => $customer,
+                'product' => $product,
+                'currency' => $currencyCode,
+                'source' => $source,
+                'transactionDate' => $createdAt ? strtotime($createdAt) : 0,
+                'plan' => $plan,
+            ];
+        }
+
+        if ($type == \Extend\Warranty\Model\WarrantyContract::LEAD_CONTRACT) {
+            $payload = [
+                'transactionId' => $order->getIncrementId(),
+                'transactionTotal' => $transactionTotal,
+                'customer' => $customer,
+                'leadToken' => $leadToken,
+                'currency' => $currencyCode,
+                'source' => $source,
+                'transactionDate' => $createdAt ? strtotime($createdAt) : 0,
+                'plan' => $plan,
+            ];
+        }
 
         return $payload;
     }
@@ -207,7 +238,7 @@ class ContractBuilder
      * @param string $sku
      * @return ProductInterface|null
      */
-    protected function getProduct(string $sku): ?ProductInterface
+    protected function getProduct(string $sku)
     {
         try {
             $product = $this->productRepository->get($sku);

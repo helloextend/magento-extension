@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Plugin\Catalog\Helper\Product\Configuration;
 
 use Magento\Catalog\Helper\Product\Configuration;
@@ -18,6 +16,8 @@ use Extend\Warranty\Model\Product\Type;
 
 /**
  * Class GetCustomOptionsPlugin
+ *
+ * GetCustomOptionsPlugin plugin
  */
 class GetCustomOptionsPlugin
 {
@@ -35,10 +35,20 @@ class GetCustomOptionsPlugin
         if ($product && $product->getTypeId() === Type::TYPE_CODE) {
             $customOptions = [];
 
+            $associatedProductNameOption = $product->getCustomOption(Type::ASSOCIATED_PRODUCT_NAME);
+            if ($associatedProductNameOption && $associatedProductNameOption->getValue()) {
+                $associatedProductNameLabel = Type::ASSOCIATED_PRODUCT_NAME_LABEL;
+                $customOptions[] = [
+                    'label' => __($associatedProductNameLabel),
+                    'value' => $associatedProductNameOption->getValue(),
+                ];
+            }
+
             $associatedProductOption = $product->getCustomOption(Type::ASSOCIATED_PRODUCT);
             if ($associatedProductOption && $associatedProductOption->getValue()) {
+                $associatedProductLabel = Type::ASSOCIATED_PRODUCT_LABEL;
                 $customOptions[] = [
-                    'label' => __(Type::ASSOCIATED_PRODUCT_LABEL),
+                    'label' => __($associatedProductLabel),
                     'value' => $associatedProductOption->getValue(),
                 ];
             }
@@ -47,9 +57,9 @@ class GetCustomOptionsPlugin
             if ($warrantyTermOption && $warrantyTermOption->getValue()) {
                 $warrantyTerm = (int)$warrantyTermOption->getValue() / 12;
                 $optionValue = ($warrantyTerm > 1) ? $warrantyTerm . ' years' : $warrantyTerm . ' year';
-
+                $termLabel = Type::TERM_LABEL;
                 $customOptions[] = [
-                    'label' => __(Type::TERM_LABEL),
+                    'label' => __($termLabel),
                     'value' => $optionValue,
                 ];
             }

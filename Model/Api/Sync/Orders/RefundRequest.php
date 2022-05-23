@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Sync\Orders;
 
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
@@ -19,28 +17,32 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
 use Zend_Http_Response;
+use Zend_Http_Client_Exception;
 
 /**
  * Class RefundRequest
+ *
+ * Warranty RefundRequest
  */
 class RefundRequest extends AbstractRequest
 {
     /**
      * Create a warranty contract
      */
-    const REFUND_ENDPOINT = 'refunds';
+    public const REFUND_ENDPOINT = 'refunds';
 
     /**
      * Response status codes
      */
-    const STATUS_CODE_SUCCESS = 201;
-    const STATUS_CODE_SUCCESS_200 = 200;
+    public const STATUS_CODE_SUCCESS = 201;
+    public const STATUS_CODE_SUCCESS_200 = 200;
 
     /**
      * Cancel a warranty contract and request a refund
      *
      * @param string $contractId
      * @return bool
+     * @throws Zend_Http_Client_Exception
      */
     public function refund(string $contractId): bool
     {
@@ -95,7 +97,9 @@ class RefundRequest extends AbstractRequest
                 ]
             );
 
-            if ($response->getStatus() === self::STATUS_CODE_SUCCESS || $response->getStatus() === self::STATUS_CODE_SUCCESS_200) {
+            if ($response->getStatus() === self::STATUS_CODE_SUCCESS
+                || $response->getStatus() === self::STATUS_CODE_SUCCESS_200
+            ) {
                 $responseBody = $this->processResponse($response);
                 $this->logger->info('Refund is validated successfully. ContractID: ' . $contractId);
             } else {

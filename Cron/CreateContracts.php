@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Cron;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -18,18 +16,20 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
  * Class CreateContracts
+ *
+ * Create Contracts Cron
  */
 class CreateContracts
 {
     /**
-     * Contract Create Process
+     * Contract Create Process Model
      *
      * @var ContractCreateProcess
      */
     private $contractCreateProcess;
 
     /**
-     * Data Helper
+     * Warranty Api Helper
      *
      * @var DataHelper
      */
@@ -52,10 +52,9 @@ class CreateContracts
     /**
      * Create warranty contracts
      */
-    public function execute(): void
+    public function execute()
     {
-        if (
-            !$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
+        if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
             || !$this->dataHelper->isWarrantyContractEnabled()
         ) {
             return;

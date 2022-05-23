@@ -1,0 +1,46 @@
+<?php
+/**
+ * Extend Warranty - Products List "Add Warranty" functionality
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+/**
+ * @var \Magento\Catalog\Block\Product\ProductList\Item\Block $block
+ */
+
+/** @var \Magento\Catalog\Model\Product $product */
+$_product = $block->getProduct();
+/** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
+$viewModel = $block->getData('viewModel');
+
+$productType = $_product->getTypeId();
+$isSimple = $productType === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE;
+$isConfigurable = $productType === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
+?>
+
+<?php if ($viewModel->isExtendEnabled()
+    && $viewModel->isProductsListOffersEnabled()
+    && ($isSimple || $isConfigurable)): ?>
+    <script type="text/x-magento-init">
+    {
+        "#product-item-info_<?= /* @noEscape */ $_product->getId() ?>": {
+            "<?= /* @noEscape */ $isSimple ? 'simpleProductWarranty' : 'configurableProductWarranty' ?>": {
+                "isInProductView": false,
+                "productId": "<?= $block->escapeJs($_product->getId()) ?>",
+                "productSku": "<?= $isSimple ? $block->escapeJs($_product->getSku()) : '' ?>",
+                "buttonEnabled": false,
+                "modalEnabled": true,
+                "insertionPoint": "div.product-item-actions",
+                "insertionLogic": "append",
+                "selectors": {
+                    "addToCartForm": "form[data-role='tocart-form']",
+                    "addToCartButton": "button.action.tocart"
+                }
+            }
+        }
+    }
+    </script>
+<?php endif; ?>

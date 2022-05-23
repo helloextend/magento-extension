@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Product;
 
 use Magento\Catalog\Api\Data\ProductInterface;
@@ -19,32 +17,34 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 
 /**
  * Class Sync
+ *
+ * Sync Product Model
  */
 class Sync implements SyncInterface
 {
     /**
-     * Product Repository Interface
+     * Product Repository Model
      *
      * @var ProductRepositoryInterface
      */
     private $productRepository;
 
     /**
-     * Search Criteria Builder
+     * Search Criteria Builder Model
      *
      * @var SearchCriteriaBuilder
      */
     private $searchCriteriaBuilder;
 
     /**
-     * Batch size
+     * Batch size prop
      *
      * @var int
      */
     private $batchSize;
 
     /**
-     * Count of batches
+     * Count of batches prop
      *
      * @var int
      */
@@ -123,7 +123,7 @@ class Sync implements SyncInterface
      *
      * @param int $batchSize
      */
-    public function setBatchSize(int $batchSize): void
+    public function setBatchSize(int $batchSize)
     {
         $this->batchSize = $batchSize;
     }
@@ -133,7 +133,7 @@ class Sync implements SyncInterface
      *
      * @param int $countOfProducts
      */
-    public function setCountOfBatches(int $countOfProducts): void
+    public function setCountOfBatches(int $countOfProducts)
     {
         $batchSize = $this->getBatchSize();
         $this->countOfBatches = (int)ceil($countOfProducts/$batchSize);

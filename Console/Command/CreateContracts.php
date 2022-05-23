@@ -23,32 +23,34 @@ use Exception;
 
 /**
  * Class CreateContracts
+ *
+ * Create Contracts Console Command
  */
 class CreateContracts extends Command
 {
     /**
-     * App State
+     * State
      *
      * @var AppState
      */
     private $appState;
 
     /**
-     * Data Helper
+     * Warranty Api Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Contract Create Process
+     * Contract Creation Process Model
      *
      * @var ContractCreateProcess
      */
     private $contractCreateProcess;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -78,7 +80,7 @@ class CreateContracts extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     protected function configure()
     {
@@ -88,7 +90,7 @@ class CreateContracts extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -110,7 +112,7 @@ class CreateContracts extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    public function doExecute(InputInterface $input, OutputInterface $output): void
+    public function doExecute(InputInterface $input, OutputInterface $output)
     {
         if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
             $output->writeln("<error>Extension is disabled. Please, check the configuration settings.</error>");

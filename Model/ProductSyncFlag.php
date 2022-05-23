@@ -8,19 +8,19 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model;
 
 use Magento\Framework\Flag;
 
 /**
  * Class ProductSyncFlag
+ *
+ * Warranty ProductSyncFlag Model
  */
 class ProductSyncFlag extends Flag
 {
     /**
      * Flag Name
      */
-    const FLAG_NAME = 'extend_product_sync';
+    public const FLAG_NAME = 'extend_product_sync';
 }

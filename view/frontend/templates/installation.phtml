@@ -4,26 +4,39 @@
  *
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
- * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 /** @var \Magento\Framework\View\Element\Template $block */
 /** @var \Extend\Warranty\ViewModel\Installation $viewModel */
 $viewModel = $block->getData('viewModel');
 ?>
-<?php if ($viewModel->isExtendEnabled()) : ?>
+<?php if ($viewModel->isExtendEnabled()): ?>
     <?php $jsonConfig = $viewModel->getJsonConfig(); ?>
     <?php if ($jsonConfig): ?>
-        <script src="<?= $viewModel->getJsMode() ?>"></script>
+        <?php $libUrl = str_replace('.js', '', $viewModel->getJsMode()); ?>
         <script>
-            Extend.config(<?= $jsonConfig ?>);
+            require.config({
+                paths: {
+                    'extendSdk': '<?= $block->escapeJs($libUrl) ?>'
+                }
+            });
+            require(['extendSdk'], function(Extend) {
+                //<![CDATA[
+                Extend.config(<?= /* @noEscape */ $jsonConfig ?>);
+                window.Extend = Extend;
+                //]]>
+            });
         </script>
+
+        <?php if ($block->getTrackingEnabled()): ?>
+        <script type="text/x-magento-init">
+        {
+            "*": {
+                "Extend_Warranty/js/tracking-service": {}
+            }
+        }
+        </script>
+        <?php endif; ?>
     <?php endif; ?>
 <?php endif; ?>
-
-<script>
-    var BASE_URL = '<?= $block->escapeUrl($block->getBaseUrl()) ?>';
-    var require = {
-        "baseUrl": "<?= /* @escapeNotVerified */ $block->getViewFileUrl('/') ?>"
-    };
-</script>

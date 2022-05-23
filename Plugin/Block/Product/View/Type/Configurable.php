@@ -8,15 +8,29 @@ use Magento\Framework\Serialize\Serializer\Json;
 class Configurable
 {
     /**
+     * Json Serializer Model
+     *
      * @var Json
      */
     protected $jsonSerializer;
 
+    /**
+     * Configurable constructor.
+     *
+     * @param Json $jsonSerializer
+     */
     public function __construct(Json $jsonSerializer)
     {
         $this->jsonSerializer = $jsonSerializer;
     }
 
+    /**
+     * Add skus to config
+     *
+     * @param SuperConfigurable $subject
+     * @param string $result
+     * @return string
+     */
     public function afterGetJsonConfig(SuperConfigurable $subject, $result)
     {
         $jsonResult = $this->jsonSerializer->unserialize($result);

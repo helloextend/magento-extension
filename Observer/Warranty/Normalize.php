@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Observer\Warranty;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -22,32 +20,34 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class Normalize
+ *
+ * Normalize observer
  */
 class Normalize implements ObserverInterface
 {
     /**
-     * Normalizer
+     * Normalizer Model
      *
      * @var Normalizer
      */
     private $normalizer;
 
     /**
-     * Data Helper
+     * Warranty Api Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Checkout Session
+     * Checkout Session Model
      *
      * @var CheckoutSession
      */
     private $checkoutSession;
 
     /**
-     * LoggerInterface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -78,7 +78,7 @@ class Normalize implements ObserverInterface
      *
      * @param Observer $observer
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         if (!$this->dataHelper->isBalancedCart()) {
             return;

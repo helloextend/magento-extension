@@ -1,0 +1,28 @@
+<?php
+/**
+ * Extend Warranty - Post Purchase Lead product warranty offers block
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+use Extend\Warranty\ViewModel\Warranty;
+
+/** @var Warranty $viewModel */
+$viewModel = $block->getData('viewModel');
+$leadToken = $block->escapeHtml($block->escapeJs($viewModel->getLeadTokenFromUrl()));
+?>
+<?php if ($viewModel->isExtendEnabled() && $viewModel->isPostPurchaseLeadModalEnabled() && !empty($leadToken)): ?>
+    <script type="text/x-magento-init">
+    {
+        "*": {
+            "postPurchaseLeadWarranty": {
+                "leadToken": "<?= /* @noEscape */ $leadToken ?>",
+                "addLeadUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/addlead')) ?>",
+                "buttonEnabled": false
+            }
+        }
+    }
+    </script>
+<?php endif; ?>

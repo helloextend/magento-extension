@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
@@ -24,35 +22,38 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Quote\Api\CartItemRepositoryInterface;
 use Magento\Quote\Api\Data\CartInterface;
+use Magento\Quote\Api\Data\CartItemExtension;
 
 /**
  * Class Normalizer
+ *
+ * Warranty Normalizer Model
  */
 class Normalizer
 {
     /**
-     * Tracking Helper
+     * Warranty Tracking Helper
      *
      * @var TrackingHelper
      */
     private $trackingHelper;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
     private $jsonSerializer;
 
     /**
-     * Cart Item Repository Interface
+     * Cart Item Repository Model
      *
      * @var CartItemRepositoryInterface
      */
     private $quoteItemRepository;
 
     /**
-     * Cart Helper
+     * Cart Helper Model
      *
      * @var CartHelper
      */
@@ -86,7 +87,7 @@ class Normalizer
      * @throws InputException
      * @throws NoSuchEntityException
      */
-    public function normalize(CartInterface $quote): void
+    public function normalize(CartInterface $quote)
     {
         $productItems = $warrantyItems = [];
 
@@ -103,15 +104,20 @@ class Normalizer
         foreach ($productItems as $productItem) {
             $sku = $productItem->getSku();
             $warranties = [];
+
             foreach ($warrantyItems as $warrantyItem) {
+                if (!empty($warrantyItem->getLeadToken())) {
+                    continue;
+                }
+
                 $associatedProductOption = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
+
                 if ($associatedProductOption && $associatedProductOption->getValue()) {
                     $associatedSku = $associatedProductOption->getValue();
-                    if (
-                        $sku === $associatedSku
+                    if ($sku === $associatedSku
                         && (
                             $productItem->getProductType() === Configurable::TYPE_CODE
-                            || is_null($productItem->getOptionByCode('parent_product_id'))
+                            || null === $productItem->getOptionByCode('parent_product_id')
                         )
                     ) {
                         $warranties[$warrantyItem->getItemId()] = $warrantyItem;

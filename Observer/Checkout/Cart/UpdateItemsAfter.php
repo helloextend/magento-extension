@@ -11,17 +11,20 @@ namespace Extend\Warranty\Observer\Checkout\Cart;
 
 /**
  * Class UpdateItemsAfter
- * @package Extend\Warranty\Observer\Checkout\Cart
+ *
+ * Checkout Cart UpdateItemsAfter Observer
  */
 class UpdateItemsAfter implements \Magento\Framework\Event\ObserverInterface
 {
     /**
+     * Warranty Tracking Helper
+     *
      * @var \Extend\Warranty\Helper\Tracking
      */
     private $_trackingHelper;
 
     /**
-     * Data Helper
+     * Warranty Api Data Helper
      *
      * @var \Extend\Warranty\Helper\Api\Data
      */
@@ -42,6 +45,8 @@ class UpdateItemsAfter implements \Magento\Framework\Event\ObserverInterface
     }
 
     /**
+     * Observer execute
+     *
      * @param \Magento\Framework\Event\Observer $observer
      * @noinspection PhpDeprecationInspection
      */

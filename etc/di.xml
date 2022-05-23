@@ -9,7 +9,8 @@
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
  -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Magento\Catalog\Block\Adminhtml\Product"
                 type="Extend\Warranty\Block\Adminhtml\Product" />
 
@@ -20,7 +21,9 @@
                 type="Extend\Warranty\Model\Api\Connector"/>
 
     <type name="Magento\ConfigurableProduct\Block\Product\View\Type\Configurable">
-        <plugin name="addSkuToJsonConfig" type="Extend\Warranty\Plugin\Block\Product\View\Type\Configurable" sortOrder="10" />
+        <plugin name="addSkuToJsonConfig"
+                type="Extend\Warranty\Plugin\Block\Product\View\Type\Configurable"
+                sortOrder="10" />
     </type>
 
     <type name="Magento\Catalog\Helper\Product\Configuration">
@@ -31,7 +34,7 @@
 
     <virtualType
             name="Extend\Warranty\Model\ResourceModel\Indexer\Price"
-            type="Magento\Catalog\Model\ResourceModel\Product\Indexer\Price\SimpleProductPrice"/>
+            type="Magento\Catalog\Model\ResourceModel\Product\Indexer\Price\DefaultPrice"/>
 
     <virtualType name="ProductSyncLogHandler" type="Magento\Framework\Logger\Handler\Base">
         <arguments>
@@ -61,6 +64,11 @@
             <argument name="logger" xsi:type="object">ExtendLogger</argument>
         </arguments>
     </type>
+    <type name="\Extend\Warranty\Model\Product\Type">
+        <arguments>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
+        </arguments>
+    </type>
 
     <type name="Extend\Warranty\Model\ProductSyncProcess">
         <arguments>
@@ -76,16 +84,20 @@
             <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
             <argument name="dataHelper" xsi:type="object">Extend\Warranty\Helper\Api\Data\Proxy</argument>
             <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
-            <argument name="productSyncProcess" xsi:type="object">Extend\Warranty\Model\ProductSyncProcess\Proxy</argument>
+            <argument name="productSyncProcess"
+                      xsi:type="object">Extend\Warranty\Model\ProductSyncProcess\Proxy</argument>
         </arguments>
     </type>
 
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="extendWarrantySyncProductsCommand" xsi:type="object">Extend\Warranty\Console\Command\SyncProducts</item>
-                <item name="extendWarrantyCreateWarrantyContractCommand" xsi:type="object">Extend\Warranty\Console\Command\CreateContracts</item>
-                <item name="extendWarrantyResetProductSyncFlagCommand" xsi:type="object">Extend\Warranty\Console\Command\ResetProductSyncFlag</item>
+                <item name="extendWarrantySyncProductsCommand"
+                        xsi:type="object">Extend\Warranty\Console\Command\SyncProducts</item>
+                <item name="extendWarrantyCreateWarrantyContractCommand"
+                      xsi:type="object">Extend\Warranty\Console\Command\CreateContracts</item>
+                <item name="extendWarrantyResetProductSyncFlagCommand"
+                      xsi:type="object">Extend\Warranty\Console\Command\ResetProductSyncFlag</item>
             </argument>
         </arguments>
     </type>
@@ -155,7 +167,8 @@
 
     <type name="Extend\Warranty\Block\System\Config\Products\Button">
         <arguments>
-            <argument name="timezone" xsi:type="object">Magento\Framework\Stdlib\DateTime\TimezoneInterface\Proxy</argument>
+            <argument name="timezone"
+                      xsi:type="object">Magento\Framework\Stdlib\DateTime\TimezoneInterface\Proxy</argument>
         </arguments>
     </type>
 
@@ -170,7 +183,8 @@
         <arguments>
             <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
             <argument name="dataHelper" xsi:type="object">Extend\Warranty\Helper\Api\Data\Proxy</argument>
-            <argument name="contractCreateProcess" xsi:type="object">Extend\Warranty\Model\ContractCreateProcess\Proxy</argument>
+            <argument name="contractCreateProcess"
+                      xsi:type="object">Extend\Warranty\Model\ContractCreateProcess\Proxy</argument>
         </arguments>
     </type>
 
@@ -179,5 +193,46 @@
             <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
             <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
         </arguments>
+    </type>
+
+    <type name="Extend\Warranty\ViewModel\Warranty">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+            <argument name="request" xsi:type="object">Magento\Framework\App\Request\Http\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Sales\Api\OrderItemRepositoryInterface">
+        <plugin name="extend_warranty_plugin_order_item_repository_interface_plugin"
+                type="Extend\Warranty\Plugin\Api\OrderItemRepositoryInterfacePlugin" sortOrder="10" />
+    </type>
+
+    <type name="Magento\Sales\Api\OrderRepositoryInterface">
+        <plugin name="extend_warranty_plugin_order_repository_interface_plugin"
+                type="Extend\Warranty\Plugin\Api\OrderRepositoryInterfacePlugin" sortOrder="10" />
+    </type>
+
+    <type name="Magento\Quote\Api\CartItemRepositoryInterface">
+        <plugin name="extend_warranty_plugin_quote_repository_interface_plugin"
+                type="Extend\Warranty\Plugin\Quote\Item\ItemDataPlugin"
+                sortOrder="10" />
+    </type>
+
+    <type name="Magento\Quote\Api\GuestCartItemRepositoryInterface">
+        <plugin name="extend_warranty_plugin_guest_quote_repository_interface_plugin"
+                type="Extend\Warranty\Plugin\Quote\Item\ItemDataPlugin"
+                sortOrder="10" />
+    </type>
+
+    <type name="Magento\Quote\Model\Quote\Item">
+        <plugin name="extend_warranty_plugin_quote_extension_attributes"
+                type="Extend\Warranty\Plugin\Quote\Model\Item\SetItemDataPlugin"
+                sortOrder="10" />
+    </type>
+
+    <type name="Magento\Quote\Model\Quote\Item\ToOrderItem">
+        <plugin name="extend_warranty_plugin_quote_item_conversion"
+                type="Extend\Warranty\Plugin\Quote\Model\Item\SetItemDataToOrderPlugin"
+                sortOrder="10" />
     </type>
 </config>

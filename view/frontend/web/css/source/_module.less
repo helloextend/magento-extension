@@ -1,0 +1,27 @@
+/**
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+
+& when (@media-common = true) {
+    //  Mini-cart
+    .minicart-items {
+        .product-item {
+            .product-item-warranty {
+                .lib-vendor-prefix-display(flex);
+                .lib-vendor-box-align(flex-start);
+                .lib-css(justify-content, stretch, 1);
+                margin-top: 10px;
+
+                iframe {
+                    min-height: 30px;
+                }
+            }
+        }
+    }
+    .order-warranty-offers.hidden {
+        visibility: hidden;
+    }
+}

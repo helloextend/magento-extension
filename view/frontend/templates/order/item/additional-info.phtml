@@ -1,0 +1,19 @@
+<?php
+/**
+ * Extend Warranty - "Add Warranty" button for Lead Order
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+
+/** @var $block \Magento\Framework\View\Element\Template */
+?>
+
+<?php
+$_item = $block->getItem();
+$block->getChildBlock('order.item.warranty')->setItem($_item);
+?>
+
+<?= $block->getChildHtml('', false);

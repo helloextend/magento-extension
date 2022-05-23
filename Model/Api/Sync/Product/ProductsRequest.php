@@ -8,14 +8,13 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Sync\Product;
 
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Model\Api\Request\ProductDataBuilder as ProductPayloadBuilder;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
 use Zend_Http_Client_Exception;
@@ -23,26 +22,28 @@ use InvalidArgumentException;
 
 /**
  * Class ProductsRequest
+ *
+ * Warranty ProductsRequest
  */
 class ProductsRequest extends AbstractRequest
 {
     /**
      * Create / update a product
      */
-    const CREATE_PRODUCT_ENDPOINT = 'products/';
+    public const CREATE_PRODUCT_ENDPOINT = 'products/';
 
     /**
      * Get a product
      */
-    const GET_PRODUCT_ENDPOINT = 'products/';
+    public const GET_PRODUCT_ENDPOINT = 'products/';
 
     /**
      * Response status codes
      */
-    const STATUS_CODE_SUCCESS = 201;
+    public const STATUS_CODE_SUCCESS = 201;
 
     /**
-     * Product Payload Builder
+     * Product Payload Builder Model
      *
      * @var ProductPayloadBuilder
      */
@@ -56,6 +57,13 @@ class ProductsRequest extends AbstractRequest
     private $syncLogger;
 
     /**
+     * Url Encoder
+     *
+     * @var ZendEscaper
+     */
+    private $encoder;
+
+    /**
      * ProductsRequest constructor
      *
      * @param ConnectorInterface $connector
@@ -63,17 +71,19 @@ class ProductsRequest extends AbstractRequest
      * @param LoggerInterface $logger
      * @param ProductPayloadBuilder $productPayloadBuilder
      * @param LoggerInterface $syncLogger
+     * @param ZendEscaper $encoder
      */
     public function __construct(
         ConnectorInterface $connector,
         JsonSerializer $jsonSerializer,
         LoggerInterface $logger,
         ProductPayloadBuilder $productPayloadBuilder,
-        LoggerInterface $syncLogger
+        LoggerInterface $syncLogger,
+        ZendEscaper $encoder
     ) {
         $this->productPayloadBuilder = $productPayloadBuilder;
         $this->syncLogger = $syncLogger;
-        parent::__construct($connector, $jsonSerializer, $logger);
+        parent::__construct($connector, $jsonSerializer, $encoder, $logger);
     }
 
     /**
@@ -82,7 +92,7 @@ class ProductsRequest extends AbstractRequest
      * @param array $products
      * @param int $currentBatch
      */
-    public function create(array $products, int $currentBatch = 1): void
+    public function create(array $products, int $currentBatch = 1)
     {
         $productData = [];
         foreach ($products as $product) {
@@ -113,7 +123,9 @@ class ProductsRequest extends AbstractRequest
                 } else {
                     $this->logger->error(sprintf('Product batch %s synchronization is failed.', $currentBatch));
                 }
-            } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
+            } catch (Zend_Http_Client_Exception $exception) {
+                $this->logger->error($exception->getMessage());
+            } catch (InvalidArgumentException $exception) {
                 $this->logger->error($exception->getMessage());
             }
         }

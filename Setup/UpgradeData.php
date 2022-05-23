@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile -- UpgradeData scripts are obsolete
 /**
  * Extend Warranty
  *
@@ -7,8 +8,6 @@
  * @package     Warranty
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
-
-declare(strict_types=1);
 
 namespace Extend\Warranty\Setup;
 
@@ -88,7 +87,7 @@ class UpgradeData implements UpgradeDataInterface
      * @param ModuleContextInterface $context
      * @throws Exception
      */
-    public function upgrade(ModuleDataSetupInterface $setup, ModuleContextInterface $context): void
+    public function upgrade(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
         if (version_compare($context->getVersion(), '1.2.4', '<')) {
             $this->appState->emulateAreaCode(
@@ -101,7 +100,7 @@ class UpgradeData implements UpgradeDataInterface
     /**
      * Apply tax class attribute to warranty product type
      */
-    public function applyTaxClassAttrToWarrantyProduct(): void
+    public function applyTaxClassAttrToWarrantyProduct()
     {
         try {
             $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);

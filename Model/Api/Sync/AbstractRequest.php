@@ -8,16 +8,16 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Sync;
 
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Api\RequestInterface;
-use Magento\Framework\Exception\InvalidArgumentException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Response;
+use Magento\Framework\Exception\LocalizedException;
+use Exception;
 
 /**
  * Class AbstractRequest
@@ -27,7 +27,7 @@ abstract class AbstractRequest implements RequestInterface
     /**
      * 'X-Extend-Access-Token' header
      */
-    const ACCESS_TOKEN_HEADER = 'X-Extend-Access-Token';
+    public const ACCESS_TOKEN_HEADER = 'X-Extend-Access-Token';
 
     /**
      * Connector Interface
@@ -37,11 +37,18 @@ abstract class AbstractRequest implements RequestInterface
     protected $connector;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
     protected $jsonSerializer;
+
+    /**
+     * Url encoder
+     *
+     * @var ZendEscaper
+     */
+    private $encoder;
 
     /**
      * Logger Interface
@@ -51,21 +58,21 @@ abstract class AbstractRequest implements RequestInterface
     protected $logger;
 
     /**
-     * API url
+     * API url param
      *
      * @var string
      */
     protected $apiUrl = '';
 
     /**
-     * Store ID
+     * Store ID param
      *
      * @var string
      */
     protected $storeId = '';
 
     /**
-     * API key
+     * API key param
      *
      * @var string
      */
@@ -76,15 +83,18 @@ abstract class AbstractRequest implements RequestInterface
      *
      * @param ConnectorInterface $connector
      * @param JsonSerializer $jsonSerializer
+     * @param ZendEscaper $encoder
      * @param LoggerInterface $logger
      */
     public function __construct(
         ConnectorInterface $connector,
         JsonSerializer $jsonSerializer,
+        ZendEscaper $encoder,
         LoggerInterface $logger
     ) {
         $this->connector = $connector;
         $this->jsonSerializer = $jsonSerializer;
+        $this->encoder = $encoder;
         $this->logger = $logger;
     }
 
@@ -94,12 +104,12 @@ abstract class AbstractRequest implements RequestInterface
      * @param string $apiUrl
      * @param string $storeId
      * @param string $apiKey
-     * @throws InvalidArgumentException
+     * @throws LocalizedException
      */
-    public function setConfig(string $apiUrl, string $storeId, string $apiKey): void
+    public function setConfig(string $apiUrl, string $storeId, string $apiKey)
     {
         if (empty($apiUrl) || empty($storeId) || empty($apiKey)) {
-            throw new InvalidArgumentException(__('Credentials not set.'));
+            throw new LocalizedException(__('Credentials not set.'));
         }
 
         $this->apiUrl = $apiUrl;
@@ -143,15 +153,33 @@ abstract class AbstractRequest implements RequestInterface
      * Generate Idempotent Requests key
      *
      * @return string
+     * @return string
+     * @throws Exception
      */
     protected function getUuid4()
     {
-        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            random_int(0, 0xffff),
+            random_int(0, 0xffff),
+            random_int(0, 0xffff),
+            random_int(0, 0x0fff) | 0x4000,
+            random_int(0, 0x3fff) | 0x8000,
+            random_int(0, 0xffff),
+            random_int(0, 0xffff),
+            random_int(0, 0xffff)
         );
+    }
+
+    /**
+     * Encode url
+     *
+     * @param string $url
+     *
+     * @return string
+     */
+    protected function encode(string $url)
+    {
+        return $this->encoder->escapeUrl($url);
     }
 }

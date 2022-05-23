@@ -8,12 +8,11 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Magento\Framework\Math\FloatComparator;
+use Magento\Framework\Exception\LocalizedException;
+use Extend\Warranty\Helper\FloatComparator;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest as ApiContractModel;
@@ -22,60 +21,63 @@ use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Exception\InvalidArgumentException;
 use Exception;
 
 /**
  * Class WarrantyContract
+ *
+ * Warranty Contract Model
  */
 class WarrantyContract
 {
+    public const CONTRACT = 'contract';
+
+    public const LEAD_CONTRACT = 'lead_contract';
+
     /**
-     * API Contract Model
+     * API Contract
      *
      * @var ApiContractModel
      */
     private $apiContractModel;
 
     /**
-     * Contract Payload Builder
+     * Contract Payload Builder Model
      *
      * @var ContractPayloadBuilder
      */
     private $contractPayloadBuilder;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
     private $jsonSerializer;
 
     /**
-     * Order Item Repository Interface
+     * Order Item Repository Model
      *
      * @var OrderItemRepositoryInterface
      */
     private $orderItemRepository;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
     private $logger;
 
     /**
-     * Float Comparator
+     * Float Comparator Model
      *
      * @var FloatComparator
      */
     private $floatComparator;
 
     /**
-     * DataHelper
+     * Warranty Api DataHelper
      *
      * @var DataHelper
      */
@@ -116,12 +118,18 @@ class WarrantyContract
      * @param OrderInterface $order
      * @param OrderItemInterface $orderItem
      * @param int $qtyInvoiced
+     * @param string|null $type
+     *
      * @return string
-     * @throws NoSuchEntityException
-     * @throws InvalidArgumentException
+     *
+     * @throws LocalizedException
      */
-    public function create(OrderInterface $order, OrderItemInterface $orderItem, int $qtyInvoiced): string
-    {
+    public function create(
+        OrderInterface $order,
+        OrderItemInterface $orderItem,
+        int $qtyInvoiced,
+        ?string $type = self::CONTRACT
+    ): string {
         $result = ContractCreate::STATUS_FAILED;
 
         if (!$this->canCreateWarranty($orderItem)) {
@@ -129,7 +137,7 @@ class WarrantyContract
             return $result;
         }
 
-        $contractPayload = $this->contractPayloadBuilder->preparePayload($order, $orderItem);
+        $contractPayload = $this->contractPayloadBuilder->preparePayload($order, $orderItem, $type);
 
         if (!empty($contractPayload)) {
             $storeId = $orderItem->getStoreId();
@@ -155,7 +163,11 @@ class WarrantyContract
                     $this->getContractIds($orderItem),
                     $newContractIds
                 );
-                $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+                try {
+                    $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
+                } catch (Exception $exception) {
+                    $this->logger->error($exception->getMessage());
+                }
                 $orderItem->setContractId($contractIdsJson);
 
                 $options = $orderItem->getProductOptions();
@@ -164,7 +176,8 @@ class WarrantyContract
 
                 try {
                     $this->orderItemRepository->save($orderItem);
-                    $result = count($newContractIds) === $qtyInvoiced ? ContractCreate::STATUS_SUCCESS : ContractCreate::STATUS_PARTIAL;
+                    $result = count($newContractIds) === $qtyInvoiced ? ContractCreate::STATUS_SUCCESS :
+                        ContractCreate::STATUS_PARTIAL;
                 } catch (Exception $exception) {
                     $this->logger->error($exception->getMessage());
                 }
@@ -185,7 +198,7 @@ class WarrantyContract
         try {
             $contractIdsJson = $orderItem->getContractId();
             $contractIds = $contractIdsJson ? $this->jsonSerializer->unserialize($contractIdsJson) : [];
-        } catch (LocalizedException $exception) {
+        } catch (Exception $exception) {
             $contractIds = [];
         }
 

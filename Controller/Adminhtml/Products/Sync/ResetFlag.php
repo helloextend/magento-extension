@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Controller\Adminhtml\Products\Sync;
 
 use Extend\Warranty\Model\ProductSyncFlag;
@@ -21,16 +19,18 @@ use Magento\Framework\FlagManager;
 
 /**
  * Class ResetFlag
+ *
+ * Reset the flag indicating that the products are being synchronized
  */
 class ResetFlag extends Action
 {
     /**
      * Authorization level of a basic admin session
      */
-    const ADMIN_RESOURCE = 'Extend_Warranty::product_manual_sync';
+    public const ADMIN_RESOURCE = 'Extend_Warranty::product_manual_sync';
 
     /**
-     * Flag Manager
+     * Flag Manager Model
      *
      * @var FlagManager
      */

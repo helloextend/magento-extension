@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Api\Sync\Lead;
 
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
@@ -19,13 +17,15 @@ use InvalidArgumentException;
 
 /**
  * Class LeadsRequest
+ *
+ * Warranty LeadsRequest
  */
 class LeadsRequest extends AbstractRequest
 {
     /**
      * Create a lead
      */
-    const CREATE_LEAD_ENDPOINT = 'leads/';
+    public const CREATE_LEAD_ENDPOINT = 'leads/';
 
     /**
      * Create lead

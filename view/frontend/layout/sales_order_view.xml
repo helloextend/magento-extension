@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="extend_warranty_installation" />
+    <body>
+        <referenceBlock name="additional.product.info">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Extend_Warranty::order/item/additional-info.phtml</argument>
+            </action>
+
+            <block class="Magento\Sales\Block\Order\Item\Renderer\DefaultRenderer"
+                   name="order.item.warranty"
+                   template="Extend_Warranty::order/item/warranty-offers.phtml"
+                   after="-">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

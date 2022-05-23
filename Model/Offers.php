@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -23,32 +21,34 @@ use InvalidArgumentException;
 
 /**
  * Class Offers
+ *
+ * Warranty Offers Model
  */
 class Offers
 {
     /**
-     * Api Offer Model
+     * Api Offer
      *
      * @var ApiOfferModel
      */
     private $apiOfferModel;
 
     /**
-     * Data Helper
+     * Warranty Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
     private $jsonSerializer;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -190,29 +190,29 @@ class Offers
             $recommended = $offerInformation['recommended'] ?? '';
             if ($recommended && isset($offerInformation[$recommended])) {
                 $offerInfo = $offerInformation[$recommended];
-                if (is_array($offerInfo) && !empty($offerInfo)) {
-                    $offerIds = array_column($offerInfo, 'id');
-                    if (in_array($warrantyData['planId'], $offerIds)) {
-                        foreach ($offerInfo as $offer) {
-                            if ($warrantyData['planId'] === $offer['id']) {
-                                if (isset($offer['price']) && (int)$warrantyData['price'] !== $offer['price']) {
-                                    $errors[] = __('Invalid price.');
-                                }
+            }
+        }
 
-                                if (
-                                    isset($offer['contract']['termLength'])
-                                    && (int)$warrantyData['term'] !== $offer['contract']['termLength']
-                                ) {
-                                    $errors[] = __('Invalid warranty term.');
-                                }
-
-                                break;
-                            }
+        if (!empty($offerInfo) && is_array($offerInfo)) {
+            $offerIds = array_column($offerInfo, 'id');
+            if (in_array($warrantyData['planId'], $offerIds)) {
+                foreach ($offerInfo as $offer) {
+                    if ($warrantyData['planId'] === $offer['id']) {
+                        if (isset($offer['price']) && (int)$warrantyData['price'] !== $offer['price']) {
+                            $errors[] = __('Invalid price.');
                         }
-                    } else {
-                        $errors[] = __('Invalid warranty plan ID.');
+
+                        if (isset($offer['contract']['termLength'])
+                            && (int)$warrantyData['term'] !== $offer['contract']['termLength']
+                        ) {
+                            $errors[] = __('Invalid warranty term.');
+                        }
+
+                        break;
                     }
                 }
+            } else {
+                $errors[] = __('Invalid warranty plan ID.');
             }
         }
 

@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Setup;
 
 use Extend\Warranty\Model\ProductSyncFlag;
@@ -20,11 +18,13 @@ use Magento\Framework\Setup\ModuleDataSetupInterface;
 
 /**
  * Class RecurringData
+ *
+ *  RecurringData Setup Flag
  */
 class RecurringData implements InstallDataInterface
 {
     /**
-     * Flag Manager
+     * Flag Manager Model
      *
      * @var FlagManager
      */
@@ -47,7 +47,7 @@ class RecurringData implements InstallDataInterface
      * @param ModuleDataSetupInterface $setup
      * @param ModuleContextInterface $context
      */
-    public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context): void
+    public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
         $flagData = $this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME);
         if ($flagData && is_string($flagData)) {

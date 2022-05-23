@@ -8,23 +8,23 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
 
 /**
  * Class Create Contract
+ *
+ * Create Contract Source Model
  */
 class CreateContractApi implements OptionSourceInterface
 {
     /**
      * Contract creation values
      */
-    const UNSPECIFIED = 0;
-    const CONTACTS_API = 1;
-    const ORDERS_API = 2;
+    public const UNSPECIFIED = 0;
+    public const CONTACTS_API = 1;
+    public const ORDERS_API = 2;
 
     /**
      * Return array of options as value-label pairs

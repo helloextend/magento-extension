@@ -12,60 +12,63 @@ namespace Extend\Warranty\Observer\Warranty;
 
 /**
  * Class AddToCart
- * @package Extend\Warranty\Observer\Warranty
+ *
+ * AddToCart Observer
  */
 class AddToCart implements \Magento\Framework\Event\ObserverInterface
 {
     /**
-     * Cart Helper
+     * Magento Cart Helper
      *
      * @var \Magento\Checkout\Helper\Cart
      */
     protected $_cartHelper;
 
     /**
-     * Product Repository Interface
+     * Product Repository Model
      *
      * @var \Magento\Catalog\Api\ProductRepositoryInterface
      */
     protected $_productRepository;
 
     /**
-     * Search Criteria Builder
+     * Search Criteria Builder Model
      *
      * @var \Magento\Framework\Api\SearchCriteriaBuilder
      */
     protected $_searchCriteriaBuilder;
 
     /**
-     * Message Manager Interface
+     * Message Manager Model
      *
      * @var \Magento\Framework\Message\ManagerInterface
      */
     protected $_messageManager;
 
     /**
-     * Tracking Helper
+     * Warranty Tracking Helper
      *
      * @var \Extend\Warranty\Helper\Tracking
      */
     protected $_trackingHelper;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var \Psr\Log\LoggerInterface
      */
     protected $_logger;
 
     /**
-     * Offer Model
+     * Offer
      *
      * @var \Extend\Warranty\Model\Offers
      */
     protected $offerModel;
 
     /**
+     * CartItem Api Data Factory
+     *
      * @var \Magento\Quote\Api\Data\CartItemInterfaceFactory
      */
     protected $cartItemFactory;
@@ -79,7 +82,8 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
      * @param \Magento\Framework\Message\ManagerInterface $messageManager
      * @param \Extend\Warranty\Helper\Tracking $trackingHelper
      * @param \Psr\Log\LoggerInterface $logger
-     * @param \Extend\Warranty\Helper\Data $helper
+     * @param \Extend\Warranty\Model\Offers $offerModel
+     * @param \Magento\Quote\Api\Data\CartItemInterfaceFactory $cartItemFactory
      */
     public function __construct(
         \Magento\Checkout\Helper\Cart $cartHelper,
@@ -105,6 +109,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
      * Add to cart warranty
      *
      * @param \Magento\Framework\Event\Observer $observer
+     * @throws \Exception
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
@@ -131,6 +136,8 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
     }
 
     /**
+     * Add warranty
+     *
      * @param \Magento\Quote\Api\Data\CartInterface $cart
      * @param array $warrantyData
      * @param int $qty
@@ -150,7 +157,8 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
             );
             $errorsAsString = implode(' ', $errors);
             $this->_logger->error(
-                'Invalid warranty data. ' . $errorsAsString . ' Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData)
+                'Invalid warranty data. ' . $errorsAsString .
+                ' Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData)
             );
 
             return;
@@ -166,10 +174,13 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         /** @var \Magento\Catalog\Model\Product $warranty */
         $warranty = reset($results);
         if (!$warranty) {
-            $this->_messageManager->addErrorMessage('Oops! There was an error adding the protection plan product.');
+            $this->_messageManager->addErrorMessage(
+                'Oops! There was an error adding the protection plan product.'
+            );
             $this->_logger->error(
-                'Oops! There was an error finding the protection plan product, please ensure the protection plan product is in your catalog and is enabled! '
-                . 'Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData)
+                'Oops! There was an error finding the protection plan product,' .
+                ' please ensure the protection plan product is in your catalog and is enabled! ' .
+                'Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData)
             );
 
             return;
@@ -183,7 +194,9 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
             $cart->save();
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->_logger->critical($e);
-            $this->_messageManager->addErrorMessage('Oops! There was an error adding the protection plan product.');
+            $this->_messageManager->addErrorMessage(
+                'Oops! There was an error adding the protection plan product.'
+            );
 
             return;
         }

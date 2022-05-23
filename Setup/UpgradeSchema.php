@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile -- UpgradeSchema scripts are obsolete
 /**
  * Extend Warranty
  *
@@ -104,7 +105,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
      * @param SchemaSetupInterface $setup
      * @throws Zend_Db_Exception
      */
-    protected function createExtendWarrantyContractCreateTable(SchemaSetupInterface $setup): void
+    protected function createExtendWarrantyContractCreateTable(SchemaSetupInterface $setup)
     {
         $connection = $setup->getConnection();
 

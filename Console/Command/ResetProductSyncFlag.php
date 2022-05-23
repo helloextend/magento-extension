@@ -22,25 +22,27 @@ use Exception;
 
 /**
  * Class ResetProductSyncFlag
+ *
+ * Reset the flag indicating that the products are being synchronized
  */
 class ResetProductSyncFlag extends Command
 {
     /**
-     * App State
+     * Application State
      *
      * @var AppState
      */
     private $appState;
 
     /**
-     * Flag Manager
+     * Flag Manager Model
      *
      * @var FlagManager
      */
     private $flagManager;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -67,9 +69,9 @@ class ResetProductSyncFlag extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    protected function configure(): void
+    protected function configure()
     {
         $this->setName('extend:sync-products:reset-flag');
         $this->setDescription('Reset product sync flag to unlock sync process');
@@ -77,9 +79,9 @@ class ResetProductSyncFlag extends Command
         parent::configure();
     }
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
             $this->appState->emulateAreaCode(
@@ -99,7 +101,7 @@ class ResetProductSyncFlag extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    public function doExecute(InputInterface $input, OutputInterface $output): void
+    public function doExecute(InputInterface $input, OutputInterface $output)
     {
         $this->flagManager->deleteFlag(ProductSyncFlag::FLAG_NAME);
         $output->writeln("<comment>Product sync flag has been reset.</comment>");

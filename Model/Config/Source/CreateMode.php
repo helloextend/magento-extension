@@ -8,22 +8,22 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
 
 /**
  * Class CreateMode
+ *
+ * CreateMode Source Model
  */
 class CreateMode implements OptionSourceInterface
 {
     /**
      * Order creation mode values
      */
-    const ON_INVOICE = 0;
-    const SCHEDULED = 1;
+    public const ON_INVOICE = 0;
+    public const SCHEDULED = 1;
 
     /**
      * Return array of options as value-label pairs

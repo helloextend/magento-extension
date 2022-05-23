@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Api\SyncInterface as ProductSyncModel;
@@ -18,7 +16,6 @@ use Extend\Warranty\Model\Api\Sync\Product\ProductsRequest as ApiProductModel;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Exception\InvalidArgumentException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
@@ -26,63 +23,66 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
+use Exception;
 
 /**
  * Class ProductSyncProcess
+ *
+ * Warranty ProductSyncProcess Model
  */
 class ProductSyncProcess
 {
     /**
-     * Store Manager Interface
+     * Store Manager Model
      *
      * @var StoreManagerInterface
      */
     private $storeManager;
 
     /**
-     * Date Time
+     * Date Time Model
      *
      * @var DateTime
      */
     private $dateTime;
 
     /**
-     * Date
+     * Date Model
      *
      * @var Date
      */
     private $date;
 
     /**
-     * Data Helper
+     * Warranty Api Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Product Sync Model
+     * Product Sync
      *
      * @var ProductSyncModel
      */
     private $productSyncModel;
 
     /**
-     * Api Product Model
+     * Api Product
      *
      * @var ApiProductModel
      */
     private $apiProductModel;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
     private $logger;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -125,7 +125,7 @@ class ProductSyncProcess
      *
      * @param int|null $defaultBatchSize
      */
-    public function execute(?int $defaultBatchSize = null): void
+    public function execute(int $defaultBatchSize = null)
     {
         $stores = $this->storeManager->getStores();
         foreach ($stores as $storeId => $store) {
@@ -142,12 +142,13 @@ class ProductSyncProcess
 
             try {
                 $this->apiProductModel->setConfig($apiUrl, $apiStoreId, $apiKey);
-            } catch (InvalidArgumentException $exception) {
+            } catch (Exception $exception) {
                 $this->syncLogger->error($exception->getMessage());
                 continue;
             }
 
-            $batchSize = $defaultBatchSize ?: $this->dataHelper->getProductsBatchSize(ScopeInterface::SCOPE_STORES, $storeId);
+            $batchSize = $defaultBatchSize ?:
+                $this->dataHelper->getProductsBatchSize(ScopeInterface::SCOPE_STORES, $storeId);
             $this->productSyncModel->setBatchSize($batchSize);
 
             $filters[Product::STORE_ID] = $storeId;
@@ -167,7 +168,11 @@ class ProductSyncProcess
                     try {
                         $this->apiProductModel->create($products, $currentBatch);
                     } catch (LocalizedException $exception) {
-                        $this->syncLogger->info(sprintf('Error found in products batch %s. %s', $currentBatch, $exception->getMessage()));
+                        $this->syncLogger->info(sprintf(
+                            'Error found in products batch %s. %s',
+                            $currentBatch,
+                            $exception->getMessage()
+                        ));
                     }
                 } else {
                     $this->syncLogger->info(sprintf('Nothing to sync in batch %s.', $currentBatch));
@@ -178,7 +183,11 @@ class ProductSyncProcess
             } while ($currentBatch <= $countOfBathes);
 
             $this->dataHelper->setLastProductSyncDate($currentDate, ScopeInterface::SCOPE_STORES, $storeId);
-            $this->dataHelper->setLastProductSyncDate($currentDate, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, Store::DEFAULT_STORE_ID);
+            $this->dataHelper->setLastProductSyncDate(
+                $currentDate,
+                ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                Store::DEFAULT_STORE_ID
+            );
             $this->syncLogger->info(sprintf('Finish sync products for %s store.', $storeCode));
         }
     }

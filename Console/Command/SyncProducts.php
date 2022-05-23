@@ -27,44 +27,46 @@ use Exception;
 
 /**
  * Class SyncProducts
+ *
+ * Sync Product Console Command
  */
 class SyncProducts extends Command
 {
     /**
      * Batch size input key
      */
-    const INPUT_KEY_BATCH_SIZE = 'batch_size';
+    public const INPUT_KEY_BATCH_SIZE = 'batch_size';
 
     /**
-     * App State
+     * State
      *
      * @var AppState
      */
     private $appState;
 
     /**
-     * Data Helper
+     * Warranty Api Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Flag Manager
+     * Flag Manager Model
      *
      * @var FlagManager
      */
     private $flagManager;
 
     /**
-     * Product Sync Process
+     * Product Sync Model
      *
      * @var ProductSyncProcess
      */
     private $productSyncProcess;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -97,9 +99,9 @@ class SyncProducts extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
-    protected function configure(): void
+    protected function configure()
     {
         $options = [
             new InputOption(
@@ -118,9 +120,9 @@ class SyncProducts extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
             $this->appState->emulateAreaCode(
@@ -140,7 +142,7 @@ class SyncProducts extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    public function doExecute(InputInterface $input, OutputInterface $output): void
+    public function doExecute(InputInterface $input, OutputInterface $output)
     {
         if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
             $output->writeln("<error>Extension is disabled. Please, check the configuration settings.</error>");

@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Plugin\Catalog\Controller\Adminhtml\Product\NewAction;
 
 use Extend\Warranty\Helper\Data;
@@ -20,6 +18,8 @@ use Magento\Framework\Message\ManagerInterface;
 
 /**
  * Class DisableCreateNewWarrantyPlugin
+ *
+ * DisableCreateNewWarrantyPlugin plugin
  */
 class DisableCreateNewWarrantyPlugin
 {
@@ -31,7 +31,7 @@ class DisableCreateNewWarrantyPlugin
     private $messageManager;
 
     /**
-     * Result Redirect Factory
+     * Result Redirect Factory Model
      *
      * @var ResultRedirectFactory
      */

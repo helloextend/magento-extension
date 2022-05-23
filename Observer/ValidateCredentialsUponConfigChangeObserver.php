@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Observer;
 
 use Extend\Warranty\Model\Api\Sync\Product\ProductsRequest as ApiProductModel;
@@ -25,39 +23,41 @@ use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class ValidateCredentialsUponConfigChangeObserver
+ *
+ * ValidateCredentialsUponConfigChangeObserver Observer
  */
 class ValidateCredentialsUponConfigChangeObserver implements ObserverInterface
 {
     /**
-     * Context
+     * Context Model
      *
      * @var Context
      */
     private $context;
 
     /**
-     * Message Manager Interface
+     * Message Manager Model
      *
      * @var ManagerInterface
      */
     private $messageManager;
 
     /**
-     * Array Manager
+     * Array Manager Model
      *
      * @var ArrayManager
      */
     private $arrayManager;
 
     /**
-     * Data Helper
+     * Warranty Api Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Api Product Model
+     * Api Product
      *
      * @var ApiProductModel
      */
@@ -91,7 +91,7 @@ class ValidateCredentialsUponConfigChangeObserver implements ObserverInterface
      *
      * @param Observer $observer
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;

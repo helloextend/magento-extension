@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Ui\DataProvider\Product\Form\Modifier;
 
 use Extend\Warranty\Model\Product\Type;
@@ -20,18 +18,20 @@ use Magento\Framework\Stdlib\ArrayManager;
 
 /**
  * Class WarrantyPrice
+ *
+ * WarrantyPrice Product Form Modifier
  */
 class WarrantyPrice extends AbstractModifier
 {
     /**
      * Price container
      */
-    const PRICE_CONTAINER = 'container_price';
+    public const PRICE_CONTAINER = 'container_price';
 
     /**
      * Advanced pricing button
      */
-    const ADVANCED_PRICING_BUTTON = 'advanced_pricing_button';
+    public const ADVANCED_PRICING_BUTTON = 'advanced_pricing_button';
 
     /**
      * Locator Interface
@@ -41,7 +41,7 @@ class WarrantyPrice extends AbstractModifier
     private $locator;
 
     /**
-     * Array Manager
+     * Array Manager Model
      *
      * @var ArrayManager
      */
@@ -62,7 +62,7 @@ class WarrantyPrice extends AbstractModifier
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function modifyData(array $data): array
     {

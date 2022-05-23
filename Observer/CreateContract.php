@@ -8,8 +8,6 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-declare(strict_types=1);
-
 namespace Extend\Warranty\Observer;
 
 use Magento\Framework\Event\Observer;
@@ -22,6 +20,7 @@ use Extend\Warranty\Model\Config\Source\CreateContractApi;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
+use Exception;
 
 /**
  * Class CreateContractApi
@@ -29,26 +28,28 @@ use Psr\Log\LoggerInterface;
 class CreateContract implements ObserverInterface
 {
     /**
-     * Warranty Contract
+     * Warranty Contract Model
      *
      * @var WarrantyContract
      */
     private $warrantyContract;
 
     /**
+     * ExtendOrder Model
+     *
      * @var ExtendOrder
      */
     private $extendOrder;
 
     /**
-     * DataHelper
+     * Warranty Api DataHelper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -79,7 +80,7 @@ class CreateContract implements ObserverInterface
      *
      * @param Observer $observer
      */
-    public function execute(Observer $observer): void
+    public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         $invoice = $event->getInvoice();
@@ -87,32 +88,69 @@ class CreateContract implements ObserverInterface
 
         $storeId = $order->getStoreId();
 
-        if (
-            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+        if ($this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isWarrantyContractEnabled($storeId)
             && !$this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)
         ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();
 
-                if ($orderItem->getProductType() === WarrantyType::TYPE_CODE) {
-                    $qtyInvoiced = intval($invoiceItem->getQty());
-                    if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::CONTACTS_API) {
-                        try {
-                            $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
-                        } catch (LocalizedException $exception) {
-                            $this->logger->error('Error during warranty contract creation. ' . $exception->getMessage());
+                if ($orderItem->getProductType() !== WarrantyType::TYPE_CODE) {
+                    continue;
+                }
+                $qtyInvoiced = (int)$invoiceItem->getQty();
+
+                if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::CONTACTS_API
+                ) {
+                    try {
+                        if ($orderItem->getLeadToken() != null &&
+                            implode(", ", json_decode($orderItem->getLeadToken(), true)) != null
+                        ) {
+                            $this->warrantyContract->create(
+                                $order,
+                                $orderItem,
+                                $qtyInvoiced,
+                                \Extend\Warranty\Model\WarrantyContract::LEAD_CONTRACT
+                            );
+                        } else {
+                            $this->warrantyContract->create(
+                                $order,
+                                $orderItem,
+                                $qtyInvoiced,
+                                \Extend\Warranty\Model\WarrantyContract::CONTRACT
+                            );
                         }
-                    } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractApi::ORDERS_API) {
-                        try {
-                            if ($orderItem->getLeadToken() != null && implode(", ", json_decode($orderItem->getLeadToken(), true)) != null) {
-                                $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\Orders::LEAD_CONTRACT);
-                            } else {
-                                $this->extendOrder->createOrder($order, $orderItem, $qtyInvoiced, \Extend\Warranty\Model\Orders::CONTRACT);
-                            }
-                        } catch (LocalizedException $exception) {
-                            $this->logger->error('Error during warranty order api contract creation. ' . $exception->getMessage());
+                    } catch (LocalizedException $exception) {
+                        $this->logger->error(
+                            'Error during warranty contract creation. ' . $exception->getMessage()
+                        );
+                    }
+                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
+                    CreateContractApi::ORDERS_API
+                ) {
+                    try {
+                        if ($orderItem->getLeadToken() != null &&
+                            implode(", ", json_decode($orderItem->getLeadToken(), true)) != null
+                        ) {
+                            $this->extendOrder->createOrder(
+                                $order,
+                                $orderItem,
+                                $qtyInvoiced,
+                                \Extend\Warranty\Model\Orders::LEAD_CONTRACT
+                            );
+                        } else {
+                            $this->extendOrder->createOrder(
+                                $order,
+                                $orderItem,
+                                $qtyInvoiced,
+                                \Extend\Warranty\Model\Orders::CONTRACT
+                            );
                         }
+                    } catch (LocalizedException $exception) {
+                        $this->logger->error(
+                            'Error during warranty order api contract creation. ' . $exception->getMessage()
+                        );
                     }
                 }
             }

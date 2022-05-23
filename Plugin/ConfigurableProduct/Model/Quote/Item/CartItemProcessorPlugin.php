@@ -15,6 +15,8 @@ use Magento\Quote\Api\Data\CartItemInterface;
 
 /**
  * Class CartItemProcessorPlugin
+ *
+ * CartItemProcessorPlugin plugin
  */
 class CartItemProcessorPlugin
 {

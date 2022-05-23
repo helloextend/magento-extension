@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Extend Warranty (Search results page)
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+
+    <update handle="extend_warranty_installation" />
+    <body>
+        <referenceBlock name="catalogsearch.product.addto">
+            <block class="Magento\Catalog\Block\Product\ProductList\Item\Block"
+                   name="catalogsearch.product.warranty"
+                   template="Extend_Warranty::product/list/warranty-offers.phtml"
+                   after="-">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
+                    <argument name="offerTypeArea" xsi:type="string">catalogsearch_page</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>
