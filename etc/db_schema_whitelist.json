@@ -11,7 +11,7 @@
             "order_item_id": true,
             "invoice_item_id": true,
             "qty_invoiced": true,
-            "Status": true,
+            "status": true,
             "created_at": true,
             "updated_at": true
         },
