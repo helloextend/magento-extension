@@ -30,7 +30,7 @@ class PriceBackend
      * @param Product|DataObject $object
      * @return bool
      */
-    public function aroundValidate(Price $subject, callable $proceed, $object): bool
+    public function aroundValidate(Price $subject, callable $proceed, $object)
     {
         if ($object instanceof Product && $object->getTypeId() === Type::TYPE_CODE) {
             return true;

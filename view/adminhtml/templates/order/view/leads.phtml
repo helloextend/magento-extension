@@ -20,7 +20,7 @@ $leadToken = $viewModel->unserialize($item->getLeadToken()) ?? [];
 <?php if ($viewModel->isExtendEnabled()
     && $viewModel->isLeadEnabled()
     && !empty($leadToken)
-    && !$viewModel->isWarrantyInLaterOrders($item)) : ?>
+    && !$viewModel->isWarrantyInLaterOrders($item)): ?>
     <td>
         <div id="extend-offer-<?= /* @noEscape */ str_replace([' ','"'], '', $item->getSku()); ?>"></div>
     </td>

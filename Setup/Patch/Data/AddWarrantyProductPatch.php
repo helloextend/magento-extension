@@ -1,16 +1,17 @@
 <?php
-// phpcs:ignoreFile -- InstallData scripts are obsolete
 
-namespace Extend\Warranty\Setup;
+namespace Extend\Warranty\Setup\Patch\Data;
 
-use Magento\Framework\Setup\InstallDataInterface;
-use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\Phrase;
+use Magento\Framework\Setup\Patch\DataPatchInterface;
+use Magento\Framework\Setup\Patch\PatchRevertableInterface;
+use Magento\Framework\Setup\Patch\NonTransactionableInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Catalog\Model\ProductFactory;
 use Extend\Warranty\Model\Product\Type;
+use Magento\Eav\Setup\EavSetup;
 use Magento\Eav\Setup\EavSetupFactory;
 use Magento\Catalog\Model\Product;
-use Magento\Framework\App\State;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Filesystem\Io\File;
 use Magento\Framework\Module\Dir\Reader;
@@ -18,7 +19,6 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\App\Area;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Catalog\Model\Product\Gallery\EntryFactory;
 use Magento\Catalog\Model\Product\Gallery\GalleryManagement;
@@ -28,12 +28,22 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\FileSystemException;
 
-class InstallData implements InstallDataInterface
+/**
+ * class AddWarrantyProductPatch
+ *
+ * Add warranty product
+ */
+class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInterface, NonTransactionableInterface
 {
     /**
      * warranty product sku
      */
-    const WARRANTY_PRODUCT_SKU = 'WARRANTY-1';
+    protected const WARRANTY_PRODUCT_SKU = 'WARRANTY-1';
+
+    /**
+     * @var ModuleDataSetupInterface
+     */
+    protected $moduleDataSetup;
 
     /**
      * @var ProductFactory
@@ -41,14 +51,9 @@ class InstallData implements InstallDataInterface
     protected $productFactory;
 
     /**
-     * @var EavSetupFactory
+     * @var EavSetup
      */
-    protected $eavSetupFactory;
-
-    /**
-     * @var State
-     */
-    protected $state;
+    protected $eavSetup;
 
     /**
      * @var StoreManagerInterface
@@ -90,13 +95,10 @@ class InstallData implements InstallDataInterface
      */
     private $imageContentFactory;
 
-
     /**
-     * InstallData constructor
-     *
+     * @param ModuleDataSetupInterface $moduleDataSetup
      * @param ProductFactory $productFactory
      * @param EavSetupFactory $eavSetupFactory
-     * @param State $state
      * @param StoreManagerInterface $storeManager
      * @param File $file
      * @param Reader $reader
@@ -106,11 +108,10 @@ class InstallData implements InstallDataInterface
      * @param GalleryManagement $mediaGalleryManagement
      * @param ImageContentFactory $imageContentFactory
      */
-    public function __construct
-    (
+    public function __construct(
+        ModuleDataSetupInterface $moduleDataSetup,
         ProductFactory $productFactory,
         EavSetupFactory $eavSetupFactory,
-        State $state,
         StoreManagerInterface $storeManager,
         File $file,
         Reader $reader,
@@ -119,11 +120,10 @@ class InstallData implements InstallDataInterface
         EntryFactory $mediaGalleryEntryFactory,
         GalleryManagement $mediaGalleryManagement,
         ImageContentFactory $imageContentFactory
-    )
-    {
+    ) {
+        $this->moduleDataSetup = $moduleDataSetup;
         $this->productFactory = $productFactory;
-        $this->eavSetupFactory = $eavSetupFactory;
-        $this->state = $state;
+        $this->eavSetup = $eavSetupFactory->create(['setup' => $moduleDataSetup]);
         $this->storeManager = $storeManager;
         $this->file = $file;
         $this->reader = $reader;
@@ -134,27 +134,46 @@ class InstallData implements InstallDataInterface
         $this->imageContentFactory = $imageContentFactory;
     }
 
-    public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
+    /**
+     * @inheritdoc
+     */
+    public static function getDependencies()
     {
-        try {
-            $this->state->setAreaCode(Area::AREA_ADMINHTML);
-        } catch (LocalizedException $e) {
-            //Intentionally Left Empty
-        }
+            return [];
+    }
 
-        $setup->startSetup();
-        $eavSetup = $this->eavSetupFactory->create();
+    /**
+     * @inheritdoc
+     */
+    public function getAliases()
+    {
+        return [];
+    }
 
+    /**
+     * @inheritdoc
+     */
+    public function apply()
+    {
+        $this->moduleDataSetup->getConnection()->startSetup();
         //ADD WARRANTY PRODUCT TO THE DB
         $this->addImageToPubMedia();
         $this->createWarrantyProduct();
+        $this->enablePriceForWarrantyProducts();
 
-        /** Attribute not being used **/
-        // $this->addSyncAttribute($eavSetup);
+        $this->moduleDataSetup->getConnection()->endSetup();
+    }
 
-        $this->enablePriceForWarrantyProducts($eavSetup);
+    /**
+     * @inheritdoc
+     */
+    public function revert()
+    {
+        $this->moduleDataSetup->getConnection()->startSetup();
 
-        $setup->endSetup();
+        $this->deleteImageFromPubMedia();
+
+        $this->moduleDataSetup->getConnection()->endSetup();
     }
 
     /**
@@ -175,10 +194,22 @@ class InstallData implements InstallDataInterface
     }
 
     /**
+     * Delete image from pub/media
+     *
+     * @return void
+     * @throws FileSystemException
+     */
+    public function deleteImageFromPubMedia()
+    {
+        $imageWarranty = $this->getMediaImagePath();
+        $this->file->rm($imageWarranty);
+    }
+
+    /**
      * Process media gallery entry
      *
-     * @param $filePath
-     * @param $sku
+     * @param string $filePath
+     * @param string $sku
      *
      * @return void
      *
@@ -199,7 +230,7 @@ class InstallData implements InstallDataInterface
         $imageContent
             ->setType(mime_content_type($filePath))
             ->setName('Extend Protection Plan')
-            ->setBase64EncodedData(base64_encode(file_get_contents($filePath)));
+            ->setBase64EncodedData(base64_encode($this->file->read($filePath)));
 
         $entry->setContent($imageContent);
 
@@ -221,71 +252,74 @@ class InstallData implements InstallDataInterface
         return $path;
     }
 
-
+    /**
+     * Get warranty attribute set
+     *
+     * @param Product $warranty
+     *
+     * @return int
+     * @throws LocalizedException
+     */
     public function getWarrantyAttributeSet($warranty)
     {
         /** @var Product $warranty */
         $default = $warranty->getDefaultAttributeSetId();
 
         if (!$default) {
-            throw new \Exception('Unable to find default attribute set');
+            throw new LocalizedException(new Phrase('Unable to find default attribute set'));
         }
 
         return $default;
     }
 
+    /**
+     * Create warranty product
+     *
+     * @return void
+     *
+     * @throws InputException
+     * @throws NoSuchEntityException
+     * @throws StateException
+     * @throws \Magento\Framework\Exception\CouldNotSaveException
+     */
     public function createWarrantyProduct()
     {
         $warranty = $this->productFactory->create();
-        $attributeSetId = $this->getWarrantyAttributeSet($warranty);
-        $websites = $this->storeManager->getWebsites();
+        if (!$warranty->getIdBySku(self::WARRANTY_PRODUCT_SKU)) {
+            $attributeSetId = $this->getWarrantyAttributeSet($warranty);
+            $websites = $this->storeManager->getWebsites();
 
-        $warranty->setSku('WARRANTY-1')
-            ->setName('Extend Protection Plan')
-            ->setWebsiteIds(array_keys($websites))
-            ->setAttributeSetId($attributeSetId)
-            ->setStatus(Status::STATUS_ENABLED)
-            ->setVisibility(Visibility::VISIBILITY_NOT_VISIBLE)
-            ->setTypeId(Type::TYPE_CODE)
-            ->setPrice(0.0)
-            ->setTaxClassId(0) //None
-            ->setCreatedAt(strtotime('now'))
-            ->setStockData([
-                'use_config_manage_stock' => 0,
-                'is_in_stock' => 1,
-                'qty' => 1,
-                'manage_stock' => 0,
-                'use_config_notify_stock_qty' => 0
-            ]);
+            $warranty->setSku(self::WARRANTY_PRODUCT_SKU)
+                ->setName('Extend Protection Plan')
+                ->setWebsiteIds(array_keys($websites))
+                ->setAttributeSetId($attributeSetId)
+                ->setStatus(Status::STATUS_ENABLED)
+                ->setVisibility(Visibility::VISIBILITY_NOT_VISIBLE)
+                ->setTypeId(Type::TYPE_CODE)
+                ->setPrice(0.0)
+                ->setTaxClassId(0) //None
+                ->setCreatedAt(strtotime('now'))
+                ->setStockData([
+                    'use_config_manage_stock' => 0,
+                    'is_in_stock' => 1,
+                    'qty' => 1,
+                    'manage_stock' => 0,
+                    'use_config_notify_stock_qty' => 0
+                ]);
 
-        $imagePath = $this->reader->getModuleDir('', 'Extend_Warranty');
-        $imagePath .= '/Setup/Resource/Extend_icon.png';
-        $this->productRepository->save($warranty);
-        $this->processMediaGalleryEntry($imagePath, $warranty->getSku());
+            $this->productRepository->save($warranty);
+            $this->processMediaGalleryEntry($this->getMediaImagePath(), $warranty->getSku());
+        }
     }
 
-    public function addSyncAttribute($eavSetup)
+    /**
+     * Enable price attribute available for warranty product type
+     *
+     * @return void
+     */
+    public function enablePriceForWarrantyProducts()
     {
-        //ADD SYNCED DATE ATTRIBUTE FOR PRODUCTS
-        $eavSetup->addAttribute(
-            Product::ENTITY,
-            'extend_sync',
-            [
-                'type' => 'int',
-                'label' => 'Synced with Extend',
-                'input' => 'boolean',
-                'required' => false,
-                'is_used_in_grid' => false,
-                'is_visible_in_grid' => false,
-                'is_filterable_in_grid' => false,
-                'visible' => false,
-                'apply_to' => 'simple,virtual,configurable,downloadable,bundle'
-            ]
-        );
-    }
-
-    public function enablePriceForWarrantyProducts($eavSetup)
-    {
+        $eavSetup = $this->eavSetup;
         //MAKE PRICE ATTRIBUTE AVAILABLE FOR WARRANTY PRODUCT TYPE
         $fieldList = [
             'price',
