@@ -30,6 +30,9 @@ use Exception;
 class CreateContract
 {
     private const ORDER_ITEM_ID = 'order_item_id';
+    private const ORDER_ID = 'order_id';
+    private const QTY_ORDERED = 'qty';
+
     /**
      * Warranty Contract Model
      *
@@ -103,7 +106,7 @@ class CreateContract
      * @param int|string|null $storeId
      * @return void
      */
-    public function createContract(OrderInterface $order, OrderItemInterface $warrantyItem, int $qty, int|string|null $storeId) :void
+    public function createContract(OrderInterface $order, OrderItemInterface $warrantyItem, int $qty, $storeId) :void
     {
         if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
             CreateContractApi::CONTACTS_API
@@ -164,7 +167,6 @@ class CreateContract
      * @param OrderItemInterface $warrantyItem
      * @param int $qtyOrdered
      * @return void
-     * @throws Exception
      */
     public function addContactToQueue(OrderItemInterface $warrantyItem, int $qtyOrdered): void
     {
@@ -172,7 +174,8 @@ class CreateContract
             $contractCreate = $this->contractCreateFactory->create();
             $contractCreate->setData([
                 self::ORDER_ITEM_ID => $warrantyItem->getId(),
-                OrderItemInterface::QTY_ORDERED => $qtyOrdered,
+                self::ORDER_ID => $warrantyItem->getOrderId(),
+                self::QTY_ORDERED => $qtyOrdered,
             ]);
             $this->contractCreateResource->save($contractCreate);
         } catch (LocalizedException $exception) {

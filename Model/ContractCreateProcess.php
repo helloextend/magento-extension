@@ -18,7 +18,6 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
-use Magento\Sales\Api\Data\InvoiceItemInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
@@ -147,7 +146,7 @@ class ContractCreateProcess
             $processedContractCreateRecords = [];
             foreach ($contractCreateRecordsBatch as $contractCreateRecord) {
                 $recordId = $contractCreateRecord['id'];
-                $orderItem = $this->getOrderItem((int)$contractCreateRecord[InvoiceItemInterface::ORDER_ITEM_ID]);
+                $orderItem = $this->getOrderItem((int)$contractCreateRecord['order_item_id']);
                 if (!$orderItem) {
                     $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
                     continue;
@@ -161,17 +160,17 @@ class ContractCreateProcess
                     continue;
                 }
 
-                $qtyInvoiced = (int)$contractCreateRecord[OrderItemInterface::QTY_INVOICED];
+                $qty = (int)$contractCreateRecord['qty'];
 
                 try {
                     if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API
                         && $this->dataHelper->isContractCreateModeScheduled()
                     ) {
                         $processedContractCreateRecords[$recordId] =
-                            $this->extendOrdersApi->createOrder($order, $orderItem, $qtyInvoiced);
+                            $this->extendOrdersApi->createOrder($order, $orderItem, $qty);
                     } else {
                         $processedContractCreateRecords[$recordId] =
-                            $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+                            $this->warrantyContract->create($order, $orderItem, $qty);
                     }
                 } catch (LocalizedException $exception) {
                     $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
@@ -199,7 +198,7 @@ class ContractCreateProcess
         $select = $connection->select();
         $select->from(
             $tableName,
-            ['id', 'order_item_id', 'qty_invoiced']
+            ['id', 'order_item_id', 'qty']
         );
         $select->where('status is null');
 

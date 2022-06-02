@@ -214,14 +214,7 @@ class WarrantyContract
      */
     protected function canCreateWarranty(OrderItemInterface $orderItem): bool
     {
-        if ($this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $orderItem->getStoreId()) == CreateContractEvent::ORDER_CREATE
-            || $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $orderItem->getStoreId()) == CreateContractEvent::SHIPMENT_CREATE
-        ) {
-            $qty = (float)$orderItem->getQtyOrdered();
-        } elseif ($this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $orderItem->getStoreId()) == CreateContractEvent::INVOICE_CREATE) {
-            $qty = (float)$orderItem->getQtyInvoiced();
-        }
-
+        $qty = (float)$orderItem->getQtyOrdered();
 
         $options = $orderItem->getProductOptions();
         $refundResponsesLogEntries = $options['refund_responses_log'] ?? [];

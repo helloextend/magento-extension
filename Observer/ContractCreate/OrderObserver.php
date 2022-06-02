@@ -74,10 +74,11 @@ class OrderObserver implements ObserverInterface
         $order = $event->getOrder();
 
         $storeId = $order->getStoreId();
+        $contractCreateEvent = $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId);
 
         if ($this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isWarrantyContractEnabled($storeId)
-            && ($this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractEvent::ORDER_CREATE)
+            && ($contractCreateEvent == CreateContractEvent::ORDER_CREATE)
             && $this->orderAllowState($order)
         ) {
             foreach ($order->getItems() as $orderItem) {
@@ -106,7 +107,6 @@ class OrderObserver implements ObserverInterface
                         $this->logger->error($exception->getMessage());
                     }
                 }
-
             }
         }
     }

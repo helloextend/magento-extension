@@ -73,10 +73,11 @@ class ShipmentObserver implements ObserverInterface
         $order = $shipment->getOrder();
 
         $storeId = $order->getStoreId();
+        $contractCreateEvent = $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId);
 
         if ($this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isWarrantyContractEnabled($storeId)
-            && ($this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractEvent::SHIPMENT_CREATE)
+            && ($contractCreateEvent == CreateContractEvent::SHIPMENT_CREATE)
         ) {
             foreach ($shipment->getAllItems() as $shipmentItem) {
                 $orderItem = null;
@@ -110,7 +111,6 @@ class ShipmentObserver implements ObserverInterface
                         $this->logger->error($exception->getMessage());
                     }
                 }
-
             }
         }
     }

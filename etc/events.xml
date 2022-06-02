@@ -11,10 +11,6 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-<!--    <event name="sales_order_invoice_pay">-->
-<!--        <observer name="extend_warranty_create_warranty_contract_observer"-->
-<!--                  instance="Extend\Warranty\Observer\CreateContract"/>-->
-<!--    </event>-->
     <event name="sales_order_shipment_save_commit_after">
         <observer name="extend_warranty_create_warranty_shipment_after_observer"
                   instance="Extend\Warranty\Observer\ContractCreate\ShipmentObserver" />

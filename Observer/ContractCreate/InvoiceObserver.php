@@ -73,10 +73,11 @@ class InvoiceObserver implements ObserverInterface
         $order = $invoice->getOrder();
 
         $storeId = $order->getStoreId();
+        $contractCreateEvent = $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId);
 
         if ($this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isWarrantyContractEnabled($storeId)
-            && ($this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId) == CreateContractEvent::INVOICE_CREATE)
+            && ($contractCreateEvent == CreateContractEvent::INVOICE_CREATE)
         ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();
@@ -102,7 +103,6 @@ class InvoiceObserver implements ObserverInterface
                         $this->logger->error($exception->getMessage());
                     }
                 }
-
             }
         }
     }
