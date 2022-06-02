@@ -96,6 +96,7 @@ class OrderObserver implements ObserverInterface
                     try {
                         $this->warrantyContractCreate->createContract($order, $orderItem, $qtyOrdered, $storeId);
                     } catch (LocalizedException $exception) {
+                        $this->warrantyContractCreate->addContactToQueue($orderItem, $qtyOrdered);
                         $this->logger->error(
                             'Error during shipment event warranty contract creation. ' . $exception->getMessage()
                         );

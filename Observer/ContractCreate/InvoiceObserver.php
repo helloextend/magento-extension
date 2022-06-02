@@ -92,6 +92,7 @@ class InvoiceObserver implements ObserverInterface
                     try {
                         $this->warrantyContractCreate->createContract($order, $orderItem, $qtyInvoiced, $storeId);
                     } catch (LocalizedException $exception) {
+                        $this->warrantyContractCreate->addContactToQueue($orderItem, $qtyInvoiced);
                         $this->logger->error(
                             'Error during invoice event warranty contract creation. ' . $exception->getMessage()
                         );
