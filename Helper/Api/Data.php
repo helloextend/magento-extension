@@ -49,6 +49,7 @@ class Data extends AbstractHelper
      * Contracts settings
      */
     public const WARRANTY_CONTRACTS_ENABLED_XML_PATH = 'warranty/contracts/create';
+    public const WARRANTY_CONTRACTS_EVENT_XML_PATH = 'warranty/contracts/event';
     public const WARRANTY_CONTRACTS_MODE_XML_PATH = 'warranty/contracts/mode';
     public const WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH = 'warranty/contracts/batch_size';
     public const WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH = 'warranty/contracts/storage_period';
@@ -287,6 +288,24 @@ class Data extends AbstractHelper
     ) {
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_ENABLED_XML_PATH,
+            $scopeType,
+            $storeId
+        );
+    }
+
+    /**
+     * Get contract create event
+     *
+     * @param string $scopeType
+     * @param $storeId
+     * @return int
+     */
+    public function getContractCreateEvent(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $storeId = null
+    ) {
+        return (int)$this->scopeConfig->getValue(
+            self::WARRANTY_CONTRACTS_EVENT_XML_PATH,
             $scopeType,
             $storeId
         );
