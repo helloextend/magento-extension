@@ -27,6 +27,8 @@ use Magento\Framework\Exception\StateException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\App\State;
+use Magento\Framework\App\Area;
 
 /**
  * class AddWarrantyProductPatch
@@ -119,7 +121,8 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         ProductRepositoryInterface $productRepository,
         EntryFactory $mediaGalleryEntryFactory,
         GalleryManagement $mediaGalleryManagement,
-        ImageContentFactory $imageContentFactory
+        ImageContentFactory $imageContentFactory,
+        State $state
     ) {
         $this->moduleDataSetup = $moduleDataSetup;
         $this->productFactory = $productFactory;
@@ -132,6 +135,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         $this->mediaGalleryEntryFactory = $mediaGalleryEntryFactory;
         $this->mediaGalleryManagement = $mediaGalleryManagement;
         $this->imageContentFactory = $imageContentFactory;
+        $state->setAreaCode(Area::AREA_ADMINHTML);
     }
 
     /**
