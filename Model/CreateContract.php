@@ -130,6 +130,7 @@ class CreateContract
                     );
                 }
             } catch (LocalizedException $exception) {
+                $this->addContractToQueue($warrantyItem, $qty);
                 $this->logger->error(
                     'Error during warranty contract creation. ' . $exception->getMessage()
                 );
@@ -156,6 +157,7 @@ class CreateContract
                     );
                 }
             } catch (LocalizedException $exception) {
+                $this->addContractToQueue($warrantyItem, $qty);
                 $this->logger->error(
                     'Error during warranty order api contract creation. ' . $exception->getMessage()
                 );
@@ -168,18 +170,47 @@ class CreateContract
      * @param int $qtyOrdered
      * @return void
      */
-    public function addContactToQueue(OrderItemInterface $warrantyItem, int $qtyOrdered): void
+    public function addContractToQueue(OrderItemInterface $warrantyItem, int $qtyOrdered): void
     {
         try {
-            $contractCreate = $this->contractCreateFactory->create();
-            $contractCreate->setData([
-                self::ORDER_ITEM_ID => $warrantyItem->getId(),
-                self::ORDER_ID => $warrantyItem->getOrderId(),
-                self::QTY_ORDERED => $qtyOrdered,
-            ]);
-            $this->contractCreateResource->save($contractCreate);
+            if (!$this->isContractQueued($warrantyItem->getOrderId(), $warrantyItem->getId())) {
+                $contractCreate = $this->contractCreateFactory->create();
+                $contractCreate->setData([
+                    self::ORDER_ITEM_ID => $warrantyItem->getId(),
+                    self::ORDER_ID => $warrantyItem->getOrderId(),
+                    self::QTY_ORDERED => $qtyOrdered,
+                ]);
+                $this->contractCreateResource->save($contractCreate);
+            }
         } catch (LocalizedException $exception) {
             $this->logger->error($exception->getMessage());
         }
+    }
+
+    /**
+     * @param int $orederId
+     * @param int $orderItemId
+     * @return bool
+     */
+    private function isContractQueued(int $orederId, int $orderItemId): bool
+    {
+        $connection = $this->contractCreateResource->getConnection();
+        $tableName = $connection->getTableName('extend_warranty_contract_create');
+
+        $select = $connection->select();
+        $select->from(
+            $tableName,
+            ['id']
+        );
+        $select->where('order_id = ?', $orederId)
+            ->where('order_item_id = ?', $orderItemId);
+
+        $contract = $connection->fetchOne($select);
+
+        if (empty($contract)) {
+            return true;
+        }
+
+        return false;
     }
 }
