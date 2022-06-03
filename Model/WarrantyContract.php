@@ -13,6 +13,7 @@ namespace Extend\Warranty\Model;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Extend\Warranty\Helper\FloatComparator;
+use Magento\Framework\Phrase;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest as ApiContractModel;
@@ -181,6 +182,7 @@ class WarrantyContract
                         ContractCreate::STATUS_PARTIAL;
                 } catch (Exception $exception) {
                     $this->logger->error($exception->getMessage());
+                    throw new LocalizedException(new Phrase('Contract create error'), $exception);
                 }
             }
         }

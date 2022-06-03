@@ -108,6 +108,7 @@ class CreateContract
      */
     public function createContract(OrderInterface $order, OrderItemInterface $warrantyItem, int $qty, $storeId) :void
     {
+        $warrantyItem2 = [];
         if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
             CreateContractApi::CONTACTS_API
         ) {
@@ -207,7 +208,7 @@ class CreateContract
 
         $contract = $connection->fetchOne($select);
 
-        if (empty($contract)) {
+        if (!empty($contract)) {
             return true;
         }
 
