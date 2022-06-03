@@ -7,8 +7,8 @@
     </table>
     <table name="extend_warranty_contract_create">
         <column xsi:type="int" name="id" identity="true" nullable="false" unsigned="true" comment="ID"/>
-        <column xsi:type="int" name="order_item_id" nullable="false" unsigned="true" comment="Order Item ID"/>
-        <column xsi:type="int" name="invoice_item_id" nullable="false" unsigned="true" comment="Invoice Item ID"/>
+        <column xsi:type="int" name="order_item_id" padding="10" unsigned="true" nullable="false" comment="Order Item ID"/>
+        <column xsi:type="int" name="invoice_item_id" padding="10" nullable="false" unsigned="true" comment="Invoice Item ID"/>
         <column xsi:type="int" name="qty_invoiced" nullable="false" unsigned="true" comment="Qty Invoiced"/>
         <column xsi:type="varchar" name="status" length="255" nullable="true" comment="Status"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"
