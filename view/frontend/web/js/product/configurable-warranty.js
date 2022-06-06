@@ -30,7 +30,8 @@ define([
             selectors: {
                 addToCartForm: '#product_addtocart_form',
                 addToCartButton: '#product-addtocart-button',
-                optionsWrap: 'div.product-options-wrapper'
+                optionsWrap: 'div.product-options-wrapper',
+                subscriptionWidgetWell: 'div.subscription-widget-well div.configurable'
             }
         },
 
@@ -43,6 +44,10 @@ define([
 
             if (this.options.selectors.optionsWrap) {
                 $(this.options.selectors.optionsWrap, this.mainWrap).on('change', this._onOptionsChanged.bind(this));
+            }
+
+            if (this.options.selectors.subscriptionWidgetWell) {
+                $(this.options.selectors.subscriptionWidgetWell, this.mainWrap).on('change', this._onOptionsChanged.bind(this));
             }
         },
 
