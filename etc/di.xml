@@ -102,6 +102,36 @@
         </arguments>
     </type>
 
+    <!-- Magento 2.3.7 php7.4 varnish case  -->
+    <type name="Extend\Warranty\Console\Command\SyncProducts">
+        <arguments>
+            <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
+            <argument name="dataHelper" xsi:type="object">Extend\Warranty\Helper\Api\Data\Proxy</argument>
+            <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
+            <argument name="productSyncProcess" xsi:type="object">Extend\Warranty\Model\ProductSyncProcess\Proxy</argument>
+            <argument name="logger" xsi:type="object">Psr\Log\LoggerInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Console\Command\CreateContracts">
+        <arguments>
+            <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
+            <argument name="dataHelper" xsi:type="object">Extend\Warranty\Helper\Api\Data\Proxy</argument>
+            <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
+            <argument name="productSyncProcess" xsi:type="object">Extend\Warranty\Model\ProductSyncProcess\Proxy</argument>
+            <argument name="logger" xsi:type="object">Psr\Log\LoggerInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Console\Command\ResetProductSyncFlag">
+        <arguments>
+            <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
+            <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
+            <argument name="logger" xsi:type="object">Psr\Log\LoggerInterface\Proxy</argument>
+        </arguments>
+    </type>
+    <!-- Magento 2.3.7 php7.4 varnish case  -->
+
     <virtualType name="WarrantyAddLogHandler" type="Magento\Framework\Logger\Handler\Base">
         <arguments>
             <argument name="fileName" xsi:type="string">/var/log/extend/addWarranty.log</argument>

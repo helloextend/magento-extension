@@ -109,6 +109,8 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
      * @param EntryFactory $mediaGalleryEntryFactory
      * @param GalleryManagement $mediaGalleryManagement
      * @param ImageContentFactory $imageContentFactory
+     * @param State $state
+     * @throws LocalizedException
      */
     public function __construct(
         ModuleDataSetupInterface $moduleDataSetup,
