@@ -26,7 +26,8 @@ define([
             addLeadEvent: null,
             buttonEnabled: true,
             trackingEnabled: true,
-            isWarrantyInQuoteForSku: false
+            isWarrantyInLaterOrders: false,
+            isWarrantyInQuote: false,
         },
 
         /**
@@ -34,12 +35,14 @@ define([
          * @protected
          */
         _create: function () {
-            this.renderSimpleButton(this._addToCart.bind(this));
+            if (!this.options.isWarrantyInLaterOrders) {
+                this.renderSimpleButton(this._addToCart.bind(this));
+                var $element = $(this.element.get(0));
+                this._addProductSku($element);
 
-            var $element = $(this.element.get(0));
-            this._addProductSku($element);
-            if (this.options.isWarrantyInQuoteForSku) {
-                this._hideOffersButton($element);
+                if (this.options.isWarrantyInQuote) {
+                    this._hideOffersButton($element);
+                }
             }
         },
 

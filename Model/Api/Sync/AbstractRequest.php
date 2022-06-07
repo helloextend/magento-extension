@@ -13,10 +13,11 @@ namespace Extend\Warranty\Model\Api\Sync;
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Api\RequestInterface;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
-use Magento\Framework\Url\EncoderInterface;
+use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Response;
 use Magento\Framework\Exception\LocalizedException;
+use Exception;
 
 /**
  * Class AbstractRequest
@@ -26,7 +27,7 @@ abstract class AbstractRequest implements RequestInterface
     /**
      * 'X-Extend-Access-Token' header
      */
-    const ACCESS_TOKEN_HEADER = 'X-Extend-Access-Token';
+    public const ACCESS_TOKEN_HEADER = 'X-Extend-Access-Token';
 
     /**
      * Connector Interface
@@ -36,16 +37,16 @@ abstract class AbstractRequest implements RequestInterface
     protected $connector;
 
     /**
-     * Json Serializer
+     * Json Serializer Model
      *
      * @var JsonSerializer
      */
     protected $jsonSerializer;
 
     /**
-     * Url Encoder
+     * Url encoder
      *
-     * @var EncoderInterface
+     * @var ZendEscaper
      */
     private $encoder;
 
@@ -57,21 +58,21 @@ abstract class AbstractRequest implements RequestInterface
     protected $logger;
 
     /**
-     * API url
+     * API url param
      *
      * @var string
      */
     protected $apiUrl = '';
 
     /**
-     * Store ID
+     * Store ID param
      *
      * @var string
      */
     protected $storeId = '';
 
     /**
-     * API key
+     * API key param
      *
      * @var string
      */
@@ -82,13 +83,13 @@ abstract class AbstractRequest implements RequestInterface
      *
      * @param ConnectorInterface $connector
      * @param JsonSerializer $jsonSerializer
-     * @param EncoderInterface $encoder
+     * @param ZendEscaper $encoder
      * @param LoggerInterface $logger
      */
     public function __construct(
         ConnectorInterface $connector,
         JsonSerializer $jsonSerializer,
-        EncoderInterface $encoder,
+        ZendEscaper $encoder,
         LoggerInterface $logger
     ) {
         $this->connector = $connector;
@@ -152,15 +153,21 @@ abstract class AbstractRequest implements RequestInterface
      * Generate Idempotent Requests key
      *
      * @return string
+     * @return string
+     * @throws Exception
      */
     protected function getUuid4()
     {
-        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            random_int(0, 0xffff),
+            random_int(0, 0xffff),
+            random_int(0, 0xffff),
+            random_int(0, 0x0fff) | 0x4000,
+            random_int(0, 0x3fff) | 0x8000,
+            random_int(0, 0xffff),
+            random_int(0, 0xffff),
+            random_int(0, 0xffff)
         );
     }
 
@@ -173,6 +180,6 @@ abstract class AbstractRequest implements RequestInterface
      */
     protected function encode(string $url)
     {
-        return $this->encoder->encode($url);
+        return $this->encoder->escapeUrl($url);
     }
 }

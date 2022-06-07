@@ -14,11 +14,13 @@ use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 /**
  * Class ContractCreate
+ *
+ * ContractCreate Resource Model
  */
 class ContractCreate extends AbstractDb
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function _construct()
     {

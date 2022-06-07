@@ -27,65 +27,69 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class ContractCreateProcess
+ *
+ * ContractCreateProcess Model
  */
 class ContractCreateProcess
 {
     /**
-     * Contract Create Resource
+     * Contract Create Resource Model
      *
      * @var ContractCreateResource
      */
     private $contractCreateResource;
 
     /**
-     * Date Time
+     * Date Time Model
      *
      * @var DateTime
      */
     private $dateTime;
 
     /**
-     * Date
+     * DateTime
      *
      * @var Date
      */
     private $date;
 
     /**
-     * Data Helper
+     * Warranty Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Warranty Contract
+     * Warranty Contract Model
      *
      * @var WarrantyContract
      */
     private $warrantyContract;
 
     /**
-     * Order Item Repository Interface
+     * Order Item Repository Model
      *
      * @var OrderItemRepositoryInterface
      */
     private $orderItemRepository;
 
     /**
-     * Order Repository Interface
+     * Order Repository Model
      *
      * @var OrderRepositoryInterface
      */
     private $orderRepository;
 
     /**
+     * ExtendOrdersAPI Model
+     *
      * @var ExtendOrdersAPI
      */
     private $extendOrdersApi;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -157,13 +161,17 @@ class ContractCreateProcess
                     continue;
                 }
 
-                $qtyInvoiced = intval($contractCreateRecord[OrderItemInterface::QTY_INVOICED]);
+                $qtyInvoiced = (int)$contractCreateRecord[OrderItemInterface::QTY_INVOICED];
 
                 try {
-                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API && $this->dataHelper->isContractCreateModeScheduled()) {
-                        $processedContractCreateRecords[$recordId] = $this->extendOrdersApi->createOrder($order, $orderItem, $qtyInvoiced);
+                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API
+                        && $this->dataHelper->isContractCreateModeScheduled()
+                    ) {
+                        $processedContractCreateRecords[$recordId] =
+                            $this->extendOrdersApi->createOrder($order, $orderItem, $qtyInvoiced);
                     } else {
-                        $processedContractCreateRecords[$recordId] = $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
+                        $processedContractCreateRecords[$recordId] =
+                            $this->warrantyContract->create($order, $orderItem, $qtyInvoiced);
                     }
                 } catch (LocalizedException $exception) {
                     $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;

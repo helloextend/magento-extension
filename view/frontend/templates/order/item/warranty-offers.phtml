@@ -24,7 +24,14 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
 $leadToken = $_item->getLeadToken();
 ?>
 
-<?php if (!$isWarrantyItem && $viewModel->isOrderOffersEnabled() && $viewModel->isLeadEnabled() && isset($leadToken)): ?>
+<?php if (!$isWarrantyItem
+    && $viewModel->isOrderOffersEnabled()
+    && $viewModel->isLeadEnabled()
+    && isset($leadToken)): ?>
+    <?php $isWarrantyInLaterOrders = $viewModel->isWarrantyInLaterOrders($_item)?>
+    <?php if (!$isWarrantyInLaterOrders): ?>
+        <?php $isWarrantyInQuote = (int)$viewModel->isWarrantyInQuote($_item->getSku()) ?>
+    <?php endif; ?>
     <div class="order-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>"></div>
     <script type="text/x-magento-init">
         {
@@ -37,7 +44,8 @@ $leadToken = $_item->getLeadToken();
                     "addLeadUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/addlead')) ?>",
                     "buttonEnabled": true,
                     "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>,
-                    "isWarrantyInQuoteForSku": <?= (int)$viewModel->isWarrantyInQuoteForSku($_item->getSku()) ?>
+                    "isWarrantyInLaterOrders": <?= (int)$isWarrantyInLaterOrders ?>,
+                    "isWarrantyInQuote": <?= $isWarrantyInQuote ?? 0 ?>
                 }
             }
         }

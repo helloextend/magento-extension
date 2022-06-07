@@ -7,14 +7,18 @@ use Extend\Warranty\Helper\Data;
 
 class Product extends SuperBlock
 {
+    /**
+     * Get add product button options
+     *
+     * @return array
+     */
     protected function _getAddProductButtonOptions()
     {
         $splitButtonOptions = [];
         $types = $this->_typeFactory->create()->getTypes();
         uasort(
             $types,
-            function ($elementOne, $elementTwo)
-            {
+            function ($elementOne, $elementTwo) {
                 return ($elementOne['sort_order'] < $elementTwo['sort_order']) ? -1 : 1;
             }
         );

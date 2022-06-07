@@ -16,6 +16,8 @@ use Extend\Warranty\Helper\Api\Magento\Data;
 
 /**
  * Class ItemDataPlugin
+ *
+ * ItemDataPlugin plugin
  */
 class ItemDataPlugin
 {

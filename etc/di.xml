@@ -9,7 +9,8 @@
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
  -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Magento\Catalog\Block\Adminhtml\Product"
                 type="Extend\Warranty\Block\Adminhtml\Product" />
 
@@ -19,11 +20,10 @@
     <preference for="Extend\Warranty\Api\ConnectorInterface"
                 type="Extend\Warranty\Model\Api\Connector"/>
 
-    <preference for="Extend\Warranty\Api\Data\HistoricalOrderInterface"
-                type="Extend\Warranty\Model\HistoricalOrder"/>
-
     <type name="Magento\ConfigurableProduct\Block\Product\View\Type\Configurable">
-        <plugin name="addSkuToJsonConfig" type="Extend\Warranty\Plugin\Block\Product\View\Type\Configurable" sortOrder="10" />
+        <plugin name="addSkuToJsonConfig"
+                type="Extend\Warranty\Plugin\Block\Product\View\Type\Configurable"
+                sortOrder="10" />
     </type>
 
     <type name="Magento\Catalog\Helper\Product\Configuration">
@@ -34,7 +34,7 @@
 
     <virtualType
             name="Extend\Warranty\Model\ResourceModel\Indexer\Price"
-            type="Magento\Catalog\Model\ResourceModel\Product\Indexer\Price\SimpleProductPrice"/>
+            type="Magento\Catalog\Model\ResourceModel\Product\Indexer\Price\DefaultPrice"/>
 
     <virtualType name="ProductSyncLogHandler" type="Magento\Framework\Logger\Handler\Base">
         <arguments>
@@ -84,20 +84,53 @@
             <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
             <argument name="dataHelper" xsi:type="object">Extend\Warranty\Helper\Api\Data\Proxy</argument>
             <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
-            <argument name="productSyncProcess" xsi:type="object">Extend\Warranty\Model\ProductSyncProcess\Proxy</argument>
+            <argument name="productSyncProcess"
+                      xsi:type="object">Extend\Warranty\Model\ProductSyncProcess\Proxy</argument>
         </arguments>
     </type>
 
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="extendWarrantySyncProductsCommand" xsi:type="object">Extend\Warranty\Console\Command\SyncProducts</item>
-                <item name="extendWarrantyCreateWarrantyContractCommand" xsi:type="object">Extend\Warranty\Console\Command\CreateContracts</item>
-                <item name="extendWarrantyResetProductSyncFlagCommand" xsi:type="object">Extend\Warranty\Console\Command\ResetProductSyncFlag</item>
-                <item name="extendWarrantySendOrdersCommand" xsi:type="object">Extend\Warranty\Console\Command\SendOrders</item>
+                <item name="extendWarrantySyncProductsCommand"
+                        xsi:type="object">Extend\Warranty\Console\Command\SyncProducts</item>
+                <item name="extendWarrantyCreateWarrantyContractCommand"
+                      xsi:type="object">Extend\Warranty\Console\Command\CreateContracts</item>
+                <item name="extendWarrantyResetProductSyncFlagCommand"
+                      xsi:type="object">Extend\Warranty\Console\Command\ResetProductSyncFlag</item>
             </argument>
         </arguments>
     </type>
+
+    <!-- Magento 2.3.7 php7.4 varnish case  -->
+    <type name="Extend\Warranty\Console\Command\SyncProducts">
+        <arguments>
+            <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
+            <argument name="dataHelper" xsi:type="object">Extend\Warranty\Helper\Api\Data\Proxy</argument>
+            <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
+            <argument name="productSyncProcess" xsi:type="object">Extend\Warranty\Model\ProductSyncProcess\Proxy</argument>
+            <argument name="logger" xsi:type="object">Psr\Log\LoggerInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Console\Command\CreateContracts">
+        <arguments>
+            <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
+            <argument name="dataHelper" xsi:type="object">Extend\Warranty\Helper\Api\Data\Proxy</argument>
+            <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
+            <argument name="productSyncProcess" xsi:type="object">Extend\Warranty\Model\ProductSyncProcess\Proxy</argument>
+            <argument name="logger" xsi:type="object">Psr\Log\LoggerInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Console\Command\ResetProductSyncFlag">
+        <arguments>
+            <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
+            <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
+            <argument name="logger" xsi:type="object">Psr\Log\LoggerInterface\Proxy</argument>
+        </arguments>
+    </type>
+    <!-- Magento 2.3.7 php7.4 varnish case  -->
 
     <virtualType name="WarrantyAddLogHandler" type="Magento\Framework\Logger\Handler\Base">
         <arguments>
@@ -164,7 +197,8 @@
 
     <type name="Extend\Warranty\Block\System\Config\Products\Button">
         <arguments>
-            <argument name="timezone" xsi:type="object">Magento\Framework\Stdlib\DateTime\TimezoneInterface\Proxy</argument>
+            <argument name="timezone"
+                      xsi:type="object">Magento\Framework\Stdlib\DateTime\TimezoneInterface\Proxy</argument>
         </arguments>
     </type>
 
@@ -179,7 +213,8 @@
         <arguments>
             <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
             <argument name="dataHelper" xsi:type="object">Extend\Warranty\Helper\Api\Data\Proxy</argument>
-            <argument name="contractCreateProcess" xsi:type="object">Extend\Warranty\Model\ContractCreateProcess\Proxy</argument>
+            <argument name="contractCreateProcess"
+                      xsi:type="object">Extend\Warranty\Model\ContractCreateProcess\Proxy</argument>
         </arguments>
     </type>
 
@@ -187,15 +222,6 @@
         <arguments>
             <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
             <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
-        </arguments>
-    </type>
-
-    <type name="Extend\Warranty\Model\Api\Sync\Orders\HistoricalOrdersRequest">
-        <arguments>
-            <argument name="dateTime" xsi:type="object">Magento\Framework\Stdlib\DateTime\Proxy</argument>
-            <argument name="date" xsi:type="object">Magento\Framework\Stdlib\DateTime\DateTime\Proxy</argument>
-            <argument name="syncLogger" xsi:type="object">ProductSyncVirtualInfoLogger</argument>
-            <argument name="logger" xsi:type="object">ExtendLogger</argument>
         </arguments>
     </type>
 

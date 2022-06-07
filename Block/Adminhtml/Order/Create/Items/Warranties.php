@@ -1,10 +1,11 @@
 <?php
 /**
- * Extend Warranty
+ * Extend Warranty.
  *
  * @author      Extend Magento Team <magento@guidance.com>
+ *
  * @category    Extend
- * @package     Warranty
+ *
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
@@ -14,12 +15,14 @@ use Magento\Backend\Block\Template;
 use Magento\Quote\Model\Quote\Item;
 
 /**
- * Class Warranties
+ * Class Warranties.
+ *
+ * Get order item object from parent block
  */
 class Warranties extends Template
 {
     /**
-     * Get order item object from parent block
+     * Get order item object from parent block.
      *
      * @return Item
      */

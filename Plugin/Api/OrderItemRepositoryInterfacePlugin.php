@@ -14,7 +14,8 @@ use Extend\Warranty\Helper\Api\Magento\Data;
 
 /**
  * Class OrderItemRepositoryInterfacePlugin
- * @package Extend\Warranty\Plugin\Api
+ *
+ * OrderItemRepositoryInterfacePlugin plugin
  */
 class OrderItemRepositoryInterfacePlugin
 {
@@ -35,7 +36,10 @@ class OrderItemRepositoryInterfacePlugin
     }
 
     /**
-     * Add "contract_id & product_options" extension attributes to order item data object to make it accessible in API data
+     * Add "contract_id & product_options"
+     *
+     * Add "contract_id & product_options" extension attributes to order item data object
+     * to make it accessible in API data
      *
      * @param \Magento\Sales\Api\OrderItemRepositoryInterface $subject
      * @param \Magento\Sales\Api\Data\OrderItemInterface $orderItem
@@ -45,14 +49,16 @@ class OrderItemRepositoryInterfacePlugin
     public function afterGet(
         \Magento\Sales\Api\OrderItemRepositoryInterface $subject,
         \Magento\Sales\Api\Data\OrderItemInterface $orderItem
-    ): \Magento\Sales\Api\Data\OrderItemInterface
-    {
+    ): \Magento\Sales\Api\Data\OrderItemInterface {
         $this->magentoApiHelper->setOrderItemExtensionAttributes($orderItem);
         return $orderItem;
     }
 
     /**
-     * Add "contract_id & product_options" extension attributes to order item data object to make it accessible in API data
+     * Add "contract_id & product_options"
+     *
+     * Add "contract_id & product_options" extension attributes to order item data object
+     * to make it accessible in API data
      *
      * @param \Magento\Sales\Api\OrderItemRepositoryInterface $subject
      * @param \Magento\Sales\Api\Data\OrderItemSearchResultInterface $searchResult
@@ -62,8 +68,7 @@ class OrderItemRepositoryInterfacePlugin
     public function afterGetList(
         \Magento\Sales\Api\OrderItemRepositoryInterface $subject,
         \Magento\Sales\Api\Data\OrderItemSearchResultInterface $searchResult
-    ): \Magento\Sales\Api\Data\OrderItemSearchResultInterface
-    {
+    ): \Magento\Sales\Api\Data\OrderItemSearchResultInterface {
         $ordersItems = $searchResult->getItems();
 
         foreach ($ordersItems as $orderItem) {

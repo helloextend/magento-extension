@@ -27,60 +27,62 @@ use Exception;
 
 /**
  * Class ProductSyncProcess
+ *
+ * Warranty ProductSyncProcess Model
  */
 class ProductSyncProcess
 {
     /**
-     * Store Manager Interface
+     * Store Manager Model
      *
      * @var StoreManagerInterface
      */
     private $storeManager;
 
     /**
-     * Date Time
+     * Date Time Model
      *
      * @var DateTime
      */
     private $dateTime;
 
     /**
-     * Date
+     * Date Model
      *
      * @var Date
      */
     private $date;
 
     /**
-     * Data Helper
+     * Warranty Api Data Helper
      *
      * @var DataHelper
      */
     private $dataHelper;
 
     /**
-     * Product Sync Model
+     * Product Sync
      *
      * @var ProductSyncModel
      */
     private $productSyncModel;
 
     /**
-     * Api Product Model
+     * Api Product
      *
      * @var ApiProductModel
      */
     private $apiProductModel;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
     private $logger;
 
     /**
-     * Logger Interface
+     * Logger Model
      *
      * @var LoggerInterface
      */
@@ -145,7 +147,8 @@ class ProductSyncProcess
                 continue;
             }
 
-            $batchSize = $defaultBatchSize ?: $this->dataHelper->getProductsBatchSize(ScopeInterface::SCOPE_STORES, $storeId);
+            $batchSize = $defaultBatchSize ?:
+                $this->dataHelper->getProductsBatchSize(ScopeInterface::SCOPE_STORES, $storeId);
             $this->productSyncModel->setBatchSize($batchSize);
 
             $filters[Product::STORE_ID] = $storeId;
@@ -165,7 +168,11 @@ class ProductSyncProcess
                     try {
                         $this->apiProductModel->create($products, $currentBatch);
                     } catch (LocalizedException $exception) {
-                        $this->syncLogger->info(sprintf('Error found in products batch %s. %s', $currentBatch, $exception->getMessage()));
+                        $this->syncLogger->info(sprintf(
+                            'Error found in products batch %s. %s',
+                            $currentBatch,
+                            $exception->getMessage()
+                        ));
                     }
                 } else {
                     $this->syncLogger->info(sprintf('Nothing to sync in batch %s.', $currentBatch));
@@ -176,7 +183,11 @@ class ProductSyncProcess
             } while ($currentBatch <= $countOfBathes);
 
             $this->dataHelper->setLastProductSyncDate($currentDate, ScopeInterface::SCOPE_STORES, $storeId);
-            $this->dataHelper->setLastProductSyncDate($currentDate, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, Store::DEFAULT_STORE_ID);
+            $this->dataHelper->setLastProductSyncDate(
+                $currentDate,
+                ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                Store::DEFAULT_STORE_ID
+            );
             $this->syncLogger->info(sprintf('Finish sync products for %s store.', $storeCode));
         }
     }

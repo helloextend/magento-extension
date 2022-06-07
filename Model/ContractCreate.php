@@ -15,23 +15,25 @@ use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource
 
 /**
  * Class ContractCreate
+ *
+ * ContractCreate Model
  */
 class ContractCreate extends AbstractModel
 {
     /**
      * Success status
      */
-    const STATUS_SUCCESS = 'success';
+    public const STATUS_SUCCESS = 'success';
 
     /**
      * Failed status
      */
-    const STATUS_FAILED = 'failed';
+    public const STATUS_FAILED = 'failed';
 
     /**
      * Partial status
      */
-    const STATUS_PARTIAL = 'partial';
+    public const STATUS_PARTIAL = 'partial';
 
     /**
      * Initialize invoice resource model

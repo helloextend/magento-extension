@@ -16,11 +16,13 @@ use Extend\Warranty\Helper\Api\Data as DataHelper;
 
 /**
  * Class Logger
+ *
+ * Warranty Logger Model
  */
 class Logger extends Monolog
 {
     /**
-     * Data Helper
+     * Warranty Data Helper
      *
      * @var DataHelper
      */

@@ -15,7 +15,9 @@
     <policies>
         <policy id="img-src">
             <values>
-                <value id="helloextend-static-assets_s3_amazonaws_com" type="host">https://helloextend-static-assets.s3.amazonaws.com</value>
+                <value
+                    id="helloextend-static-assets_s3_amazonaws_com"
+                    type="host">https://helloextend-static-assets.s3.amazonaws.com</value>
             </values>
         </policy>
         <policy id="style-src">

@@ -22,11 +22,13 @@ use Exception;
 
 /**
  * Class ContractCreationCronSchedule
+ *
+ * ContractCreationCronSchedule Backend Model
  */
 class ContractCreationCronSchedule extends Value
 {
     /**
-     * Helper
+     * Warranty Helper
      *
      * @var Helper
      */
@@ -65,7 +67,7 @@ class ContractCreationCronSchedule extends Value
     {
         $frequency = $this->getData('groups/contracts/groups/cron/fields/frequency/value');
         if (!$this->helper->isCronExpressionValid($frequency)) {
-            throw new Exception(__('We can\'t save the cron expression.'));
+            throw new Exception(__('We can\'t save the cron expression.')); //phpcs:ignore
         }
 
         return parent::beforeSave();
