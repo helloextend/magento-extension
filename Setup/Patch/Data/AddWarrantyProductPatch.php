@@ -98,6 +98,11 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
     private $imageContentFactory;
 
     /**
+     * @var State
+     */
+    private $state;
+
+    /**
      * @param ModuleDataSetupInterface $moduleDataSetup
      * @param ProductFactory $productFactory
      * @param EavSetupFactory $eavSetupFactory
@@ -137,7 +142,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         $this->mediaGalleryEntryFactory = $mediaGalleryEntryFactory;
         $this->mediaGalleryManagement = $mediaGalleryManagement;
         $this->imageContentFactory = $imageContentFactory;
-        $state->setAreaCode(Area::AREA_ADMINHTML);
+        $this->state = $state;
     }
 
     /**
@@ -161,6 +166,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
      */
     public function apply()
     {
+
 
         $this->moduleDataSetup->getConnection()->startSetup();
         //ADD WARRANTY PRODUCT TO THE DB
@@ -326,6 +332,13 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
      */
     public function enablePriceForWarrantyProducts()
     {
+        try {
+            $this->state->getAreaCode();
+
+        } catch (LocalizedException $e) {
+            $this->state->setAreaCode(Area::AREA_ADMINHTML);
+        }
+
         $eavSetup = $this->eavSetup->create(['setup' => $this->moduleDataSetup]);
         //MAKE PRICE ATTRIBUTE AVAILABLE FOR WARRANTY PRODUCT TYPE
         $fieldList = [
