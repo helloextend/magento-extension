@@ -166,9 +166,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
      */
     public function apply()
     {
-        if (!$this->state->getAreaCode()) {
-            $this->state->setAreaCode(Area::AREA_ADMINHTML);
-        }
+
 
         $this->moduleDataSetup->getConnection()->startSetup();
         //ADD WARRANTY PRODUCT TO THE DB
@@ -334,6 +332,13 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
      */
     public function enablePriceForWarrantyProducts()
     {
+        try {
+            $this->state->getAreaCode();
+
+        } catch (LocalizedException $e) {
+            $this->state->setAreaCode(Area::AREA_ADMINHTML);
+        }
+
         $eavSetup = $this->eavSetup->create(['setup' => $this->moduleDataSetup]);
         //MAKE PRICE ATTRIBUTE AVAILABLE FOR WARRANTY PRODUCT TYPE
         $fieldList = [
