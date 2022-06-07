@@ -11,9 +11,9 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    <event name="sales_order_invoice_pay">
-        <observer name="extend_warranty_create_warranty_contract_observer"
-                  instance="Extend\Warranty\Observer\CreateContract"/>
+    <event name="sales_order_shipment_save_commit_after">
+        <observer name="extend_warranty_create_warranty_shipment_after_observer"
+                  instance="Extend\Warranty\Observer\ContractCreate\ShipmentObserver" />
     </event>
     <event name="sales_order_creditmemo_refund">
         <observer name="extend_warranty_request_refund_observer"
@@ -23,7 +23,11 @@
         <observer name="extend_warranty_create_lead_observer" instance="Extend\Warranty\Observer\CreateLead"/>
     </event>
     <event name="sales_order_invoice_save_commit_after">
-        <observer name="extend_warranty_collect_purchased_warranties_observer"
-                  instance="Extend\Warranty\Observer\CollectPurchasedWarrantiesObserver"/>
+        <observer name="extend_warranty_create_warranty_invoice_after_observer"
+                  instance="Extend\Warranty\Observer\ContractCreate\InvoiceObserver"/>
+    </event>
+    <event name="sales_order_save_commit_after">
+        <observer name="extend_warranty_create_warranty_order_after_observer"
+                  instance="Extend\Warranty\Observer\ContractCreate\OrderObserver"/>
     </event>
 </config>

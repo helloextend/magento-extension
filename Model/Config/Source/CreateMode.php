@@ -22,7 +22,7 @@ class CreateMode implements OptionSourceInterface
     /**
      * Order creation mode values
      */
-    public const ON_INVOICE = 0;
+    public const EVENT_BASED = 0;
     public const SCHEDULED = 1;
 
     /**
@@ -33,7 +33,7 @@ class CreateMode implements OptionSourceInterface
     public function toOptionArray(): array
     {
         return [
-            ['value' => self::ON_INVOICE, 'label' => __('On Invoice')],
+            ['value' => self::EVENT_BASED, 'label' => __('Event Based')],
             ['value' => self::SCHEDULED, 'label' => __('Scheduled')],
         ];
     }

@@ -13,13 +13,17 @@
             "qty_invoiced": true,
             "status": true,
             "created_at": true,
-            "updated_at": true
+            "updated_at": true,
+            "qty": true,
+            "order_id": true
         },
         "constraint": {
             "FK_9D1D5D85543ED23D8EE3AA865249142F": true,
             "FK_C5E18B5EFEDE65F27CD4D4A07321D611": true,
             "EXTEND_WARRANTY_CONTRACT_CREATE_ORDER_ITEM_ID_INVOICE_ITEM_ID": true,
-            "PRIMARY": true
+            "PRIMARY": true,
+            "EXTEND_WARRANTY_CONTRACT_CREATE_ORDER_ID_SALES_ORDER_ENTITY_ID": true,
+            "EXTEND_WARRANTY_CONTRACT_CREATE_ID_ORDER_ID": true
         }
     }
 }

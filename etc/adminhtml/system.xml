@@ -288,10 +288,24 @@
                     <label>Create Warranty Contract</label>
                     <source_model>Extend\Warranty\Model\Config\Source\CreateContractApi</source_model>
                 </field>
-                <field id="mode"
+                <field id="event"
                        translate="label comment"
                        type="select"
                        sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="0">
+                    <label>Contract Event</label>
+                    <depends>
+                        <field id="create" negative="1">0</field>
+                    </depends>
+                    <source_model>Extend\Warranty\Model\Config\Source\Event</source_model>
+                </field>
+                <field id="mode"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="30"
                        showInDefault="1"
                        showInWebsite="1"
                        showInStore="1"
