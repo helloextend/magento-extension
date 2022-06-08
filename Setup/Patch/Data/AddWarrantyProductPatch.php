@@ -98,6 +98,11 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
     private $imageContentFactory;
 
     /**
+     * @var State
+     */
+    private $state;
+
+    /**
      * @param ModuleDataSetupInterface $moduleDataSetup
      * @param ProductFactory $productFactory
      * @param EavSetupFactory $eavSetupFactory
@@ -128,7 +133,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
     ) {
         $this->moduleDataSetup = $moduleDataSetup;
         $this->productFactory = $productFactory;
-        $this->eavSetup = $eavSetupFactory->create(['setup' => $moduleDataSetup]);
+        $this->eavSetup = $eavSetupFactory;
         $this->storeManager = $storeManager;
         $this->file = $file;
         $this->reader = $reader;
@@ -137,7 +142,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         $this->mediaGalleryEntryFactory = $mediaGalleryEntryFactory;
         $this->mediaGalleryManagement = $mediaGalleryManagement;
         $this->imageContentFactory = $imageContentFactory;
-        $state->setAreaCode(Area::AREA_ADMINHTML);
+        $this->state = $state;
     }
 
     /**
@@ -161,6 +166,8 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
      */
     public function apply()
     {
+
+
         $this->moduleDataSetup->getConnection()->startSetup();
         //ADD WARRANTY PRODUCT TO THE DB
         $this->addImageToPubMedia();
@@ -325,7 +332,14 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
      */
     public function enablePriceForWarrantyProducts()
     {
-        $eavSetup = $this->eavSetup;
+        try {
+            $this->state->getAreaCode();
+
+        } catch (LocalizedException $e) {
+            $this->state->setAreaCode(Area::AREA_ADMINHTML);
+        }
+
+        $eavSetup = $this->eavSetup->create(['setup' => $this->moduleDataSetup]);
         //MAKE PRICE ATTRIBUTE AVAILABLE FOR WARRANTY PRODUCT TYPE
         $fieldList = [
             'price',

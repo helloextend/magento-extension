@@ -7,26 +7,27 @@
     </table>
     <table name="extend_warranty_contract_create">
         <column xsi:type="int" name="id" identity="true" nullable="false" unsigned="true" comment="ID"/>
+        <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="true" identity="false" default="0"
+                comment="Order ID"/>
         <column xsi:type="int" name="order_item_id" padding="10" unsigned="true" nullable="false" comment="Order Item ID"/>
-        <column xsi:type="int" name="invoice_item_id" padding="10" nullable="false" unsigned="true" comment="Invoice Item ID"/>
-        <column xsi:type="int" name="qty_invoiced" nullable="false" unsigned="true" comment="Qty Invoiced"/>
+        <column xsi:type="int" name="qty" nullable="false" unsigned="true" comment="Qty ordered" onCreate="migrateDataFrom(qty_invoiced)"/>
         <column xsi:type="varchar" name="status" length="255" nullable="true" comment="Status"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"
                 comment="Created At"/>
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP"
                 comment="Updated At"/>
-        <constraint xsi:type="foreign" referenceId="EXTEND_WARRANTY_CONTRACT_ORDER_ITEM_ID"
-                    table="extend_warranty_contract_create" column="order_item_id" referenceTable="sales_order_item"
-                    referenceColumn="item_id" onDelete="CASCADE"/>
-        <constraint xsi:type="foreign" referenceId="EXTEND_WARRANTY_CONTRACT_INVOICE_ITEM_ID"
-                    table="extend_warranty_contract_create" column="invoice_item_id" referenceTable="sales_invoice_item"
-                    referenceColumn="entity_id" onDelete="CASCADE"/>
-        <constraint xsi:type="unique" referenceId="EXTEND_WARRANTY_CONTRACT_ORDER_ITEM_ID_INVOICE_ITEM_ID">
-            <column name="order_item_id"/>
-            <column name="invoice_item_id"/>
-        </constraint>
+        <constraint xsi:type="foreign" referenceId="EXTEND_WARRANTY_CONTRACT_SALES_ORDER_ENTITY_ID"
+                    table="extend_warranty_contract_create" column="order_id" referenceTable="sales_order"
+                    referenceColumn="entity_id" onDelete="SET NULL"/>
+        <constraint xsi:type="foreign" referenceId="EXTEND_WARRANTY_CONTRACT_SALES_ORDER_ITEM_ITEM_ID"
+                    table="extend_warranty_contract_create" column="order_id" referenceTable="sales_order_item"
+                    referenceColumn="item_id" onDelete="SET NULL"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="EXTEND_WARRANTY_ID_ORDER_ID">
+            <column name="id"/>
+            <column name="order_id"/>
         </constraint>
     </table>
 </schema>
