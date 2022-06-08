@@ -100,14 +100,14 @@ class ShipmentObserver implements ObserverInterface
                     try {
                         $this->warrantyContractCreate->createContract($order, $orderItem, $qtyShipped, $storeId);
                     } catch (LocalizedException $exception) {
-                        $this->warrantyContractCreate->addContactToQueue($orderItem, $qtyShipped);
+                        $this->warrantyContractCreate->addContractToQueue($orderItem, $qtyShipped);
                         $this->logger->error(
                             'Error during shipment event warranty contract creation. ' . $exception->getMessage()
                         );
                     }
                 } else {
                     try {
-                        $this->warrantyContractCreate->addContactToQueue($orderItem, $qtyShipped);
+                        $this->warrantyContractCreate->addContractToQueue($orderItem, $qtyShipped);
                     } catch (LocalizedException $exception) {
                         $this->logger->error($exception->getMessage());
                     }
