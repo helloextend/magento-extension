@@ -21,13 +21,13 @@
         <constraint xsi:type="foreign" referenceId="EXTEND_WARRANTY_CONTRACT_ORDER_ITEM_ID"
                     table="extend_warranty_contract_create" column="order_item_id" referenceTable="sales_order_item"
                     referenceColumn="item_id" onDelete="CASCADE"/>
-        <constraint xsi:type="foreign" referenceId="EXTEND_WARRANTY_CONTRACT_SALES_ORDER_ENTITY_ID"
+        <constraint xsi:type="foreign" referenceId="EXTEND_WARRANTY_CONTRACT_CREATE_ORDER_ID_SALES_ORDER_ENTITY_ID"
                     table="extend_warranty_contract_create" column="order_id" referenceTable="sales_order"
                     referenceColumn="entity_id" onDelete="CASCADE"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>
-        <constraint xsi:type="unique" referenceId="EXTEND_WARRANTY_ID_ORDER_ID">
+        <constraint xsi:type="unique" referenceId="EXTEND_WARRANTY_CONTRACT_CREATE_ID_ORDER_ID">
             <column name="id"/>
             <column name="order_id"/>
         </constraint>
