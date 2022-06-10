@@ -13,9 +13,7 @@
             "qty": true,
             "status": true,
             "created_at": true,
-            "updated_at": true,
-            "invoice_item_id": false,
-            "qty_invoiced": false
+            "updated_at": true
         },
         "constraint": {
             "FK_9D1D5D85543ED23D8EE3AA865249142F": true,
