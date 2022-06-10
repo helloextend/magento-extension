@@ -9,6 +9,8 @@
         <column xsi:type="int" name="id" identity="true" nullable="false" unsigned="true" comment="ID"/>
         <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="true" identity="false" default="0"
                 comment="Order ID"/>
+        <column xsi:type="int" name="invoice_item_id" padding="10" nullable="false" unsigned="true" comment="Invoice Item ID" disabled="true" />
+        <column xsi:type="int" name="qty_invoiced" nullable="false" unsigned="true" comment="Qty Invoiced" disabled="true" />
         <column xsi:type="int" name="order_item_id" padding="10" unsigned="true" nullable="false" comment="Order Item ID"/>
         <column xsi:type="int" name="qty" nullable="false" unsigned="true" comment="Qty ordered" onCreate="migrateDataFrom(qty_invoiced)"/>
         <column xsi:type="varchar" name="status" length="255" nullable="true" comment="Status"/>

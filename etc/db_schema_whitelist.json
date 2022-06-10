@@ -9,6 +9,8 @@
         "column": {
             "id": true,
             "order_id": true,
+            "invoice_item_id": true,
+            "qty_invoiced": true,
             "order_item_id": true,
             "qty": true,
             "status": true,
