@@ -33,29 +33,12 @@ define([
                         ]
                     });
 
-                    this._showOffersButton(productData.options);
+                    // CUSTOMIZATION HERE: trigger additional event for Extend Warranty
+                    $(document).trigger('extend:removeFromCart', productData);
 
                     if (window.location.href.indexOf(this.shoppingCartUrl) === 0) {
                         window.location.reload();
                     }
-                }
-            },
-
-            /**
-             * Show offers button
-             *
-             * @param options
-             * @private
-             */
-            _showOffersButton: function(options) {
-                if (_.isArray(options)) {
-                    $.each(options, function(ix, option) {
-                        if ((option.label === 'Product' || option.label === 'SKU') && option.value) {
-                            var escapedSku = option.value.replace(' ', '');
-                            escapedSku = escapedSku.replace('"', '');
-                            jQuery('[data-product-sku-escaped=' + escapedSku + ']').removeClass('hidden');
-                        }
-                    });
                 }
             },
 
@@ -70,7 +53,7 @@ define([
                 return _.find(customerData.get('cart')().items, function (item) {
                     return productId === Number(item['item_id']);
                 });
-            },
+            }
 
         });
 
