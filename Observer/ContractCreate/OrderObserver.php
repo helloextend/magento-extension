@@ -86,7 +86,7 @@ class OrderObserver implements ObserverInterface
                     continue;
                 }
 
-                if ($orderItem->getContractId() !== null || $orderItem->getLeadToken() !== null) {
+                if ($orderItem->getContractId() !== null) {
                     continue;
                 }
 
