@@ -11,7 +11,7 @@
 namespace Extend\Warranty\Plugin\Logger;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Extend\Warranty\Model\Logger;
+use Extend\Warranty\Model\Logger;;
 
 /**
  * Class LoggerPlugin
@@ -32,12 +32,18 @@ class LoggerPlugin
 
     /**
      * @param Logger $subject
-     * @return false|void
+     * @param callable $proceed
+     * @param $level
+     * @param $message
+     * @param $context
+     * @return false
      */
-    public function beforeAddRecord(Logger $subject)
+    public function aroundAddRecord(Logger $subject, callable $proceed, $level, $message, $context)
     {
         if (!$this->dataHelper->isExtendEnabled() || !$this->dataHelper->isLoggingEnabled()) {
             return false;
         }
+
+        return $proceed($level, $message, $context);
     }
 }
