@@ -11,7 +11,7 @@
 namespace Extend\Warranty\Plugin\Logger;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Extend\Warranty\Model\Logger;;
+use Extend\Warranty\Model\Logger;
 
 /**
  * Class LoggerPlugin
