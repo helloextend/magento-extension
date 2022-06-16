@@ -265,4 +265,10 @@
                 type="Extend\Warranty\Plugin\Quote\Model\Item\SetItemDataToOrderPlugin"
                 sortOrder="10" />
     </type>
+
+    <type name="Extend\Warranty\Model\Logger">
+        <plugin name="extend_warranty_logger_plugin"
+                type="Extend\Warranty\Plugin\Logger\LoggerPlugin"
+                sortOrder="10" />
+    </type>
 </config>

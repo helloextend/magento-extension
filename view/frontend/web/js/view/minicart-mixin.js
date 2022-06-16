@@ -21,13 +21,11 @@ define([
         initialize: function () {
             var res = this._super();
 
-            if (window.Extend) {
-                var self = this,
-                    updateHandler = _.debounce(function (e) {
-                        self._onContentUpdated(e)
-                    }, 100);
-                $('[data-block="minicart"]').on('contentUpdated', updateHandler);
-            }
+            var self = this,
+                updateHandler = _.debounce(function (e) {
+                    self._onContentUpdated(e)
+                }, 100);
+            $('[data-block="minicart"]').on('contentUpdated', updateHandler);
 
             return res;
         },

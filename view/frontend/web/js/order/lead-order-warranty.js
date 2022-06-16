@@ -8,13 +8,14 @@
  */
 define([
     'jquery',
+    'underscore',
     'mage/translate',
     'Magento_Ui/js/modal/alert',
     'Magento_Customer/js/customer-data',
     'Extend_Warranty/js/tracking/actions',
     'extendWarrantyOffers',
     'domReady!'
-], function ($, $t, alert, customerData, trackActions) {
+], function ($, _, $t, alert, customerData, trackActions) {
     'use strict';
 
     $.widget('mage.leadOrderWarranty', $.mage.extendWarrantyOffers, {
@@ -43,7 +44,17 @@ define([
                 if (this.options.isWarrantyInQuote) {
                     this._hideOffersButton($element);
                 }
+
+                this._bind();
             }
+        },
+
+        /**
+         * Bind events
+         * @protected
+         */
+        _bind: function () {
+            $(document).on('extend:removeFromCart', this._onRemoveFromCart.bind(this));
         },
 
         /**
@@ -113,6 +124,16 @@ define([
         },
 
         /**
+         * Warranty "Add To Cart" failed
+         * @protected
+         */
+        _onAddToCartError: function (errorMessage) {
+            alert({
+                content: errorMessage
+            });
+        },
+
+        /**
          * Add product sku to data attribute
          *
          * @param {jQuery.element} $element
@@ -130,6 +151,28 @@ define([
         },
 
         /**
+         * Callback executes when product is removed from the cart
+         *
+         * @param {Event} e
+         * @param {Object>} productData
+         * @private
+         */
+        _onRemoveFromCart: function (e, productData) {
+            if (productData && productData.options && _.isArray(productData.options)) {
+                var $element = $(this.element.get(0));
+                $.each(productData.options, function(i, option) {
+                    if ((option.label === 'Product' || option.label === 'SKU') && option.value) {
+                        var escapedSku = option.value.replace(' ', '');
+                        escapedSku = escapedSku.replace('"', '');
+                        if ($element.attr('data-product-sku-escaped') === escapedSku) {
+                            this._showOffersButton($element);
+                        }
+                    }
+                }.bind(this));
+            }
+        },
+
+        /**
          * Hide offers button
          *
          * @param {jQuery.element} $element
@@ -140,13 +183,13 @@ define([
         },
 
         /**
-         * Warranty "Add To Cart" failed
-         * @protected
+         * Show offers button
+         *
+         * @param {jQuery.element} $element
+         * @private
          */
-        _onAddToCartError: function (errorMessage) {
-            alert({
-                content: errorMessage
-            });
+        _showOffersButton: function ($element) {
+            $element.removeClass('hidden');
         }
     });
 
