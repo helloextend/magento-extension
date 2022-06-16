@@ -12,6 +12,7 @@ namespace Extend\Warranty\Model;
 
 use Monolog\Handler\HandlerInterface;
 use Magento\Framework\Logger\Monolog;
+use Extend\Warranty\Helper\Api\Data as DataHelper;
 
 /**
  * Class Logger
@@ -21,17 +22,27 @@ use Magento\Framework\Logger\Monolog;
 class Logger extends Monolog
 {
     /**
+     * Warranty Data Helper
+     *
+     * @var DataHelper
+     */
+    private $dataHelper;
+
+    /**
      * Logger constructor
      *
      * @param string $name
+     * @param DataHelper $dataHelper
      * @param HandlerInterface[] $handlers
      * @param callable[] $processors
      */
     public function __construct(
         $name,
+        DataHelper $dataHelper,
         array $handlers = [],
         array $processors = []
     ) {
+        $this->dataHelper = $dataHelper;
         parent::__construct($name, $handlers, $processors);
     }
 }
