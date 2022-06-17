@@ -16,18 +16,22 @@ $scopeData = $block->getScopeData();
 ?>
 <div class="extend-sync-button-container">
     <button id="syncOrderBtn" data-mage-init='{"ordersSync": {
-            "url": "<?= $block->escapeJs($block->getUrl('extend/orders/historicalorders', [$scopeData['scopeType'] => $scopeData['scopeId']])) ?>",
+            "url": "<?= $block->escapeJs($block->getUrl(
+                'extend/orders/historicalorders',
+                [$scopeData['scopeType'] => $scopeData['scopeId']]
+            )) ?>",
             "resetFlagUrl": "<?= $block->escapeJs($block->getUrl('extend/orders_sync/resetFlag')) ?>"
         }}' <?php if (!$block->isButtonEnabled()): ?>class="disabled"<?php endif; ?>>
-        <span><?= __('Send historical Orders') ?></span>
+        <span><?= /* @noEscape */ __('Send historical Orders') ?></span>
     </button>
     <div class="sync-info">
         <p id="orders-sync-msg">
-            <label for="sync-time"><?= __('Sync: ') ?></label>
-            <span id="orders-sync-time"><?= !empty($block->getSyncPeriod()) ? $block->getSyncPeriod() : __('Never') ?></span>
+            <label for="sync-time"><?= __('Last Sync: ') ?></label>
+            <span id="orders-sync-time">
+                <?= /* @noEscape */ !empty($block->getSyncPeriod()) ? $block->getSyncPeriod() : __('Never') ?></span>
         </p>
         <a id="orders_cancel_sync">
-            <span><?= __('Cancel Sync') ?></span>
+            <span><?= /* @noEscape */ __('Cancel Sync') ?></span>
         </a>
     </div>
 </div>

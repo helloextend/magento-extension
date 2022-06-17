@@ -12,6 +12,8 @@ namespace Extend\Warranty\Controller\Adminhtml\Orders;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Api\Sync\Orders\HistoricalOrdersRequest;
+use Extend\Warranty\Model\HistoricalOrderFactory;
+use Extend\Warranty\Model\ResourceModel\HistoricalOrder as HistoricalOrderModelResource;
 use Extend\Warranty\Model\HistoricalOrdersSyncFlag;
 use Extend\Warranty\Model\Orders\HistoricalOrdersSync;
 use Magento\Backend\App\Action;
@@ -97,6 +99,10 @@ class HistoricalOrders extends Action
      */
     private $syncLogger;
 
+    private $historicalOrderFactory;
+
+    private $historicalOrderResource;
+
     /**
      * Sync constructor
      *
@@ -119,7 +125,9 @@ class HistoricalOrders extends Action
         HistoricalOrdersSync $historicalOrdersSync,
         HistoricalOrdersRequest $historicalOrdersRequest,
         LoggerInterface $logger,
-        LoggerInterface $syncLogger
+        LoggerInterface $syncLogger,
+        HistoricalOrderFactory $historicalOrderFactory,
+        HistoricalOrderModelResource $historicalOrderResource
     ) {
         parent::__construct($context);
         $this->flagManager = $flagManager;
@@ -130,6 +138,8 @@ class HistoricalOrders extends Action
         $this->apiHistoricalOrdersModel = $historicalOrdersRequest;
         $this->logger = $logger;
         $this->syncLogger = $syncLogger;
+        $this->historicalOrderFactory = $historicalOrderFactory;
+        $this->historicalOrderResource = $historicalOrderResource;
     }
 
     public function execute()
@@ -178,7 +188,10 @@ class HistoricalOrders extends Action
 
             if (!empty($orders)) {
                 try {
-                    $this->apiHistoricalOrdersModel->create($orders, $currentBatch);
+                    $sendResult = $this->apiHistoricalOrdersModel->create($orders, $currentBatch);
+                    if ($sendResult) {
+                        $this->trackHistoricalOrders($orders);
+                    }
                     $data['status'] = self::STATUS_SUCCESS;
                 } catch (LocalizedException $exception) {
                     $message = sprintf('Error found in orders batch %s. %s', $currentBatch, $exception->getMessage());
@@ -216,5 +229,15 @@ class HistoricalOrders extends Action
         $jsonResult->setData($data);
 
         return $jsonResult;
+    }
+
+    private function trackHistoricalOrders(array $orders)
+    {
+        $historicalOrder = $this->historicalOrderFactory->create();
+        foreach ($orders as $order) {
+            $historicalOrder->setEntityId($order->getId());
+            $historicalOrder->setWasSen(true);
+            $this->historicalOrderResource->save($historicalOrder);
+        }
     }
 }

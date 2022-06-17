@@ -8,7 +8,7 @@
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
-namespace Extend\Warranty\Model\HistoricalOrder;
+namespace Extend\Warranty\Model\ResourceModel\HistoricalOrder;
 
 
 use Extend\Warranty\Api\Data\HistoricalOrderInterface;

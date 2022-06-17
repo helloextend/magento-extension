@@ -11,11 +11,11 @@
 namespace Extend\Warranty\Model\Api\Sync\Orders;
 
 use Extend\Warranty\Api\ConnectorInterface;
-use Extend\Warranty\Model\Api\Request\OrderBuilder as ExtendOrderBuilder;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
+use Extend\Warranty\Model\Api\Request\OrderBuilder;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Framework\Url\EncoderInterface;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
 use Zend_Http_Client;
 use Zend_Http_Response;
@@ -30,97 +30,80 @@ class HistoricalOrdersRequest extends AbstractRequest
     /**
      * Response status codes
      */
-    const STATUS_CODE_SUCCESS = 201;
-
-    private $orderApiBuilder;
+    const STATUS_CODE_SUCCESS = 200;
 
     /**
-     * Logger Interface
-     *
-     * @var LoggerInterface
+     * @var OrderBuilder
      */
-    private $syncLogger;
+    protected $orderBuilder;
 
     /**
-     * Url Encoder
-     *
-     * @var EncoderInterface
-     */
-    private $encoder;
-
-    /**
-     * HistoricalOrdersRequest constructor
-     *
      * @param ConnectorInterface $connector
-     * @param Json $jsonSerializer
-     * @param ExtendOrderBuilder $orderApiBuilder
+     * @param JsonSerializer $jsonSerializer
+     * @param ZendEscaper $encoder
      * @param LoggerInterface $logger
-     * @param LoggerInterface $syncLogger
-     * @param EncoderInterface $encoder
+     * @param OrderBuilder $orderBuilder
      */
     public function __construct(
         ConnectorInterface $connector,
-        Json $jsonSerializer,
-        ExtendOrderBuilder $orderApiBuilder,
+        JsonSerializer $jsonSerializer,
+        ZendEscaper $encoder,
         LoggerInterface $logger,
-        LoggerInterface $syncLogger,
-        EncoderInterface $encoder
-    ) {
+        OrderBuilder $orderBuilder
+
+    )
+    {
         parent::__construct($connector, $jsonSerializer, $encoder, $logger);
-        $this->syncLogger = $syncLogger;
-        $this->orderApiBuilder = $orderApiBuilder;
+        $this->orderBuilder = $orderBuilder;
     }
 
     /**
      * Send historical orders to Orders API
      *
-     * @param array $ordersData
-     * @param $currentBatch
-     * @return void
-     * @throws \Zend_Http_Client_Exception
+     * @param array $orders
+     * @param int $currentBatch
+     * @return bool
      */
-    public function create(array $ordersData, $currentBatch): void
+    public function create(array $orders, int $currentBatch = 1): bool
     {
         $url = $this->apiUrl . self::CREATE_ORDER_ENDPOINT;
-        $orders = $this->orderApiBuilder->preparePayloadBatch($ordersData);
-        try {
-            $response = $this->connector->call(
-                $url,
-                Zend_Http_Client::POST,
-                [
-                    'Accept'                  => 'application/json; version=2021-07-01',
-                    'Content-Type'            => 'application/json',
-                    self::ACCESS_TOKEN_HEADER => $this->apiKey,
-                    'X-Idempotency-Key'       => $this->getUuid4()
-                ],
-                $orders
-            );
-            $responseBody = $this->processResponse($response);
+        $historicalOrders = [];
 
-            if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
-                $this->logger->info(sprintf('Orders batch %s is synchronized successfully.', $currentBatch));
-                $this->syncLogger->info('Synced ' . count($ordersData) . ' order(s) in batch ' . $currentBatch);
-            } else {
-                $this->logger->error(sprintf('Order batch %s synchronization is failed.', $currentBatch));
+        foreach ($orders as $order) {
+            $historicalOrder = $this->orderBuilder->prepareHistoricalOrdersPayLoad($order);
+
+            if (!empty($historicalOrder)) {
+                $historicalOrders[] = $historicalOrder;
             }
-        } catch (LocalizedException $exception) {
-            $this->logger->error($exception->getMessage());
         }
-    }
 
-    protected function getUuid4()
-    {
-        return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff)
-        );
+        if (!empty($historicalOrders)) {
+            try {
+                $response = $this->connector->call(
+                    $url,
+                    Zend_Http_Client::POST,
+                    [
+                        'Accept' => 'application/json; version=2021-07-01',
+                        'Content-Type' => 'application/json',
+                        self::ACCESS_TOKEN_HEADER => $this->apiKey,
+                        'X-Idempotency-Key' => $this->getUuid4()
+                    ],
+                    $historicalOrders
+                );
+                $responseBody = $this->processResponse($response);
+
+                if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
+                    $this->logger->info(sprintf('Orders batch %s is synchronized successfully.', $currentBatch));
+                    return true;
+                } else {
+                    $this->logger->error(sprintf('Order batch %s synchronization is failed.', $currentBatch));
+                }
+            } catch (LocalizedException $exception) {
+                $this->logger->error($exception->getMessage());
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -63,7 +63,7 @@ class OrdersSyncCronSchedule extends Value
      */
     public function beforeSave()
     {
-        $frequency = $this->getData('groups/send_orders/groups/cron/fields/frequency/value');
+        $frequency = $this->getData('groups/historical_orders/groups/cron/fields/frequency/value');
         if (!$this->helper->isCronExpressionValid($frequency)) {
             throw new Exception(__('We can\'t save the cron expression!!.'));
         }

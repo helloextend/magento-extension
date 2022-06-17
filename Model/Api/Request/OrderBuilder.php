@@ -176,6 +176,50 @@ class OrderBuilder
         return $payload;
     }
 
+    public function prepareHistoricalOrdersPayLoad(OrderInterface $order): array
+    {
+        $store = $this->storeManager->getStore();
+        $currencyCode = $store->getBaseCurrencyCode();
+        $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
+        $lineItem = [];
+
+        foreach ($order->getItems() as $orderItem) {
+            $productSku = $orderItem->getSku();
+            $qty = $orderItem->getQtyOrdered();
+
+            $product = $this->prepareProductPayload($productSku);
+
+            $lineItem = [
+                'quantity'    => $qty,
+                'storeId'     => $this->apiHelper->getStoreId(),
+                'product'     => $product,
+            ];
+
+            $lineItems[] = $lineItem;
+        }
+
+        $saleOrigin = [
+            'platform'  => self::PLATFORM_CODE,
+        ];
+
+        $createdAt = $order->getCreatedAt();
+
+        $payload = [
+            'isTest'            => !$this->apiHelper->isExtendLive(),
+            'currency'          => $currencyCode,
+            'createdAt'         => $createdAt ? strtotime($createdAt) : 0,
+            'customer'          => $this->getCustomerData($order),
+            'lineItems'         => $lineItems,
+            'total'             => $transactionTotal,
+            'storeId'           => $this->apiHelper->getStoreId(),
+            'storeName'         => $this->apiHelper->getStoreName(),
+            'transactionId'     => $order->getIncrementId(),
+            'saleOrigin'        => $saleOrigin,
+        ];
+
+        return $payload;
+    }
+
     /**
      * Prepare product payload
      *

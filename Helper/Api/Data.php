@@ -74,11 +74,11 @@ class Data extends AbstractHelper
     public const WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/products/cron_sync_enabled';
 
     /**
-     * Orders settings
+     * Historical orders settings
      */
-    const WARRANTY_HISTORICAL_ORDERS_BATCH_SIZE_XML_PATH = 'warranty/send_orders/batch_size';
-    const WARRANTY_HISTORICAL_ORDERS_SYNC_PERIOD_XML_PATH = 'warranty/send_orders/historical_orders_sync';
-    const WARRANTY_HISTORICAL_ORDERS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/send_orders/enable_cron';
+    const WARRANTY_HISTORICAL_ORDERS_BATCH_SIZE_XML_PATH = 'warranty/historical_orders/batch_size';
+    const WARRANTY_HISTORICAL_ORDERS_SYNC_PERIOD_XML_PATH = 'warranty/historical_orders/historical_orders_sync';
+    const WARRANTY_HISTORICAL_ORDERS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/historical_orders/enable_cron';
 
     /**
      * Leads settings

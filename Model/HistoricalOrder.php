@@ -42,4 +42,22 @@ class HistoricalOrder extends AbstractModel implements HistoricalOrderInterface
     {
         return (bool)$this->getData(self::WAS_SENT);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEntityId()
+    {
+        return $this->getData(self::ENTITY_ID);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setEntityId(int $entityId)
+    {
+        return $this->setData(self::ENTITY_ID, (int)$entityId);
+    }
+
+
 }
