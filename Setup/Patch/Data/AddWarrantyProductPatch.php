@@ -150,7 +150,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
      */
     public static function getDependencies()
     {
-            return [];
+        return [];
     }
 
     /**
@@ -170,9 +170,11 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
 
         $this->moduleDataSetup->getConnection()->startSetup();
         //ADD WARRANTY PRODUCT TO THE DB
-        $this->addImageToPubMedia();
-        $this->createWarrantyProduct();
-        $this->enablePriceForWarrantyProducts();
+        $this->state->emulateAreaCode(Area::AREA_ADMINHTML, function () {
+            $this->addImageToPubMedia();
+            $this->createWarrantyProduct();
+            $this->enablePriceForWarrantyProducts();
+        });
 
         $this->moduleDataSetup->getConnection()->endSetup();
     }
@@ -184,7 +186,9 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
     {
         $this->moduleDataSetup->getConnection()->startSetup();
 
-        $this->deleteImageFromPubMedia();
+        $this->state->emulateAreaCode(Area::AREA_ADMINHTML, function () {
+            $this->deleteImageFromPubMedia();
+        });
 
         $this->moduleDataSetup->getConnection()->endSetup();
     }
