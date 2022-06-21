@@ -52,6 +52,13 @@
                     <frequency>0 0 * * *</frequency>
                 </cron>
             </products>
+            <historical_orders>
+                <batch_size>10</batch_size>
+                <cron_sync_enabled>1</cron_sync_enabled>
+                <cron>
+                    <frequency>0 * * * *</frequency>
+                </cron>
+            </historical_orders>
             <tracking>
                 <enabled>1</enabled>
             </tracking>

@@ -26,9 +26,9 @@ $scopeData = $block->getScopeData();
     </button>
     <div class="sync-info">
         <p id="orders-sync-msg">
-            <label for="sync-time"><?= __('Last Sync: ') ?></label>
+            <label for="sync-time"><?= __('Sync from date: ') ?></label>
             <span id="orders-sync-time">
-                <?= /* @noEscape */ !empty($block->getSyncPeriod()) ? $block->getSyncPeriod() : __('Never') ?></span>
+                <?= /* @noEscape */ !empty($block->getSyncPeriod()) ? $block->getSyncPeriod() : __('Sync date will be set after first run') ?></span>
         </p>
         <a id="orders_cancel_sync">
             <span><?= /* @noEscape */ __('Cancel Sync') ?></span>

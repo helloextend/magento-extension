@@ -184,10 +184,15 @@ class OrderBuilder
         $lineItem = [];
 
         foreach ($order->getItems() as $orderItem) {
+
             $productSku = $orderItem->getSku();
             $qty = $orderItem->getQtyOrdered();
 
-            $product = $this->prepareProductPayload($productSku);
+            if ($orderItem->getProductType() == Type::TYPE_CODE) {
+                $product = $this->prepareWarrantyProductPayload($productSku, $orderItem->getPrice());
+            } else {
+                $product = $this->prepareProductPayload($productSku);
+            }
 
             $lineItem = [
                 'quantity'    => $qty,
@@ -243,6 +248,35 @@ class OrderBuilder
             'listPrice'     => $this->helper->formatPrice($product->getFinalPrice()),
             'name'          => $product->getName(),
             'purchasePrice' => $this->helper->formatPrice($product->getFinalPrice())
+        ];
+
+        return $result;
+    }
+
+    /**
+     * Prepare warranty product payload
+     *
+     * @param string|null $productSku
+     * @param float $price
+     * @return array
+     */
+    protected function prepareWarrantyProductPayload(?string $productSku, float $price) :array
+    {
+        if (empty($productSku)) {
+            return [];
+        }
+
+        $product = $this->getProduct($productSku);
+
+        if (!$product) {
+            return [];
+        }
+
+        $result = [
+            'id'            => $product->getSku(),
+            'listPrice'     => $this->helper->formatPrice($price),
+            'name'          => $product->getName(),
+            'purchasePrice' => $this->helper->formatPrice($price)
         ];
 
         return $result;

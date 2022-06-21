@@ -5,37 +5,38 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
 declare(strict_types=1);
 
 namespace Extend\Warranty\Model\Orders;
 
-use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
-use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrdersCollectionFactory;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Sales\Api\Data\OrderInterface;
 use Extend\Warranty\Api\SyncInterface;
-
+use Extend\Warranty\Helper\Api\Data as ExtendHelper;
 
 /**
  * Class Sync historical orders
  */
 class HistoricalOrdersSync implements SyncInterface
 {
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private $orderRepository;
+    private const EXTEND_HISTORICAL_ORDERS_TABLE_NAME = 'extend_historical_orders';
 
     /**
-     * Search Criteria Builder
-     *
-     * @var SearchCriteriaBuilder
+     * @var OrdersCollectionFactory
      */
-    private $searchCriteriaBuilder;
+    private $ordersCollectionFactory;
+
+    /**
+     * @var ResourceConnection
+     */
+    private $resourceConnection;
 
     /**
      * @var Date
@@ -55,6 +56,11 @@ class HistoricalOrdersSync implements SyncInterface
     private $batchSize;
 
     /**
+     * @var ExtendHelper
+     */
+    private $extendHelper;
+
+    /**
      * Count of batches
      *
      * @var int
@@ -62,34 +68,27 @@ class HistoricalOrdersSync implements SyncInterface
     private $countOfBatches = 0;
 
     /**
-     * @var string
-     */
-    private $fromDate;
-
-    /**
-     * @var string
-     */
-    private $toDate;
-
-    /**
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
-     * @param OrderRepositoryInterface $orderRepository
+     * @param OrdersCollectionFactory $ordersCollectionFactory
+     * @param ResourceConnection $resourceConnection
      * @param Date $date
      * @param DateTime $dateTime
+     * @param ExtendHelper $extendHelper
      * @param int $batchSize
      */
     public function __construct(
-        SearchCriteriaBuilder        $searchCriteriaBuilder,
-        OrderRepositoryInterface     $orderRepository,
+        OrdersCollectionFactory      $ordersCollectionFactory,
+        ResourceConnection           $resourceConnection,
         Date                         $date,
         DateTime                     $dateTime,
+        ExtendHelper                 $extendHelper,
         int $batchSize = self::DEFAULT_BATCH_SIZE
     ) {
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->orderRepository = $orderRepository;
+        $this->ordersCollectionFactory = $ordersCollectionFactory;
+        $this->resourceConnection = $resourceConnection;
         $this->date = $date;
         $this->dateTime = $dateTime;
         $this->batchSize = $batchSize;
+        $this->extendHelper = $extendHelper;
     }
 
     /**
@@ -103,8 +102,6 @@ class HistoricalOrdersSync implements SyncInterface
     }
 
     /**
-     * Get products
-     *
      * @param int $batchNumber
      * @param array $filters
      * @return array
@@ -112,22 +109,33 @@ class HistoricalOrdersSync implements SyncInterface
     public function getItems(int $batchNumber = 1, array $filters = []): array
     {
         $batchSize = $this->getBatchSize();
+        $orderCollection = $this->ordersCollectionFactory->create();
+        $orderCollection->addAttributeToSelect('*');
+
+        $orderCollection->getSelect()->joinLeft(
+            ['historical' => $this->resourceConnection->getTableName(self::EXTEND_HISTORICAL_ORDERS_TABLE_NAME)],
+            'historical.entity_id = main_table.entity_id',
+            ['historical.was_sent']
+        );
 
         foreach ($filters as $field => $value) {
-            $this->searchCriteriaBuilder->addFilter($field, $value);
+            if ($field == OrderInterface::CREATED_AT) {
+                $orderCollection->addFieldToFilter(OrderInterface::CREATED_AT, ['from' => $value]);
+                continue;
+            }
+            $orderCollection->addFieldToFilter($field, $value);
         }
 
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('created_at', $this->getFromDate(), 'gteq')
-            ->addFilter('created_at', $this->getToDate(), 'lteq')
-            ->create();
-        $searchCriteria->setPageSize($batchSize);
-        $searchCriteria->setCurrentPage($batchNumber);
-        $searchResults = $this->orderRepository->getList($searchCriteria);
+        $orderCollection->addFieldToFilter('historical.was_sent', ['null' => true]);
+        $orderCollection->setPageSize($batchSize);
+        $orderCollection->setCurPage($batchNumber);
+        $orderCollection->load();
 
-        $this->setCountOfBatches($searchResults->getTotalCount());
+        $orderCollection->getSelect()->__toString();
 
-        return $searchResults->getItems();
+        $this->setCountOfBatches($orderCollection->getTotalCount());
+
+        return $orderCollection->getItems();
     }
 
     /**
@@ -162,58 +170,24 @@ class HistoricalOrdersSync implements SyncInterface
     }
 
     /**
-     * @param string $from
+     * @param string $scopeType
+     * @param int|string|null $scopeId
      * @return void
      */
-    public function setFromDate(string $from): void
+    public function setFromDate(string $scopeType,$scopeId): void
     {
-        $this->fromDate = $from;
+        $twoYearsDatetime = 60*60*24*30*12*2; // 2 Years
+        $from = $this->dateTime->formatDate($this->date->gmtTimestamp() - $twoYearsDatetime, false);
+        $this->extendHelper->setHistoricalOrdersSyncPeriod($from, $scopeType,$scopeId);
     }
 
     /**
+     * @param string $scopeType
+     * @param int|string|null $scopeId
      * @return string
      */
-    public function getFromDate(): string
+    public function getFromDate(string $scopeType,$scopeId): string
     {
-        return $this->fromDate;
-    }
-
-    /**
-     * @param string $to
-     * @return void
-     */
-    public function setToDate(string $to): void
-    {
-        $this->toDate = $to;
-    }
-
-    /**
-     * @return string
-     */
-    public function getToDate(): string
-    {
-        return $this->toDate;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSyncPeriod(): string
-    {
-        $from = $this->getFromDate();
-        $to = $this->getToDate();
-
-        if (!$from) {
-            $offset = 60*60*24*30*12*2; // 2 Years
-            $this->setFromDate($this->dateTime->formatDate($this->date->gmtTimestamp() - $offset));
-            $from = $this->getFromDate();
-        }
-
-        if (!$to) {
-            $this->setToDate($this->dateTime->formatDate($this->date->gmtTimestamp()));
-            $to = $this->getToDate();
-        }
-
-        return sprintf('Orders From %s to %s', $from, $to);
+        return $this->extendHelper->getHistoricalOrdersSyncPeriod($scopeType,$scopeId);
     }
 }

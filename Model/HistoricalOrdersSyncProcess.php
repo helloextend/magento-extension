@@ -18,7 +18,7 @@ use Exception;
 /**
  * Class SendHistoricalOrders
  */
-class SendHistoricalOrders
+class HistoricalOrdersSyncProcess
 {
     /**
      * Historical Order Factory

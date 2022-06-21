@@ -30,7 +30,7 @@ class HistoricalOrder extends AbstractModel implements HistoricalOrderInterface
     /**
      * @inheritDoc
      */
-    public function setWasSent(bool $wasSent)
+    public function setWasSent($wasSent)
     {
         return $this->setData(self::WAS_SENT, (int)$wasSent);
     }
@@ -54,7 +54,7 @@ class HistoricalOrder extends AbstractModel implements HistoricalOrderInterface
     /**
      * @inheritDoc
      */
-    public function setEntityId(int $entityId)
+    public function setEntityId($entityId)
     {
         return $this->setData(self::ENTITY_ID, (int)$entityId);
     }

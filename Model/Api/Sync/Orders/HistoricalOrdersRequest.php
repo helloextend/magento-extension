@@ -30,7 +30,7 @@ class HistoricalOrdersRequest extends AbstractRequest
     /**
      * Response status codes
      */
-    const STATUS_CODE_SUCCESS = 200;
+    const STATUS_CODE_SUCCESS = 201;
 
     /**
      * @var OrderBuilder

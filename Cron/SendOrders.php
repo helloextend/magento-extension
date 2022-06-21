@@ -12,7 +12,7 @@ namespace Extend\Warranty\Cron;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\GetAfterDate;
-use Extend\Warranty\Model\SendHistoricalOrders;
+use Extend\Warranty\Model\HistoricalOrdersSyncProcess;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Psr\Log\LoggerInterface;
 
@@ -31,7 +31,7 @@ class SendOrders
     /**
      * Send Historical Orders
      *
-     * @var SendHistoricalOrders
+     * @var HistoricalOrdersSyncProcess
      */
     private $sendHistoricalOrders;
 
@@ -53,15 +53,15 @@ class SendOrders
      * SendOrders constructor
      *
      * @param DataHelper $dataHelper
-     * @param SendHistoricalOrders $sendHistoricalOrders
+     * @param HistoricalOrdersSyncProcess $sendHistoricalOrders
      * @param GetAfterDate $getAfterDate
      * @param LoggerInterface $logger
      */
     public function __construct(
-        DataHelper $dataHelper,
-        SendHistoricalOrders $sendHistoricalOrders,
-        GetAfterDate $getAfterDate,
-        LoggerInterface $logger
+        DataHelper                  $dataHelper,
+        HistoricalOrdersSyncProcess $sendHistoricalOrders,
+        GetAfterDate                $getAfterDate,
+        LoggerInterface             $logger
     ) {
         $this->dataHelper = $dataHelper;
         $this->sendHistoricalOrders = $sendHistoricalOrders;

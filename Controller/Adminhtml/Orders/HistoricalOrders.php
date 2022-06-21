@@ -99,22 +99,28 @@ class HistoricalOrders extends Action
      */
     private $syncLogger;
 
+    /**
+     * @var HistoricalOrderFactory
+     */
     private $historicalOrderFactory;
 
+    /**
+     * @var HistoricalOrderModelResource
+     */
     private $historicalOrderResource;
 
     /**
-     * Sync constructor
-     *
      * @param Context $context
      * @param DataHelper $dataHelper
      * @param DateTime $dateTime
      * @param Date $date
      * @param FlagManager $flagManager
-     * @param ProductSyncModel $productSyncModel
-     * @param ApiProductModel $apiProductModel
+     * @param HistoricalOrdersSync $historicalOrdersSync
+     * @param HistoricalOrdersRequest $historicalOrdersRequest
      * @param LoggerInterface $logger
      * @param LoggerInterface $syncLogger
+     * @param HistoricalOrderFactory $historicalOrderFactory
+     * @param HistoricalOrderModelResource $historicalOrderResource
      */
     public function __construct(
         Context $context,
@@ -174,14 +180,16 @@ class HistoricalOrders extends Action
 
             $this->apiHistoricalOrdersModel->setConfig($apiUrl, $apiStoreId, $apiKey);
 
-//            $batchSize = $this->dataHelper->getProductsBatchSize($scopeType, $scopeId);
-            //Current orders API max batch size is 10
-            $batchSize = 10;
+            $batchSize = $this->dataHelper->getHistoricalOrdersBatchSize($scopeType, $scopeId);
+
             $this->historicalOrdersSync->setBatchSize($batchSize);
 
-            $offset = 60*60*24*30*12*2; // 2 Years
-            $this->historicalOrdersSync->setFromDate($this->dateTime->formatDate($this->date->gmtTimestamp() - $offset, false));
-            $this->historicalOrdersSync->setToDate($this->dateTime->formatDate($this->date->gmtTimestamp(), false));
+            if(!$this->historicalOrdersSync->getFromDate($scopeType,$scopeId)) {
+                $this->historicalOrdersSync->setFromDate($scopeType,$scopeId);
+            }
+
+            $fromDate = $this->historicalOrdersSync->getFromDate($scopeType,$scopeId);
+            $filters['created_at'] = $fromDate;
 
             $orders = $this->historicalOrdersSync->getItems($currentBatch, $filters);
             $countOfBathes = $this->historicalOrdersSync->getCountOfBatches();
@@ -203,15 +211,10 @@ class HistoricalOrders extends Action
                 }
 
                 if ($currentBatch === $countOfBathes) {
-                    $period = $this->historicalOrdersSync->getSyncPeriod();
-                    $this->dataHelper->setHistoricalOrdersSyncPeriod($period, $scopeType, $scopeId);
-                    $data['msg'] = $period;
                     $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
                 }
             } else {
-                $period = $this->historicalOrdersSync->getSyncPeriod();
-                $this->dataHelper->setHistoricalOrdersSyncPeriod($period, $scopeType, $scopeId);
-                $data['msg'] = $period;
+                $this->syncLogger->info('Production orders have already been integrated to Extend.  The historical import has been canceled.');
                 $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
             }
 
@@ -236,7 +239,7 @@ class HistoricalOrders extends Action
         $historicalOrder = $this->historicalOrderFactory->create();
         foreach ($orders as $order) {
             $historicalOrder->setEntityId($order->getId());
-            $historicalOrder->setWasSen(true);
+            $historicalOrder->setWasSent(true);
             $this->historicalOrderResource->save($historicalOrder);
         }
     }

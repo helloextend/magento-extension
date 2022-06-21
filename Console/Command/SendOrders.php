@@ -12,7 +12,7 @@ namespace Extend\Warranty\Console\Command;
 
 use Exception;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Extend\Warranty\Model\SendHistoricalOrders;
+use Extend\Warranty\Model\HistoricalOrdersSyncProcess;
 use Extend\Warranty\Model\GetAfterDate;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -68,7 +68,7 @@ class SendOrders extends Command
     /**
      * Send Historical Orders
      *
-     * @var SendHistoricalOrders
+     * @var HistoricalOrdersSyncProcess
      */
     private $sendHistoricalOrders;
 
@@ -92,19 +92,19 @@ class SendOrders extends Command
      * @param AppState $appState
      * @param DataHelper $dataHelper
      * @param DateTime $dateTime
-     * @param SendHistoricalOrders $sendHistoricalOrders
+     * @param HistoricalOrdersSyncProcess $sendHistoricalOrders
      * @param GetAfterDate $getAfterDate
      * @param LoggerInterface $logger
      * @param string|null $name
      */
     public function __construct(
-        AppState $appState,
-        DataHelper $dataHelper,
-        DateTime $dateTime,
-        SendHistoricalOrders $sendHistoricalOrders,
-        GetAfterDate $getAfterDate,
-        LoggerInterface $logger,
-        string $name = null
+        AppState                    $appState,
+        DataHelper                  $dataHelper,
+        DateTime                    $dateTime,
+        HistoricalOrdersSyncProcess $sendHistoricalOrders,
+        GetAfterDate                $getAfterDate,
+        LoggerInterface             $logger,
+        string                      $name = null
     ) {
         parent::__construct($name);
         $this->appState = $appState;

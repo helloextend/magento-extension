@@ -588,7 +588,7 @@
                        showInStore="1"
                        canRestore="1">
                     <label>Batch Size</label>
-                    <source_model>Extend\Warranty\Model\Config\Source\BatchSize</source_model>
+                    <source_model>Extend\Warranty\Model\Config\Source\HistoricalBatchSize</source_model>
                     <comment>
                         Save the configuration and flush the cache before running the sync process.
                     </comment>
@@ -624,7 +624,7 @@
                        canRestore="1">
                     <label>Cron Settings</label>
                     <depends>
-                        <field id="warranty/products/cron_sync_enabled">1</field>
+                        <field id="warranty/historical_orders/cron_sync_enabled">1</field>
                     </depends>
                     <field id="frequency"
                            translate="label comment"

@@ -551,6 +551,17 @@ class Data extends AbstractHelper
         return $this->scopeConfig->isSetFlag(self::WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH);
     }
 
+    public function getHistoricalOrdersBatchSize(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        return (int)$this->scopeConfig->getValue(
+            self::WARRANTY_HISTORICAL_ORDERS_BATCH_SIZE_XML_PATH,
+            $scopeType,
+            $scopeId
+        );
+    }
+
     /**
      * Set historical orders sync period
      *
