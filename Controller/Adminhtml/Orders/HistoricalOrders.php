@@ -8,6 +8,8 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
+declare(strict_types=1);
+
 namespace Extend\Warranty\Controller\Adminhtml\Orders;
 
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -22,8 +24,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\FlagManager;
-use Magento\Framework\Stdlib\DateTime;
-use Magento\Framework\Stdlib\DateTime\DateTime as Date;
+use Extend\Warranty\Model\GetAfterDate;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
@@ -41,6 +42,7 @@ class HistoricalOrders extends Action
      */
     const STATUS_SUCCESS = 'SUCCESS';
     const STATUS_FAIL = 'FAIL';
+    const STATUS_COMPLETE = 'COMPLETE';
 
     /**
      * Website ID filter
@@ -55,18 +57,9 @@ class HistoricalOrders extends Action
     private $flagManager;
 
     /**
-     * Date Time
-     *
-     * @var DateTime
+     * @var GetAfterDate
      */
-    private $dateTime;
-
-    /**
-     * Date
-     *
-     * @var Date
-     */
-    private $date;
+    private $getAfterDate;
 
     /**
      * Data Helper
@@ -76,11 +69,15 @@ class HistoricalOrders extends Action
     private $dataHelper;
 
     /**
+     * Historical Orders Sync
+     *
      * @var HistoricalOrdersSync
      */
     private $historicalOrdersSync;
 
     /**
+     * Historical Orders API Model
+     *
      * @var HistoricalOrdersRequest
      */
     private $apiHistoricalOrdersModel;
@@ -100,20 +97,30 @@ class HistoricalOrders extends Action
     private $syncLogger;
 
     /**
+     * @var ManagerInterface
+     */
+    protected $messageManager;
+
+    /**
+     * Historical Order Factory
+     *
      * @var HistoricalOrderFactory
      */
     private $historicalOrderFactory;
 
     /**
+     * Historical Order Model Resource
+     *
      * @var HistoricalOrderModelResource
      */
     private $historicalOrderResource;
 
     /**
+     * HistoricalOrders constructor
+     *
      * @param Context $context
      * @param DataHelper $dataHelper
-     * @param DateTime $dateTime
-     * @param Date $date
+     * @param GetAfterDate $getAfterDate
      * @param FlagManager $flagManager
      * @param HistoricalOrdersSync $historicalOrdersSync
      * @param HistoricalOrdersRequest $historicalOrdersRequest
@@ -125,8 +132,7 @@ class HistoricalOrders extends Action
     public function __construct(
         Context $context,
         DataHelper $dataHelper,
-        DateTime $dateTime,
-        Date $date,
+        GetAfterDate $getAfterDate,
         FlagManager $flagManager,
         HistoricalOrdersSync $historicalOrdersSync,
         HistoricalOrdersRequest $historicalOrdersRequest,
@@ -137,17 +143,21 @@ class HistoricalOrders extends Action
     ) {
         parent::__construct($context);
         $this->flagManager = $flagManager;
-        $this->dateTime = $dateTime;
-        $this->date = $date;
+        $this->getAfterDate = $getAfterDate;
         $this->dataHelper = $dataHelper;
         $this->historicalOrdersSync = $historicalOrdersSync;
         $this->apiHistoricalOrdersModel = $historicalOrdersRequest;
         $this->logger = $logger;
         $this->syncLogger = $syncLogger;
+        $this->messageManager = $context->getMessageManager();
         $this->historicalOrderFactory = $historicalOrderFactory;
         $this->historicalOrderResource = $historicalOrderResource;
     }
 
+    /**
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\ResultInterface
+     * @throws LocalizedException
+     */
     public function execute()
     {
         $request = $this->getRequest();
@@ -184,11 +194,13 @@ class HistoricalOrders extends Action
 
             $this->historicalOrdersSync->setBatchSize($batchSize);
 
-            if(!$this->historicalOrdersSync->getFromDate($scopeType,$scopeId)) {
-                $this->historicalOrdersSync->setFromDate($scopeType,$scopeId);
+            if(!$this->dataHelper->getHistoricalOrdersSyncPeriod($scopeType, $scopeId)) {
+                $this->syncLogger->error('set date');
+                $date = $this->getAfterDate->getAfterDateTwoYears();
+                $this->dataHelper->setHistoricalOrdersSyncPeriod($date, $scopeType, $scopeId);
             }
 
-            $fromDate = $this->historicalOrdersSync->getFromDate($scopeType,$scopeId);
+            $fromDate = $this->dataHelper->getHistoricalOrdersSyncPeriod($scopeType, $scopeId);
             $filters['created_at'] = $fromDate;
 
             $orders = $this->historicalOrdersSync->getItems($currentBatch, $filters);
@@ -214,7 +226,12 @@ class HistoricalOrders extends Action
                     $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
                 }
             } else {
+                $this->messageManager->addErrorMessage('Production orders have already been integrated to Extend.  The historical import has been canceled.');
                 $this->syncLogger->info('Production orders have already been integrated to Extend.  The historical import has been canceled.');
+                $data = [
+                    'status'    => self::STATUS_COMPLETE,
+                    'message'   => __('Production orders have already been integrated to Extend.  The historical import has been canceled.'),
+                ];
                 $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
             }
 
@@ -234,6 +251,11 @@ class HistoricalOrders extends Action
         return $jsonResult;
     }
 
+    /**
+     * @param array $orders
+     * @return void
+     * @throws \Magento\Framework\Exception\AlreadyExistsException
+     */
     private function trackHistoricalOrders(array $orders)
     {
         $historicalOrder = $this->historicalOrderFactory->create();

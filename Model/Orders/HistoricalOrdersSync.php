@@ -29,21 +29,29 @@ class HistoricalOrdersSync implements SyncInterface
     private const EXTEND_HISTORICAL_ORDERS_TABLE_NAME = 'extend_historical_orders';
 
     /**
+     * Orders Collection Factory
+     *
      * @var OrdersCollectionFactory
      */
     private $ordersCollectionFactory;
 
     /**
+     * Resource Connection
+     *
      * @var ResourceConnection
      */
     private $resourceConnection;
 
     /**
+     * Date
+     *
      * @var Date
      */
     private $date;
 
     /**
+     * DateTime
+     *
      * @var DateTime
      */
     private $dateTime;
@@ -56,6 +64,8 @@ class HistoricalOrdersSync implements SyncInterface
     private $batchSize;
 
     /**
+     * Extend Helper
+     *
      * @var ExtendHelper
      */
     private $extendHelper;
@@ -131,9 +141,9 @@ class HistoricalOrdersSync implements SyncInterface
         $orderCollection->setCurPage($batchNumber);
         $orderCollection->load();
 
-        $orderCollection->getSelect()->__toString();
-
-        $this->setCountOfBatches($orderCollection->getTotalCount());
+        if ($batchNumber === 1) {
+            $this->setCountOfBatches($orderCollection->getTotalCount());
+        }
 
         return $orderCollection->getItems();
     }
@@ -167,27 +177,5 @@ class HistoricalOrdersSync implements SyncInterface
     {
         $batchSize = $this->getBatchSize();
         $this->countOfBatches = (int)ceil($countOfItems/$batchSize);
-    }
-
-    /**
-     * @param string $scopeType
-     * @param int|string|null $scopeId
-     * @return void
-     */
-    public function setFromDate(string $scopeType,$scopeId): void
-    {
-        $twoYearsDatetime = 60*60*24*30*12*2; // 2 Years
-        $from = $this->dateTime->formatDate($this->date->gmtTimestamp() - $twoYearsDatetime, false);
-        $this->extendHelper->setHistoricalOrdersSyncPeriod($from, $scopeType,$scopeId);
-    }
-
-    /**
-     * @param string $scopeType
-     * @param int|string|null $scopeId
-     * @return string
-     */
-    public function getFromDate(string $scopeType,$scopeId): string
-    {
-        return $this->extendHelper->getHistoricalOrdersSyncPeriod($scopeType,$scopeId);
     }
 }

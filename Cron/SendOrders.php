@@ -8,10 +8,13 @@
  * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
+declare(strict_types=1);
+
 namespace Extend\Warranty\Cron;
 
+use Magento\Framework\FlagManager;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Extend\Warranty\Model\GetAfterDate;
+use Extend\Warranty\Model\HistoricalOrdersSyncFlag;
 use Extend\Warranty\Model\HistoricalOrdersSyncProcess;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Psr\Log\LoggerInterface;
@@ -21,6 +24,14 @@ use Psr\Log\LoggerInterface;
  */
 class SendOrders
 {
+
+    /**
+     * Flag Manager
+     *
+     * @var FlagManager
+     */
+    private $flagManager;
+
     /**
      * Data Helper
      *
@@ -29,18 +40,11 @@ class SendOrders
     private $dataHelper;
 
     /**
-     * Send Historical Orders
+     * Historical Orders Sync Process
      *
      * @var HistoricalOrdersSyncProcess
      */
     private $sendHistoricalOrders;
-
-    /**
-     * Get After Date
-     *
-     * @var GetAfterDate
-     */
-    private $getAfterDate;
 
     /**
      * Logger
@@ -50,22 +54,20 @@ class SendOrders
     private $logger;
 
     /**
-     * SendOrders constructor
-     *
+     * @param FlagManager $flagManager
      * @param DataHelper $dataHelper
      * @param HistoricalOrdersSyncProcess $sendHistoricalOrders
-     * @param GetAfterDate $getAfterDate
      * @param LoggerInterface $logger
      */
     public function __construct(
+        FlagManager                 $flagManager,
         DataHelper                  $dataHelper,
         HistoricalOrdersSyncProcess $sendHistoricalOrders,
-        GetAfterDate                $getAfterDate,
         LoggerInterface             $logger
     ) {
+        $this->flagManager = $flagManager;
         $this->dataHelper = $dataHelper;
         $this->sendHistoricalOrders = $sendHistoricalOrders;
-        $this->getAfterDate = $getAfterDate;
         $this->logger = $logger;
     }
 
@@ -74,11 +76,17 @@ class SendOrders
      */
     public function execute()
     {
-        if ($this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
-            $batchSize = 10;
-            $sendAfterData = $this->getAfterDate->getAfterDate();
-
-            $this->sendHistoricalOrders->execute($sendAfterData, $batchSize);
+        if (!$this->dataHelper->isExtendEnabled(ScopeConfigInterface::SCOPE_TYPE_DEFAULT)) {
+            return;
         }
+
+        if ((bool)$this->flagManager->getFlagData(HistoricalOrdersSyncFlag::FLAG_NAME)) {
+            $this->logger->error('Historical orders sync has already started by another process.');
+            return;
+        }
+
+        $this->flagManager->saveFlag(HistoricalOrdersSyncFlag::FLAG_NAME, true);
+        $this->sendHistoricalOrders->execute();
+        $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
     }
 }

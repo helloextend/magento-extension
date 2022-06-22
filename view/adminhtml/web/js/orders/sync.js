@@ -33,7 +33,6 @@ define([
     }
 
     async function syncAllHistoricalOrders(url, button) {
-        debugger;
         do {
             var data = await batchBeingProcessed(shouldAbort, url).then(data => {
                 return data;            //success
@@ -64,11 +63,12 @@ define([
                         currentBatchesProcessed: currentBatchesProcessed
                     },
                     success: function (data) {
-                        console.log('success')
+                        if (data.status === 'COMPLETE') {
+                            window.location.reload();
+                        }
                         resolve(data)
                     },
                     error: function (data) {
-                        console.log('error')
                         reject(data);
                     }
                 })
@@ -114,7 +114,6 @@ define([
 
         },
         syncHistoricalOrders: function (event) {
-            debugger;
             event.preventDefault();
             var button = $(this.element);
             button.text('Sync in progress...');
