@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Extend\Warranty\Cron;
 
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\FlagManager;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\HistoricalOrdersSyncFlag;
@@ -86,7 +87,12 @@ class SendOrders
         }
 
         $this->flagManager->saveFlag(HistoricalOrdersSyncFlag::FLAG_NAME, true);
-        $this->sendHistoricalOrders->execute();
+        try {
+            $this->sendHistoricalOrders->execute();
+        } catch (LocalizedException $e) {
+            $this->logger->error($e->getMessage());
+            $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
+        }
         $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
     }
 }

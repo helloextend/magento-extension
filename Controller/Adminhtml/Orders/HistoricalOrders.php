@@ -195,7 +195,6 @@ class HistoricalOrders extends Action
             $this->historicalOrdersSync->setBatchSize($batchSize);
 
             if(!$this->dataHelper->getHistoricalOrdersSyncPeriod($scopeType, $scopeId)) {
-                $this->syncLogger->error('set date');
                 $date = $this->getAfterDate->getAfterDateTwoYears();
                 $this->dataHelper->setHistoricalOrdersSyncPeriod($date, $scopeType, $scopeId);
             }
@@ -216,6 +215,7 @@ class HistoricalOrders extends Action
                 } catch (LocalizedException $exception) {
                     $message = sprintf('Error found in orders batch %s. %s', $currentBatch, $exception->getMessage());
                     $this->syncLogger->error($message);
+                    $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
                     $data = [
                         'status'    => self::STATUS_FAIL,
                         'message'   => __($message),
@@ -239,6 +239,8 @@ class HistoricalOrders extends Action
             $data['totalBatches'] = $countOfBathes;
             $data['currentBatchesProcessed'] = $currentBatch;
         } else {
+            $this->syncLogger->info(__('Orders sync has already started by another process.'));
+            $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
             $data = [
                 'status'    => self::STATUS_FAIL,
                 'message'   => __('Orders sync has already started by another process.'),

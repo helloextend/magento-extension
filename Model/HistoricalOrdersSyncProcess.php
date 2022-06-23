@@ -17,7 +17,7 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Extend\Warranty\Api\Data\HistoricalOrderInterfaceFactory;
+use Extend\Warranty\Model\HistoricalOrderFactory;
 use Extend\Warranty\Model\ResourceModel\HistoricalOrder as HistoricalOrderResource;
 use Extend\Warranty\Model\Api\Sync\Orders\HistoricalOrdersRequest;
 use Extend\Warranty\Model\GetAfterDate;
@@ -97,7 +97,7 @@ class HistoricalOrdersSyncProcess
     /**
      * @param StoreManagerInterface $storeManager
      * @param DataHelper $dataHelper
-     * @param HistoricalOrderInterfaceFactory $historicalOrderFactory
+     * @param HistoricalOrderFactory $historicalOrderFactory
      * @param HistoricalOrdersRequest $historicalOrdersRequest
      * @param HistoricalOrdersSync $historicalOrdersSync
      * @param HistoricalOrderResource $historicalOrderResource
@@ -108,7 +108,7 @@ class HistoricalOrdersSyncProcess
     public function __construct(
         StoreManagerInterface $storeManager,
         DataHelper $dataHelper,
-        HistoricalOrderInterfaceFactory $historicalOrderFactory,
+        HistoricalOrderFactory $historicalOrderFactory,
         HistoricalOrdersRequest $historicalOrdersRequest,
         HistoricalOrdersSync $historicalOrdersSync,
         HistoricalOrderResource $historicalOrderResource,
@@ -129,6 +129,7 @@ class HistoricalOrdersSyncProcess
 
     /**
      * @return void
+     * @throws Exception
      */
     public function execute()
     {
@@ -147,7 +148,7 @@ class HistoricalOrdersSyncProcess
 
             try {
                 $this->apiHistoricalOrdersModel->setConfig($apiUrl, $apiStoreId, $apiKey);
-            } catch (Exception $exception) {
+            } catch (LocalizedException $exception) {
                 $this->syncLogger->error($exception->getMessage());
                 continue;
             }
@@ -175,20 +176,14 @@ class HistoricalOrdersSyncProcess
                     try {
                         $sendResult = $this->apiHistoricalOrdersModel->create($historicalOrders, $currentBatch);
                         if ($sendResult) {
-                            $this->syncLogger->error('Before track');
                             $this->trackHistoricalOrders($historicalOrders);
-                            $this->syncLogger->error('After Track');
                         }
                     } catch (LocalizedException $exception) {
                         $message = sprintf('Error found in historical orders batch %s. %s', $currentBatch, $exception->getMessage());
                         $this->syncLogger->error($message);
                     }
-
-                    if ($currentBatch === $countOfBathes) {
-                        $this->syncLogger->info('End cycle');
-                    }
                 } else {
-                    $this->syncLogger->info('Production orders have already been integrated to Extend.  The historical import has been canceled.');
+                    $this->syncLogger->info('Production orders have already been integrated to Extend. The historical import has been canceled.');
                 }
                 $currentBatch++;
                 $historicalOrders = $this->historicalOrdersSync->getItems($currentBatch, $filters);
@@ -201,17 +196,19 @@ class HistoricalOrdersSyncProcess
     /**
      * @param array $orders
      * @return void
-     * @throws \Magento\Framework\Exception\AlreadyExistsException
+     * @throws Exception
      */
     private function trackHistoricalOrders(array $orders)
     {
-        $this->syncLogger->error('Before Track cycle');
         $historicalOrder = $this->historicalOrderFactory->create();
         foreach ($orders as $order) {
-            $this->syncLogger->error('Track cycle' . $order->getId());
-            $historicalOrder->setEntityId($order->getId());
-            $historicalOrder->setWasSent(true);
-            $this->historicalOrderResource->save($historicalOrder);
+                try {
+                    $historicalOrder->setEntityId((int)$order->getId());
+                    $historicalOrder->setWasSent(true);
+                    $this->historicalOrderResource->save($historicalOrder);
+                } catch (LocalizedException $e) {
+                    $this->syncLogger->error($e->getMessage());
+                }
         }
     }
 }
