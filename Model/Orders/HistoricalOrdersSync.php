@@ -142,7 +142,13 @@ class HistoricalOrdersSync implements SyncInterface
         $orderCollection->load();
 
         if ($batchNumber === 1) {
-            $this->setCountOfBatches($orderCollection->getTotalCount());
+            $batchSize = $this->getBatchSize();
+            $countOfBatches = (int)ceil($orderCollection->getTotalCount()/$batchSize);
+            $this->setCountOfBatches($countOfBatches);
+        } else {
+            $batchSize = $this->getBatchSize();
+            $countOfBatches = (int)ceil($orderCollection->getTotalCount()/$batchSize) + $batchNumber - 1;
+            $this->setCountOfBatches($countOfBatches);
         }
 
         return $orderCollection->getItems();
@@ -175,7 +181,6 @@ class HistoricalOrdersSync implements SyncInterface
      */
     public function setCountOfBatches(int $countOfItems): void
     {
-        $batchSize = $this->getBatchSize();
-        $this->countOfBatches = (int)ceil($countOfItems/$batchSize);
+        $this->countOfBatches = $countOfItems;
     }
 }
