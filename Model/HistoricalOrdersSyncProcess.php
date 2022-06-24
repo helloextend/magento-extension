@@ -176,6 +176,10 @@ class HistoricalOrdersSyncProcess
                         if ($sendResult) {
                             $this->trackHistoricalOrders($historicalOrders);
                         }
+
+                        $ordersIds = implode(',', array_map(fn($order) => $order->getIncrementId(), $historicalOrders));
+                        $this->syncLogger->info(sprintf('Historical orders batch %s was sent to extend. Sent orders ids: %s', $currentBatch, $ordersIds));
+
                     } catch (LocalizedException $exception) {
                         $message = sprintf('Error found in historical orders batch %s. %s', $currentBatch, $exception->getMessage());
                         $this->syncLogger->error($message);

@@ -220,7 +220,10 @@ class HistoricalOrders extends Action
                     ];
                 }
 
-                if ($currentBatch === $countOfBathes) {
+                $ordersIds = implode(',', array_map(fn($order) => $order->getIncrementId(), $orders));
+                $this->syncLogger->info(sprintf('Historical orders batch %s was sent to extend. Sent orders ids: %s', $currentBatch, $ordersIds));
+
+                if ($currentBatch >= $countOfBathes) {
                     $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
                 }
             } else {

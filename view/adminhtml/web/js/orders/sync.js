@@ -63,9 +63,10 @@ define([
                         currentBatchesProcessed: currentBatchesProcessed
                     },
                     success: function (data) {
-                        if (data.status === 'COMPLETE') {
+                        if (data.hasOwnProperty('status') && data.status === 'COMPLETE') {
                             window.location.reload();
                         }
+                         console.log('Batches Processed: ' + currentBatchesProcessed);
                         resolve(data)
                     },
                     error: function (data) {
@@ -83,6 +84,7 @@ define([
                     url: resetFlagUrl,
                     dataType: 'json',
                     success: function (data) {
+                        console.log(data.message);
                         resolve(data);
                     },
                     error: function (data) {

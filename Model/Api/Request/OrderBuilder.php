@@ -182,6 +182,7 @@ class OrderBuilder
         $currencyCode = $store->getBaseCurrencyCode();
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
         $lineItem = [];
+        $lineItems = [];
 
         foreach ($order->getItems() as $orderItem) {
 
