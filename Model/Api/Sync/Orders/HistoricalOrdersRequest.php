@@ -99,9 +99,9 @@ class HistoricalOrdersRequest extends AbstractRequest
                     $this->logger->error(sprintf('Order batch %s synchronization is failed.', $currentBatch));
                 }
             } catch (LocalizedException $exception) {
-                $this->logger->error(sprintf('Order batch %s synchronization is failed.', $exception->getMessage()));
+                $this->logger->error(sprintf('Order batch %s synchronization is failed. Error message: %s', $currentBatch, $exception->getMessage()));
             } catch (\Zend_Http_Client_Exception $zend_Http_Client_Exception) {
-                $this->logger->error(sprintf('Order batch %s synchronization is failed.', $zend_Http_Client_Exception->getMessage()));
+                $this->logger->error(sprintf('Order batch %s synchronization is failed. Error message: %s', $currentBatch, $zend_Http_Client_Exception->getMessage()));
             }
         }
 
