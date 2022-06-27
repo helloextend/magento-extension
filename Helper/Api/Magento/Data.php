@@ -93,7 +93,10 @@ class Data extends AbstractHelper
 
         if (!empty($leadToken)) {
             try {
-                $leadToken = implode(", ", $this->unserialize($leadToken));
+                $leadTokenArray = $this->unserialize($leadToken);
+                if ($leadTokenArray) {
+                    $leadToken = implode(", ", $leadTokenArray);
+                }
             } catch (Exception $exception) {
                 $leadToken = '';
             }

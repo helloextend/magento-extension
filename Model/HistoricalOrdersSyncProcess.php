@@ -167,7 +167,7 @@ class HistoricalOrdersSyncProcess
             $filters['created_at'] = $fromDate;
 
             $historicalOrders = $this->historicalOrdersSync->getItems($currentBatch, $filters);
-            $countOfBathes = $this->historicalOrdersSync->getCountOfBatches();
+            $countOfBatches = $this->historicalOrdersSync->getCountOfBatches();
 
             do {
                 if (!empty($historicalOrders)) {
@@ -189,7 +189,7 @@ class HistoricalOrdersSyncProcess
                 }
                 $currentBatch++;
                 $historicalOrders = $this->historicalOrdersSync->getItems($currentBatch, $filters);
-            } while($currentBatch <= $countOfBathes);
+            } while($currentBatch <= $countOfBatches);
 
             $this->syncLogger->info(sprintf('Finish sync historical orders for %s store.', $storeCode));
         }
