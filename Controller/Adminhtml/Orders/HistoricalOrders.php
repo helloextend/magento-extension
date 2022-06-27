@@ -201,7 +201,7 @@ class HistoricalOrders extends Action
             $filters['created_at'] = $fromDate;
 
             $orders = $this->historicalOrdersSync->getItems($currentBatch, $filters);
-            $countOfBathes = $this->historicalOrdersSync->getCountOfBatches();
+            $countOfBatches = $this->historicalOrdersSync->getCountOfBatches();
 
             if (!empty($orders)) {
                 try {
@@ -220,7 +220,10 @@ class HistoricalOrders extends Action
                     ];
                 }
 
-                if ($currentBatch === $countOfBathes) {
+                $ordersIds = implode(',', array_map(fn($order) => $order->getIncrementId(), $orders));
+                $this->syncLogger->info(sprintf('Historical orders batch %s was sent to extend. Sent orders ids: %s', $currentBatch, $ordersIds));
+
+                if ($currentBatch >= $countOfBatches) {
                     $this->flagManager->deleteFlag(HistoricalOrdersSyncFlag::FLAG_NAME);
                 }
             } else {
@@ -234,7 +237,7 @@ class HistoricalOrders extends Action
             }
 
             $currentBatch++;
-            $data['totalBatches'] = $countOfBathes;
+            $data['totalBatches'] = $countOfBatches;
             $data['currentBatchesProcessed'] = $currentBatch;
         } else {
             $this->syncLogger->info(__('Orders sync has already started by another process.'));

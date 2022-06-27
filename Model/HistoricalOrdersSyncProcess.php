@@ -167,7 +167,7 @@ class HistoricalOrdersSyncProcess
             $filters['created_at'] = $fromDate;
 
             $historicalOrders = $this->historicalOrdersSync->getItems($currentBatch, $filters);
-            $countOfBathes = $this->historicalOrdersSync->getCountOfBatches();
+            $countOfBatches = $this->historicalOrdersSync->getCountOfBatches();
 
             do {
                 if (!empty($historicalOrders)) {
@@ -176,6 +176,10 @@ class HistoricalOrdersSyncProcess
                         if ($sendResult) {
                             $this->trackHistoricalOrders($historicalOrders);
                         }
+
+                        $ordersIds = implode(',', array_map(fn($order) => $order->getIncrementId(), $historicalOrders));
+                        $this->syncLogger->info(sprintf('Historical orders batch %s was sent to extend. Sent orders ids: %s', $currentBatch, $ordersIds));
+
                     } catch (LocalizedException $exception) {
                         $message = sprintf('Error found in historical orders batch %s. %s', $currentBatch, $exception->getMessage());
                         $this->syncLogger->error($message);
@@ -185,7 +189,7 @@ class HistoricalOrdersSyncProcess
                 }
                 $currentBatch++;
                 $historicalOrders = $this->historicalOrdersSync->getItems($currentBatch, $filters);
-            } while($currentBatch <= $countOfBathes);
+            } while($currentBatch <= $countOfBatches);
 
             $this->syncLogger->info(sprintf('Finish sync historical orders for %s store.', $storeCode));
         }
