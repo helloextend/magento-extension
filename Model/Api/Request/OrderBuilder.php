@@ -97,6 +97,7 @@ class OrderBuilder
         int $qty,
         string $type = 'contract'
     ): array {
+        $payload = [];
         $store = $this->storeManager->getStore();
         $currencyCode = $store->getBaseCurrencyCode();
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
@@ -154,17 +155,26 @@ class OrderBuilder
 
         $lineItems[] = $lineItem;
 
+        if (empty($lineItems)) {
+            return $payload;
+        }
+
         $saleOrigin = [
             'platform'  => self::PLATFORM_CODE,
         ];
 
         $createdAt = $order->getCreatedAt();
+        $customerData = $this->getCustomerData($order);
+
+        if (empty($customerData)) {
+            return $payload;
+        }
 
         $payload = [
             'isTest'            => !$this->apiHelper->isExtendLive(),
             'currency'          => $currencyCode,
             'createdAt'         => $createdAt ? strtotime($createdAt) : 0,
-            'customer'          => $this->getCustomerData($order),
+            'customer'          => $customerData,
             'lineItems'         => $lineItems,
             'total'             => $transactionTotal,
             'storeId'           => $this->apiHelper->getStoreId(),
@@ -178,6 +188,7 @@ class OrderBuilder
 
     public function prepareHistoricalOrdersPayLoad(OrderInterface $order): array
     {
+        $payload = [];
         $store = $this->storeManager->getStore();
         $currencyCode = $store->getBaseCurrencyCode();
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
@@ -195,6 +206,10 @@ class OrderBuilder
                 $product = $this->prepareProductPayload($productSku);
             }
 
+            if (empty($product)) {
+                continue;
+            }
+
             $lineItem = [
                 'quantity'    => $qty,
                 'storeId'     => $this->apiHelper->getStoreId(),
@@ -204,17 +219,26 @@ class OrderBuilder
             $lineItems[] = $lineItem;
         }
 
+        if (empty($lineItems)) {
+            return $payload;
+        }
+
         $saleOrigin = [
             'platform'  => self::PLATFORM_CODE,
         ];
 
         $createdAt = $order->getCreatedAt();
+        $customerData = $this->getCustomerData($order);
+
+        if (empty($customerData)) {
+            return $payload;
+        }
 
         $payload = [
             'isTest'            => !$this->apiHelper->isExtendLive(),
             'currency'          => $currencyCode,
             'createdAt'         => $createdAt ? strtotime($createdAt) : 0,
-            'customer'          => $this->getCustomerData($order),
+            'customer'          => $customerData,
             'lineItems'         => $lineItems,
             'total'             => $transactionTotal,
             'storeId'           => $this->apiHelper->getStoreId(),
@@ -346,24 +370,27 @@ class OrderBuilder
      */
     protected function getCustomerData(OrderInterface $order) : array
     {
+        $customer = [];
         $billingAddress = $order->getBillingAddress();
-        $billingCountryId = $billingAddress->getCountryId();
-        $billingCountryInfo = $this->countryInformationAcquirer->getCountryInfo($billingCountryId);
-        $billingStreet = $this->formatStreet($billingAddress->getStreet());
+        if ($billingAddress) {
+            $billingCountryId = $billingAddress->getCountryId();
+            $billingCountryInfo = $this->countryInformationAcquirer->getCountryInfo($billingCountryId);
+            $billingStreet = $this->formatStreet($billingAddress->getStreet());
 
-        $customer = [
-            'name'      => $this->helper->getCustomerFullName($order),
-            'email'     => $order->getCustomerEmail(),
-            'phone'     => $billingAddress->getTelephone(),
-            'billingAddress'    => [
-                'address1'      => $billingStreet['address1'] ?? '',
-                'address2'      => $billingStreet['address2'] ?? '',
-                'city'          => $billingAddress->getCity(),
-                'countryCode'   => $billingCountryInfo->getThreeLetterAbbreviation(),
-                'postalCode'    => $billingAddress->getPostcode(),
-                'province'      => $billingAddress->getRegionCode() ?? ''
-            ],
-        ];
+            $customer = [
+                'name' => $this->helper->getCustomerFullName($order),
+                'email' => $order->getCustomerEmail(),
+                'phone' => $billingAddress->getTelephone(),
+                'billingAddress' => [
+                    'address1' => $billingStreet['address1'] ?? '',
+                    'address2' => $billingStreet['address2'] ?? '',
+                    'city' => $billingAddress->getCity(),
+                    'countryCode' => $billingCountryInfo->getThreeLetterAbbreviation(),
+                    'postalCode' => $billingAddress->getPostcode(),
+                    'province' => $billingAddress->getRegionCode() ?? ''
+                ],
+            ];
+        }
 
         $shippingAddress = $order->getShippingAddress();
         if ($shippingAddress) {
