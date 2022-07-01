@@ -45,4 +45,21 @@ class Logger extends Monolog
         $this->dataHelper = $dataHelper;
         parent::__construct($name, $handlers, $processors);
     }
+
+    /**
+     * Check config before add record
+     *
+     * @param int $level
+     * @param string $message
+     * @param array $context
+     * @return bool
+     */
+    public function addRecord($level, $message, array $context = []): bool
+    {
+        if (!$this->dataHelper->isExtendEnabled() || !$this->dataHelper->isLoggingEnabled()) {
+            return false;
+        }
+
+        return parent::addRecord($level, $message, $context);
+    }
 }
