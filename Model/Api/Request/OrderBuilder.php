@@ -176,6 +176,56 @@ class OrderBuilder
         return $payload;
     }
 
+    public function prepareHistoricalOrdersPayLoad(OrderInterface $order): array
+    {
+        $store = $this->storeManager->getStore();
+        $currencyCode = $store->getBaseCurrencyCode();
+        $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
+        $lineItem = [];
+        $lineItems = [];
+
+        foreach ($order->getItems() as $orderItem) {
+
+            $productSku = $orderItem->getSku();
+            $qty = $orderItem->getQtyOrdered();
+
+            if ($orderItem->getProductType() == Type::TYPE_CODE) {
+                $product = $this->prepareWarrantyProductPayload($productSku, $orderItem->getPrice());
+            } else {
+                $product = $this->prepareProductPayload($productSku);
+            }
+
+            $lineItem = [
+                'quantity'    => $qty,
+                'storeId'     => $this->apiHelper->getStoreId(),
+                'product'     => $product,
+            ];
+
+            $lineItems[] = $lineItem;
+        }
+
+        $saleOrigin = [
+            'platform'  => self::PLATFORM_CODE,
+        ];
+
+        $createdAt = $order->getCreatedAt();
+
+        $payload = [
+            'isTest'            => !$this->apiHelper->isExtendLive(),
+            'currency'          => $currencyCode,
+            'createdAt'         => $createdAt ? strtotime($createdAt) : 0,
+            'customer'          => $this->getCustomerData($order),
+            'lineItems'         => $lineItems,
+            'total'             => $transactionTotal,
+            'storeId'           => $this->apiHelper->getStoreId(),
+            'storeName'         => $this->apiHelper->getStoreName(),
+            'transactionId'     => $order->getIncrementId(),
+            'saleOrigin'        => $saleOrigin,
+        ];
+
+        return $payload;
+    }
+
     /**
      * Prepare product payload
      *
@@ -199,6 +249,35 @@ class OrderBuilder
             'listPrice'     => $this->helper->formatPrice($product->getFinalPrice()),
             'name'          => $product->getName(),
             'purchasePrice' => $this->helper->formatPrice($product->getFinalPrice())
+        ];
+
+        return $result;
+    }
+
+    /**
+     * Prepare warranty product payload
+     *
+     * @param string|null $productSku
+     * @param float $price
+     * @return array
+     */
+    protected function prepareWarrantyProductPayload(?string $productSku, float $price) :array
+    {
+        if (empty($productSku)) {
+            return [];
+        }
+
+        $product = $this->getProduct($productSku);
+
+        if (!$product) {
+            return [];
+        }
+
+        $result = [
+            'id'            => $product->getSku(),
+            'listPrice'     => $this->helper->formatPrice($price),
+            'name'          => $product->getName(),
+            'purchasePrice' => $this->helper->formatPrice($price)
         ];
 
         return $result;

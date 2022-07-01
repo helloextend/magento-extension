@@ -96,6 +96,135 @@ class UpgradeSchema implements UpgradeSchemaInterface
             }
         }
 
+        if (version_compare($context->getVersion(), '1.2.4', '<')) {
+            try {
+                $connection = $setup->getConnection();
+
+                $tableWarrantyContact = $setup->getTable('extend_warranty_contract_create');
+
+                if ($tableWarrantyContact) {
+
+                    $salesInvoiceItemForeignKeyName = $connection->getForeignKeyName(
+                        $tableWarrantyContact,
+                        'invoice_item_id',
+                        'sales_invoice_item',
+                        'entity_id'
+                    );
+
+                    $uniqueIndexName = $connection->getIndexName(
+                        $tableWarrantyContact,
+                        ['order_item_id', 'invoice_item_id'],
+                        AdapterInterface::INDEX_TYPE_UNIQUE
+                    );
+
+                    $connection->changeColumn(
+                        $tableWarrantyContact,
+                        'qty_invoiced',
+                        'qty',
+                        [
+                            'type' => Table::TYPE_DECIMAL,
+                            'nullable' => false,
+                            'unsigned' => false,
+                            'comment' => 'Qty ordered'
+                        ]
+                    );
+
+                    $connection->dropColumn($tableWarrantyContact, 'invoice_item_id');
+
+                    $connection->addColumn(
+                        $tableWarrantyContact,
+                        'order_id',
+                        [
+                            'type' => Table::TYPE_INTEGER,
+                            'identity' => false,
+                            'nullable' => true,
+                            'unsigned' => true,
+                            'default' => '0',
+                            'comment' => 'Order ID'
+                        ]
+                    );
+
+                    if ($salesInvoiceItemForeignKeyName) {
+                        $connection->dropForeignKey($tableWarrantyContact, $salesInvoiceItemForeignKeyName);
+                    }
+
+                    if ($uniqueIndexName) {
+                        $connection->dropIndex($tableWarrantyContact, $uniqueIndexName);
+                    }
+
+                    $salesOrderItemForeignKeyName = $connection->getForeignKeyName(
+                        $tableWarrantyContact,
+                        'order_id',
+                        $setup->getTable('sales_order'),
+                        'entity_id'
+                    );
+
+                    $connection->addForeignKey(
+                        $salesOrderItemForeignKeyName,
+                        $tableWarrantyContact,
+                        'order_id',
+                        $setup->getTable('sales_order'),
+                        'entity_id',
+                        Table::ACTION_CASCADE
+                    );
+
+                    $uniqueIndexOrderName = $connection->getIndexName(
+                        $tableWarrantyContact,
+                        ['id', 'order_id'],
+                        AdapterInterface::INDEX_TYPE_UNIQUE
+                    );
+
+                    $connection->addIndex(
+                        $tableWarrantyContact,
+                        $uniqueIndexOrderName,
+                        ['id', 'order_id'],
+                        AdapterInterface::INDEX_TYPE_UNIQUE
+                    );
+
+                }
+            } catch (Zend_Db_Exception $exception) {
+                $this->logger->critical($exception->getMessage());
+            }
+        }
+
+        if (version_compare($context->getVersion(), '1.2.5', '<')) {
+            try {
+                $tableHistoricalOrders = $connection->newTable('extend_historical_orders');
+                $tableHistoricalOrders->addColumn(
+                    'entity_id',
+                    Table::TYPE_INTEGER,
+                    null,
+                    ['identity' => false, 'nullable' => false, 'unsigned' => true],
+                    'Order Id'
+                );
+                $tableHistoricalOrders->addColumn(
+                    'was_sent',
+                    Table::TYPE_SMALLINT,
+                    null,
+                    ['nullable' => false, 'unsigned' => true],
+                    'Order sent status'
+                );
+
+                $salesOrderItemForeignKeyName = $connection->getForeignKeyName(
+                    'extend_historical_orders',
+                    'entity_id',
+                    'sales_order',
+                    'entity_id'
+                );
+                $tableHistoricalOrders->addForeignKey(
+                    $salesOrderItemForeignKeyName,
+                    'entity_id',
+                    'sales_order',
+                    'entity_id',
+                    Table::ACTION_CASCADE
+                );
+
+                $connection->createTable($tableHistoricalOrders);
+            } catch (Zend_Db_Exception $exception) {
+                $this->logger->critical($exception->getMessage());
+            }
+        }
+
         $setup->endSetup();
     }
 

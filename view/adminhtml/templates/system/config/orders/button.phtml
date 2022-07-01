@@ -1,0 +1,37 @@
+<?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+
+/**
+ * @var \Extend\Warranty\Block\System\Config\Orders\Button $block
+ */
+
+$scopeData = $block->getScopeData();
+?>
+<div class="extend-sync-button-container">
+    <button id="syncOrderBtn" data-mage-init='{"ordersSync": {
+            "url": "<?= $block->escapeJs($block->getUrl(
+                'extend/orders/historicalorders',
+                [$scopeData['scopeType'] => $scopeData['scopeId']]
+            )) ?>",
+            "resetFlagUrl": "<?= $block->escapeJs($block->getUrl('extend/orders_sync/resetFlag')) ?>"
+        }}' <?php if (!$block->isButtonEnabled()): ?>class="disabled"<?php endif; ?>>
+        <span><?= /* @noEscape */ __('Send historical Orders') ?></span>
+    </button>
+    <div class="sync-info">
+        <p id="orders-sync-msg">
+            <label for="sync-time"><?= __('Sync from date: ') ?></label>
+            <span id="orders-sync-time">
+                <?= /* @noEscape */ !empty($block->getSyncPeriod()) ? $block->getSyncPeriod() : __('Sync date will be set after first run') ?></span>
+        </p>
+        <a id="orders_cancel_sync">
+            <span><?= /* @noEscape */ __('Cancel Sync') ?></span>
+        </a>
+    </div>
+</div>

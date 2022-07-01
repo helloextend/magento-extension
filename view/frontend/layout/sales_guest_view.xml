@@ -16,7 +16,8 @@
         <block class="Magento\Framework\View\Element\Template"
                name="additional.product.info"
                template="Extend_Warranty::order/item/additional-info.phtml"
-               after="content">
+               after="content"
+               ifconfig="warranty/enableExtend/enable">
             <block class="Magento\Sales\Block\Order\Item\Renderer\DefaultRenderer"
                    name="order.item.warranty"
                    template="Extend_Warranty::order/item/warranty-offers.phtml"

@@ -288,10 +288,24 @@
                     <label>Create Warranty Contract</label>
                     <source_model>Extend\Warranty\Model\Config\Source\CreateContractApi</source_model>
                 </field>
-                <field id="mode"
+                <field id="event"
                        translate="label comment"
                        type="select"
                        sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="0">
+                    <label>Contract Event</label>
+                    <depends>
+                        <field id="create" negative="1">0</field>
+                    </depends>
+                    <source_model>Extend\Warranty\Model\Config\Source\Event</source_model>
+                </field>
+                <field id="mode"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="30"
                        showInDefault="1"
                        showInWebsite="1"
                        showInStore="1"
@@ -548,10 +562,89 @@
                     </field>
                 </group>
             </group>
+            <group id="historical_orders"
+                   translate="label comment"
+                   sortOrder="80"
+                   showInDefault="1"
+                   showInWebsite="1"
+                   showInStore="1"
+                   canRestore="1">
+                <label>Sync Historical Orders</label>
+                <comment>
+                    It's important to send your historical orders to Extend, so we can serve accurate
+                    extended protection plan offers in your store. Just click the "Send historical Orders" button and we'll send
+                    your orders to the Extend platform in batches. If you have a small number of historical orders this will take
+                    just seconds, but if orders count is very large it could take few minutes.
+                </comment>
+                <depends>
+                    <field id="warranty/enableExtend/enable">1</field>
+                </depends>
+                <field id="batch_size"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Batch Size</label>
+                    <source_model>Extend\Warranty\Model\Config\Source\HistoricalBatchSize</source_model>
+                    <comment>
+                        Save the configuration and flush the cache before running the sync process.
+                    </comment>
+                </field>
+                <field id="syncbutton"
+                       translate="label comment"
+                       type="button"
+                       sortOrder="20"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="0">
+                    <frontend_model>Extend\Warranty\Block\System\Config\Orders\Button</frontend_model>
+                </field>
+                <field id="cron_sync_enabled"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="0"
+                       showInStore="0"
+                       canRestore="1">
+                    <label>Enable Synchronization by Cron</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Orders can be synchronized automatically using this functionality.</comment>
+                </field>
+                <group id="cron"
+                       translate="label comment"
+                       sortOrder="40"
+                       showInDefault="1"
+                       showInWebsite="0"
+                       showInStore="0"
+                       canRestore="1">
+                    <label>Cron Settings</label>
+                    <depends>
+                        <field id="warranty/historical_orders/cron_sync_enabled">1</field>
+                    </depends>
+                    <field id="frequency"
+                           translate="label comment"
+                           type="text"
+                           sortOrder="10"
+                           showInDefault="1"
+                           showInWebsite="0"
+                           showInStore="0"
+                           canRestore="1">
+                        <label>Frequency</label>
+                        <comment>Cron schedule expression</comment>
+                        <backend_model>Extend\Warranty\Model\Config\Backend\OrdersSyncCronSchedule</backend_model>
+                        <validate>validate-cron-expression</validate>
+                    </field>
+                </group>
+            </group>
 
             <group id="tracking"
                    translate="label comment"
-                   sortOrder="80"
+                   sortOrder="90"
                    showInDefault="1"
                    showInWebsite="1"
                    showInStore="1"
