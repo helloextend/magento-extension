@@ -13,10 +13,12 @@ namespace Extend\Warranty\Model;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Extend\Warranty\Helper\FloatComparator;
+use Magento\Framework\Phrase;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Extend\Warranty\Model\Api\Sync\Contract\ContractsRequest as ApiContractModel;
 use Extend\Warranty\Model\Api\Request\ContractBuilder as ContractPayloadBuilder;
+use Extend\Warranty\Model\Config\Source\Event as CreateContractEvent;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -180,6 +182,7 @@ class WarrantyContract
                         ContractCreate::STATUS_PARTIAL;
                 } catch (Exception $exception) {
                     $this->logger->error($exception->getMessage());
+                    throw new LocalizedException(new Phrase('Contract create error'), $exception);
                 }
             }
         }
@@ -213,7 +216,7 @@ class WarrantyContract
      */
     protected function canCreateWarranty(OrderItemInterface $orderItem): bool
     {
-        $qtyInvoiced = (float)$orderItem->getQtyInvoiced();
+        $qty = (float)$orderItem->getQtyOrdered();
 
         $options = $orderItem->getProductOptions();
         $refundResponsesLogEntries = $options['refund_responses_log'] ?? [];
@@ -221,7 +224,7 @@ class WarrantyContract
 
         $warrantyQty = count($contractIds) + count($refundResponsesLogEntries);
 
-        return $this->floatComparator->greaterThan($qtyInvoiced, (float)$warrantyQty);
+        return $this->floatComparator->greaterThan($qty, (float)$warrantyQty);
     }
 
     /**

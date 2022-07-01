@@ -49,6 +49,7 @@ class Data extends AbstractHelper
      * Contracts settings
      */
     public const WARRANTY_CONTRACTS_ENABLED_XML_PATH = 'warranty/contracts/create';
+    public const WARRANTY_CONTRACTS_EVENT_XML_PATH = 'warranty/contracts/event';
     public const WARRANTY_CONTRACTS_MODE_XML_PATH = 'warranty/contracts/mode';
     public const WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH = 'warranty/contracts/batch_size';
     public const WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH = 'warranty/contracts/storage_period';
@@ -71,6 +72,13 @@ class Data extends AbstractHelper
     public const WARRANTY_PRODUCTS_BATCH_SIZE_XML_PATH = 'warranty/products/batch_size';
     public const WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH = 'warranty/products/lastSync';
     public const WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/products/cron_sync_enabled';
+
+    /**
+     * Historical orders settings
+     */
+    const WARRANTY_HISTORICAL_ORDERS_BATCH_SIZE_XML_PATH = 'warranty/historical_orders/batch_size';
+    const WARRANTY_HISTORICAL_ORDERS_SYNC_PERIOD_XML_PATH = 'warranty/historical_orders/historical_orders_sync';
+    const WARRANTY_HISTORICAL_ORDERS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/historical_orders/enable_cron';
 
     /**
      * Leads settings
@@ -287,6 +295,24 @@ class Data extends AbstractHelper
     ) {
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_ENABLED_XML_PATH,
+            $scopeType,
+            $storeId
+        );
+    }
+
+    /**
+     * Get contract create event
+     *
+     * @param string $scopeType
+     * @param $storeId
+     * @return int
+     */
+    public function getContractCreateEvent(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+        $storeId = null
+    ) {
+        return (int)$this->scopeConfig->getValue(
+            self::WARRANTY_CONTRACTS_EVENT_XML_PATH,
             $scopeType,
             $storeId
         );
@@ -523,6 +549,56 @@ class Data extends AbstractHelper
     public function isProductSyncByCronEnabled()
     {
         return $this->scopeConfig->isSetFlag(self::WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH);
+    }
+
+    public function getHistoricalOrdersBatchSize(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        return (int)$this->scopeConfig->getValue(
+            self::WARRANTY_HISTORICAL_ORDERS_BATCH_SIZE_XML_PATH,
+            $scopeType,
+            $scopeId
+        );
+    }
+
+    /**
+     * Set historical orders sync period
+     *
+     * @param string $value
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     */
+    public function setHistoricalOrdersSyncPeriod(
+        string $value,
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        $this->configResource->saveConfig(
+            self::WARRANTY_HISTORICAL_ORDERS_SYNC_PERIOD_XML_PATH,
+            $value,
+            $scopeType,
+            (int)$scopeId
+        );
+        $this->cacheManager->clean([Config::TYPE_IDENTIFIER]);
+    }
+
+    /**
+     * Get historical orders sync period
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getHistoricalOrdersSyncPeriod(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        return (string)$this->scopeConfig->getValue(
+            self::WARRANTY_HISTORICAL_ORDERS_SYNC_PERIOD_XML_PATH,
+            $scopeType,
+            $scopeId
+        );
     }
 
     /**

@@ -191,7 +191,7 @@ class Sync extends Action
                 $filters[ProductInterface::UPDATED_AT] = $lastSyncDate;
             }
 
-            $products = $this->productSyncModel->getProducts($currentBatch, $filters);
+            $products = $this->productSyncModel->getItems($currentBatch, $filters);
             $countOfBathes = $this->productSyncModel->getCountOfBatches();
 
             if (!empty($products)) {

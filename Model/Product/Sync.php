@@ -84,7 +84,7 @@ class Sync implements SyncInterface
      * @param array $filters
      * @return array
      */
-    public function getProducts(int $batchNumber = 1, array $filters = []): array
+    public function getItems(int $batchNumber = 1, array $filters = []): array
     {
         $this->searchCriteriaBuilder->addFilter(ProductInterface::TYPE_ID, Type::TYPE_CODE, 'neq');
 
@@ -131,11 +131,11 @@ class Sync implements SyncInterface
     /**
      * Set count of batches to process
      *
-     * @param int $countOfProducts
+     * @param int $countOfItems
      */
-    public function setCountOfBatches(int $countOfProducts)
+    public function setCountOfBatches(int $countOfItems)
     {
         $batchSize = $this->getBatchSize();
-        $this->countOfBatches = (int)ceil($countOfProducts/$batchSize);
+        $this->countOfBatches = (int)ceil($countOfItems/$batchSize);
     }
 }

@@ -6,6 +6,7 @@ use Extend\Warranty\Model\Api\Request\OrderBuilder;
 use Extend\Warranty\Model\Api\Sync\Orders\OrdersRequest;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Phrase;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
@@ -97,6 +98,7 @@ class Orders
         $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
         $orderExtend = '';
         $orderData = $this->orderBuilder->preparePayload($orderMagento, $orderItem, $qty, $type);
+
         try {
             $this->ordersRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
             $response =  $this->ordersRequest->create($orderData, $type);
@@ -109,6 +111,7 @@ class Orders
             }
         } catch (Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
+            throw new LocalizedException(new Phrase('Order API contract create error'), $e);
         }
 
         return empty($orderExtend) ? '' : $orderExtend;
