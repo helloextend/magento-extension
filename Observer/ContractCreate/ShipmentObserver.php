@@ -87,6 +87,13 @@ class ShipmentObserver implements ObserverInterface
                         continue;
                     }
 
+                    if ($orderWarrantyItem->getContractId() !== null) {
+                        $contractCnt = count(json_decode($orderWarrantyItem->getContractId()));
+                        if ($contractCnt == $orderWarrantyItem->getQtyOrdered()) {
+                            continue;
+                        }
+                    }
+
                     if ($shipmentItem->getSku() == $orderWarrantyItem->getProductOptionByCode('associated_product')) {
                         $orderItem = $orderWarrantyItem;
                         break;
