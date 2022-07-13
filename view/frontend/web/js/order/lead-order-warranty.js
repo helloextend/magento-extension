@@ -12,7 +12,7 @@ define([
     'mage/translate',
     'Magento_Ui/js/modal/alert',
     'Magento_Customer/js/customer-data',
-    'Extend_Warranty/js/tracking/actions',
+    'Extend_Warranty/js/extendtrk/actions',
     'extendWarrantyOffers',
     'domReady!'
 ], function ($, _, $t, alert, customerData, trackActions) {

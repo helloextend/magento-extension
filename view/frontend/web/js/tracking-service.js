@@ -11,7 +11,7 @@ define([
     'jquery',
     'Magento_Customer/js/section-config',
     'Magento_Customer/js/customer-data',
-    'Extend_Warranty/js/tracking/actions',
+    'Extend_Warranty/js/extendtrk/actions',
     'jquery/jquery-storageapi',
     'jquery/ui'
 ], function ($, sectionConfig, customerData, actions) {
