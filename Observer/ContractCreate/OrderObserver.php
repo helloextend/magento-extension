@@ -87,7 +87,7 @@ class OrderObserver implements ObserverInterface
                 }
 
                 if ($orderItem->getContractId() !== null) {
-                    $contractCnt = count(json_decode($orderItem->getContractId()));
+                    $contractCnt = count(json_decode($orderItem->getContractId(), true));
                     if ($contractCnt == $orderItem->getQtyOrdered()) {
                         continue;
                     }
