@@ -27,6 +27,9 @@ use Magento\Sales\Model\Order\Item;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Sales\Api\Data\OrderItemSearchResultInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Backend\Model\Auth\Session as AdminSession;
 use Exception;
 
 /**
@@ -99,6 +102,10 @@ class Warranty implements ArgumentInterface
      */
     private $searchCriteriaBuilder;
 
+    private $storeManager;
+
+    private $adminSession;
+
     /**
      * Warranty constructor
      *
@@ -121,7 +128,9 @@ class Warranty implements ArgumentInterface
         CheckoutSession $checkoutSession,
         Http $request,
         OrderItemRepositoryInterface $orderItemRepository,
-        SearchCriteriaBuilder $searchCriteriaBuilder
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        StoreManagerInterface $storeManager,
+        AdminSession $adminSession
     ) {
         $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
@@ -132,6 +141,8 @@ class Warranty implements ArgumentInterface
         $this->request = $request;
         $this->orderItemRepository = $orderItemRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->storeManager = $storeManager;
+        $this->adminSession = $adminSession;
     }
 
     /**
@@ -141,7 +152,21 @@ class Warranty implements ArgumentInterface
      */
     public function isExtendEnabled(): bool
     {
-        return $this->dataHelper->isExtendEnabled();
+        $result = false;
+        if ($this->isAdmin()) {
+            $stores = $this->storeManager->getStores();
+            foreach ($stores as $store) {
+                $result = $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $store->getId());
+                if ($result) {
+                    break;
+                }
+            }
+        } else {
+            $storeId = $this->storeManager->getStore()->getId();
+            $result = $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId);
+        }
+
+        return $result;
     }
 
     /**
@@ -175,7 +200,21 @@ class Warranty implements ArgumentInterface
      */
     public function isShoppingCartOffersEnabled(): bool
     {
-        return $this->dataHelper->isShoppingCartOffersEnabled();
+        $result = false;
+        if ($this->isAdmin()) {
+            $stores = $this->storeManager->getStores();
+            foreach ($stores as $store) {
+                $result = $this->dataHelper->isShoppingCartOffersEnabled($store->getId());
+                if ($result) {
+                    break;
+                }
+            }
+        } else {
+            $storeId = $this->storeManager->getStore()->getId();
+            $result = $this->dataHelper->isShoppingCartOffersEnabled($storeId);
+        }
+
+        return $result;
     }
 
     /**
@@ -250,7 +289,21 @@ class Warranty implements ArgumentInterface
      */
     public function isLeadEnabled(): bool
     {
-        return $this->dataHelper->isLeadEnabled();
+        $result = false;
+        if ($this->isAdmin()) {
+            $stores = $this->storeManager->getStores();
+            foreach ($stores as $store) {
+                $result = $this->dataHelper->isLeadEnabled($store->getId());
+                if ($result) {
+                    break;
+                }
+            }
+        } else {
+            $storeId = $this->storeManager->getStore()->getId();
+            $result = $this->dataHelper->isLeadEnabled($storeId);
+        }
+
+        return $result;
     }
 
     /**
@@ -389,5 +442,13 @@ class Warranty implements ArgumentInterface
         }
 
         return $leadToken;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isAdmin()
+    {
+        return (bool)$this->adminSession->getUser();
     }
 }

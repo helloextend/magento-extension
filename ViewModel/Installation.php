@@ -14,6 +14,9 @@ use Extend\Warranty\Model\Config\Source\AuthMode;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Backend\Model\Auth\Session as AdminSession;
 use InvalidArgumentException;
 
 /**
@@ -38,17 +41,29 @@ class Installation implements ArgumentInterface
     private $jsonSerializer;
 
     /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    private $adminSession;
+
+    /**
      * Installation constructor
      *
      * @param DataHelper $dataHelper
      * @param JsonSerializer $jsonSerializer
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         DataHelper $dataHelper,
-        JsonSerializer $jsonSerializer
+        JsonSerializer $jsonSerializer,
+        StoreManagerInterface $storeManager,
+        AdminSession $adminSession
     ) {
         $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
+        $this->storeManager = $storeManager;
+        $this->adminSession = $adminSession;
     }
 
     /**
@@ -58,7 +73,21 @@ class Installation implements ArgumentInterface
      */
     public function isExtendEnabled(): bool
     {
-        return $this->dataHelper->isExtendEnabled();
+        $result = false;
+        if ($this->isAdmin()) {
+            $stores = $this->storeManager->getStores();
+            foreach ($stores as $store) {
+                $result = $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $store->getId());
+                if ($result) {
+                    break;
+                }
+            }
+        } else {
+            $storeId = $this->storeManager->getStore()->getId();
+            $result = $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId);
+        }
+
+        return $result;
     }
 
     /**
@@ -95,5 +124,13 @@ class Installation implements ArgumentInterface
     public function getJsMode(): string
     {
         return "https://sdk.helloextend.com/extend-sdk-client/v1/extend-sdk-client.min.js";
+    }
+
+    /**
+     * @return bool
+     */
+    private function isAdmin()
+    {
+        return (bool)$this->adminSession->getUser();
     }
 }
