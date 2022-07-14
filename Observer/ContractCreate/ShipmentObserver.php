@@ -80,36 +80,51 @@ class ShipmentObserver implements ObserverInterface
             && ($contractCreateEvent == CreateContractEvent::SHIPMENT_CREATE)
         ) {
             foreach ($shipment->getAllItems() as $shipmentItem) {
-                $orderItem = null;
+                $orderItems = [];
+                $qtyShipped = [];
 
                 foreach ($order->getItems() as $orderWarrantyItem) {
                     if ($orderWarrantyItem->getProductType() !== WarrantyType::TYPE_CODE) {
                         continue;
                     }
 
+                    if ($orderWarrantyItem->getContractId() !== null) {
+                        $contractCnt = count(json_decode($orderWarrantyItem->getContractId(), true));
+                        if ($contractCnt == $orderWarrantyItem->getQtyOrdered()) {
+                            continue;
+                        }
+                    }
+
                     if ($shipmentItem->getSku() == $orderWarrantyItem->getProductOptionByCode('associated_product')) {
-                        $orderItem = $orderWarrantyItem;
-                        break;
+                        if ($orderWarrantyItem->getQtyOrdered() < $shipmentItem->getQty()) {
+                            $orderItems[] = $orderWarrantyItem;
+                            $qtyShipped[$orderWarrantyItem->getId()] = (int)$orderWarrantyItem->getQtyOrdered();
+                        } else {
+                            $orderItems[] = $orderWarrantyItem;
+                            $qtyShipped[$orderWarrantyItem->getId()] = (int)$shipmentItem->getQty();
+                            break;
+
+                        }
                     }
 
                 }
 
-                $qtyShipped = (int)$shipmentItem->getQty();
-
-                if (!$this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)) {
-                    try {
-                        $this->warrantyContractCreate->createContract($order, $orderItem, $qtyShipped, $storeId);
-                    } catch (LocalizedException $exception) {
-                        $this->warrantyContractCreate->addContractToQueue($orderItem, $qtyShipped);
-                        $this->logger->error(
-                            'Error during shipment event warranty contract creation. ' . $exception->getMessage()
-                        );
-                    }
-                } else {
-                    try {
-                        $this->warrantyContractCreate->addContractToQueue($orderItem, $qtyShipped);
-                    } catch (LocalizedException $exception) {
-                        $this->logger->error($exception->getMessage());
+                foreach ($orderItems as $orderItem) {
+                    if (!$this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)) {
+                        try {
+                            $this->warrantyContractCreate->createContract($order, $orderItem, $qtyShipped[$orderItem->getId()], $storeId);
+                        } catch (LocalizedException $exception) {
+                            $this->warrantyContractCreate->addContractToQueue($orderItem, $qtyShipped[$orderItem->getId()]);
+                            $this->logger->error(
+                                'Error during shipment event warranty contract creation. ' . $exception->getMessage()
+                            );
+                        }
+                    } else {
+                        try {
+                            $this->warrantyContractCreate->addContractToQueue($orderItem, $qtyShipped[$orderItem->getId()]);
+                        } catch (LocalizedException $exception) {
+                            $this->logger->error($exception->getMessage());
+                        }
                     }
                 }
             }

@@ -86,7 +86,14 @@ class InvoiceObserver implements ObserverInterface
                     continue;
                 }
 
-                $qtyInvoiced = (int)$invoiceItem->getQty();
+                if ($orderItem->getContractId() !== null) {
+                    $contractCnt = count(json_decode($orderItem->getContractId(), true));
+                    if ($contractCnt == $orderItem->getQtyOrdered()) {
+                        continue;
+                    }
+                }
+
+                $qtyInvoiced = (int)$orderItem->getQtyInvoiced();
 
                 if (!$this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)) {
                     try {
