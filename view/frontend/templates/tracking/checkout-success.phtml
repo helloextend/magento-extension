@@ -15,7 +15,7 @@
 <?php if ($block->getTrackingEnabled()): ?>
     <?php $cartTotal = $block->getCartTotal(); ?>
     <script>
-        require(['Extend_Warranty/js/tracking/actions', 'extendSdk'], function(actions) {
+        require(['Extend_Warranty/js/extendtrk/actions', 'extendSdk'], function(actions) {
             //<![CDATA[
             actions.trackCheckoutSuccess({
                 cartTotal: <?= $block->escapeJs($cartTotal) ?>
