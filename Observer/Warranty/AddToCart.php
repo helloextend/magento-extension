@@ -74,6 +74,20 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
     protected $cartItemFactory;
 
     /**
+     * Warranty Api Data Helper
+     *
+     * @var \Extend\Warranty\Helper\Api\Data
+     */
+    protected $dataHelper;
+
+    /**
+     * Normalizer Model
+     *
+     * @var \Extend\Warranty\Model\Normalizer
+     */
+    protected $normalizer;
+
+    /**
      * AddToCart constructor
      *
      * @param \Magento\Checkout\Helper\Cart $cartHelper
@@ -84,6 +98,8 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Extend\Warranty\Model\Offers $offerModel
      * @param \Magento\Quote\Api\Data\CartItemInterfaceFactory $cartItemFactory
+     * @param \Extend\Warranty\Helper\Api\Data $dataHelper
+     * @param \Extend\Warranty\Model\Normalizer $normalizer
      */
     public function __construct(
         \Magento\Checkout\Helper\Cart $cartHelper,
@@ -93,7 +109,9 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         \Extend\Warranty\Helper\Tracking $trackingHelper,
         \Psr\Log\LoggerInterface $logger,
         \Extend\Warranty\Model\Offers $offerModel,
-        \Magento\Quote\Api\Data\CartItemInterfaceFactory $cartItemFactory
+        \Magento\Quote\Api\Data\CartItemInterfaceFactory $cartItemFactory,
+        \Extend\Warranty\Helper\Api\Data $dataHelper,
+        \Extend\Warranty\Model\Normalizer $normalizer
     ) {
         $this->_cartHelper = $cartHelper;
         $this->_productRepository = $productRepository;
@@ -103,6 +121,8 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         $this->_logger = $logger;
         $this->offerModel = $offerModel;
         $this->cartItemFactory = $cartItemFactory;
+        $this->dataHelper = $dataHelper;
+        $this->normalizer = $normalizer;
     }
 
     /**
@@ -119,8 +139,6 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         /** @var \Magento\Checkout\Model\Cart $cart */
         $cart = $this->_cartHelper->getCart();
 
-        $quote = $this->_cartHelper->getQuote();
-
         if ($observer->getProduct()->getTypeId() === 'grouped') {
             $items = $request->getPost('super_group');
             foreach ($items as $id => $qty) {
@@ -132,6 +150,16 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
             $warrantyData = $request->getPost('warranty', []);
 
             $this->addWarranty($cart, $warrantyData, $qty);
+        }
+
+        if ($this->dataHelper->isBalancedCart()) {
+            try {
+                /** @var \Magento\Quote\Model\Quote $cart */
+                $quote = $this->_cartHelper->getQuote();
+                $this->normalizer->normalize($quote);
+            } catch (\Magento\Framework\Exception\LocalizedException $exception) {
+                $this->_logger->error($exception->getMessage());
+            }
         }
     }
 
