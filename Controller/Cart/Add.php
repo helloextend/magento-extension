@@ -198,7 +198,16 @@ class Add extends Cart
             $qty = 1;
 
             $quote = $this->_checkoutSession->getQuote();
-            foreach ($quote->getAllVisibleItems() as $item) {
+            $items = $quote->getAllVisibleItems();
+
+            foreach ($items as $item) {
+                if ($item->getProductType() === Type::TYPE_CODE && $item->getOptionByCode('associated_product')->getValue() === $relatedProduct) {
+                    $this->cart->removeItem($item->getId());
+                    break;
+                }
+            }
+
+            foreach ($items as $item) {
                 if ($item->getSku() === $relatedProduct) {
                     $qty = $item->getQty();
                     break;
