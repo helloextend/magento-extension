@@ -126,6 +126,7 @@ class Orders
      */
     private function saveContract(OrderItemInterface $orderItem, int $qty, array $contractIds): string
     {
+        $contractIds = array_merge($this->getStoredContractIds($orderItem), $contractIds);
         $contractIdsJson = $this->jsonSerializer->serialize($contractIds);
         $orderItem->setContractId($contractIdsJson);
         $options = $orderItem->getProductOptions();
@@ -145,5 +146,23 @@ class Orders
     private function prepareLead(array $leadTokens)
     {
         return $this->jsonSerializer->serialize($leadTokens);
+    }
+
+    /**
+     * Get warranty contract IDs
+     *
+     * @param OrderItemInterface $orderItem
+     * @return array
+     */
+    private function getStoredContractIds(OrderItemInterface $orderItem): array
+    {
+        try {
+            $contractIdsJson = $orderItem->getContractId();
+            $contractIds = $contractIdsJson ? $this->jsonSerializer->unserialize($contractIdsJson) : [];
+        } catch (Exception $exception) {
+            $contractIds = [];
+        }
+
+        return $contractIds;
     }
 }

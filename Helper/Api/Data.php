@@ -74,6 +74,13 @@ class Data extends AbstractHelper
     public const WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/products/cron_sync_enabled';
 
     /**
+     * Historical orders settings
+     */
+    const WARRANTY_HISTORICAL_ORDERS_BATCH_SIZE_XML_PATH = 'warranty/historical_orders/batch_size';
+    const WARRANTY_HISTORICAL_ORDERS_SYNC_PERIOD_XML_PATH = 'warranty/historical_orders/historical_orders_sync';
+    const WARRANTY_HISTORICAL_ORDERS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/historical_orders/enable_cron';
+
+    /**
      * Leads settings
      */
     public const WARRANTY_ENABLE_EXTEND_ENABLE_LEADS_XML_PATH = 'warranty/enableExtend/enableLeads';
@@ -542,6 +549,56 @@ class Data extends AbstractHelper
     public function isProductSyncByCronEnabled()
     {
         return $this->scopeConfig->isSetFlag(self::WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH);
+    }
+
+    public function getHistoricalOrdersBatchSize(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        return (int)$this->scopeConfig->getValue(
+            self::WARRANTY_HISTORICAL_ORDERS_BATCH_SIZE_XML_PATH,
+            $scopeType,
+            $scopeId
+        );
+    }
+
+    /**
+     * Set historical orders sync period
+     *
+     * @param string $value
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     */
+    public function setHistoricalOrdersSyncPeriod(
+        string $value,
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ): void {
+        $this->configResource->saveConfig(
+            self::WARRANTY_HISTORICAL_ORDERS_SYNC_PERIOD_XML_PATH,
+            $value,
+            $scopeType,
+            (int)$scopeId
+        );
+        $this->cacheManager->clean([Config::TYPE_IDENTIFIER]);
+    }
+
+    /**
+     * Get historical orders sync period
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getHistoricalOrdersSyncPeriod(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ): string {
+        return (string)$this->scopeConfig->getValue(
+            self::WARRANTY_HISTORICAL_ORDERS_SYNC_PERIOD_XML_PATH,
+            $scopeType,
+            $scopeId
+        );
     }
 
     /**

@@ -21,6 +21,7 @@ use Magento\Checkout\Helper\Data;
 use Extend\Warranty\Helper\Api\Data as ExtendData;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\DataObject;
+use Magento\Store\Model\ScopeInterface;
 use Exception;
 
 class WarrantyRenderer extends DefaultRenderer
@@ -79,7 +80,9 @@ class WarrantyRenderer extends DefaultRenderer
      */
     public function getColumnHtml(DataObject $item, $column, $field = null)
     {
-        if (!$this->extendHelper->isExtendEnabled() || !$this->extendHelper->isRefundEnabled()) {
+        if (!$this->extendHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $item->getStoreId())
+            || !$this->extendHelper->isRefundEnabled($item->getStoreId())
+        ) {
             return parent::getColumnHtml($item, $column, $field);
         }
         $html = '';
