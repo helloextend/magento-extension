@@ -201,16 +201,19 @@ class Add extends Cart
             $items = $quote->getAllVisibleItems();
 
             foreach ($items as $item) {
-                if ($item->getProductType() === Type::TYPE_CODE && $item->getOptionByCode('associated_product')->getValue() === $relatedProduct) {
-                    $this->cart->removeItem($item->getId());
-                    break;
-                }
-            }
+                $value = false;
+                $option = $item->getOptionByCode('associated_product');
 
-            foreach ($items as $item) {
+                if ($option instanceof \Magento\Quote\Model\Quote\Item\Option) {
+                    $value = $option->getValue();
+                }
+
+                if ($item->getProductType() === Type::TYPE_CODE && $value === $relatedProduct) {
+                    $this->cart->removeItem($item->getId());
+                }
+
                 if ($item->getSku() === $relatedProduct) {
                     $qty = $item->getQty();
-                    break;
                 }
             }
 
