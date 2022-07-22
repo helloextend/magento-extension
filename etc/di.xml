@@ -272,7 +272,7 @@
 
     <type name="Magento\Quote\Api\GuestCartItemRepositoryInterface">
         <plugin name="extend_warranty_plugin_guest_quote_repository_interface_plugin"
-                type="Extend\Warranty\Plugin\Quote\Item\ItemDataPlugin"
+                type="Extend\Warranty\Plugin\Quote\Item\GuestItemDataPlugin"
                 sortOrder="10" />
     </type>
 
