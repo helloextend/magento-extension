@@ -10,17 +10,17 @@
 
 namespace Extend\Warranty\Plugin\Quote\Item;
 
-use Magento\Quote\Api\CartItemRepositoryInterface;
-use Magento\Quote\Api\Data\CartItemExtensionFactory;
+use Magento\Quote\Api\GuestCartItemRepositoryInterface;
 use Magento\Quote\Api\Data\CartItemInterface;
+use Magento\Quote\Api\Data\CartItemExtensionFactory;
 use Extend\Warranty\Helper\Api\Magento\Data;
 
 /**
- * Class ItemDataPlugin
+ * Class GuestItemDataPlugin
  *
- * ItemDataPlugin plugin
+ * GuestItemDataPlugin plugin
  */
-class ItemDataPlugin
+class GuestItemDataPlugin
 {
     /**
      * @var CartItemExtensionFactory
@@ -34,13 +34,14 @@ class ItemDataPlugin
     {
         $this->cartItemExtensionFactory = $cartItemExtensionFactory;
     }
+
     /**
      * Inject item extension attributes into quote item data.
      *
-     * @param CartItemRepositoryInterface $itemRepository
+     * @param GuestCartItemRepositoryInterface $itemRepository
      * @param CartItemInterface $item
      */
-    public function beforeSave(CartItemRepositoryInterface $itemRepository, CartItemInterface $item)
+    public function beforeSave(GuestCartItemRepositoryInterface $itemRepository, CartItemInterface $item)
     {
         $extensionAttributes = $item->getExtensionAttributes();
 
@@ -56,11 +57,11 @@ class ItemDataPlugin
     /**
      * Inject item data into quote items extension attributes.
      *
-     * @param CartItemRepositoryInterface $itemRepository
+     * @param GuestCartItemRepositoryInterface $itemRepository
      * @param array $items
      * @return CartItemInterface[]
      */
-    public function afterGetList(CartItemRepositoryInterface $itemRepository, $items)
+    public function afterGetList(GuestCartItemRepositoryInterface $itemRepository, $items)
     {
         foreach ($items as $item) {
             $leadToken = $item->getData(Data::LEAD_TOKEN);
