@@ -3,6 +3,8 @@
 namespace Extend\Warranty\Controller\Adminhtml\Warranty;
 
 use Magento\Backend\App\Action;
+use Magento\Backend\Model\Session\Quote;
+use Magento\Backend\Model\UrlInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -27,8 +29,6 @@ use Exception;
 
 class Leads extends Action
 {
-    public const ADMIN_RESOURCE = 'Extend_Warranty::warranty_admin_add';
-
     /**
      * ProductRepository Model
      *
@@ -114,6 +114,16 @@ class Leads extends Action
     protected $dataObjectFactory;
 
     /**
+     * @var Quote
+     */
+    protected $quoteSession;
+
+    /**
+     * @var UrlInterface
+     */
+    protected $url;
+
+    /**
      * Leads constructor
      *
      * @param Action\Context $context
@@ -130,6 +140,8 @@ class Leads extends Action
      * @param CustomerRepositoryInterface $customerRepository
      * @param QuoteRepository $quoteRepository
      * @param DataObjectFactory $dataObjectFactory
+     * @param Quote $quoteSession
+     * @param UrlInterface $url
      */
     public function __construct(
         Action\Context $context,
@@ -145,7 +157,9 @@ class Leads extends Action
         CustomerInterfaceFactory $customerFactory,
         CustomerRepositoryInterface $customerRepository,
         QuoteRepository $quoteRepository,
-        DataObjectFactory $dataObjectFactory
+        DataObjectFactory $dataObjectFactory,
+        Quote $quoteSession,
+        UrlInterface $url
     ) {
         parent::__construct($context);
 
@@ -161,6 +175,8 @@ class Leads extends Action
         $this->customerRepository = $customerRepository;
         $this->quoteRepository = $quoteRepository;
         $this->dataObjectFactory = $dataObjectFactory;
+        $this->quoteSession = $quoteSession;
+        $this->url = $url;
     }
 
     /**
@@ -215,50 +231,53 @@ class Leads extends Action
 
             if (!$warranty) {
                 $data = ["status"=>"fail"];
+            } else {
+                $orderInit = $this->orderRepository->get($orderId);
+                $store = $this->storeManager->getStore();
+                $quote = $this->quoteFactory->create();
+                $customer = $this->getCustomer($orderInit->getCustomerEmail());
+
+                if (!$customer) {
+                    $customer = $this->customerFactory->create();
+                    $customer->setFirstname($orderInit->getCustomerFirstname())
+                        ->setLastname($orderInit->getCustomerLastname())
+                        ->setEmail($orderInit->getCustomerEmail());
+                    $quote->setCustomerIsGuest(true);
+                    $customer = $this->customerRepository->save($customer);
+                }
+
+                $billingAddress = [
+                    'firstname' => $orderInit->getCustomerFirstname(),
+                    'lastname' => $orderInit->getCustomerLastname(),
+                    'street' => $orderInit->getBillingAddress()->getStreet(),
+                    'city' => $orderInit->getBillingAddress()->getCity(),
+                    'country_id' => $orderInit->getBillingAddress()->getCountryId(),
+                    'region_id' => $orderInit->getBillingAddress()->getRegionId(),
+                    'postcode' => $orderInit->getBillingAddress()->getPostcode(),
+                    'telephone' => $orderInit->getBillingAddress()->getTelephone()
+                ];
+
+                $quote->setStore($store);
+                $quote->assignCustomer($customer);
+                $quote->getBillingAddress()->addData($billingAddress);
+                $quote->addProduct($warranty, $warrantyDataRequest);
+                $quote->setPaymentMethod('checkmo');
+                $this->quoteRepository->save($quote);
+                $quote->getPayment()->importData(['method' => 'checkmo']);
+                $quote->collectTotals();
+                $this->quoteRepository->save($quote);
+
+                $session = $this->quoteSession;
+                $session->setCurrencyId($orderInit->getOrderCurrencyCode());
+                $session->setCustomerId($customer->getId() ?: false);
+                $session->setStoreId($orderInit->getStoreId());
+                $session->setQuoteId($quote->getId());
+
+                $data = [
+                    "status" => "success",
+                    "redirect" => $this->url->getUrl('sales/order_create/')
+                ];
             }
-
-            $orderInit = $this->orderRepository->get($orderId);
-
-            $store= $this->storeManager->getStore();
-            $quote = $this->quoteFactory->create();
-            $customer = $this->getCustomer($orderInit->getCustomerEmail());
-            if (!$customer) {
-                $customer = $this->customerFactory->create();
-                $customer->setFirstname($orderInit->getCustomerFirstname())
-                    ->setLastname($orderInit->getCustomerLastname())
-                    ->setEmail($orderInit->getCustomerEmail());
-                $quote->setCustomerIsGuest(true);
-                $customer = $this->customerRepository->save($customer);
-            }
-
-            $billingAddress = [
-                'firstname'    => $orderInit->getCustomerFirstname(),
-                'lastname'     => $orderInit->getCustomerLastname(),
-                'street' => $orderInit->getBillingAddress()->getStreet(),
-                'city' => $orderInit->getBillingAddress()->getCity(),
-                'country_id' => $orderInit->getBillingAddress()->getCountryId(),
-                'region_id' => $orderInit->getBillingAddress()->getRegionId(),
-                'postcode' => $orderInit->getBillingAddress()->getPostcode(),
-                'telephone' => $orderInit->getBillingAddress()->getTelephone()
-            ];
-
-            $quote->setStore($store);
-            $quote->assignCustomer($customer);
-            $quote->getBillingAddress()->addData($billingAddress);
-            $quote->addProduct($warranty, $warrantyDataRequest);
-            $quote->setPaymentMethod('checkmo');
-            $this->quoteRepository->save($quote);
-            $quote->getPayment()->importData(['method' => 'checkmo']);
-            $quote->collectTotals();
-            $this->quoteRepository->save($quote);
-
-            $order = $this->quoteManagement->submit($quote);
-
-            $data = [
-                "status"=>"success",
-                "redirect" => $this->_url->getUrl('sales/order/view/', ['order_id' => $order->getId()])
-            ];
-
         } catch (Exception $e) {
             $data = ["status"=>"fail"];
         }
