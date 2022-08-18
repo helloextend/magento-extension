@@ -198,10 +198,22 @@ class Add extends Cart
             $qty = 1;
 
             $quote = $this->_checkoutSession->getQuote();
-            foreach ($quote->getAllVisibleItems() as $item) {
+            $items = $quote->getAllVisibleItems();
+
+            foreach ($items as $item) {
+                $value = false;
+                $option = $item->getOptionByCode('associated_product');
+
+                if ($option instanceof \Magento\Quote\Model\Quote\Item\Option) {
+                    $value = $option->getValue();
+                }
+
+                if ($item->getProductType() === Type::TYPE_CODE && $value === $relatedProduct) {
+                    $this->cart->removeItem($item->getId());
+                }
+
                 if ($item->getSku() === $relatedProduct) {
                     $qty = $item->getQty();
-                    break;
                 }
             }
 
