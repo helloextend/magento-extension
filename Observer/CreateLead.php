@@ -181,19 +181,16 @@ class CreateLead implements ObserverInterface
      */
     private function saveLeadTokenForContracts(OrderInterface $order, OrderItemInterface $productItem)
     {
-        $hasOffers = $this->offerModel->orderItemHasOffers($productItem);
-        if ($hasOffers) {
-            try {
-                $leadToken = $this->leadModel->createLead($order, $productItem);
-                if ($leadToken) {
-                    $productItem->setLeadToken($leadToken);
-                    if ($order->getId()) {
-                        $this->orderItemRepository->save($productItem);
-                    }
+        try {
+            $leadToken = $this->leadModel->createLead($order, $productItem);
+            if ($leadToken) {
+                $productItem->setLeadToken($leadToken);
+                if ($order->getId()) {
+                    $this->orderItemRepository->save($productItem);
                 }
-            } catch (Exception $exception) {
-                $this->logger->error('Error during lead creation. ' . $exception->getMessage());
             }
+        } catch (Exception $exception) {
+            $this->logger->error('Error during lead creation. ' . $exception->getMessage());
         }
     }
 
