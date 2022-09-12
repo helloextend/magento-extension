@@ -28,6 +28,11 @@ class LeadsRequest extends AbstractRequest
     public const CREATE_LEAD_ENDPOINT = 'leads/';
 
     /**
+     * Response status codes
+     */
+    public const STATUS_CODE_SUCCESS = 201;
+
+    /**
      * Create lead
      *
      * @param array $leadData
@@ -43,12 +48,14 @@ class LeadsRequest extends AbstractRequest
                 [self::ACCESS_TOKEN_HEADER => $this->apiKey],
                 $leadData
             );
-            $responseBody = $this->processResponse($response);
-            $leadToken = $responseBody['leadToken'] ?? '';
-            if ($leadToken) {
-                $this->logger->info('Lead token is created successfully.');
-            } else {
-                $this->logger->error('Lead token creation is failed.');
+            if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
+                $responseBody = $this->processResponse($response);
+                $leadToken = $responseBody['leadToken'] ?? '';
+                if ($leadToken) {
+                    $this->logger->info('Lead token is created successfully.');
+                } else {
+                    $this->logger->error('Lead token creation is failed.');
+                }
             }
         } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
             $this->logger->error($exception->getMessage());
