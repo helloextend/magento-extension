@@ -138,7 +138,7 @@ class Type extends AbstractType
      */
     protected function _prepareProduct(\Magento\Framework\DataObject $buyRequest, $product, $processMode)
     {
-        $price = $this->helper->removeFormatPrice($buyRequest->getPrice());
+        $price = $this->helper->removeFormatPrice($buyRequest->getPrice() ?? 0);
 
         $buyRequest->setData('custom_price', $price);
 
