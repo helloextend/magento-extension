@@ -105,6 +105,12 @@ class Normalizer
             $sku = $productItem->getSku();
             $warranties = [];
 
+            $product = $productItem->getProduct();
+
+            if ($product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
+                $sku = $product->getData('sku');
+            }
+
             foreach ($warrantyItems as $warrantyItem) {
                 if (!empty($warrantyItem->getLeadToken())) {
                     continue;
