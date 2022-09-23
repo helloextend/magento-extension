@@ -124,7 +124,14 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
         $quote = $quoteItem->getQuote();
         foreach ($quote->getAllItems() as $item) {
             /** @var \Magento\Quote\Model\Quote\Item $item */
-            if ($item->getSku() == $productSku
+            $sku = $item->getSku();
+            $product = $item->getProduct();
+
+            if ($product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
+                $sku = $product->getData('sku');
+            }
+
+            if ($sku == $productSku
                 && ($item->getProductType() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE
                     || null === $item->getOptionByCode('parent_product_id'))
             ) {
@@ -145,6 +152,11 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $possibleItem = false;
         $sku = $quoteItem->getSku();
+        $product = $quoteItem->getProduct();
+
+        if ($product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
+            $sku = $product->getData('sku');
+        }
         /** @var \Magento\Quote\Model\Quote $quote */
         $quote = $quoteItem->getQuote();
         foreach ($quote->getAllItems() as $item) {
