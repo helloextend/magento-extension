@@ -553,7 +553,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * Check if product synchronization by cron is enabled
+     * Check if syncing product special prices is enabled
      */
     public function isProductSpecialPriceSyncEnabled()
     {

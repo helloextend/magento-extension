@@ -106,6 +106,7 @@ class ProductDataBuilder
      * @param ProductResourceModel $productResourceModel
      * @param OptionProvider $optionProvider
      * @param StoreManagerInterface $storeManager
+     * @param Type $catalogProductType
      */
     public function __construct(
         CategoryRepositoryInterface $categoryRepository,
