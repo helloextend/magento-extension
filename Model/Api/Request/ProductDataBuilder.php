@@ -179,8 +179,7 @@ class ProductDataBuilder
         $price = $product->getPrice();
         $specialPricesEnabled = $this->apiHelper->isProductSpecialPriceSyncEnabled();
         $specialPrice = $this->catalogProductType->priceFactory($product->getTypeId())->getFinalPrice(1, $product);
-
-        if ($specialPricesEnabled && $specialPrice < $price) {
+        if ($specialPricesEnabled && (float)$specialPrice < (float)$price) {
             $price = $specialPrice;
         }
 

@@ -72,7 +72,7 @@ class Data extends AbstractHelper
     public const WARRANTY_PRODUCTS_BATCH_SIZE_XML_PATH = 'warranty/products/batch_size';
     public const WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH = 'warranty/products/lastSync';
     public const WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/products/cron_sync_enabled';
-    public const WARRANTY_PRODUCT_SYNC_SPECIAL_PRICES_XML_PATH = 'warranty/product/enable_special_prices';
+    public const WARRANTY_PRODUCT_SYNC_SPECIAL_PRICES_XML_PATH = 'warranty/products/enable_special_prices';
 
     /**
      * Historical orders settings

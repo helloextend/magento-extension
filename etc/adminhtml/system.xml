@@ -524,6 +524,17 @@
                        canRestore="0">
                     <frontend_model>Extend\Warranty\Block\System\Config\Products\Button</frontend_model>
                 </field>
+                <field id="enable_special_prices"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Enable Special Prices</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Products will be synced with their current special price if it is set and this option is enabled.</comment>
+                </field>
                 <field id="cron_sync_enabled"
                        translate="label comment"
                        type="select"
@@ -559,18 +570,6 @@
                         <comment>Cron schedule expression</comment>
                         <backend_model>Extend\Warranty\Model\Config\Backend\ProductSyncCronSchedule</backend_model>
                         <validate>validate-cron-expression</validate>
-                    </field>
-                    <field id="enable_special_prices"
-                           translate="label comment"
-                           type="select"
-                           sortOrder="30"
-                           showInDefault="1"
-                           showInWebsite="0"
-                           showInStore="0"
-                           canRestore="1">
-                        <label>Enable Special Prices</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <comment>Products will be synced with their current special price if it is set and this option is enabled.</comment>
                     </field>
                 </group>
             </group>
