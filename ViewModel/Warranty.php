@@ -147,12 +147,18 @@ class Warranty implements ArgumentInterface
 
     /**
      * Check if module enabled
+     * @param null|int $storeId
      *
      * @return bool
      */
-    public function isExtendEnabled(): bool
+    public function isExtendEnabled(int $storeId = null): bool
     {
         $result = false;
+
+        if ($storeId) {
+            return  $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId);
+        }
+
         if ($this->isAdmin()) {
             $stores = $this->storeManager->getStores();
             foreach ($stores as $store) {
