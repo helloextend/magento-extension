@@ -145,6 +145,13 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
                 $warrantyData = $request->getPost('warranty_' . $id, []);
                 $this->addWarranty($cart, $warrantyData, $qty);
             }
+        } else if ($observer->getProduct()->getTypeId() === 'bundle') {
+            $items = $request->getPost('bundle_option');
+            $quantities = $request->getPost('bundle_option_qty');
+            foreach ($items as $id => $value) {
+                $warrantyData = $request->getPost('warranty_' . $id, []);
+                $this->addWarranty($cart, $warrantyData, $quantities[$id] * $request->getPost('qty', 1));
+            }
         } else {
             $qty = $request->getPost('qty', 1);
             $warrantyData = $request->getPost('warranty', []);

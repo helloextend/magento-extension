@@ -444,6 +444,22 @@ class Warranty implements ArgumentInterface
         return $leadToken;
     }
 
+    public function getBundleProductsJsonFromOptions(array $options) {
+        $productsJson = [];
+
+        foreach ($options as $option) {
+            /* @var \Magento\Bundle\Model\Option $option */
+            foreach ($option->getSelections() as $selection) {
+                $productsJson[$option->getId()][$selection->getSelectionId()] = [
+                    'id' => $selection->getId(),
+                    'sku' => $selection->getSku()
+                ];
+            }
+        }
+
+        return $productsJson;
+    }
+
     /**
      * @return bool
      */
