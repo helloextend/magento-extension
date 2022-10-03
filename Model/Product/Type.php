@@ -37,6 +37,8 @@ class Type extends AbstractType
     public const TERM = 'warranty_term';
     public const PLAN_TYPE = 'plan_type';
     public const BUY_REQUEST = 'info_buyRequest';
+    public const DYNAMIC_SKU = 'bundle_sku';
+    public const RELATED_ITEM_ID = 'related_item_id';
 
     /**
      * Custom option labels
@@ -154,6 +156,14 @@ class Type extends AbstractType
         $product->addCustomOption(self::PLAN_TYPE, $buyRequest->getData('coverageType'));
         $product->addCustomOption(self::BUY_REQUEST, $this->serializer->serialize($buyRequest->getData()));
 
+        if ($buyRequest->hasDynamicSku()) {
+            $product->addCustomOption(self::DYNAMIC_SKU, $buyRequest->getDynamicSku());
+        }
+
+        if ($buyRequest->hasRelatedItemId()) {
+            $product->addCustomOption(self::RELATED_ITEM_ID, $buyRequest->getRelatedItemId());
+        }
+
         if ($this->_isStrictProcessMode($processMode)) {
             $product->setCartQty($buyRequest->getQty());
         }
@@ -187,6 +197,15 @@ class Type extends AbstractType
         if ($planType = $product->getCustomOption(self::PLAN_TYPE)) {
             $options[self::PLAN_TYPE] = $planType->getValue();
         }
+
+        if ($dynamicSku = $product->getCustomOption(self::DYNAMIC_SKU)) {
+            $options[self::DYNAMIC_SKU] = $dynamicSku->getValue();
+        }
+
+        if ($relatedItemId = $product->getCustomOption(self::RELATED_ITEM_ID)) {
+            $options[self::RELATED_ITEM_ID] = $relatedItemId->getValue();
+        }
+
         return $options;
     }
 }
