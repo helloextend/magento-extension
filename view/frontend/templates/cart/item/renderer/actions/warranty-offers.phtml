@@ -39,7 +39,7 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
     }
 
     $_itemID = empty($_itemID) ? $_item->getId() : $_itemID;
-    $_currentSku[$_itemID] = $product->getSku();
+    $_currentSku[$_itemID] = ($product->hasCustomOptions() && $productType === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) ? $product->getData('sku') : $product->getSku();
     ?>
 
     <?php if (!$viewModel->hasWarranty($quote, $_currentSku[$_itemID])): ?>

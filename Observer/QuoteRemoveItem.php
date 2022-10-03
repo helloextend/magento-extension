@@ -59,7 +59,14 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
                 $trackProduct = true;
                 $items = $quote->getAllItems();
                 foreach ($items as $item) {
-                    if ($item->getSku() === $warrantySku) {
+                    $sku = $item->getSku();
+                    $product = $item->getProduct();
+
+                    if ($product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
+                        $sku = $product->getData('sku');
+                    }
+
+                    if ($sku === $warrantySku) {
                         $trackProduct = false;
                         break;
                     }

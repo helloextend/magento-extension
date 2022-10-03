@@ -212,7 +212,14 @@ class Add extends Cart
                     $this->cart->removeItem($item->getId());
                 }
 
-                if ($item->getSku() === $relatedProduct) {
+                $product = $item->getProduct();
+                $sku = $item->getSku();
+
+                if ($product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
+                    $sku = $product->getData('sku');
+                }
+
+                if ($sku === $relatedProduct) {
                     $qty = $item->getQty();
                 }
             }
