@@ -80,12 +80,12 @@ class Data
     }
 
     /**
-     * Remove format price
+     * removeFormatPrice
      *
-     * @param int $price
+     * @param int|null $price
      * @return float
      */
-    public function removeFormatPrice(int $price): float
+    public function removeFormatPrice(?int $price): float
     {
         $price = (string)$price;
 
