@@ -138,25 +138,26 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         $request = $observer->getData('request');
         /** @var \Magento\Checkout\Model\Cart $cart */
         $cart = $this->_cartHelper->getCart();
+        $product = $observer->getProduct();
 
-        if ($observer->getProduct()->getTypeId() === 'grouped') {
+        if ($product->getTypeId() === 'grouped') {
             $items = $request->getPost('super_group');
             foreach ($items as $id => $qty) {
                 $warrantyData = $request->getPost('warranty_' . $id, []);
-                $this->addWarranty($cart, $warrantyData, $qty);
+                $this->addWarranty($cart, $warrantyData, $qty, $product);
             }
-        } else if ($observer->getProduct()->getTypeId() === 'bundle') {
+        } else if ($product->getTypeId() === 'bundle') {
             $items = $request->getPost('bundle_option');
             $quantities = $request->getPost('bundle_option_qty');
             foreach ($items as $id => $value) {
                 $warrantyData = $request->getPost('warranty_' . $id, []);
-                $this->addWarranty($cart, $warrantyData, $quantities[$id] * $request->getPost('qty', 1));
+                $this->addWarranty($cart, $warrantyData, $quantities[$id] * $request->getPost('qty', 1), $product);
             }
         } else {
             $qty = $request->getPost('qty', 1);
             $warrantyData = $request->getPost('warranty', []);
 
-            $this->addWarranty($cart, $warrantyData, $qty);
+            $this->addWarranty($cart, $warrantyData, $qty, $product);
         }
 
         if ($this->dataHelper->isBalancedCart()) {
@@ -176,10 +177,11 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
      * @param \Magento\Quote\Api\Data\CartInterface $cart
      * @param array $warrantyData
      * @param int $qty
+     * @param \Magento\Catalog\Model\Product $product
      * @return void
      * @throws \Exception
      */
-    private function addWarranty($cart, array $warrantyData, int $qty)
+    private function addWarranty($cart, array $warrantyData, int $qty, $product)
     {
         if (empty($warrantyData) || $qty < 1) {
             return;
@@ -220,7 +222,10 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
 
             return;
         }
+        $relatedItem = $cart->getQuote()->getItemByProduct($product);
         $warrantyData['qty'] = $qty;
+        $warrantyData['related_item_id'] = $relatedItem->getId();
+
         try {
             $cart->addProduct($warranty, $warrantyData);
             $cart->getQuote()->removeAllAddresses();

@@ -103,6 +103,7 @@ class Normalizer
 
         foreach ($productItems as $productItem) {
             $sku = $productItem->getSku();
+            echo $sku;
             $warranties = [];
 
             $product = $productItem->getProduct();
@@ -115,10 +116,12 @@ class Normalizer
                 if (!empty($warrantyItem->getLeadToken())) {
                     continue;
                 }
-
+                $relatedItemId = $warrantyItem->getOptionByCode(Type::RELATED_ITEM_ID);
                 $associatedProductOption = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
 
-                if ($associatedProductOption && $associatedProductOption->getValue()) {
+                if ($relatedItemId && $relatedItemId->getValue() === $productItem->getId()) {
+                    $warranties[$warrantyItem->getItemId()] = $warrantyItem;
+                } else if ($associatedProductOption && $associatedProductOption->getValue()) {
                     $associatedSku = $associatedProductOption->getValue();
                     if ($sku === $associatedSku
                         && (
@@ -131,38 +134,68 @@ class Normalizer
                 }
             }
 
-            $productItemQty = $productItem->getQty();
-            if (count($warranties) > 1) {
-                $warrantyItemsQty = $this->getWarrantyItemsQty($warranties);
-                if ($productItemQty > $warrantyItemsQty) {
-                    $sortedWarranties = $this->sortWarrantyItemsByPrice($warranties);
-                    $warranty = array_shift($sortedWarranties);
-                    $updatedWarrantyItemsQty = $this->getWarrantyItemsQty($sortedWarranties);
-                    $warranty->setQty($productItemQty - $updatedWarrantyItemsQty);
-                    $this->quoteItemRepository->save($warranty);
-                } elseif ($productItemQty < $warrantyItemsQty) {
-                    $sortedWarranties = $this->sortWarrantyItemsByPrice($warranties, SortOrder::SORT_DESC);
-                    $delta = $warrantyItemsQty - $productItemQty;
-                    do {
-                        $warranty = array_shift($sortedWarranties);
-                        $warrantyQty = $warranty->getQty();
-                        if ($warrantyQty > $delta) {
-                            $warranty->setQty($warrantyQty - $delta);
-                            $this->quoteItemRepository->save($warranty);
+            if ($productItem->getProductType() === 'bundle') {
+                dd($productItem->getChildren());
+                $productItemQty = $productItem->getQty();
+                foreach ($warranties as $warrantyItem) {
+                    $associatedProductOption = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
+                    if ($associatedProductOption && $associatedSku = $associatedProductOption->getValue()) {
+                        if ($associatedSku === $product->getData('sku')) {
+                            $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty, $cart, $quote);
                         } else {
-                            $cart->removeItem($warranty->getItemId());
-                            $quote->setTotalsCollectedFlag(false);
-                            $cart->save();
+                            foreach ($product->getTypeInstance()->getSelectionsCollection($product->getTypeInstance()->getOptionsIds($product), $product) as $item) {
+                                echo 'sku is ' . $item->getData('sku') . ' ';
+                                echo 'warranty sku is ' . $associatedSku . ' ';
+                                if ($item->getData('sku') === $associatedSku) {
+                                    echo ' MATCH! ';
+                                    if ($productItem->getOptionByCode('product_qty_' . $item->getId()) && $qty = $productItem->getOptionByCode('product_qty_' . $item->getId())->getValue()) {
+                                        $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty * $qty, $cart, $quote);
+                                        break;
+                                    }
+                                }
+                            }
                         }
-                        $delta -= $warrantyQty;
-                    } while ($delta > 0);
+                    }
                 }
-            } elseif (count($warranties) === 1) {
-                $warranty = array_shift($warranties);
-                if ($productItemQty !== $warranty->getQty()) {
-                    $warranty->setQty($productItemQty);
-                    $this->quoteItemRepository->save($warranty);
-                }
+            } else {
+                $this->normalizeWarrantiesAgainstProductQty($warranties, $productItem->getQty(), $cart, $quote);
+            }
+        }
+        exit;
+    }
+
+    private function normalizeWarrantiesAgainstProductQty(array $warranties, int $productItemQty, \Magento\Checkout\Model\Cart $cart, CartInterface $quote) {
+        if (count($warranties) > 1) {
+            $warrantyItemsQty = $this->getWarrantyItemsQty($warranties);
+            if ($productItemQty > $warrantyItemsQty) {
+                $sortedWarranties = $this->sortWarrantyItemsByPrice($warranties);
+                $warranty = array_shift($sortedWarranties);
+                $updatedWarrantyItemsQty = $this->getWarrantyItemsQty($sortedWarranties);
+                $warranty->setQty($productItemQty - $updatedWarrantyItemsQty);
+                $this->quoteItemRepository->save($warranty);
+            } elseif ($productItemQty < $warrantyItemsQty) {
+                $sortedWarranties = $this->sortWarrantyItemsByPrice($warranties, SortOrder::SORT_DESC);
+                $delta = $warrantyItemsQty - $productItemQty;
+                do {
+                    $warranty = array_shift($sortedWarranties);
+                    $warrantyQty = $warranty->getQty();
+                    if ($warrantyQty > $delta) {
+                        $warranty->setQty($warrantyQty - $delta);
+                        $this->quoteItemRepository->save($warranty);
+                    } else {
+                        $cart->removeItem($warranty->getItemId());
+                        $quote->setTotalsCollectedFlag(false);
+                        $cart->save();
+                    }
+                    $delta -= $warrantyQty;
+                } while ($delta > 0);
+            }
+        } elseif (count($warranties) === 1) {
+            $warranty = array_shift($warranties);
+            if ($productItemQty !== $warranty->getQty()) {
+                $warranty->setQty($productItemQty);
+                $this->quoteItemRepository->save($warranty);
+                echo 'saved ' . $productItemQty . ' for ' . $warranty->getId();
             }
         }
     }
