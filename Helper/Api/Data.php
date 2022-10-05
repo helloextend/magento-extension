@@ -555,9 +555,16 @@ class Data extends AbstractHelper
     /**
      * Check if syncing product special prices is enabled
      */
-    public function isProductSpecialPriceSyncEnabled()
+    public function isProductSpecialPriceSyncEnabled(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    )
     {
-        return $this->scopeConfig->isSetFlag(self::WARRANTY_PRODUCT_SYNC_SPECIAL_PRICES_XML_PATH);
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_PRODUCT_SYNC_SPECIAL_PRICES_XML_PATH,
+            $scopeType,
+            $scopeId
+        );
     }
 
     public function getHistoricalOrdersBatchSize(
