@@ -169,6 +169,7 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
 
                 if (empty($leadToken)) {
                     $warrantySku = (string)$item->getOptionByCode('associated_product')->getValue();
+
                     if ($warrantySku == $sku) {
                         $possibleItem = $item;
                         break;
@@ -176,6 +177,7 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
                 }
             }
         }
+
         return $possibleItem;
     }
 }
