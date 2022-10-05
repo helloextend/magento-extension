@@ -172,8 +172,8 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
 
                     if ($warrantySku == $sku) {
                         $possibleItem = $item;
+                        break;
                     }
-                    break;
                 }
             }
         }
