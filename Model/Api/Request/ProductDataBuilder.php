@@ -140,7 +140,8 @@ class ProductDataBuilder
      * @param ProductInterface $product
      * @return array
      */
-    public function preparePayload(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null): array    {
+    public function preparePayload(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null): array
+    {
         $categories = $this->getCategories($product);
 
         $storeId = (int)$product->getStoreId();
@@ -181,7 +182,8 @@ class ProductDataBuilder
         return $payload;
     }
 
-    private function _calculateSyncProductPrice(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null) {        $price = $product->getPrice();
+    private function _calculateSyncProductPrice(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null) {
+        $price = $product->getPrice();
         $specialPricesEnabled = $this->_getIsSpecialPricesSyncEnabled($scopeType, $scopeId);
         $specialPrice = $this->catalogProductType->priceFactory($product->getTypeId())->getFinalPrice(1, $product);
         if ($specialPricesEnabled && (float)$specialPrice < (float)$price) {
