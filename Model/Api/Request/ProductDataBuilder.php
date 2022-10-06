@@ -17,9 +17,12 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product\Media\ConfigInterface as ProductMediaConfig;
 use Magento\Catalog\Model\ResourceModel\Product as ProductResourceModel;
 use Magento\ConfigurableProduct\Model\ResourceModel\Attribute\OptionProvider;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Locale\Currency;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Catalog\Model\Product\Type;
 
@@ -97,6 +100,11 @@ class ProductDataBuilder
     protected $catalogProductType;
 
     /**
+     * @var array
+     */
+    private $_isSpecialPriceSyncEnabled = [];
+
+    /**
      * ProductDataBuilder constructor
      *
      * @param CategoryRepositoryInterface $categoryRepository
@@ -134,7 +142,7 @@ class ProductDataBuilder
      * @param ProductInterface $product
      * @return array
      */
-    public function preparePayload(ProductInterface $product): array
+    public function preparePayload(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null): array
     {
         $categories = $this->getCategories($product);
 
@@ -142,7 +150,7 @@ class ProductDataBuilder
         $currencyCode = $this->getCurrencyCode($storeId);
 
         $price = [
-            'amount'        => $this->helper->formatPrice($this->_calculateSyncProductPrice($product)),
+            'amount'        => $this->helper->formatPrice($this->_calculateSyncProductPrice($product, $scopeType, $scopeId)),
             'currencyCode'  => $currencyCode,
         ];
 
@@ -176,15 +184,29 @@ class ProductDataBuilder
         return $payload;
     }
 
-    private function _calculateSyncProductPrice(ProductInterface $product) {
+    private function _calculateSyncProductPrice(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null) {
         $price = $product->getPrice();
-        $specialPricesEnabled = $this->apiHelper->isProductSpecialPriceSyncEnabled();
+        $specialPricesEnabled = $this->_getIsSpecialPricesSyncEnabled($scopeType, $scopeId);
         $specialPrice = $this->catalogProductType->priceFactory($product->getTypeId())->getFinalPrice(1, $product);
         if ($specialPricesEnabled && (float)$specialPrice < (float)$price) {
             $price = $specialPrice;
         }
 
         return $price;
+    }
+
+    /**
+     * @return bool
+     */
+    private function _getIsSpecialPricesSyncEnabled($scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null): bool {
+        if ($this->_isSpecialPriceSyncEnabled && isset($this->_isSpecialPriceSyncEnabled[$scopeType][$scopeId ?? Store::DEFAULT_STORE_ID])) {
+            return $this->_isSpecialPriceSyncEnabled[$currentConfigScope[$scopeType]][$scopeId ?? Store::DEFAULT_STORE_ID];
+        }
+
+        $isEnabled = (bool)$this->apiHelper->isProductSpecialPriceSyncEnabled($scopeType, $scopeId);
+        $this->_isSpecialPriceSyncEnabled[$scopeType][$scopeId ?? Store::DEFAULT_STORE_ID] = $isEnabled;
+
+        return $isEnabled;
     }
 
     /**
