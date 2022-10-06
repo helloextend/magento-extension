@@ -200,7 +200,7 @@ class ProductDataBuilder
      */
     private function _getIsSpecialPricesSyncEnabled($scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null): bool {
         if ($this->_isSpecialPriceSyncEnabled && isset($this->_isSpecialPriceSyncEnabled[$scopeType][$scopeId ?? Store::DEFAULT_STORE_ID])) {
-            return $this->_isSpecialPriceSyncEnabled[$currentConfigScope[$scopeType]][$scopeId ?? Store::DEFAULT_STORE_ID];
+            return $this->_isSpecialPriceSyncEnabled[$scopeType][$scopeId ?? Store::DEFAULT_STORE_ID];
         }
 
         $isEnabled = (bool)$this->apiHelper->isProductSpecialPriceSyncEnabled($scopeType, $scopeId);
