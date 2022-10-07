@@ -196,7 +196,7 @@ class Sync extends Action
 
             if (!empty($products)) {
                 try {
-                    $this->apiProductModel->create($products, $currentBatch);
+                    $this->apiProductModel->create($products, $currentBatch, $scopeType, $scopeId);
                     $data['status'] = self::STATUS_SUCCESS;
                 } catch (LocalizedException $exception) {
                     $message = sprintf('Error found in products batch %s. %s', $currentBatch, $exception->getMessage());
