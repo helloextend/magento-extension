@@ -1,4 +1,12 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Console\Command;
 
@@ -11,12 +19,17 @@ use Magento\Catalog\Model\Product\Attribute\Source\Status as ProductStatus;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\FileSystemException;
+use Magento\Store\Model\Store;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Magento\Store\Model\Store;
 
+/**
+ * Class CreateWarrantyProduct
+ *
+ * Create warranty product Console Command
+ */
 class CreateWarrantyProduct extends Command
 {
     /**
@@ -24,14 +37,33 @@ class CreateWarrantyProduct extends Command
      */
     protected const WARRANTY_PRODUCT_SKU = 'WARRANTY-1';
 
+    /**
+     * @var ProductRepositoryInterface
+     */
     protected $productRepository;
 
+    /**
+     * @var WarrantyCreate
+     */
     protected $warrantyProductCreate;
 
+    /**
+     * @var State
+     */
     protected $appState;
 
+    /**
+     * @var LoggerInterface
+     */
     protected $logger;
 
+    /**
+     * @param ProductRepositoryInterface $productRepository
+     * @param WarrantyCreate $warrantyProductCreate
+     * @param State $appState
+     * @param LoggerInterface $logger
+     * @param string|null $name
+     */
     public function __construct(
         ProductRepositoryInterface $productRepository,
         WarrantyCreate $warrantyProductCreate,
@@ -64,8 +96,8 @@ class CreateWarrantyProduct extends Command
         try {
             $this->appState->emulateAreaCode(
                 Area::AREA_ADMINHTML,
-                [$this, 'doExecute'],
-                [$input, $output]
+                [$this, 'validateWarrantyProduct'],
+                [$output]
             );
         } catch (Exception $exception) {
             $output->writeln("Something went wrong while creating the warranty-1 product.");
@@ -74,17 +106,8 @@ class CreateWarrantyProduct extends Command
     }
 
     /**
-     * Create warranty contracts
+     * Validate warranty product
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     */
-    public function doExecute(InputInterface $input, OutputInterface $output)
-    {
-        $this->validateWarrantyProduct($output);
-    }
-
-    /**
      * @param OutputInterface $output
      * @return void
      * @throws FileSystemException
@@ -93,7 +116,7 @@ class CreateWarrantyProduct extends Command
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\StateException
      */
-    private function validateWarrantyProduct(OutputInterface $output)
+    public function validateWarrantyProduct(OutputInterface $output): void
     {
         $warrantyProduct = $this->getWarrantyProduct();
 
@@ -122,6 +145,8 @@ class CreateWarrantyProduct extends Command
     }
 
     /**
+     * Get warranty product
+     *
      * @return ProductInterface|null
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
@@ -135,24 +160,30 @@ class CreateWarrantyProduct extends Command
     }
 
     /**
+     * Check warranty product type
+     *
      * @param ProductInterface $warranty
      * @return bool
      */
-    private function checkWarrantyProductType(ProductInterface $warranty)
+    private function checkWarrantyProductType(ProductInterface $warranty): bool
     {
         return $warranty->getTypeId() === WarrantyType::TYPE_CODE;
     }
 
     /**
+     * Check warranty product status
+     *
      * @param ProductInterface $warranty
      * @return bool
      */
-    private function checkWarrantyProductStatus(ProductInterface $warranty)
+    private function checkWarrantyProductStatus(ProductInterface $warranty): bool
     {
         return (int)$warranty->getStatus() !== ProductStatus::STATUS_DISABLED;
     }
 
     /**
+     * Create warranty product
+     *
      * @return void
      * @throws FileSystemException
      * @throws \Magento\Framework\Exception\CouldNotSaveException
@@ -160,7 +191,7 @@ class CreateWarrantyProduct extends Command
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\StateException
      */
-    private function createWarrantyProduct()
+    private function createWarrantyProduct(): void
     {
         $this->warrantyProductCreate->addImageToPubMedia();
         $this->warrantyProductCreate->createWarrantyProduct();
