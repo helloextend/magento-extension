@@ -121,21 +121,21 @@ class CreateWarrantyProduct extends Command
         $warrantyProduct = $this->getWarrantyProduct();
 
         if ($warrantyProduct) {
-            if ($this->checkWarrantyProductType($warrantyProduct)) {
-                if ($this->checkWarrantyProductStatus($warrantyProduct)) {
-                    $output->writeln("Warranty product was exist and enabled");
-                    $this->logger->info("Warranty product was exist and enabled");
-                } else {
-                    $warrantyProduct->setStatus(ProductStatus::STATUS_ENABLED);
-                    $this->productRepository->save($warrantyProduct);
-                    $output->writeln("Warranty product is enabled");
-                    $this->logger->info("Warranty product is enabled");
-                }
-            } else {
+            if (!$this->checkWarrantyProductType($warrantyProduct)) {
                 $warrantyProduct->setTypeId(WarrantyType::TYPE_CODE);
                 $this->productRepository->save($warrantyProduct);
                 $output->writeln("Warranty product type is changed to " . WarrantyType::TYPE_CODE);
                 $this->logger->info("Warranty product type is changed to " . WarrantyType::TYPE_CODE);
+            }
+
+            if ($this->checkWarrantyProductStatus($warrantyProduct)) {
+                $output->writeln("Warranty product was exist and enabled");
+                $this->logger->info("Warranty product was exist and enabled");
+            } else {
+                $warrantyProduct->setStatus(ProductStatus::STATUS_ENABLED);
+                $this->productRepository->save($warrantyProduct);
+                $output->writeln("Warranty product is enabled");
+                $this->logger->info("Warranty product is enabled");
             }
         } else {
             $this->createWarrantyProduct();
