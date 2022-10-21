@@ -18,6 +18,7 @@ use Magento\ConfigurableProduct\Api\LinkManagementInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Product\Type;
+use Extend\Warranty\Model\Api\Sync\Lead\LeadInfoRequest;
 use Magento\Quote\Api\Data\CartInterface;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Offers as OfferModel;
@@ -102,9 +103,20 @@ class Warranty implements ArgumentInterface
      */
     private $searchCriteriaBuilder;
 
+    /**
+     * @var StoreManagerInterface
+     */
     private $storeManager;
 
+    /**
+     * @var AdminSession
+     */
     private $adminSession;
+
+    /**
+     * @var LeadInfoRequest
+     */
+    private $leadInfoRequest;
 
     /**
      * Warranty constructor
@@ -118,6 +130,9 @@ class Warranty implements ArgumentInterface
      * @param Http $request
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param StoreManagerInterface $storeManager
+     * @param AdminSession $adminSession
+     * @param LeadInfoRequest $leadInfoRequest
      */
     public function __construct(
         DataHelper $dataHelper,
@@ -130,7 +145,8 @@ class Warranty implements ArgumentInterface
         OrderItemRepositoryInterface $orderItemRepository,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         StoreManagerInterface $storeManager,
-        AdminSession $adminSession
+        AdminSession $adminSession,
+        LeadInfoRequest $leadInfoRequest
     ) {
         $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
@@ -143,6 +159,7 @@ class Warranty implements ArgumentInterface
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->storeManager = $storeManager;
         $this->adminSession = $adminSession;
+        $this->leadInfoRequest = $leadInfoRequest;
     }
 
     /**
@@ -456,5 +473,20 @@ class Warranty implements ArgumentInterface
     private function isAdmin()
     {
         return (bool)$this->adminSession->getUser();
+    }
+
+    /**
+     * @param string $leadToken
+     * @return bool
+     */
+    public function isExpired(string $leadToken): bool
+    {
+        $apiUrl = $this->dataHelper->getApiUrl();
+        $apiStoreId = $this->dataHelper->getStoreId();
+        $apiKey = $this->dataHelper->getApiKey();
+
+        $this->leadInfoRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
+        $leadExpirationDate = $this->leadInfoRequest->create($leadToken);
+        return $leadExpirationDate !== null && time() >= $leadExpirationDate;
     }
 }
