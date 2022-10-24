@@ -63,6 +63,7 @@ class Data extends AbstractHelper
     public const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
     public const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
     public const WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH = 'warranty/offers/interstitial_cart_enabled';
+    public const WARRANTY_OFFERS_BUNDLE_ITEMS_ENABLED_XML_PATH = 'warranty/offers/bundle_items_enabled';
     public const LEADS_MODAL_ENABLED_XML_PATH = 'warranty/offers/leads_modal_enabled';
     public const ORDER_OFFERS_ENABLED_XML_PATH = 'warranty/offers/order_offers_enabled';
 
@@ -451,6 +452,21 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if offers are enabled on individual bundle product items
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isIndividualBundleItemOffersEnabled($storeId = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_OFFERS_BUNDLE_ITEMS_ENABLED_XML_PATH,
             ScopeInterface::SCOPE_STORES,
             $storeId
         );

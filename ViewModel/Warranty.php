@@ -182,15 +182,15 @@ class Warranty implements ArgumentInterface
      * @param string $sku
      * @return bool
      */
-    public function hasWarranty(CartInterface $quote, string $sku): bool
+    public function hasWarranty(CartInterface $quote, string $id): bool
     {
         $hasWarranty = false;
 
         $items = $quote->getAllVisibleItems();
         foreach ($items as $item) {
             if ($item->getProductType() === Type::TYPE_CODE) {
-                $associatedProduct = $item->getOptionByCode('associated_product');
-                if ($associatedProduct && $associatedProduct->getValue() === $sku) {
+                $associatedProduct = $item->getOptionByCode(Type::RELATED_ITEM_ID);
+                if ($associatedProduct && $associatedProduct->getValue() === $id) {
                     $hasWarranty = true;
                 }
             }
@@ -251,6 +251,16 @@ class Warranty implements ArgumentInterface
     public function isInterstitialCartOffersEnabled(): bool
     {
         return $this->dataHelper->isInterstitialCartOffersEnabled();
+    }
+
+    /**
+     * Check if offers are enabled on individual bundle product items
+     *
+     * @return bool
+     */
+    public function isIndividualBundleItemOffersEnabled(): bool
+    {
+        return $this->dataHelper->isIndividualBundleItemOffersEnabled();
     }
 
     /**
@@ -448,6 +458,22 @@ class Warranty implements ArgumentInterface
         }
 
         return $leadToken;
+    }
+
+    public function getBundleProductsJsonFromOptions(array $options) {
+        $productsJson = [];
+
+        foreach ($options as $option) {
+            /* @var \Magento\Bundle\Model\Option $option */
+            foreach ($option->getSelections() as $selection) {
+                $productsJson[$option->getId()][$selection->getSelectionId()] = [
+                    'id' => $selection->getId(),
+                    'sku' => $selection->getSku()
+                ];
+            }
+        }
+
+        return $productsJson;
     }
 
     /**
