@@ -10,7 +10,7 @@ if ($_item = $block->getItem()):
 
     <?php if ($_product->getTypeId() !== 'warranty'): ?>
     <?php if ($inCartViewModel->isExtendEnabled((int)$quote->getStoreId()) && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
-        <?php if (!$inCartViewModel->hasWarranty($quote, $_product->getSku())): ?>
+        <?php if (!$inCartViewModel->hasWarranty($quote, $_product->getData('sku'))): ?>
             <tbody id="warranty-<?= /* @noEscape */
             $_item->getId() ?>">
             <tr>
