@@ -199,15 +199,15 @@ class Warranty implements ArgumentInterface
      * @param string $sku
      * @return bool
      */
-    public function hasWarranty(CartInterface $quote, string $sku): bool
+    public function hasWarranty(CartInterface $quote, string $id): bool
     {
         $hasWarranty = false;
 
         $items = $quote->getAllVisibleItems();
         foreach ($items as $item) {
             if ($item->getProductType() === Type::TYPE_CODE) {
-                $associatedProduct = $item->getOptionByCode('associated_product');
-                if ($associatedProduct && $associatedProduct->getValue() === $sku) {
+                $associatedProduct = $item->getOptionByCode(Type::RELATED_ITEM_ID);
+                if ($associatedProduct && $associatedProduct->getValue() === $id) {
                     $hasWarranty = true;
                 }
             }

@@ -231,7 +231,6 @@ define([
             _.each(inputs, function (input) {
                 input.addClass(this.options.formInputClass)
             }.bind(this));
-            console.log(inputs);
             this.addToCartForm.append(inputs);
         },
 
