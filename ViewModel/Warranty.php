@@ -486,7 +486,7 @@ class Warranty implements ArgumentInterface
         $apiKey = $this->dataHelper->getApiKey();
 
         $this->leadInfoRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
-        $leadExpirationDate = $this->leadInfoRequest->create($leadToken);
+        $leadExpirationDate = $this->leadInfoRequest->create($leadToken)/1000;
         return $leadExpirationDate !== null && time() >= $leadExpirationDate;
     }
 }
