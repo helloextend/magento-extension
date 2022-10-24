@@ -92,7 +92,6 @@ class Normalizer
         $productItems = $warrantyItems = [];
 
         $cart = $this->cartHelper->getCart();
-
         foreach ($quote->getAllItems() as $quoteItem) {
             if ($quoteItem->getProductType() === Type::TYPE_CODE) {
                 $warrantyItems[$quoteItem->getItemId()] = $quoteItem;
@@ -103,14 +102,9 @@ class Normalizer
 
         foreach ($productItems as $productItem) {
             $sku = $productItem->getSku();
-            echo $sku;
             $warranties = [];
 
             $product = $productItem->getProduct();
-
-            if ($product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
-                $sku = $product->getData('sku');
-            }
 
             foreach ($warrantyItems as $warrantyItem) {
                 if (!empty($warrantyItem->getLeadToken())) {
@@ -121,21 +115,10 @@ class Normalizer
 
                 if ($relatedItemId && $relatedItemId->getValue() === $productItem->getId()) {
                     $warranties[$warrantyItem->getItemId()] = $warrantyItem;
-                } else if ($associatedProductOption && $associatedProductOption->getValue()) {
-                    $associatedSku = $associatedProductOption->getValue();
-                    if ($sku === $associatedSku
-                        && (
-                            $productItem->getProductType() === Configurable::TYPE_CODE
-                            || null === $productItem->getOptionByCode('parent_product_id')
-                        )
-                    ) {
-                        $warranties[$warrantyItem->getItemId()] = $warrantyItem;
-                    }
                 }
             }
 
             if ($productItem->getProductType() === 'bundle') {
-                dd($productItem->getChildren());
                 $productItemQty = $productItem->getQty();
                 foreach ($warranties as $warrantyItem) {
                     $associatedProductOption = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
@@ -143,12 +126,9 @@ class Normalizer
                         if ($associatedSku === $product->getData('sku')) {
                             $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty, $cart, $quote);
                         } else {
-                            foreach ($product->getTypeInstance()->getSelectionsCollection($product->getTypeInstance()->getOptionsIds($product), $product) as $item) {
-                                echo 'sku is ' . $item->getData('sku') . ' ';
-                                echo 'warranty sku is ' . $associatedSku . ' ';
+                            foreach ($productItem->getChildren() as $item) {
                                 if ($item->getData('sku') === $associatedSku) {
-                                    echo ' MATCH! ';
-                                    if ($productItem->getOptionByCode('product_qty_' . $item->getId()) && $qty = $productItem->getOptionByCode('product_qty_' . $item->getId())->getValue()) {
+                                    if ($qty = $item->getQty()) {
                                         $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty * $qty, $cart, $quote);
                                         break;
                                     }
@@ -161,7 +141,6 @@ class Normalizer
                 $this->normalizeWarrantiesAgainstProductQty($warranties, $productItem->getQty(), $cart, $quote);
             }
         }
-        exit;
     }
 
     private function normalizeWarrantiesAgainstProductQty(array $warranties, int $productItemQty, \Magento\Checkout\Model\Cart $cart, CartInterface $quote) {
@@ -195,7 +174,6 @@ class Normalizer
             if ($productItemQty !== $warranty->getQty()) {
                 $warranty->setQty($productItemQty);
                 $this->quoteItemRepository->save($warranty);
-                echo 'saved ' . $productItemQty . ' for ' . $warranty->getId();
             }
         }
     }

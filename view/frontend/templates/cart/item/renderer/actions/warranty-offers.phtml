@@ -23,9 +23,16 @@ $viewModel = $block->getData('viewModel');
 $productType = $product->getTypeId();
 $isConfigurable = $productType === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
 $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
+$isBundle = $productType === \Magento\Bundle\Model\Product\Type::TYPE_CODE;
+$isBundleAllowed = !$viewModel->isIndividualBundleItemOffersEnabled();
 ?>
 
-<?php if (!$isWarrantyItem && $viewModel->isExtendEnabled() && $viewModel->isShoppingCartOffersEnabled()): ?>
+<?php if (
+    !$isWarrantyItem &&
+    $viewModel->isExtendEnabled() &&
+    $viewModel->isShoppingCartOffersEnabled() &&
+    (!$isBundle || $isBundleAllowed)
+): ?>
     <?php
     $_itemID = '';
     $productTypeInstance = $product->getTypeInstance();
@@ -39,7 +46,7 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
     }
 
     $_itemID = empty($_itemID) ? $_item->getId() : $_itemID;
-    $_currentSku[$_itemID] = ($product->hasCustomOptions() && $productType === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) ? $product->getData('sku') : $product->getSku();
+    $_currentSku[$_itemID] = $product->getData('sku');
     ?>
 
     <?php if (!$viewModel->hasWarranty($quote, $_currentSku[$_itemID])): ?>

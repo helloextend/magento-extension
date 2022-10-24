@@ -19,7 +19,8 @@ $offerTypeArea = $block->getData('offerTypeArea');
 $product = $block->getProduct();
 ?>
 <?php if ($viewModel->isExtendEnabled()): ?>
-    <script type="text/x-magento-init">
+    <?php if ($viewModel->isIndividualBundleItemOffersEnabled()): ?>
+        <script type="text/x-magento-init">
     {
         "#product_addtocart_form": {
             "bundleProductWarranty": {
@@ -33,4 +34,19 @@ $product = $block->getProduct();
         }
     }
     </script>
+    <?php else: ?>
+        <script type="text/x-magento-init">
+    {
+        "#product_addtocart_form .box-tocart": {
+            "simpleProductWarranty": {
+                "isInProductView": true,
+                "productId": "<?= $block->escapeJs($product->getId()) ?>",
+                "productSku": "<?= $block->escapeJs($product->getData('sku')) ?>",
+                "buttonEnabled": <?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled() ? 1 : 0) ?>,
+                "modalEnabled": <?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled() ? 1 : 0) ?>
+            }
+        }
+    }
+    </script>
+    <?php endif; ?>
 <?php endif; ?>

@@ -271,6 +271,16 @@ class Warranty implements ArgumentInterface
     }
 
     /**
+     * Check if offers are enabled on individual bundle product items
+     *
+     * @return bool
+     */
+    public function isIndividualBundleItemOffersEnabled(): bool
+    {
+        return $this->dataHelper->isIndividualBundleItemOffersEnabled();
+    }
+
+    /**
      * Check if product has warranty offers
      *
      * @param ProductInterface $product

@@ -65,7 +65,7 @@ class UpdateItemComplete implements \Magento\Framework\Event\ObserverInterface
                     'productQuantity'  => (int)$item->getQty(),
                 ];
                 $this->_trackingHelper->setTrackingData($trackingData);
-            } elseif (!$this->_trackingHelper->getWarrantyItemForQuoteItem($quoteItem)) {
+            } elseif (!count($this->_trackingHelper->getWarrantyItemsForQuoteItem($quoteItem))) {
                 //there is no associated warranty item, just send tracking for the product update
                 $trackingData = [
                     'eventName'       => 'trackProductUpdated',
