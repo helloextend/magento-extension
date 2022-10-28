@@ -157,9 +157,19 @@ class ProductDataBuilder
             'type'  => (string)$product->getTypeId(),
         ];
 
+        $description = trim($product->getShortDescription());
+
+        if (strlen($description) > 2000) {
+            $description = substr($description, 0, 2000);
+        }
+
+        if (!$description) {
+            $description = __('No description');
+        }
+
         $payload = [
             'category'          => $categories,
-            'description'       => (string)$product->getShortDescription() ?? __('No description'),
+            'description'       => $description,
             'price'             => $price,
             'title'             => (string)$product->getName(),
             'referenceId'       => (string)$product->getSku(),
