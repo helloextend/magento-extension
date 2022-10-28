@@ -8,6 +8,7 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Locale\Currency;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -99,7 +100,12 @@ class OrderBuilder
     ): array {
         $payload = [];
         $store = $this->storeManager->getStore();
-        $currencyCode = $store->getBaseCurrencyCode();
+        $currencyCode = $order->getOrderCurrencyCode();
+
+        if (!$currencyCode) {
+            $currencyCode = $store->getBaseCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
+        }
+
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
         $lineItem = [];
 
@@ -190,7 +196,11 @@ class OrderBuilder
     {
         $payload = [];
         $store = $this->storeManager->getStore();
-        $currencyCode = $store->getBaseCurrencyCode();
+        $currencyCode = $order->getOrderCurrencyCode();
+
+        if (!$currencyCode) {
+            $currencyCode = $store->getBaseCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
+        }
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
         $lineItem = [];
         $lineItems = [];
