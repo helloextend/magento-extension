@@ -11,15 +11,20 @@
 namespace Extend\Warranty\Model\Api\Request;
 
 use Extend\Warranty\Helper\Data as Helper;
+use Extend\Warranty\Helper\Api\Data as ApiHelper;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product\Media\ConfigInterface as ProductMediaConfig;
 use Magento\Catalog\Model\ResourceModel\Product as ProductResourceModel;
 use Magento\ConfigurableProduct\Model\ResourceModel\Attribute\OptionProvider;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Locale\Currency;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Catalog\Model\Product\Type;
 
 /**
  * Class ProductDataBuilder
@@ -53,6 +58,13 @@ class ProductDataBuilder
     private $helper;
 
     /**
+     * Warranty Api Helper
+     *
+     * @var ApiHelper
+     */
+    private $apiHelper;
+
+    /**
      * Product Media Config Model
      *
      * @var ProductMediaConfig
@@ -81,14 +93,28 @@ class ProductDataBuilder
     private $optionProvider;
 
     /**
+     * Catalog product type
+     *
+     * @var Type
+     */
+    protected $catalogProductType;
+
+    /**
+     * @var array
+     */
+    private $_isSpecialPriceSyncEnabled = [];
+
+    /**
      * ProductDataBuilder constructor
      *
      * @param CategoryRepositoryInterface $categoryRepository
      * @param ProductMediaConfig $configMedia
      * @param Helper $helper
+     * @param ApiHelper $apiHelper
      * @param ProductResourceModel $productResourceModel
      * @param OptionProvider $optionProvider
      * @param StoreManagerInterface $storeManager
+     * @param Type $catalogProductType
      */
     public function __construct(
         CategoryRepositoryInterface $categoryRepository,
@@ -96,7 +122,8 @@ class ProductDataBuilder
         Helper $helper,
         ProductResourceModel $productResourceModel,
         OptionProvider $optionProvider,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        Type $catalogProductType
     ) {
         $this->categoryRepository = $categoryRepository;
         $this->configMedia = $configMedia;
@@ -104,6 +131,7 @@ class ProductDataBuilder
         $this->productResourceModel = $productResourceModel;
         $this->optionProvider = $optionProvider;
         $this->storeManager = $storeManager;
+        $this->catalogProductType = $catalogProductType;
     }
 
     /**
@@ -112,7 +140,7 @@ class ProductDataBuilder
      * @param ProductInterface $product
      * @return array
      */
-    public function preparePayload(ProductInterface $product): array
+    public function preparePayload(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null): array
     {
         $categories = $this->getCategories($product);
 
@@ -120,7 +148,7 @@ class ProductDataBuilder
         $currencyCode = $this->getCurrencyCode($storeId);
 
         $price = [
-            'amount'        => $this->helper->formatPrice($product->getPrice()),
+            'amount'        => $this->helper->formatPrice($this->_calculateSyncProductPrice($product, $scopeType, $scopeId)),
             'currencyCode'  => $currencyCode,
         ];
 
@@ -129,9 +157,19 @@ class ProductDataBuilder
             'type'  => (string)$product->getTypeId(),
         ];
 
+        $description = trim($product->getShortDescription());
+
+        if (strlen($description) > 2000) {
+            $description = substr($description, 0, 2000);
+        }
+
+        if (!$description) {
+            $description = __('No description');
+        }
+
         $payload = [
             'category'          => $categories,
-            'description'       => (string)$product->getShortDescription() ?? __('No description'),
+            'description'       => $description,
             'price'             => $price,
             'title'             => (string)$product->getName(),
             'referenceId'       => (string)$product->getSku(),
@@ -152,6 +190,31 @@ class ProductDataBuilder
         }
 
         return $payload;
+    }
+
+    private function _calculateSyncProductPrice(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null) {
+        $price = $product->getPrice();
+        $specialPricesEnabled = $this->_getIsSpecialPricesSyncEnabled($scopeType, $scopeId);
+        $specialPrice = $this->catalogProductType->priceFactory($product->getTypeId())->getFinalPrice(1, $product);
+        if ($specialPricesEnabled && (float)$specialPrice < (float)$price) {
+            $price = $specialPrice;
+        }
+
+        return $price;
+    }
+
+    /**
+     * @return bool
+     */
+    private function _getIsSpecialPricesSyncEnabled($scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null): bool {
+        if ($this->_isSpecialPriceSyncEnabled && isset($this->_isSpecialPriceSyncEnabled[$scopeType][$scopeId ?? Store::DEFAULT_STORE_ID])) {
+            return $this->_isSpecialPriceSyncEnabled[$scopeType][$scopeId ?? Store::DEFAULT_STORE_ID];
+        }
+
+        $isEnabled = (bool)$this->apiHelper->isProductSpecialPriceSyncEnabled($scopeType, $scopeId);
+        $this->_isSpecialPriceSyncEnabled[$scopeType][$scopeId ?? Store::DEFAULT_STORE_ID] = $isEnabled;
+
+        return $isEnabled;
     }
 
     /**

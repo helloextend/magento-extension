@@ -15,12 +15,14 @@ $viewModel = $block->getViewModel();
 $parentBlock = $block->getParentBlock();
 $item = $parentBlock->getItem();
 $leadToken = $viewModel->unserialize($item->getLeadToken()) ?? [];
+$isExpired = $viewModel->isExpired((string)reset($leadToken));
 ?>
 
 <?php if ($viewModel->isExtendEnabled()
     && $viewModel->isLeadEnabled()
     && !empty($leadToken)
-    && !$viewModel->isWarrantyInLaterOrders($item)): ?>
+    && !$viewModel->isWarrantyInLaterOrders($item)
+    && !$isExpired): ?>
     <td>
         <div id="extend-offer-<?= /* @noEscape */ str_replace([' ','"'], '', $item->getSku()); ?>"></div>
     </td>
