@@ -49,7 +49,7 @@ $isBundleAllowed = !$viewModel->isIndividualBundleItemOffersEnabled();
     $_currentSku[$_itemID] = $product->getData('sku');
     ?>
 
-    <?php if (!$viewModel->hasWarranty($quote, $_itemID)): ?>
+    <?php if (!$viewModel->hasWarranty($quote, (int)$_item->getId())): ?>
         <div class="cart-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_itemID) ?>"></div>
 
         <script type="text/x-magento-init">

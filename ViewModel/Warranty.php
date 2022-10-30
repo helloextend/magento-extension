@@ -196,10 +196,10 @@ class Warranty implements ArgumentInterface
      * Check if has warranty in cart
      *
      * @param CartInterface $quote
-     * @param string $sku
+     * @param int $id
      * @return bool
      */
-    public function hasWarranty(CartInterface $quote, string $id): bool
+    public function hasWarranty(CartInterface $quote, int $id): bool
     {
         $hasWarranty = false;
 
@@ -207,7 +207,7 @@ class Warranty implements ArgumentInterface
         foreach ($items as $item) {
             if ($item->getProductType() === Type::TYPE_CODE) {
                 $associatedProduct = $item->getOptionByCode(Type::RELATED_ITEM_ID);
-                if ($associatedProduct && $associatedProduct->getValue() === $id) {
+                if ($associatedProduct && (int)$associatedProduct->getValue() === $id) {
                     $hasWarranty = true;
                 }
             }
@@ -342,10 +342,10 @@ class Warranty implements ArgumentInterface
     /**
      * Check does quote have warranty item for the item
      *
-     * @param string $sku
+     * @param int $id
      * @return bool
      */
-    public function isWarrantyInQuote(string $sku): bool
+    public function isWarrantyInQuote(int $id): bool
     {
         try {
             $quote = $this->checkoutSession->getQuote();
@@ -354,7 +354,7 @@ class Warranty implements ArgumentInterface
         }
 
         if ($quote) {
-            $hasWarranty = $this->hasWarranty($quote, $sku);
+            $hasWarranty = $this->hasWarranty($quote, $id);
         }
 
         return $hasWarranty ?? false;

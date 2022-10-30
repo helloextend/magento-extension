@@ -123,20 +123,30 @@ class Normalizer
                 $productItemQty = $productItem->getQty();
                 foreach ($warranties as $warrantyItem) {
                     $associatedProductOption = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-                    if ($associatedProductOption && $associatedSku = $associatedProductOption->getValue()) {
+                    $dynamicSku = $warrantyItem->getOptionByCode(Type::DYNAMIC_SKU);
+                    if ($dynamicSku && $associatedSku = $dynamicSku->getValue()) {
                         if ($associatedSku === $product->getData('sku')) {
                             $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty, $cart, $quote);
-                        } else {
-                            foreach ($productItem->getChildren() as $item) {
-                                if ($item->getData('sku') === $associatedSku) {
-                                    if ($qty = $item->getQty()) {
-                                        $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty * $qty, $cart, $quote);
-                                        break;
-                                    }
+                            unset($warranties[$warrantyItem->getItemId()]);
+                        }
+                    } else if ($associatedProductOption && $associatedSku = $associatedProductOption->getValue()) {
+                        foreach ($productItem->getChildren() as $item) {
+                            if ($item->getProduct()->getData('sku') === $associatedSku) {
+                                if ($qty = $item->getQty()) {
+                                    $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty * $qty, $cart, $quote);
+                                    unset($warranties[$warrantyItem->getItemId()]);
+                                    break;
                                 }
                             }
                         }
                     }
+                }
+
+                if (count($warranties)) {
+                    foreach ($warranties as $warranty) {
+                        $cart->removeItem($warranty->getItemId());
+                    }
+                    $cart->save();
                 }
             } else {
                 $this->normalizeWarrantiesAgainstProductQty($warranties, $productItem->getQty(), $cart, $quote);

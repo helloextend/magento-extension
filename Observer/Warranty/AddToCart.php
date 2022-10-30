@@ -147,11 +147,19 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
                 $this->addWarranty($cart, $warrantyData, $qty, $product);
             }
         } else if ($product->getTypeId() === 'bundle') {
-            $items = $request->getPost('bundle_option');
-            $quantities = $request->getPost('bundle_option_qty');
-            foreach ($items as $id => $value) {
-                $warrantyData = $request->getPost('warranty_' . $id, []);
-                $this->addWarranty($cart, $warrantyData, $quantities[$id] * $request->getPost('qty', 1), $product);
+            if ($this->dataHelper->isIndividualBundleItemOffersEnabled()) {
+                $items = $request->getPost('bundle_option');
+                $quantities = $request->getPost('bundle_option_qty');
+                foreach ($items as $id => $value) {
+                    $warrantyData = $request->getPost('warranty_' . $id, []);
+                    $this->addWarranty($cart, $warrantyData, $quantities[$id] * $request->getPost('qty', 1), $product);
+                }
+            } else {
+                $qty = $request->getPost('qty', 1);
+                $warrantyData = $request->getPost('warranty', []);
+                $warrantyData[\Extend\Warranty\Model\Product\Type::DYNAMIC_SKU] = $product->getData('sku');
+
+                $this->addWarranty($cart, $warrantyData, $qty, $product);
             }
         } else {
             $qty = $request->getPost('qty', 1);
@@ -224,7 +232,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         }
         $relatedItem = $cart->getQuote()->getItemByProduct($product);
         $warrantyData['qty'] = $qty;
-        $warrantyData['related_item_id'] = $relatedItem->getId();
+        $warrantyData[\Extend\Warranty\Model\Product\Type::RELATED_ITEM_ID] = $relatedItem->getId();
 
         try {
             $cart->addProduct($warranty, $warrantyData);

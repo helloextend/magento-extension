@@ -89,7 +89,7 @@ class UpdateItemsAfter implements \Magento\Framework\Event\ObserverInterface
                 ];
                 $this->_trackingHelper->setTrackingData($trackingData);
             } else {
-                $warrantyItem = $this->_trackingHelper->getWarrantyItemsForQuoteItem($quoteItem);
+                $warrantyItems = $this->_trackingHelper->getWarrantyItemsForQuoteItem($quoteItem);
                 if (!count($warrantyItems)) {
                     //there is no associated warranty item, just send tracking for the product update
                     $trackingData = [
