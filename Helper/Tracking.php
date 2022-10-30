@@ -140,10 +140,10 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Get Warranty Item For Quote Item
+     * Get Warranty Items For Quote Item
      *
      * @param \Magento\Quote\Model\Quote\Item $quoteItem
-     * @return false|\Magento\Quote\Model\Quote\Item
+     * @return array
      */
     public function getWarrantyItemsForQuoteItem(\Magento\Quote\Model\Quote\Item $quoteItem)
     {
