@@ -112,7 +112,6 @@ class Normalizer
                 }
                 $relatedItemId = $warrantyItem->getOptionByCode(Type::RELATED_ITEM_ID);
                 $associatedProductOption = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-
                 if ($relatedItemId && $relatedItemId->getValue() === $productItem->getId()) {
                     $warranties[$warrantyItem->getItemId()] = $warrantyItem;
                 }
@@ -126,17 +125,26 @@ class Normalizer
                     if ($dynamicSku && $associatedSku = $dynamicSku->getValue()) {
                         if ($associatedSku === $product->getData('sku')) {
                             $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty, $cart, $quote);
+                            unset($warranties[$warrantyItem->getItemId()]);
                         }
                     } else if ($associatedProductOption && $associatedSku = $associatedProductOption->getValue()) {
                         foreach ($productItem->getChildren() as $item) {
-                            if ($item->getData('sku') === $associatedSku) {
+                            if ($item->getProduct()->getData('sku') === $associatedSku) {
                                 if ($qty = $item->getQty()) {
                                     $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty * $qty, $cart, $quote);
+                                    unset($warranties[$warrantyItem->getItemId()]);
                                     break;
                                 }
                             }
                         }
                     }
+                }
+
+                if (count($warranties)) {
+                    foreach ($warranties as $warranty) {
+                        $cart->removeItem($warranty->getItemId());
+                    }
+                    $cart->save();
                 }
             } else {
                 $this->normalizeWarrantiesAgainstProductQty($warranties, $productItem->getQty(), $cart, $quote);
