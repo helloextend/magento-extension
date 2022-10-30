@@ -19,6 +19,8 @@ $product = $_item->getProduct();
 $viewModel = $block->getData('viewModel');
 
 $productType = $product->getTypeId();
+$isBundle = $productType === \Magento\Bundle\Model\Product\Type::TYPE_CODE;
+$isBundleAllowed = !$viewModel->isIndividualBundleItemOffersEnabled();
 $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
 
 $leadToken = $viewModel->unserialize($_item->getLeadToken()) ?? [];
@@ -29,10 +31,11 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
     && $viewModel->isOrderOffersEnabled()
     && $viewModel->isLeadEnabled()
     && isset($leadToken)
+    && (!$isBundle || $isBundleAllowed)
     && !$isExpired): ?>
     <?php $isWarrantyInLaterOrders = $viewModel->isWarrantyInLaterOrders($_item)?>
     <?php if (!$isWarrantyInLaterOrders): ?>
-        <?php $isWarrantyInQuote = (int)$viewModel->isWarrantyInQuote($_item->getSku()) ?>
+        <?php $isWarrantyInQuote = (int)$viewModel->isWarrantyInQuote((int)$_item->getId()) ?>
     <?php endif; ?>
     <div class="order-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>"></div>
     <script type="text/x-magento-init">
@@ -40,7 +43,7 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
             "#warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>": {
                 "leadOrderWarranty":{
                     "itemId": "<?= $block->escapeJs($_item->getId()) ?>",
-                    "productSku": "<?= $block->escapeJs($_item->getSku()) ?>",
+                    "productSku": "<?= $block->escapeJs($product->getData('sku')) ?>",
                     "qty": "<?= $block->escapeJs($_item->getQtyOrdered()) ?>",
                     "leadToken": "<?= $block->escapeJs(implode(", ", $leadToken)) ?>",
                     "addLeadUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/addlead')) ?>",

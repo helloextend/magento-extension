@@ -122,16 +122,17 @@ class Normalizer
                 $productItemQty = $productItem->getQty();
                 foreach ($warranties as $warrantyItem) {
                     $associatedProductOption = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-                    if ($associatedProductOption && $associatedSku = $associatedProductOption->getValue()) {
+                    $dynamicSku = $warrantyItem->getOptionByCode(Type::DYNAMIC_SKU);
+                    if ($dynamicSku && $associatedSku = $dynamicSku->getValue()) {
                         if ($associatedSku === $product->getData('sku')) {
                             $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty, $cart, $quote);
-                        } else {
-                            foreach ($productItem->getChildren() as $item) {
-                                if ($item->getData('sku') === $associatedSku) {
-                                    if ($qty = $item->getQty()) {
-                                        $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty * $qty, $cart, $quote);
-                                        break;
-                                    }
+                        }
+                    } else if ($associatedProductOption && $associatedSku = $associatedProductOption->getValue()) {
+                        foreach ($productItem->getChildren() as $item) {
+                            if ($item->getData('sku') === $associatedSku) {
+                                if ($qty = $item->getQty()) {
+                                    $this->normalizeWarrantiesAgainstProductQty([$warrantyItem], $productItemQty * $qty, $cart, $quote);
+                                    break;
                                 }
                             }
                         }

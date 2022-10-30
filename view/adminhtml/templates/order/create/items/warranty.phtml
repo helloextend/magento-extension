@@ -6,11 +6,14 @@ if ($_item = $block->getItem()):
 
     /** @var Extend\Warranty\ViewModel\Warranty $inCartViewModel */
     $inCartViewModel = $block->getData('viewModel');
+    $productType = $_product->getTypeId();
+    $isBundle = $productType === \Magento\Bundle\Model\Product\Type::TYPE_CODE;
+    $isBundleAllowed = !$inCartViewModel->isIndividualBundleItemOffersEnabled();
     ?>
 
-    <?php if ($_product->getTypeId() !== 'warranty'): ?>
+    <?php if ($_product->getTypeId() !== 'warranty' && (!$isBundle || $isBundleAllowed)): ?>
     <?php if ($inCartViewModel->isExtendEnabled((int)$quote->getStoreId()) && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
-        <?php if (!$inCartViewModel->hasWarranty($quote, $_product->getData('sku'))): ?>
+        <?php if (!$inCartViewModel->hasWarranty($quote, (int)$_item->getId())): ?>
             <tbody id="warranty-<?= /* @noEscape */
             $_item->getId() ?>">
             <tr>
@@ -22,7 +25,7 @@ if ($_item = $block->getItem()):
             <script>
                 require(['jquery'], function ($) {
                     Extend.buttons.renderSimpleOffer('#extend-offer-<?= /* @noEscape */ $_item->getId() ?>', {
-                        referenceId: '<?= /* @noEscape */ $_item->getSku() ?>',
+                        referenceId: '<?= /* @noEscape */ $_product->getData('sku') ?>',
                         onAddToCart: function (opts) {
 
                             const plan = opts.plan;
@@ -30,7 +33,7 @@ if ($_item = $block->getItem()):
                                 let parentId = "<?= /* @noEscape */ $_item->getOptionByCode('simple_product') ?
                                     $_item->getProductId() : '' ?>";
                                 let url = "<?= /* @noEscape */ $block->getUrl('extend/warranty/add') ?>";
-                                plan.product = '<?= /* @noEscape */ $_item->getSku() ?>';
+                                plan.product = '<?= /* @noEscape */ $_product->getData('sku') ?>';
 
                                 $.post(url, {
                                     warranty: plan,

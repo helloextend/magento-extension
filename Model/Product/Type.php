@@ -37,7 +37,7 @@ class Type extends AbstractType
     public const TERM = 'warranty_term';
     public const PLAN_TYPE = 'plan_type';
     public const BUY_REQUEST = 'info_buyRequest';
-    public const DYNAMIC_SKU = 'bundle_sku';
+    public const DYNAMIC_SKU = 'dynamic_sku';
     public const RELATED_ITEM_ID = 'related_item_id';
 
     /**

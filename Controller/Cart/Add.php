@@ -215,12 +215,19 @@ class Add extends Cart
                 $product = $item->getProduct();
                 $sku = $item->getSku();
 
-                if ($product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
+                if (
+                    $product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE ||
+                    $product->getTypeId() === 'bundle'
+                ) {
                     $sku = $product->getData('sku');
                 }
 
                 if ($sku === $relatedProduct) {
                     $qty = $item->getQty();
+
+                    if ($product->getTypeId() === 'bundle') {
+                        $warrantyData[Type::DYNAMIC_SKU] = $sku;
+                    }
                 }
             }
 
