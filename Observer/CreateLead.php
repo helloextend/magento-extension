@@ -145,9 +145,7 @@ class CreateLead implements ObserverInterface
                     $storeId
                 );
 
-                if ($contractCreateApi === CreateContractApi::CONTACTS_API) {
-                    $this->saveLeadTokenForContracts($order, $productItem);
-                } elseif ($contractCreateApi === CreateContractApi::ORDERS_API) {
+                if ($contractCreateApi === CreateContractApi::ORDERS_API) {
                     $this->saveLeadTokenForOrders($order, $productItem);
                 }
             }
