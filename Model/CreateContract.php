@@ -109,33 +109,6 @@ class CreateContract
     public function createContract(OrderInterface $order, OrderItemInterface $warrantyItem, int $qty, $storeId) :void
     {
         if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
-            CreateContractApi::CONTACTS_API
-        ) {
-            try {
-                if ($warrantyItem->getLeadToken() != null &&
-                    implode(", ", json_decode($warrantyItem->getLeadToken(), true)) != null
-                ) {
-                    $this->warrantyContract->create(
-                        $order,
-                        $warrantyItem,
-                        $qty,
-                        \Extend\Warranty\Model\WarrantyContract::LEAD_CONTRACT
-                    );
-                } else {
-                    $this->warrantyContract->create(
-                        $order,
-                        $warrantyItem,
-                        $qty,
-                        \Extend\Warranty\Model\WarrantyContract::CONTRACT
-                    );
-                }
-            } catch (LocalizedException $exception) {
-                $this->addContractToQueue($warrantyItem, $qty);
-                $this->logger->error(
-                    'Error during warranty contract creation. ' . $exception->getMessage()
-                );
-            }
-        } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
             CreateContractApi::ORDERS_API
         ) {
             try {

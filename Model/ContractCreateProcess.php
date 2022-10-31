@@ -168,9 +168,6 @@ class ContractCreateProcess
                     ) {
                         $processedContractCreateRecords[$recordId] =
                             $this->extendOrdersApi->createOrder($order, $orderItem, $qty);
-                    } else {
-                        $processedContractCreateRecords[$recordId] =
-                            $this->warrantyContract->create($order, $orderItem, $qty);
                     }
                 } catch (LocalizedException $exception) {
                     $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
