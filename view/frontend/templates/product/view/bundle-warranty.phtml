@@ -1,0 +1,52 @@
+<?php
+/**
+ * Extend Warranty - Bundle product warranty offers block
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+/**
+ * @var \Magento\Bundle\Block\Catalog\Product\View\Type\Bundle $block
+ */
+
+/** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
+$viewModel = $block->getData('viewModel');
+/** @var string $offerTypeArea */
+$offerTypeArea = $block->getData('offerTypeArea');
+/** @var \Magento\Catalog\Model\Product $product */
+$product = $block->getProduct();
+?>
+<?php if ($viewModel->isExtendEnabled()): ?>
+    <?php if ($viewModel->isIndividualBundleItemOffersEnabled()): ?>
+        <script type="text/x-magento-init">
+    {
+        "#product_addtocart_form": {
+            "bundleProductWarranty": {
+                "isInProductView": true,
+                "productId": "<?= $block->escapeJs($product->getId()) ?>",
+                "productSku": "<?= $block->escapeJs($product->getData('sku')) ?>",
+                "bundleSkus": <?= \json_encode($viewModel->getBundleProductsJsonFromOptions($block->getOptions())) ?>,
+                "buttonEnabled": <?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled() ? 1 : 0) ?>,
+                "modalEnabled": 0
+            }
+        }
+    }
+    </script>
+    <?php else: ?>
+        <script type="text/x-magento-init">
+    {
+        "#product_addtocart_form .box-tocart": {
+            "simpleProductWarranty": {
+                "isInProductView": true,
+                "productId": "<?= $block->escapeJs($product->getId()) ?>",
+                "productSku": "<?= $block->escapeJs($product->getData('sku')) ?>",
+                "buttonEnabled": <?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled() ? 1 : 0) ?>,
+                "modalEnabled": <?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled() ? 1 : 0) ?>
+            }
+        }
+    }
+    </script>
+    <?php endif; ?>
+<?php endif; ?>

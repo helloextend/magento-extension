@@ -32,8 +32,6 @@
     </event>
 
     <event name="checkout_cart_update_item_complete">
-        <observer name="extend_Warranty_observer_warranty_normalize"
-                  instance="Extend\Warranty\Observer\Warranty\Normalize" />
         <observer name="extend_warranty_observer_checkout_cart_update_item_complete"
                   instance="Extend\Warranty\Observer\Checkout\Cart\UpdateItemComplete" />
     </event>
