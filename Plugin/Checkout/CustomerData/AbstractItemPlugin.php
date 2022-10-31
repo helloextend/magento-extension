@@ -97,12 +97,12 @@ class AbstractItemPlugin
     {
         $hasWarranty = false;
         $quote = $item->getQuote();
-        $sku = $item->getSku();
+        $id = $item->getId();
         $items = $quote->getAllVisibleItems();
         foreach ($items as $item) {
             if ($item->getProductType() === Type::TYPE_CODE) {
-                $associatedProduct = $item->getOptionByCode('associated_product');
-                if ($associatedProduct && $associatedProduct->getValue() === $sku) {
+                $associatedProduct = $item->getOptionByCode(Type::RELATED_ITEM_ID);
+                if ($associatedProduct && $associatedProduct->getValue() === $id) {
                     $hasWarranty = true;
                 }
             }

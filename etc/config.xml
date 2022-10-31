@@ -44,6 +44,7 @@
                 <interstitial_cart_enabled>1</interstitial_cart_enabled>
                 <leads_modal_enabled>1</leads_modal_enabled>
                 <order_offers_enabled>1</order_offers_enabled>
+                <bundle_items_enabled>1</bundle_items_enabled>
             </offers>
             <products>
                 <batch_size>100</batch_size>

@@ -124,7 +124,12 @@ class ContractBuilder
             return [];
         }
 
-        $currencyCode = $order->getOrderCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
+        $currencyCode = $order->getOrderCurrencyCode();
+
+        if (!$currencyCode) {
+            $store = $this->storeManager->getStore();
+            $currencyCode = $store->getBaseCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
+        }
 
         $transactionTotal = [
             'currencyCode'  => $currencyCode,
