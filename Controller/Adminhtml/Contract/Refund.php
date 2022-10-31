@@ -174,10 +174,6 @@ class Refund extends Action
 
             try {
                 if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
-                    CreateContractApi::CONTACTS_API
-                ) {
-                    $this->apiContractModel->setConfig($apiUrl, $apiStoreId, $apiKey);
-                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
                     CreateContractApi::ORDERS_API
                 ) {
                     $this->ordersApiRefund->setConfig($apiUrl, $apiStoreId, $apiKey);
@@ -249,15 +245,6 @@ class Refund extends Action
             $amountValidated = 0;
             foreach ($contractIds as $contractId) {
                 if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
-                    CreateContractApi::CONTACTS_API
-                ) {
-                    $refundData = $this->apiContractModel->validateRefund($contractId);
-                    if (isset($refundData['refundAmount']['amount'])
-                        && $this->floatComparator->greaterThan((float)$refundData['refundAmount']['amount'], 0)
-                    ) {
-                        $amountValidated += $refundData['refundAmount']['amount'];
-                    }
-                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
                     CreateContractApi::ORDERS_API
                 ) {
                     $refundData = $this->ordersApiRefund->validateRefund($contractId);
@@ -302,10 +289,6 @@ class Refund extends Action
         try {
             foreach ($refundedContractIds as $contractId) {
                 if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
-                    CreateContractApi::CONTACTS_API
-                ) {
-                    $status = $this->apiContractModel->refund($contractId);
-                } elseif ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
                     CreateContractApi::ORDERS_API
                 ) {
                     $status = $this->ordersApiRefund->refund($contractId);

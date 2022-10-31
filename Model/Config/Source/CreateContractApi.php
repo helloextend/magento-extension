@@ -35,7 +35,6 @@ class CreateContractApi implements OptionSourceInterface
     {
         return [
             ['value' => self::UNSPECIFIED, 'label' => __('No')],
-            ['value' => self::CONTACTS_API, 'label' => __('Contracts API')],
             ['value' => self::ORDERS_API, 'label' => __('Orders API')],
         ];
     }
