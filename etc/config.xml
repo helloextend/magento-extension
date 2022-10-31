@@ -22,7 +22,7 @@
                 <logging_enabled>1</logging_enabled>
             </enableExtend>
             <contracts>
-                <create>1</create>
+                <create>2</create>
                 <mode>1</mode>
                 <cron>
                     <frequency>*/5 * * * *</frequency>

@@ -21,6 +21,13 @@ use Magento\Framework\Setup\UpgradeDataInterface;
 use Magento\Eav\Setup\EavSetupFactory;
 use Psr\Log\LoggerInterface;
 use Exception;
+use Magento\Backend\Block\System\Store\Store;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Setup\Patch\DataPatchInterface;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Extend\Warranty\Helper\Api\Data;
+use Magento\Framework\App\Config\Storage\WriterInterface;
 
 /**
  * Class UpgradeData
@@ -61,6 +68,26 @@ class UpgradeData implements UpgradeDataInterface
     private $logger;
 
     /**
+     * @var ScopeConfigInterface
+     */
+    private $scopeConfig;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
+     * @var Data
+     */
+    private $apiHelper;
+
+    /**
+     * @var WriterInterface
+     */
+    private $writer;
+
+    /**
      * UpgradeData constructor
      *
      * @param AppState $appState
@@ -72,12 +99,20 @@ class UpgradeData implements UpgradeDataInterface
         AppState $appState,
         ModuleDataSetupInterface $moduleDataSetup,
         EavSetupFactory $taxSetupFactory,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        StoreManagerInterface $storeManager,
+        Data $apiHelper,
+        ScopeConfigInterface $scopeConfig,
+        WriterInterface $writer
     ) {
         $this->appState = $appState;
         $this->moduleDataSetup = $moduleDataSetup;
         $this->eavSetupFactory = $taxSetupFactory;
         $this->logger = $logger;
+        $this->storeManager = $storeManager;
+        $this->apiHelper = $apiHelper;
+        $this->scopeConfig = $scopeConfig;
+        $this->writer = $writer;
     }
 
     /**
@@ -94,6 +129,10 @@ class UpgradeData implements UpgradeDataInterface
                 Area::AREA_ADMINHTML,
                 [$this, 'applyTaxClassAttrToWarrantyProduct']
             );
+        }
+
+        if (version_compare($context->getVersion(), '1.3.0', '<')) {
+            $this->removeContractsApiConfiguration();
         }
     }
 
@@ -125,6 +164,24 @@ class UpgradeData implements UpgradeDataInterface
             }
         } catch (Exception $exception) {
             $this->logger->error($exception->getMessage());
+        }
+    }
+
+    public function removeContractsApiConfiguration() {
+        foreach ($this->storeManager->getStores(true) as $store) {
+            if ($this->apiHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $store->getId()) === \Extend\Warranty\Model\Config\Source\CreateContractApi::CONTACTS_API) {
+                $this->writer->delete(Data::WARRANTY_CONTRACTS_ENABLED_XML_PATH, ScopeInterface::SCOPE_STORES, $store->getId());
+            }
+        }
+
+        foreach ($this->storeManager->getWebsites(true) as $website) {
+            if ($this->apiHelper->getContractCreateApi(ScopeInterface::SCOPE_WEBSITES, $website->getId()) === \Extend\Warranty\Model\Config\Source\CreateContractApi::CONTACTS_API) {
+                $this->writer->delete(Data::WARRANTY_CONTRACTS_ENABLED_XML_PATH, ScopeInterface::SCOPE_WEBSITES, $website->getId());
+            }
+        }
+
+        if ($this->apiHelper->getContractCreateApi(ScopeConfigInterface::SCOPE_TYPE_DEFAULT) === \Extend\Warranty\Model\Config\Source\CreateContractApi::CONTACTS_API) {
+            $this->writer->delete(Data::WARRANTY_CONTRACTS_ENABLED_XML_PATH, ScopeConfigInterface::SCOPE_TYPE_DEFAULT);
         }
     }
 }
