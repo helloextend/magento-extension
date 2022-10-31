@@ -30,7 +30,7 @@ $isConfigurable = $productType === \Magento\ConfigurableProduct\Model\Product\Ty
             "<?= /* @noEscape */ $isSimple ? 'simpleProductWarranty' : 'configurableProductWarranty' ?>": {
                 "isInProductView": false,
                 "productId": "<?= $block->escapeJs($_product->getId()) ?>",
-                "productSku": "<?= $isSimple ? $block->escapeJs($_product->getSku()) : '' ?>",
+                "productSku": "<?= $isSimple ? $block->escapeJs($_product->getData('sku')) : '' ?>",
                 "buttonEnabled": false,
                 "modalEnabled": true,
                 "insertionPoint": "div.product-item-actions",

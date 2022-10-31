@@ -166,7 +166,7 @@ class ProductSyncProcess
             do {
                 if (!empty($products)) {
                     try {
-                        $this->apiProductModel->create($products, $currentBatch);
+                        $this->apiProductModel->create($products, $currentBatch, ScopeInterface::SCOPE_STORES, $storeId);
                     } catch (LocalizedException $exception) {
                         $this->syncLogger->info(sprintf(
                             'Error found in products batch %s. %s',

@@ -129,8 +129,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         ]
                     );
 
-                    $connection->dropColumn($tableWarrantyContact, 'invoice_item_id');
-
                     $connection->addColumn(
                         $tableWarrantyContact,
                         'order_id',
@@ -144,13 +142,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         ]
                     );
 
-                    if ($salesInvoiceItemForeignKeyName) {
-                        $connection->dropForeignKey($tableWarrantyContact, $salesInvoiceItemForeignKeyName);
-                    }
 
-                    if ($uniqueIndexName) {
-                        $connection->dropIndex($tableWarrantyContact, $uniqueIndexName);
-                    }
 
                     $salesOrderItemForeignKeyName = $connection->getForeignKeyName(
                         $tableWarrantyContact,
@@ -180,6 +172,16 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         ['id', 'order_id'],
                         AdapterInterface::INDEX_TYPE_UNIQUE
                     );
+
+                    if ($salesInvoiceItemForeignKeyName) {
+                        $connection->dropForeignKey($tableWarrantyContact, $salesInvoiceItemForeignKeyName);
+                    }
+
+                    if ($uniqueIndexName) {
+                        $connection->dropIndex($tableWarrantyContact, $uniqueIndexName);
+                    }
+
+                    $connection->dropColumn($tableWarrantyContact, 'invoice_item_id');
 
                 }
             } catch (Zend_Db_Exception $exception) {
@@ -220,6 +222,28 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 );
 
                 $connection->createTable($tableHistoricalOrders);
+            } catch (Zend_Db_Exception $exception) {
+                $this->logger->critical($exception->getMessage());
+            }
+        }
+
+        if (version_compare($context->getVersion(), '1.2.6', '<')) {
+            try {
+                $connection = $setup->getConnection();
+                $tableWarrantyContact = $setup->getTable('extend_warranty_contract_create');
+
+                if ($tableWarrantyContact) {
+                    $salesOrderItemForeignKeyName = $connection->getForeignKeyName(
+                        'extend_warranty_contract_create',
+                        'order_item_id',
+                        'sales_order_item',
+                        'item_id'
+                    );
+                    if ($salesOrderItemForeignKeyName) {
+                        $connection->dropForeignKey($tableWarrantyContact, $salesOrderItemForeignKeyName);
+                    }
+                }
+
             } catch (Zend_Db_Exception $exception) {
                 $this->logger->critical($exception->getMessage());
             }

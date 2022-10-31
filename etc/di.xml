@@ -92,6 +92,12 @@
         </arguments>
     </type>
 
+    <type name="Extend\Warranty\Console\Command\CreateWarrantyProduct">
+        <arguments>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
+        </arguments>
+    </type>
+
     <type name="Extend\Warranty\Model\ProductSyncProcess">
         <arguments>
             <argument name="dateTime" xsi:type="object">Magento\Framework\Stdlib\DateTime\Proxy</argument>
@@ -120,6 +126,8 @@
                       xsi:type="object">Extend\Warranty\Console\Command\CreateContracts</item>
                 <item name="extendWarrantyResetProductSyncFlagCommand"
                       xsi:type="object">Extend\Warranty\Console\Command\ResetProductSyncFlag</item>
+                <item name="extendWarrantyCreateWarrantyProductCommand"
+                      xsi:type="object">Extend\Warranty\Console\Command\CreateWarrantyProduct</item>
             </argument>
         </arguments>
     </type>
@@ -150,6 +158,13 @@
             <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
             <argument name="flagManager" xsi:type="object">Magento\Framework\FlagManager\Proxy</argument>
             <argument name="logger" xsi:type="object">Psr\Log\LoggerInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Extend\Warranty\Console\Command\CreateWarrantyProduct">
+        <arguments>
+            <argument name="appState" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
         </arguments>
     </type>
     <!-- Magento 2.3.7 php7.4 varnish case  -->
