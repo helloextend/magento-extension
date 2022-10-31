@@ -89,8 +89,8 @@ class UpdateItemsAfter implements \Magento\Framework\Event\ObserverInterface
                 ];
                 $this->_trackingHelper->setTrackingData($trackingData);
             } else {
-                $warrantyItem = $this->_trackingHelper->getWarrantyItemForQuoteItem($quoteItem);
-                if (!$warrantyItem) {
+                $warrantyItems = $this->_trackingHelper->getWarrantyItemsForQuoteItem($quoteItem);
+                if (!count($warrantyItems)) {
                     //there is no associated warranty item, just send tracking for the product update
                     $trackingData = [
                         'eventName' => 'trackProductUpdated',
@@ -99,16 +99,18 @@ class UpdateItemsAfter implements \Magento\Framework\Event\ObserverInterface
                     ];
                     $this->_trackingHelper->setTrackingData($trackingData);
                 } else {
-                    $planId = $warrantyItem->getOptionByCode('warranty_id');
-                    if ($planId && $planId->getValue()) {
-                        $trackingData = [
-                            'eventName'        => 'trackOfferUpdated',
-                            'productId'        => $quoteItem->getSku(),
-                            'planId'           => $planId->getValue(),
-                            'warrantyQuantity' => (int)$warrantyItem->getQty(),
-                            'productQuantity'  => $qty,
-                        ];
-                        $this->_trackingHelper->setTrackingData($trackingData);
+                    foreach ($warrantyItems as $warrantyItem) {
+                        $planId = $warrantyItem->getOptionByCode('warranty_id');
+                        if ($planId && $planId->getValue()) {
+                            $trackingData = [
+                                'eventName'        => 'trackOfferUpdated',
+                                'productId'        => $quoteItem->getSku(),
+                                'planId'           => $planId->getValue(),
+                                'warrantyQuantity' => (int)$warrantyItem->getQty(),
+                                'productQuantity'  => $qty,
+                            ];
+                            $this->_trackingHelper->setTrackingData($trackingData);
+                        }
                     }
                 }
             }

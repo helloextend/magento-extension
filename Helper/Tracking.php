@@ -9,6 +9,8 @@
  */
 namespace Extend\Warranty\Helper;
 
+use Extend\Warranty\Model\Product\Type;
+
 /**
  * Class Tracking
  *
@@ -119,19 +121,14 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     public function getQuoteItemForWarrantyItem(\Magento\Quote\Model\Quote\Item $quoteItem)
     {
         //find corresponding product and get qty
-        $productSku = (string)$quoteItem->getOptionByCode('associated_product')->getValue();
+        $warrantyId = (string)$quoteItem->getOptionByCode(Type::RELATED_ITEM_ID)->getValue();
         /** @var \Magento\Quote\Model\Quote $quote */
         $quote = $quoteItem->getQuote();
         foreach ($quote->getAllItems() as $item) {
             /** @var \Magento\Quote\Model\Quote\Item $item */
-            $sku = $item->getSku();
-            $product = $item->getProduct();
+            $productId = $item->getId();
 
-            if ($product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
-                $sku = $product->getData('sku');
-            }
-
-            if ($sku == $productSku
+            if ($warrantyId == $productId
                 && ($item->getProductType() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE
                     || null === $item->getOptionByCode('parent_product_id'))
             ) {
@@ -143,20 +140,15 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Get Warranty Item For Quote Item
+     * Get Warranty Items For Quote Item
      *
      * @param \Magento\Quote\Model\Quote\Item $quoteItem
      * @return false|\Magento\Quote\Model\Quote\Item
      */
-    public function getWarrantyItemForQuoteItem(\Magento\Quote\Model\Quote\Item $quoteItem)
+    public function getWarrantyItemsForQuoteItem(\Magento\Quote\Model\Quote\Item $quoteItem)
     {
-        $possibleItem = false;
-        $sku = $quoteItem->getSku();
-        $product = $quoteItem->getProduct();
+        $possibleItems = [];
 
-        if ($product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
-            $sku = $product->getData('sku');
-        }
         /** @var \Magento\Quote\Model\Quote $quote */
         $quote = $quoteItem->getQuote();
         foreach ($quote->getAllItems() as $item) {
@@ -168,16 +160,15 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
                 $leadToken = $item->getLeadToken();
 
                 if (empty($leadToken)) {
-                    $warrantySku = (string)$item->getOptionByCode('associated_product')->getValue();
+                    $warrantyItemId = (string)$item->getOptionByCode(Type::RELATED_ITEM_ID)->getValue();
 
-                    if ($warrantySku == $sku) {
-                        $possibleItem = $item;
-                        break;
+                    if ($warrantyItemId == $quoteItem->getId()) {
+                        $possibleItems[] = $item;
                     }
                 }
             }
         }
 
-        return $possibleItem;
+        return $possibleItems;
     }
 }

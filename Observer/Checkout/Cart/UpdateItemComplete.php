@@ -9,6 +9,12 @@
  */
 namespace Extend\Warranty\Observer\Checkout\Cart;
 
+use Extend\Warranty\Model\Normalizer;
+use Extend\Warranty\Model\Product\Type;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Quote\Model\Quote\Item;
+use Psr\Log\LoggerInterface;
+
 /**
  * Class UpdateItemComplete
  *
@@ -24,14 +30,34 @@ class UpdateItemComplete implements \Magento\Framework\Event\ObserverInterface
     private $_trackingHelper;
 
     /**
+     * Normalizer Model
+     *
+     * @var Normalizer
+     */
+    private $normalizer;
+
+    /**
+     * Logger Model
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * UpdateItemComplete constructor
      *
      * @param \Extend\Warranty\Helper\Tracking $trackingHelper
+     * @param Normalizer $normalizer
+     * @param LoggerInterface $logger
      */
     public function __construct(
-        \Extend\Warranty\Helper\Tracking $trackingHelper
+        \Extend\Warranty\Helper\Tracking $trackingHelper,
+        Normalizer $normalizer,
+        LoggerInterface $logger
     ) {
         $this->_trackingHelper = $trackingHelper;
+        $this->normalizer = $normalizer;
+        $this->logger = $logger;
     }
 
     /**
@@ -46,8 +72,21 @@ class UpdateItemComplete implements \Magento\Framework\Event\ObserverInterface
         }
         /** @var \Magento\Quote\Model\Quote\Item $quoteItem */
         $quoteItem = $observer->getData('item');
+        $id = $observer->getData('request')->getParam('id');
         if (!$quoteItem instanceof \Magento\Quote\Model\Quote\Item) {
             return;
+        }
+        $quote = $quoteItem->getQuote();
+        if ($quoteItem->getId() != $id) {
+            foreach ($quote->getAllItems() as $item) {
+                /* @var Item $item */
+                if ($item->getProductType() === TYPE::TYPE_CODE) {
+                    $warrantyItemOption = $item->getOptionByCode(Type::RELATED_ITEM_ID);
+                    if ($warrantyItemOption && (int)$warrantyItemOption->getValue() === (int)$id) {
+                        $warrantyItemOption->setValue($quoteItem->getId())->save();
+                    }
+                }
+            }
         }
         $qty = (int)$quoteItem->getQty();
         $origQty = (int)$quoteItem->getOrigData('qty');
@@ -65,7 +104,7 @@ class UpdateItemComplete implements \Magento\Framework\Event\ObserverInterface
                     'productQuantity'  => (int)$item->getQty(),
                 ];
                 $this->_trackingHelper->setTrackingData($trackingData);
-            } elseif (!$this->_trackingHelper->getWarrantyItemForQuoteItem($quoteItem)) {
+            } elseif (!count($this->_trackingHelper->getWarrantyItemsForQuoteItem($quoteItem))) {
                 //there is no associated warranty item, just send tracking for the product update
                 $trackingData = [
                     'eventName'       => 'trackProductUpdated',
@@ -74,6 +113,12 @@ class UpdateItemComplete implements \Magento\Framework\Event\ObserverInterface
                 ];
                 $this->_trackingHelper->setTrackingData($trackingData);
             }
+        }
+
+        try {
+            $this->normalizer->normalize($quote);
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
         }
     }
 }

@@ -5,6 +5,7 @@ var config = {
             simpleProductWarranty: 'Extend_Warranty/js/product/simple-warranty',
             configurableProductWarranty: 'Extend_Warranty/js/product/configurable-warranty',
             groupedProductWarranty: 'Extend_Warranty/js/product/grouped-warranty',
+            bundleProductWarranty: 'Extend_Warranty/js/product/bundle-warranty',
 
             cartItemWarranty: 'Extend_Warranty/js/cart/cart-item-warranty',
             leadOrderWarranty: 'Extend_Warranty/js/order/lead-order-warranty',
