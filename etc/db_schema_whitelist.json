@@ -18,7 +18,6 @@
             "updated_at": true
         },
         "constraint": {
-            "FK_9D1D5D85543ED23D8EE3AA865249142F": true,
             "EXTEND_WARRANTY_CONTRACT_CREATE_ORDER_ID_SALES_ORDER_ENTITY_ID": true,
             "PRIMARY": true,
             "EXTEND_WARRANTY_CONTRACT_CREATE_ID_ORDER_ID": true,
