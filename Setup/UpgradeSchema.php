@@ -129,8 +129,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         ]
                     );
 
-                    $connection->dropColumn($tableWarrantyContact, 'invoice_item_id');
-
                     $connection->addColumn(
                         $tableWarrantyContact,
                         'order_id',
@@ -144,13 +142,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         ]
                     );
 
-                    if ($salesInvoiceItemForeignKeyName) {
-                        $connection->dropForeignKey($tableWarrantyContact, $salesInvoiceItemForeignKeyName);
-                    }
 
-                    if ($uniqueIndexName) {
-                        $connection->dropIndex($tableWarrantyContact, $uniqueIndexName);
-                    }
 
                     $salesOrderItemForeignKeyName = $connection->getForeignKeyName(
                         $tableWarrantyContact,
@@ -180,6 +172,16 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         ['id', 'order_id'],
                         AdapterInterface::INDEX_TYPE_UNIQUE
                     );
+
+                    if ($salesInvoiceItemForeignKeyName) {
+                        $connection->dropForeignKey($tableWarrantyContact, $salesInvoiceItemForeignKeyName);
+                    }
+
+                    if ($uniqueIndexName) {
+                        $connection->dropIndex($tableWarrantyContact, $uniqueIndexName);
+                    }
+
+                    $connection->dropColumn($tableWarrantyContact, 'invoice_item_id');
 
                 }
             } catch (Zend_Db_Exception $exception) {
@@ -232,10 +234,10 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
                 if ($tableWarrantyContact) {
                     $salesOrderItemForeignKeyName = $connection->getForeignKeyName(
-                        'extend_historical_orders',
-                        'entity_id',
-                        'sales_order',
-                        'entity_id'
+                        'extend_warranty_contract_create',
+                        'order_item_id',
+                        'sales_order_item',
+                        'item_id'
                     );
                     if ($salesOrderItemForeignKeyName) {
                         $connection->dropForeignKey($tableWarrantyContact, $salesOrderItemForeignKeyName);
