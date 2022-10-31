@@ -225,6 +225,28 @@ class UpgradeSchema implements UpgradeSchemaInterface
             }
         }
 
+        if (version_compare($context->getVersion(), '1.2.6', '<')) {
+            try {
+                $connection = $setup->getConnection();
+                $tableWarrantyContact = $setup->getTable('extend_warranty_contract_create');
+
+                if ($tableWarrantyContact) {
+                    $salesOrderItemForeignKeyName = $connection->getForeignKeyName(
+                        'extend_historical_orders',
+                        'entity_id',
+                        'sales_order',
+                        'entity_id'
+                    );
+                    if ($salesOrderItemForeignKeyName) {
+                        $connection->dropForeignKey($tableWarrantyContact, $salesOrderItemForeignKeyName);
+                    }
+                }
+
+            } catch (Zend_Db_Exception $exception) {
+                $this->logger->critical($exception->getMessage());
+            }
+        }
+
         $setup->endSetup();
     }
 
