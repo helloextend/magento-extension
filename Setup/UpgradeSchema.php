@@ -142,9 +142,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         ]
                     );
 
-
-
-                    $salesOrderItemForeignKeyName = $connection->getForeignKeyName(
+                    $salesOrderForeignKeyName = $connection->getForeignKeyName(
                         $tableWarrantyContact,
                         'order_id',
                         $setup->getTable('sales_order'),
@@ -152,7 +150,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     );
 
                     $connection->addForeignKey(
-                        $salesOrderItemForeignKeyName,
+                        $salesOrderForeignKeyName,
                         $tableWarrantyContact,
                         'order_id',
                         $setup->getTable('sales_order'),
@@ -172,6 +170,18 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         ['id', 'order_id'],
                         AdapterInterface::INDEX_TYPE_UNIQUE
                     );
+
+                    //key:FK_9D1D5D85543ED23D8EE3AA865249142F
+                    $salesOrderItemForeignKeyName = $connection->getForeignKeyName(
+                        'extend_warranty_contract_create',
+                        'order_item_id',
+                        'sales_order_item',
+                        'item_id'
+		            );
+
+                    if ($salesOrderItemForeignKeyName) {
+                        $connection->dropForeignKey($tableWarrantyContact, $salesOrderItemForeignKeyName);
+                    }
 
                     if ($salesInvoiceItemForeignKeyName) {
                         $connection->dropForeignKey($tableWarrantyContact, $salesInvoiceItemForeignKeyName);
@@ -241,6 +251,15 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     );
                     if ($salesOrderItemForeignKeyName) {
                         $connection->dropForeignKey($tableWarrantyContact, $salesOrderItemForeignKeyName);
+                    }
+
+                    $uniqueIndexName = $connection->getIndexName(
+                        $tableWarrantyContact,
+                        ['order_item_id', 'invoice_item_id'],
+                        AdapterInterface::INDEX_TYPE_UNIQUE
+                    );
+                    if ($uniqueIndexName) {
+                        $connection->dropIndex($tableWarrantyContact, $uniqueIndexName);
                     }
                 }
 
