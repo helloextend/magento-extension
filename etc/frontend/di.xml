@@ -49,4 +49,8 @@
                 type="Extend\Warranty\Plugin\Checkout\CustomerData\CartPlugin"
                 sortOrder="10" />
     </type>
+    <type name="\Magento\Sales\CustomerData\LastOrderedItems">
+        <plugin name="filterLastOrderItemsFromWarranties"
+                type="Extend\Warranty\Plugin\Checkout\CustomerData\LastOrderedItemsPlugin"/>
+    </type>
 </config>
