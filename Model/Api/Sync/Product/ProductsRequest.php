@@ -13,6 +13,7 @@ namespace Extend\Warranty\Model\Api\Sync\Product;
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Model\Api\Request\ProductDataBuilder as ProductPayloadBuilder;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
@@ -92,11 +93,11 @@ class ProductsRequest extends AbstractRequest
      * @param array $products
      * @param int $currentBatch
      */
-    public function create(array $products, int $currentBatch = 1)
+    public function create(array $products, int $currentBatch = 1, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null)
     {
         $productData = [];
         foreach ($products as $product) {
-            $productPayload = $this->productPayloadBuilder->preparePayload($product);
+            $productPayload = $this->productPayloadBuilder->preparePayload($product, $scopeType, $scopeId);
             if (!empty($productPayload)) {
                 $productData[] = $productPayload;
             }

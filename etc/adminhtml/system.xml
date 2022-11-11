@@ -481,6 +481,17 @@
                     <label>Order Information Offers</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="bundle_items_enabled"
+                       translate="label"
+                       type="select"
+                       sortOrder="60"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Display Offers on Individual Bundle Product Items</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
             </group>
 
             <group id="products"
@@ -523,6 +534,17 @@
                        showInStore="1"
                        canRestore="0">
                     <frontend_model>Extend\Warranty\Block\System\Config\Products\Button</frontend_model>
+                </field>
+                <field id="enable_special_prices"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Enable Special Prices</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Products will be synced with their current special price if it is set and this option is enabled.</comment>
                 </field>
                 <field id="cron_sync_enabled"
                        translate="label comment"

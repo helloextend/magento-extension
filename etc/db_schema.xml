@@ -18,9 +18,6 @@
                 comment="Created At"/>
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP"
                 comment="Updated At"/>
-        <constraint xsi:type="foreign" referenceId="EXTEND_WARRANTY_CONTRACT_ORDER_ITEM_ID"
-                    table="extend_warranty_contract_create" column="order_item_id" referenceTable="sales_order_item"
-                    referenceColumn="item_id" onDelete="CASCADE"/>
         <constraint xsi:type="foreign" referenceId="EXTEND_WARRANTY_CONTRACT_CREATE_ORDER_ID_SALES_ORDER_ENTITY_ID"
                     table="extend_warranty_contract_create" column="order_id" referenceTable="sales_order"
                     referenceColumn="entity_id" onDelete="CASCADE"/>
@@ -33,7 +30,7 @@
         </constraint>
     </table>
     <table name="extend_historical_orders">
-        <column xsi:type="int" name="entity_id" identity="false" nullable="false" unsigned="true" comment="Order Id"/>
+        <column xsi:type="int" name="entity_id" padding="10" identity="false" nullable="false" unsigned="true" comment="Order Id"/>
         <column xsi:type="smallint" name="was_sent" identity="false" nullable="false" unsigned="true" default="0" comment="Order sent status"/>
         <constraint xsi:type="foreign" referenceId="EXTEND_HISTORICAL_ORDERS_SALES_ORDER_ENTITY_ID"
                     table="extend_historical_orders" column="entity_id" referenceTable="sales_order"
