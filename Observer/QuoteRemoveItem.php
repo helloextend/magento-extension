@@ -48,7 +48,7 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
         //if the item being removed is a warranty offer, send tracking for the offer removed, if tracking enabled
         if ($quoteItem->getProductType() === \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
             if ($this->_trackingHelper->isTrackingEnabled()) {
-                $relatedItemId = (string)$quoteItem->getOptionByCode(Type::RELATED_ITEM_ID)->getValue();
+                $relatedItemIdOption = $quoteItem->getOptionByCode(Type::RELATED_ITEM_ID);
                 $warrantySku = (string)$quoteItem->getOptionByCode('associated_product')->getValue();
                 $planId = (string)$quoteItem->getOptionByCode('warranty_id')->getValue();
                 $trackingData = [
@@ -62,7 +62,7 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
                 $trackProduct = true;
                 $items = $quote->getAllItems();
                 foreach ($items as $item) {
-                    if ($item->getId() === $relatedItemId) {
+                    if ($relatedItemIdOption && $item->getId() == $relatedItemIdOption->getValue()) {
                         $trackProduct = false;
                         break;
                     }
