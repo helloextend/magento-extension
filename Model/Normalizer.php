@@ -151,6 +151,17 @@ class Normalizer
                 $this->normalizeWarrantiesAgainstProductQty($warranties, $productItem->getQty(), $cart, $quote);
             }
         }
+
+        //removing the warranty items which doesn't have relations
+        if (count($warrantyItems)) {
+            if ($warrantyItems) {
+                foreach ($warrantyItems as $warrantyItem) {
+                    $quote->deleteItem($warrantyItem);
+                }
+            }
+        }
+
+
     }
 
     private function normalizeWarrantiesAgainstProductQty(array $warranties, int $productItemQty, \Magento\Checkout\Model\Cart $cart, CartInterface $quote) {
@@ -184,17 +195,6 @@ class Normalizer
             if ($productItemQty !== $warranty->getQty()) {
                 $warranty->setQty($productItemQty);
                 $this->quoteItemRepository->save($warranty);
-            }
-        }
-
-        //removing the warranty items which doesn't have relations
-        if (count($warrantyItems)) {
-            if ($warrantyItems) {
-                foreach ($warrantyItems as $warrantyItem) {
-                    $warrantyItem->setHasError(true);
-                    $warrantyItem->setMessage('Warranty can\'t be added to cart');
-                    $quote->deleteItem($warrantyItem);
-                }
             }
         }
     }
