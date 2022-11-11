@@ -121,14 +121,14 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     public function getQuoteItemForWarrantyItem(\Magento\Quote\Model\Quote\Item $quoteItem)
     {
         //find corresponding product and get qty
-        $warrantyId = (string)$quoteItem->getOptionByCode(Type::RELATED_ITEM_ID)->getValue();
+        $warrantyIdOption = $quoteItem->getOptionByCode(Type::RELATED_ITEM_ID);
         /** @var \Magento\Quote\Model\Quote $quote */
         $quote = $quoteItem->getQuote();
         foreach ($quote->getAllItems() as $item) {
             /** @var \Magento\Quote\Model\Quote\Item $item */
             $productId = $item->getId();
 
-            if ($warrantyId == $productId
+            if ($warrantyIdOption && $warrantyIdOption->getValue() == $productId
                 && ($item->getProductType() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE
                     || null === $item->getOptionByCode('parent_product_id'))
             ) {
