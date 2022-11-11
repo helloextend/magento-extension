@@ -18,6 +18,10 @@
         <observer name="extend_warranty_observer_checkout_cart_add"
                   instance="Extend\Warranty\Observer\Checkout\Cart\Add" />
     </event>
+    <event name="sales_quote_product_add_after">
+        <observer name="extend_warranty_observer_warranty_add_to_cart_check"
+                  instance="\Extend\Warranty\Observer\Warranty\Normalize" />
+    </event>
 
     <event name="sales_quote_remove_item">
         <observer name="extend_warranty_observer_quote_remove_item"

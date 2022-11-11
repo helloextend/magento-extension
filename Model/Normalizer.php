@@ -114,6 +114,7 @@ class Normalizer
                 $associatedProductOption = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
                 if ($relatedItemId && $relatedItemId->getValue() === $productItem->getId()) {
                     $warranties[$warrantyItem->getItemId()] = $warrantyItem;
+                    unset($warrantyItems[$warrantyItem->getItemId()]);
                 }
             }
 
@@ -183,6 +184,17 @@ class Normalizer
             if ($productItemQty !== $warranty->getQty()) {
                 $warranty->setQty($productItemQty);
                 $this->quoteItemRepository->save($warranty);
+            }
+        }
+
+        //removing the warranty items which doesn't have relations
+        if (count($warrantyItems)) {
+            if ($warrantyItems) {
+                foreach ($warrantyItems as $warrantyItem) {
+                    $warrantyItem->setHasError(true);
+                    $warrantyItem->setMessage('Warranty can\'t be added to cart');
+                    $quote->deleteItem($warrantyItem);
+                }
             }
         }
     }
