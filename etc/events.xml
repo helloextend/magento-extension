@@ -30,8 +30,4 @@
         <observer name="extend_warranty_create_warranty_order_after_observer"
                   instance="Extend\Warranty\Observer\ContractCreate\OrderObserver"/>
     </event>
-    <event name="sales_quote_product_add_after">
-        <observer name="extend_warranty_observer_warranty_add_to_cart_check"
-                  instance="\Extend\Warranty\Observer\Warranty\Normalize" />
-    </event>
 </config>
