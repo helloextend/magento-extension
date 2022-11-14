@@ -108,11 +108,11 @@ class Normalizer
 
             foreach ($warrantyItems as $warrantyItem) {
                 if (!empty($warrantyItem->getLeadToken())) {
+                    unset($warrantyItems[$warrantyItem->getItemId()]);
                     continue;
-                }
-                $relatedItemId = $warrantyItem->getOptionByCode(Type::RELATED_ITEM_ID);
-                $associatedProductOption = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-                if ($relatedItemId && $relatedItemId->getValue() === $productItem->getId()) {
+                };
+
+                if ($this->isWarrantyQuoteItemMatch($warrantyItem, $productItem)) {
                     $warranties[$warrantyItem->getItemId()] = $warrantyItem;
                     unset($warrantyItems[$warrantyItem->getItemId()]);
                 }
@@ -156,10 +156,9 @@ class Normalizer
         if (count($warrantyItems)) {
             if ($warrantyItems) {
                 foreach ($warrantyItems as $warrantyItem) {
-                    $warrantyItem->setHasError(true);
-                    $warrantyItem->setMessage('Warranty can\'t be added to cart');
-                    $quote->deleteItem($warrantyItem);
+                    $cart->removeItem($warrantyItem->getItemId());
                 }
+                $cart->save();
             }
         }
     }
@@ -256,5 +255,27 @@ class Normalizer
         }
 
         return $qty;
+    }
+
+    protected function isWarrantyQuoteItemMatch($warrantyItem, $quoteItem)
+    {
+        $relatedItemOption = $warrantyItem->getOptionByCode(Type::RELATED_ITEM_ID);
+        $associatedProductSku = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
+
+        if ($relatedItemOption) {
+            $relatedCheck = $relatedItemOption->getValue() == $quoteItem->getId();
+        } else {
+            // if no related id specified lets skip it
+            $relatedCheck = true;
+        }
+
+        /**
+         * "relatedItemId" check should avoid situation when two quote item
+         * has same sku but connected to different warranty items.
+         *
+         * This case possible with bundles, when two different bundle could
+         * have same warrantable children
+         */
+        return $relatedCheck && $quoteItem->getSku() == $associatedProductSku->getValue();
     }
 }
