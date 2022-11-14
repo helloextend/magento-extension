@@ -160,9 +160,10 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
                 $leadToken = $item->getLeadToken();
 
                 if (empty($leadToken)) {
-                    $warrantyItemId = (string)$item->getOptionByCode(Type::RELATED_ITEM_ID)->getValue();
+                    $warrantyItemId = $item->getOptionByCode(Type::RELATED_ITEM_ID);
                     $associatedProductSku = $item->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-                    if ($warrantyItemId == $quoteItem->getId()) {
+
+                    if ($warrantyItemId && $warrantyItemId->getValue() == $quoteItem->getId()) {
                         $possibleItems[] = $item;
                     } elseif ($associatedProductSku && $associatedProductSku->getValue() == $quoteItem->getSku()) {
                         $possibleItems[] = $item;
