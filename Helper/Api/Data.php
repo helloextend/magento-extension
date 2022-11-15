@@ -63,6 +63,7 @@ class Data extends AbstractHelper
     public const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
     public const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
     public const WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH = 'warranty/offers/interstitial_cart_enabled';
+    public const WARRANTY_OFFERS_BUNDLE_ITEMS_ENABLED_XML_PATH = 'warranty/offers/bundle_items_enabled';
     public const LEADS_MODAL_ENABLED_XML_PATH = 'warranty/offers/leads_modal_enabled';
     public const ORDER_OFFERS_ENABLED_XML_PATH = 'warranty/offers/order_offers_enabled';
 
@@ -72,6 +73,7 @@ class Data extends AbstractHelper
     public const WARRANTY_PRODUCTS_BATCH_SIZE_XML_PATH = 'warranty/products/batch_size';
     public const WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH = 'warranty/products/lastSync';
     public const WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH = 'warranty/products/cron_sync_enabled';
+    public const WARRANTY_PRODUCT_SYNC_SPECIAL_PRICES_XML_PATH = 'warranty/products/enable_special_prices';
 
     /**
      * Historical orders settings
@@ -457,6 +459,21 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Check if offers are enabled on individual bundle product items
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isIndividualBundleItemOffersEnabled($storeId = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_OFFERS_BUNDLE_ITEMS_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
      * Check if Post Purchase Leads Modal enabled
      *
      * @param string|int|null $storeId
@@ -549,6 +566,21 @@ class Data extends AbstractHelper
     public function isProductSyncByCronEnabled()
     {
         return $this->scopeConfig->isSetFlag(self::WARRANTY_PRODUCTS_CRON_SYNC_ENABLED_XML_PATH);
+    }
+
+    /**
+     * Check if syncing product special prices is enabled
+     */
+    public function isProductSpecialPriceSyncEnabled(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    )
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_PRODUCT_SYNC_SPECIAL_PRICES_XML_PATH,
+            $scopeType,
+            $scopeId
+        );
     }
 
     public function getHistoricalOrdersBatchSize(

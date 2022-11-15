@@ -145,9 +145,7 @@ class CreateLead implements ObserverInterface
                     $storeId
                 );
 
-                if ($contractCreateApi === CreateContractApi::CONTACTS_API) {
-                    $this->saveLeadTokenForContracts($order, $productItem);
-                } elseif ($contractCreateApi === CreateContractApi::ORDERS_API) {
+                if ($contractCreateApi === CreateContractApi::ORDERS_API) {
                     $this->saveLeadTokenForOrders($order, $productItem);
                 }
             }
@@ -170,27 +168,6 @@ class CreateLead implements ObserverInterface
             }
         } catch (Exception $exception) {
             $this->logger->error('Error during lead saving. ' . $exception->getMessage());
-        }
-    }
-
-    /**
-     * Set Lead Token Contracts
-     *
-     * @param OrderInterface $order
-     * @param OrderItemInterface $productItem
-     */
-    private function saveLeadTokenForContracts(OrderInterface $order, OrderItemInterface $productItem)
-    {
-        try {
-            $leadToken = $this->leadModel->createLead($order, $productItem);
-            if ($leadToken) {
-                $productItem->setLeadToken($leadToken);
-                if ($order->getId()) {
-                    $this->orderItemRepository->save($productItem);
-                }
-            }
-        } catch (Exception $exception) {
-            $this->logger->error('Error during lead creation. ' . $exception->getMessage());
         }
     }
 

@@ -9,6 +9,8 @@
  */
 namespace Extend\Warranty\Observer;
 
+use Extend\Warranty\Model\Product\Type;
+
 /**
  * Class QuoteRemoveItem
  *
@@ -46,6 +48,7 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
         //if the item being removed is a warranty offer, send tracking for the offer removed, if tracking enabled
         if ($quoteItem->getProductType() === \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
             if ($this->_trackingHelper->isTrackingEnabled()) {
+                $relatedItemIdOption = $quoteItem->getOptionByCode(Type::RELATED_ITEM_ID);
                 $warrantySku = (string)$quoteItem->getOptionByCode('associated_product')->getValue();
                 $planId = (string)$quoteItem->getOptionByCode('warranty_id')->getValue();
                 $trackingData = [
@@ -59,14 +62,7 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
                 $trackProduct = true;
                 $items = $quote->getAllItems();
                 foreach ($items as $item) {
-                    $sku = $item->getSku();
-                    $product = $item->getProduct();
-
-                    if ($product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
-                        $sku = $product->getData('sku');
-                    }
-
-                    if ($sku === $warrantySku) {
+                    if ($relatedItemIdOption && $item->getId() == $relatedItemIdOption->getValue()) {
                         $trackProduct = false;
                         break;
                     }
@@ -86,8 +82,8 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
 
         //this is a regular product, check if there is an associated warranty item
         /** @var \Magento\Quote\Model\Quote\Item $warrantyItem */
-        $warrantyItem = $this->_trackingHelper->getWarrantyItemForQuoteItem($quoteItem);
-        if (!$warrantyItem && $this->_trackingHelper->isTrackingEnabled()) {
+        $warrantyItems = $this->_trackingHelper->getWarrantyItemsForQuoteItem($quoteItem);
+        if (!count($warrantyItems) && $this->_trackingHelper->isTrackingEnabled()) {
             //there is no associated warranty item. Just track the product removal
             $sku = $quoteItem->getSku();
             $trackingData = [
@@ -110,8 +106,10 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
             }
         }
 
-        if ($warrantyItem && $removeWarranty) {
-            $quote->removeItem($warrantyItem->getItemId());
+        if ($warrantyItems && $removeWarranty) {
+            foreach ($warrantyItems as $warrantyItem) {
+                $quote->removeItem($warrantyItem->getItemId());
+            }
         }
     }
 }
