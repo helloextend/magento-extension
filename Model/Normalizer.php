@@ -111,7 +111,7 @@ class Normalizer
                 if ($this->checkLeadToken($warrantyItem)) {
                     unset($warrantyItems[$warrantyItem->getItemId()]);
                     continue;
-                };
+                }
 
                 if ($this->isWarrantyQuoteItemMatch($warrantyItem, $productItem)) {
                     $warranties[$warrantyItem->getItemId()] = $warrantyItem;

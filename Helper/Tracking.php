@@ -10,6 +10,7 @@
 namespace Extend\Warranty\Helper;
 
 use Extend\Warranty\Model\Product\Type;
+use Magento\Quote\Model\Quote\Item;
 
 /**
  * Class Tracking
@@ -166,12 +167,17 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
         return $possibleItems;
     }
 
+    /**
+     * @param Item $warrantyItem
+     * @param Item $item
+     * @return bool
+     */
     protected function isWarrantyRelatedToItem($warrantyItem, $item)
     {
         if($warrantyItem->getLeadToken() ||
                 ($warrantyItem->getExtensionAttributes()
                 && $warrantyItem->getExtensionAttributes()->getLeadToken())
-){
+        ){
             return false;
         }
         $relatedItemId = $warrantyItem->getOptionByCode(Type::RELATED_ITEM_ID);
