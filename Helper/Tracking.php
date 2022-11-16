@@ -157,21 +157,28 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
             if ($item->getProductType() !== \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
                 continue;
             } else {
-                $leadToken = $item->getLeadToken();
-
-                if (empty($leadToken)) {
-                    $warrantyItemId = $item->getOptionByCode(Type::RELATED_ITEM_ID);
-                    $associatedProductSku = $item->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-
-                    if ($warrantyItemId && $warrantyItemId->getValue() == $quoteItem->getId()) {
-                        $possibleItems[] = $item;
-                    } elseif ($associatedProductSku && $associatedProductSku->getValue() == $quoteItem->getSku()) {
-                        $possibleItems[] = $item;
-                    }
+                if ($this->isWarrantyRelatedToItem($item, $quoteItem)) {
+                    $possibleItems[] = $item;
                 }
             }
         }
 
         return $possibleItems;
+    }
+
+    protected function isWarrantyRelatedToItem($warrantyItem, $item)
+    {
+        if($warrantyItem->getLeadToken() ||
+                ($warrantyItem->getExtensionAttributes()
+                && $warrantyItem->getExtensionAttributes()->getLeadToken())
+){
+            return false;
+        }
+        $relatedItemId = $warrantyItem->getOptionByCode(Type::RELATED_ITEM_ID);
+
+        $relatedCheck = !$relatedItemId || in_array($relatedItemId->getValue(), [$item->getId(), $item->getParentId()]);
+
+        $associatedProductSku = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT)->getValue();
+        return $relatedCheck || $item->getSku() == $associatedProductSku;
     }
 }

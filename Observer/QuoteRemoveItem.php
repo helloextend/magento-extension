@@ -100,6 +100,11 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
         $removeWarranty = true;
         $items = $quote->getAllItems();
         foreach ($items as $item) {
+            /**
+             * This is covers a case when quote updates item by recreating it,
+             * so warranty shouldn't be deleted while there connected
+             *
+            **/
             if ($item->getSku() === $quoteItem->getSku()) {
                 $removeWarranty = false;
                 break;

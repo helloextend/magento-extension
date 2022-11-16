@@ -23,6 +23,7 @@ use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Quote\Api\CartItemRepositoryInterface;
 use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Api\Data\CartItemExtension;
+use Magento\Quote\Model\Quote\Item;
 
 /**
  * Class Normalizer
@@ -101,13 +102,13 @@ class Normalizer
         }
 
         foreach ($productItems as $productItem) {
-            $sku = $productItem->getSku();
             $warranties = [];
 
             $product = $productItem->getProduct();
 
             foreach ($warrantyItems as $warrantyItem) {
-                if (!empty($warrantyItem->getLeadToken())) {
+
+                if ($this->checkLeadToken($warrantyItem)) {
                     unset($warrantyItems[$warrantyItem->getItemId()]);
                     continue;
                 };
@@ -148,7 +149,7 @@ class Normalizer
                     $cart->save();
                 }
             } else {
-                $this->normalizeWarrantiesAgainstProductQty($warranties, $productItem->getQty(), $cart, $quote);
+                $this->normalizeWarrantiesAgainstProductQty($warranties, $productItem->getTotalQty(), $cart, $quote);
             }
         }
 
@@ -156,7 +157,9 @@ class Normalizer
         if (count($warrantyItems)) {
             if ($warrantyItems) {
                 foreach ($warrantyItems as $warrantyItem) {
-                    $cart->removeItem($warrantyItem->getItemId());
+                    if (!$this->checkLeadToken($warrantyItem)) {
+                        $cart->removeItem($warrantyItem->getItemId());
+                    }
                 }
                 $cart->save();
             }
@@ -257,13 +260,25 @@ class Normalizer
         return $qty;
     }
 
+    /**
+     * @param Item $item
+     * @return bool
+     */
+    private function checkLeadToken($item)
+    {
+        if ($item->getLeadToken() || ($item->getExtensionAttributes() && $item->getExtensionAttributes()->getLeadToken())) {
+            return true;
+        }
+        return false;
+    }
+
     protected function isWarrantyQuoteItemMatch($warrantyItem, $quoteItem)
     {
         $relatedItemOption = $warrantyItem->getOptionByCode(Type::RELATED_ITEM_ID);
         $associatedProductSku = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
 
         if ($relatedItemOption) {
-            $relatedCheck = $relatedItemOption->getValue() == $quoteItem->getId();
+            $relatedCheck = in_array($relatedItemOption->getValue(), [$quoteItem->getId(), $quoteItem->getParentItemId()]);
         } else {
             // if no related id specified lets skip it
             $relatedCheck = true;
