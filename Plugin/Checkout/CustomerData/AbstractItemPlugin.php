@@ -16,6 +16,7 @@ use Extend\Warranty\Model\Product\Type;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Magento\Quote\Model\Quote\Item;
+use \Magento\Bundle\Model\Product\Type as BundleProductType;
 
 /**
  * Class AbstractItemPlugin
@@ -75,7 +76,10 @@ class AbstractItemPlugin
         $result['product_image']['isWarranty'] = isset($result['product_type'])
             && $result['product_type'] === Type::TYPE_CODE;
 
-        if ($this->isShoppingCartOffersEnabled() && !$this->hasWarranty($item)) {
+        $isBundle = $item->getProductType() === BundleProductType::TYPE_CODE;
+        $bundleCheck = $isBundle && !$this->dataHelper->isIndividualBundleItemOffersEnabled() || !$isBundle;
+
+        if ($this->isShoppingCartOffersEnabled() && !$this->hasWarranty($item) && $bundleCheck) {
             $result['product_can_add_warranty'] = true;
             $result['warranty_add_url'] = $this->getWarrantyAddUrl();
             $result['product_parent_id'] = $this->getParentId($item);

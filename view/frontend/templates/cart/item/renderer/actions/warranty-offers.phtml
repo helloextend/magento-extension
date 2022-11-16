@@ -9,6 +9,7 @@
  */
 /**
  * @var \Magento\Checkout\Block\Cart\Item\Renderer\Actions\Generic $block
+ * @var Magento\Framework\Escaper $escaper
  */
 
 /** @var \Magento\Quote\Model\Quote\Item $_item */
@@ -24,14 +25,15 @@ $productType = $product->getTypeId();
 $isConfigurable = $productType === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
 $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
 $isBundle = $productType === \Magento\Bundle\Model\Product\Type::TYPE_CODE;
-$isBundleAllowed = !$viewModel->isIndividualBundleItemOffersEnabled();
+
+$bundleCheck = $isBundle && !$viewModel->isIndividualBundleItemOffersEnabled() || !$isBundle;
 ?>
 
 <?php if (
     !$isWarrantyItem &&
     $viewModel->isExtendEnabled() &&
     $viewModel->isShoppingCartOffersEnabled() &&
-    (!$isBundle || $isBundleAllowed)
+    $bundleCheck
 ): ?>
     <?php
     $_itemID = '';
@@ -57,6 +59,7 @@ $isBundleAllowed = !$viewModel->isIndividualBundleItemOffersEnabled();
                 "#warranty-offers-<?= $block->escapeHtmlAttr($_itemID) ?>": {
                     "cartItemWarranty":{
                         "productSku": "<?= $block->escapeJs($_currentSku[$_itemID]) ?>",
+                        "relatedItemId":<?= $escaper->escapeHtmlAttr($_itemID);?>,
                         "addToCartUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/add')) ?>",
                         "buttonEnabled": true,
                         "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>

@@ -302,4 +302,18 @@
                 type="Extend\Warranty\Plugin\Quote\Model\Item\SetItemDataToOrderPlugin"
                 sortOrder="10" />
     </type>
+
+
+    <type name="\Magento\Quote\Model\Quote">
+        <plugin name="extend_warranty_sales_quote"
+                type="\Extend\Warranty\Plugin\Quote\Model\QuotePlugin"/>
+    </type>
+
+    <virtualType name="QuoteRelationsComposite" type="Magento\Framework\Model\ResourceModel\Db\VersionControl\RelationComposite">
+        <arguments>
+            <argument name="relationProcessors" xsi:type="array">
+                <item name="warranty_relation" xsi:type="object">Extend\Warranty\Model\Quote\WarrantyRelation</item>
+            </argument>
+        </arguments>
+    </virtualType>
 </config>

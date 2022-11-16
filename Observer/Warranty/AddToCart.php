@@ -88,6 +88,11 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
     protected $normalizer;
 
     /**
+     * @var bool
+     */
+    protected $saveCartFlag = false;
+
+    /**
      * AddToCart constructor
      *
      * @param \Magento\Checkout\Helper\Cart $cartHelper
@@ -151,6 +156,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
                 $items = $request->getPost('bundle_option');
                 $quantities = $request->getPost('bundle_option_qty');
                 foreach ($items as $id => $value) {
+                    $quantities[$id] = $quantities[$id] ?? 1;
                     $warrantyData = $request->getPost('warranty_' . $id, []);
                     $this->addWarranty($cart, $warrantyData, $quantities[$id] * $request->getPost('qty', 1), $product);
                 }
@@ -166,6 +172,10 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
             $warrantyData = $request->getPost('warranty', []);
 
             $this->addWarranty($cart, $warrantyData, $qty, $product);
+        }
+
+        if($this->saveCartFlag){
+            $cart->save();
         }
 
         if ($this->dataHelper->isBalancedCart()) {
@@ -239,7 +249,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
             $cart->getQuote()->removeAllAddresses();
             /** @noinspection PhpUndefinedMethodInspection */
             $cart->getQuote()->setTotalsCollectedFlag(false);
-            $cart->save();
+            $this->saveCartFlag = true;
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->_logger->critical($e);
             $this->_messageManager->addErrorMessage(
