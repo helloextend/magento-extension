@@ -204,12 +204,16 @@ class Warranty implements ArgumentInterface
         $hasWarranty = false;
 
         $items = $quote->getAllVisibleItems();
+
+        $checkQuoteItem = $quote->getItemById($id);
+
         foreach ($items as $item) {
             if ($item->getProductType() === Type::TYPE_CODE) {
-                $associatedProduct = $item->getOptionByCode(Type::RELATED_ITEM_ID);
-                if ($associatedProduct && (int)$associatedProduct->getValue() === $id) {
-                    $hasWarranty = true;
-                }
+                $relatedItemId = $item->getOptionByCode(Type::RELATED_ITEM_ID);
+                $relatedItemIdCheck = $relatedItemId ? (int)$relatedItemId->getValue() === $id : true;
+                $associateProductSkuOption = $item->getOptionByCode(Type::ASSOCIATED_PRODUCT);
+
+                $hasWarranty = $relatedItemIdCheck && $associateProductSkuOption && $checkQuoteItem->getSku() == $associateProductSkuOption->getValue();
             }
         }
 

@@ -97,18 +97,19 @@ class AbstractItemPlugin
      * @param Item $item
      * @return bool
      */
-    private function hasWarranty(Item $item): bool
+    private function hasWarranty(Item $checkQuoteItem): bool
     {
         $hasWarranty = false;
-        $quote = $item->getQuote();
-        $id = $item->getId();
+        $quote = $checkQuoteItem->getQuote();
+        $id = $checkQuoteItem->getId();
         $items = $quote->getAllVisibleItems();
         foreach ($items as $item) {
             if ($item->getProductType() === Type::TYPE_CODE) {
-                $associatedProduct = $item->getOptionByCode(Type::RELATED_ITEM_ID);
-                if ($associatedProduct && $associatedProduct->getValue() === $id) {
-                    $hasWarranty = true;
-                }
+                $relatedItemId = $item->getOptionByCode(Type::RELATED_ITEM_ID);
+                $relatedItemIdCheck = $relatedItemId ? (int)$relatedItemId->getValue() === $checkQuoteItem->getId() : true;
+                $associateProductSkuOption = $item->getOptionByCode(Type::ASSOCIATED_PRODUCT);
+
+                $hasWarranty = $relatedItemIdCheck && $associateProductSkuOption && $checkQuoteItem->getSku() == $associateProductSkuOption->getValue();
             }
         }
 
