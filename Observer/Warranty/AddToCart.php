@@ -10,6 +10,9 @@
 
 namespace Extend\Warranty\Observer\Warranty;
 
+use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\Model\Product\Type as WarrantyProductType;
+
 /**
  * Class AddToCart
  *
@@ -162,9 +165,9 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
                 }
             } else {
                 $qty = $request->getPost('qty', 1);
-                $warrantyData = $request->getPost('warranty', []);
-                $warrantyData[\Extend\Warranty\Model\Product\Type::DYNAMIC_SKU] = $product->getData('sku');
-
+                if($warrantyData = $request->getPost('warranty', [])){
+                    $warrantyData[WarrantyProductType::DYNAMIC_SKU] = WarrantyHelper::getComplexProductSku($product);
+                }
                 $this->addWarranty($cart, $warrantyData, $qty, $product);
             }
         } else {
@@ -220,7 +223,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         }
 
         $this->_searchCriteriaBuilder
-            ->setPageSize(1)->addFilter('type_id', \Extend\Warranty\Model\Product\Type::TYPE_CODE);
+            ->setPageSize(1)->addFilter('type_id', WarrantyProductType::TYPE_CODE);
         /** @var \Magento\Framework\Api\SearchCriteria $searchCriteria */
         $searchCriteria = $this->_searchCriteriaBuilder->create();
         $searchResults = $this->_productRepository->getList($searchCriteria);
@@ -242,7 +245,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         }
         $relatedItem = $cart->getQuote()->getItemByProduct($product);
         $warrantyData['qty'] = $qty;
-        $warrantyData[\Extend\Warranty\Model\Product\Type::RELATED_ITEM_ID] = $relatedItem->getId();
+        $warrantyData[WarrantyProductType::RELATED_ITEM_ID] = $relatedItem->getId();
 
         try {
             $cart->addProduct($warranty, $warrantyData);

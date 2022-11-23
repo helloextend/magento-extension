@@ -47,7 +47,7 @@ define([
 
             if(this.options.relatedItemId){
                 warranty = $.extend({
-                    relatedItemId: this.options.relatedItemId
+                    related_item_id: this.options.relatedItemId
                 }, warranty);
             }
 

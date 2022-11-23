@@ -12,6 +12,7 @@ namespace Extend\Warranty\ViewModel;
 
 use Exception;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Helper\Data as WarrantyHelper;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Api\Sync\Lead\LeadInfoRequest;
 use Extend\Warranty\Model\Offers as OfferModel;
@@ -193,7 +194,7 @@ class Warranty implements ArgumentInterface
     }
 
     /**
-     * Check if has warranty in cart
+     * Check if has warranty in cart by itemId
      *
      * @param CartInterface $quote
      * @param int $id
@@ -202,18 +203,13 @@ class Warranty implements ArgumentInterface
     public function hasWarranty(CartInterface $quote, int $id): bool
     {
         $hasWarranty = false;
-
-        $items = $quote->getAllVisibleItems();
-
         $checkQuoteItem = $quote->getItemById($id);
-
+        $items = $quote->getAllVisibleItems();
         foreach ($items as $item) {
-            if ($item->getProductType() === Type::TYPE_CODE) {
-                $relatedItemId = $item->getOptionByCode(Type::RELATED_ITEM_ID);
-                $relatedItemIdCheck = $relatedItemId ? (int)$relatedItemId->getValue() === $id : true;
-                $associateProductSkuOption = $item->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-
-                $hasWarranty = $relatedItemIdCheck && $associateProductSkuOption && $checkQuoteItem->getSku() == $associateProductSkuOption->getValue();
+            if(
+                $item->getProductType() === Type::TYPE_CODE
+                && WarrantyHelper::isWarrantyRelatedToQuoteItem($item,$checkQuoteItem)){
+                $hasWarranty = true;
             }
         }
 
