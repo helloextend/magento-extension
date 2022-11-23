@@ -10,6 +10,7 @@
 
 namespace Extend\Warranty\ViewModel;
 
+use Extend\Warranty\Helper\Data as WarrantyHelper;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Exception\LocalizedException;
@@ -193,7 +194,7 @@ class Warranty implements ArgumentInterface
     }
 
     /**
-     * Check if has warranty in cart
+     * Check if has warranty in cart by itemId
      *
      * @param CartInterface $quote
      * @param int $id
@@ -202,14 +203,13 @@ class Warranty implements ArgumentInterface
     public function hasWarranty(CartInterface $quote, int $id): bool
     {
         $hasWarranty = false;
-
+        $checkQuoteItem = $quote->getItemById($id);
         $items = $quote->getAllVisibleItems();
         foreach ($items as $item) {
-            if ($item->getProductType() === Type::TYPE_CODE) {
-                $associatedProduct = $item->getOptionByCode(Type::RELATED_ITEM_ID);
-                if ($associatedProduct && (int)$associatedProduct->getValue() === $id) {
-                    $hasWarranty = true;
-                }
+            if(
+                $item->getProductType() === Type::TYPE_CODE
+                && WarrantyHelper::isWarrantyRelatedToQuoteItem($item,$checkQuoteItem)){
+                $hasWarranty = true;
             }
         }
 

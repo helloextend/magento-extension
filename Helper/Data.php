@@ -11,9 +11,12 @@
 namespace Extend\Warranty\Helper;
 
 use Extend\Warranty\Model\Product\Type;
+use Magento\Catalog\Model\Product;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Exception;
+use Magento\Quote\Model\Quote\Item;
 use Magento\Sales\Api\Data\OrderInterface;
+use \Magento\Bundle\Model\Product\Type as BundleProductType;
 
 /**
  * Class Data
@@ -170,5 +173,70 @@ class Data
         }
 
         return $firstName . ' ' . $lastName;
+    }
+
+
+    /**
+     * Return true if quote Item is related to warranty
+     *
+     * @param Item $warrantyItem
+     * @param Item $quoteItem
+     * @return bool
+     */
+    static public function isWarrantyRelatedToQuoteItem(Item $warrantyItem, Item $quoteItem, $checkWithChildren = false): bool
+    {
+
+        if($checkWithChildren === true && $quoteItem->getChildren()){
+            foreach($quoteItem->getChildren() as $child){
+                if(self::isWarrantyRelatedToQuoteItem($warrantyItem,$child)){
+                    return true;
+                }
+            }
+        }
+        $associatedProductSku = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
+
+        $relatedSkus = [$associatedProductSku->getValue()];
+
+        if ($dynamicSku = $warrantyItem->getOptionByCode(Type::DYNAMIC_SKU)) {
+            $relatedSkus[] = $dynamicSku->getValue();
+        }
+
+        $itemSku = self::getComplexProductSku($quoteItem->getProduct());
+        $skuCheck = in_array($itemSku, $relatedSkus);
+
+        if ($relatedItemOption = $warrantyItem->getOptionByCode(Type::RELATED_ITEM_ID)) {
+            $relatedCheck = in_array($relatedItemOption->getValue(), [$quoteItem->getId(), $quoteItem->getParentItemId()]);
+        } else {
+            // if no related id specified then skip it
+            $relatedCheck = true;
+        }
+
+        /**
+         * "relatedItemId" check should avoid situation when two quote item
+         * has same sku but connected to different warranty items.
+         *
+         * This case possible with bundles, when two different bundle could
+         * have same warrantable children
+         */
+        return $relatedCheck && $skuCheck;
+    }
+
+    /**
+     * Return dynamic sku for a bundle product
+     * even if product has "Fixed" Sku type
+     * is product is not bundle, method return default sku
+     *
+     * @param Product $product
+     * @return string
+     */
+    static public function getComplexProductSku($product)
+    {
+        if($product->getTypeId() != BundleProductType::TYPE_CODE){
+            return $product->getSku();
+        }
+
+        $productClone = clone $product;
+        $productClone->setData('sku_type', 0);
+        return $productClone->getSku();
     }
 }
