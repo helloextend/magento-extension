@@ -27,22 +27,9 @@ class CartPlugin
         $qtyFlag = null
     ) {
         if ($orderItem->getProductType() == WarrantyProductType::TYPE_CODE
-//            && $this->checkLeadToken($orderItem)
         ) {
             return $subject;
         }
         return $proceed($orderItem, $qtyFlag);
-    }
-
-    /**
-     * @param $item
-     * @return bool
-     */
-    private function checkLeadToken($item)
-    {
-        if ($item->getLeadToken() || ($item->getExtensionAttributes() && $item->getExtensionAttributes()->getLeadToken())) {
-            return true;
-        }
-        return false;
     }
 }
