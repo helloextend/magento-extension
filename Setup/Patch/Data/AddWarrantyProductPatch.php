@@ -1,7 +1,18 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Setup\Patch\Data;
 
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\ProductRepository\MediaGalleryProcessor;
+use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Phrase;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchRevertableInterface;
@@ -12,6 +23,7 @@ use Extend\Warranty\Model\Product\Type;
 use Magento\Eav\Setup\EavSetup;
 use Magento\Eav\Setup\EavSetupFactory;
 use Magento\Catalog\Model\Product;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Filesystem\Io\File;
 use Magento\Framework\Module\Dir\Reader;
@@ -33,7 +45,7 @@ use Magento\Framework\App\Area;
 /**
  * class AddWarrantyProductPatch
  *
- * Add warranty product
+ * Add warranty product to catalog
  */
 class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInterface, NonTransactionableInterface
 {
@@ -103,6 +115,16 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
     private $state;
 
     /**
+     * @var MediaGalleryProcessor
+     */
+    private $mediaProcessor;
+
+    /**
+     * @var ProductMetadataInterface
+     */
+    protected $productMetadata;
+
+    /**
      * @param ModuleDataSetupInterface $moduleDataSetup
      * @param ProductFactory $productFactory
      * @param EavSetupFactory $eavSetupFactory
@@ -129,7 +151,9 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         EntryFactory $mediaGalleryEntryFactory,
         GalleryManagement $mediaGalleryManagement,
         ImageContentFactory $imageContentFactory,
-        State $state
+        State $state,
+        MediaGalleryProcessor $mediaProcessor,
+        ProductMetadataInterface   $productMetadata
     ) {
         $this->moduleDataSetup = $moduleDataSetup;
         $this->productFactory = $productFactory;
@@ -143,6 +167,8 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         $this->mediaGalleryManagement = $mediaGalleryManagement;
         $this->imageContentFactory = $imageContentFactory;
         $this->state = $state;
+        $this->mediaProcessor = $mediaProcessor;
+        $this->productMetadata = $productMetadata;
     }
 
     /**
@@ -251,7 +277,43 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
 
         $entry->setContent($imageContent);
 
-        $this->mediaGalleryManagement->create($sku, $entry);
+        if($this->productMetadata->getVersion()=='2.4.0'){
+            $this->processImages($sku,$entry);
+        }
+        else{
+            $this->mediaGalleryManagement->create($sku, $entry);
+        }
+    }
+
+    /**
+     *
+     * Method to save Warranty images avoiding Product Repository use
+     * as product repository in some magento versions(2.4.0) could brake
+     * attributes values on multistore
+     *
+     * @param $sku
+     * @param $entry
+     * @return void
+     * @throws InputException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     * @throws StateException
+     */
+    protected function processImages($sku,$entry){
+        $product = $this->productRepository->get($sku, true, Store::DEFAULT_STORE_ID);
+
+        // set all media types if not specified
+        if ($entry->getTypes() == null) {
+            $entry->setTypes(array_keys($product->getMediaAttributes()));
+        }
+        $mediaGalleryEntries = [$entry];
+
+        /** using product model to map entity to array for future process flog */
+        $product->setMediaGalleryEntries($mediaGalleryEntries);
+
+        $newImages = $product->getMediaGallery('images');
+        $this->mediaProcessor->processMediaGallery($product,$newImages);
+        $product->save();
     }
 
     /**
@@ -324,7 +386,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
                     'use_config_notify_stock_qty' => 0
                 ]);
 
-            $this->productRepository->save($warranty);
+            $this->saveProduct($warranty);
             $this->processMediaGalleryEntry($this->getMediaImagePath(), $warranty->getSku());
         }
     }
@@ -375,6 +437,28 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
                     implode(',', $applyTo)
                 );
             }
+        }
+    }
+
+    /**
+     * @param ProductInterface $product
+     * @return void
+     * @throws \Magento\Framework\Exception\CouldNotSaveException
+     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Exception\StateException
+     */
+    private function saveProduct($product)
+    {
+        if ($this->productMetadata->getVersion() == '2.4.0') {
+            /**
+             * using deprecated method instead of repository as magento 2.4.0
+             * has issue with saving products attributes in multi stores
+             * It rewrites product->data['store_id'] and saves attribute values
+             * in substores instead of default store
+             */
+            $product->save();
+        } else {
+            $this->productRepository->save($product);
         }
     }
 }
