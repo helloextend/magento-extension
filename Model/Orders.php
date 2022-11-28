@@ -145,6 +145,7 @@ class Orders
      */
     private function prepareLead(array $leadTokens)
     {
+        $leadTokens = array_unique($leadTokens);
         return $this->jsonSerializer->serialize($leadTokens);
     }
 
