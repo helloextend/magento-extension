@@ -233,7 +233,7 @@ class Data
     static public function getComplexProductSku($product)
     {
         if($product->getTypeId() != BundleProductType::TYPE_CODE){
-            return $product->getSku();
+            return $product->getData('sku');
         }
 
         $productClone = clone $product;
