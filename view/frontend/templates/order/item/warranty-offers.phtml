@@ -20,7 +20,7 @@ $viewModel = $block->getData('viewModel');
 
 $productType = $product->getTypeId();
 $isBundle = $productType === \Magento\Bundle\Model\Product\Type::TYPE_CODE;
-$isBundleAllowed = !$viewModel->isIndividualBundleItemOffersEnabled();
+$bundleCheck = $isBundle && !$viewModel->isIndividualBundleItemOffersEnabled() || !$isBundle;
 $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
 
 $leadToken = $viewModel->unserialize($_item->getLeadToken()) ?? [];
@@ -31,7 +31,7 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
     && $viewModel->isOrderOffersEnabled()
     && $viewModel->isLeadEnabled()
     && isset($leadToken)
-    && (!$isBundle || $isBundleAllowed)
+    && $bundleCheck
     && !$isExpired): ?>
     <?php $isWarrantyInLaterOrders = $viewModel->isWarrantyInLaterOrders($_item)?>
     <?php if (!$isWarrantyInLaterOrders): ?>
