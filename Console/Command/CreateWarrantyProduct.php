@@ -12,6 +12,7 @@ namespace Extend\Warranty\Console\Command;
 
 use Exception;
 use Extend\Warranty\Model\Product\Type as WarrantyType;
+use Extend\Warranty\Setup\Patch\Data\AddWarrantyProductPatch;
 use Extend\Warranty\Setup\Patch\Data\AddWarrantyProductPatch as WarrantyCreate;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -152,7 +153,10 @@ class CreateWarrantyProduct extends Command
             } else {
                 $warrantyProduct->setStatus(ProductStatus::STATUS_ENABLED);
 
-                if($this->productMetadata->getVersion() == '2.4.0'){
+                if (in_array(
+                    $this->productMetadata->getVersion(),
+                    AddWarrantyProductPatch::MAGENTO_REPOSITORY_ISSUE_VERSIONS)
+                ) {
                     $this->clearStatusAttributeValues($warrantyProduct);
                 }
 
@@ -176,7 +180,10 @@ class CreateWarrantyProduct extends Command
      */
     private function saveProduct($product)
     {
-        if ($this->productMetadata->getVersion() == '2.4.0') {
+        if (in_array(
+            $this->productMetadata->getVersion(),
+            AddWarrantyProductPatch::MAGENTO_REPOSITORY_ISSUE_VERSIONS)
+        ) {
             /**
              * using deprecated method instead of repository as magento 2.4.0
              * has issue with saving products attributes in multi stores

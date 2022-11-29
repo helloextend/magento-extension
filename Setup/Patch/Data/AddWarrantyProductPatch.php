@@ -124,6 +124,8 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
      */
     protected $productMetadata;
 
+    const MAGENTO_REPOSITORY_ISSUE_VERSIONS = ['2.4.0','2.4.1','2.4.1-p1','2.4.0-p1'];
+
     /**
      * @param ModuleDataSetupInterface $moduleDataSetup
      * @param ProductFactory $productFactory
@@ -277,7 +279,10 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
 
         $entry->setContent($imageContent);
 
-        if($this->productMetadata->getVersion()=='2.4.0'){
+        if (in_array(
+            $this->productMetadata->getVersion(),
+            self::MAGENTO_REPOSITORY_ISSUE_VERSIONS)
+        ) {
             $this->processImages($sku,$entry);
         }
         else{
@@ -449,7 +454,10 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
      */
     private function saveProduct($product)
     {
-        if ($this->productMetadata->getVersion() == '2.4.0') {
+        if (in_array(
+            $this->productMetadata->getVersion(),
+            self::MAGENTO_REPOSITORY_ISSUE_VERSIONS)
+        ) {
             /**
              * using deprecated method instead of repository as magento 2.4.0
              * has issue with saving products attributes in multi stores
