@@ -151,15 +151,8 @@ class CreateWarrantyProduct extends Command
                 $output->writeln("Warranty product was exist and enabled");
                 $this->logger->info("Warranty product was exist and enabled");
             } else {
+                $this->clearStatusAttributeValues($warrantyProduct);
                 $warrantyProduct->setStatus(ProductStatus::STATUS_ENABLED);
-
-                if (in_array(
-                    $this->productMetadata->getVersion(),
-                    AddWarrantyProductPatch::MAGENTO_REPOSITORY_ISSUE_VERSIONS)
-                ) {
-                    $this->clearStatusAttributeValues($warrantyProduct);
-                }
-
                 $this->saveProduct($warrantyProduct);
                 $output->writeln("Warranty product is enabled");
                 $this->logger->info("Warranty product is enabled");

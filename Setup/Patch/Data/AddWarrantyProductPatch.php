@@ -279,22 +279,12 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
 
         $entry->setContent($imageContent);
 
-        if (in_array(
-            $this->productMetadata->getVersion(),
-            self::MAGENTO_REPOSITORY_ISSUE_VERSIONS)
-        ) {
-            $this->processImages($sku,$entry);
-        }
-        else{
-            $this->mediaGalleryManagement->create($sku, $entry);
-        }
+        $this->processImages($sku,$entry);
     }
 
     /**
      *
-     * Method to save Warranty images avoiding Product Repository use
-     * as product repository in some magento versions(2.4.0) could brake
-     * attributes values on multistore
+     * Method to save Warranty images
      *
      * @param $sku
      * @param $entry
@@ -313,12 +303,12 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         }
         $mediaGalleryEntries = [$entry];
 
-        /** using product model to map entity to array for future process flog */
+        /** using product model to map entity to array for future process gallery */
         $product->setMediaGalleryEntries($mediaGalleryEntries);
 
         $newImages = $product->getMediaGallery('images');
         $this->mediaProcessor->processMediaGallery($product,$newImages);
-        $product->save();
+        $this->saveProduct($product);
     }
 
     /**
