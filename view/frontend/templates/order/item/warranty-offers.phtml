@@ -18,10 +18,9 @@ $product = $_item->getProduct();
 /** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getData('viewModel');
 
-$productType = $product->getTypeId();
-$isBundle = $productType === \Magento\Bundle\Model\Product\Type::TYPE_CODE;
+$isBundle = $product && $product->getTypeId() === \Magento\Bundle\Model\Product\Type::TYPE_CODE;
 $isBundleAllowed = !$viewModel->isIndividualBundleItemOffersEnabled();
-$isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
+$isWarrantyItem = $product && $product->getTypeId() === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
 
 $leadToken = $viewModel->unserialize($_item->getLeadToken()) ?? [];
 $isExpired = $viewModel->isExpired((string)reset($leadToken));
