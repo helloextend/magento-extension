@@ -12,7 +12,6 @@ namespace Extend\Warranty\Setup\Patch\Data;
 
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\ProductRepository\MediaGalleryProcessor;
-use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Phrase;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchRevertableInterface;
@@ -120,11 +119,6 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
     private $mediaProcessor;
 
     /**
-     * @var ProductMetadataInterface
-     */
-    protected $productMetadata;
-
-    /**
      * @param ModuleDataSetupInterface $moduleDataSetup
      * @param ProductFactory $productFactory
      * @param EavSetupFactory $eavSetupFactory
@@ -152,8 +146,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         GalleryManagement $mediaGalleryManagement,
         ImageContentFactory $imageContentFactory,
         State $state,
-        MediaGalleryProcessor $mediaProcessor,
-        ProductMetadataInterface   $productMetadata
+        MediaGalleryProcessor $mediaProcessor
     ) {
         $this->moduleDataSetup = $moduleDataSetup;
         $this->productFactory = $productFactory;
@@ -168,7 +161,6 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         $this->imageContentFactory = $imageContentFactory;
         $this->state = $state;
         $this->mediaProcessor = $mediaProcessor;
-        $this->productMetadata = $productMetadata;
     }
 
     /**

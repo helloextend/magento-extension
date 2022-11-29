@@ -27,7 +27,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use \Magento\Catalog\Model\ResourceModel\ProductFactory as ResourceProductFactory;
-use \Magento\Framework\App\ProductMetadataInterface;
 
 /**
  * Class CreateWarrantyProduct
@@ -67,11 +66,6 @@ class CreateWarrantyProduct extends Command
     protected $resourceProductFactory;
 
     /**
-     * @var ProductMetadataInterface
-     */
-    protected $productMetadata;
-
-    /**
      * @var StoreManagerInterface
      */
     protected $storeManager;
@@ -82,7 +76,6 @@ class CreateWarrantyProduct extends Command
      * @param State $appState
      * @param LoggerInterface $logger
      * @param ResourceProductFactory $resourceProductFactory
-     * @param ProductMetadataInterface $productMetadata
      * @param StoreManagerInterface $storeManager
      * @param string|null $name
      */
@@ -92,7 +85,6 @@ class CreateWarrantyProduct extends Command
         State                      $appState,
         LoggerInterface            $logger,
         ResourceProductFactory     $resourceProductFactory,
-        ProductMetadataInterface   $productMetadata,
         StoreManagerInterface      $storeManager,
         string                     $name = null
     ) {
@@ -102,7 +94,6 @@ class CreateWarrantyProduct extends Command
         $this->appState = $appState;
         $this->logger = $logger;
         $this->resourceProductFactory = $resourceProductFactory;
-        $this->productMetadata = $productMetadata;
         $this->storeManager = $storeManager;
     }
 
