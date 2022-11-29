@@ -111,6 +111,15 @@ class CreateWarrantyProduct extends Command
 
     /**
      * @param ProductRepositoryInterface $productRepository
+     * @param File $file
+     * @param Reader $reader
+     * @param DirectoryList $directoryList
+     * @param ProductFactory $productFactory
+     * @param StoreManagerInterface $storeManager
+     * @param EavSetupFactory $eavSetupFactory
+     * @param EntryFactory $mediaGalleryEntryFactory
+     * @param GalleryManagement $mediaGalleryManagement
+     * @param ImageContentFactory $imageContentFactory
      * @param State $appState
      * @param LoggerInterface $logger
      * @param string|null $name
@@ -185,6 +194,7 @@ class CreateWarrantyProduct extends Command
      */
     public function validateWarrantyProduct(OutputInterface $output)
     {
+        $this->storeManager->setCurrentStore(Store::DEFAULT_STORE_ID);
         $warrantyProduct = $this->getWarrantyProduct();
 
         if ($warrantyProduct) {
