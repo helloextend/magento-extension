@@ -21,6 +21,7 @@ use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Store\Model\Store;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -71,12 +72,18 @@ class CreateWarrantyProduct extends Command
     protected $productMetadata;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
      * @param ProductRepositoryInterface $productRepository
      * @param WarrantyCreate $warrantyProductCreate
      * @param State $appState
      * @param LoggerInterface $logger
      * @param ResourceProductFactory $resourceProductFactory
      * @param ProductMetadataInterface $productMetadata
+     * @param StoreManagerInterface $storeManager
      * @param string|null $name
      */
     public function __construct(
@@ -86,6 +93,7 @@ class CreateWarrantyProduct extends Command
         LoggerInterface            $logger,
         ResourceProductFactory     $resourceProductFactory,
         ProductMetadataInterface   $productMetadata,
+        StoreManagerInterface      $storeManager,
         string                     $name = null
     ) {
         parent::__construct($name);
@@ -95,6 +103,7 @@ class CreateWarrantyProduct extends Command
         $this->logger = $logger;
         $this->resourceProductFactory = $resourceProductFactory;
         $this->productMetadata = $productMetadata;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -137,12 +146,13 @@ class CreateWarrantyProduct extends Command
      */
     public function validateWarrantyProduct(OutputInterface $output): void
     {
+        $this->storeManager->setCurrentStore(Store::DEFAULT_STORE_ID);
         $warrantyProduct = $this->getWarrantyProduct();
 
         if ($warrantyProduct) {
             if (!$this->checkWarrantyProductType($warrantyProduct)) {
                 $warrantyProduct->setTypeId(WarrantyType::TYPE_CODE);
-                $this->saveProduct($warrantyProduct);
+                $this->productRepository->save($warrantyProduct);
                 $output->writeln("Warranty product type is changed to " . WarrantyType::TYPE_CODE);
                 $this->logger->info("Warranty product type is changed to " . WarrantyType::TYPE_CODE);
             }
@@ -153,7 +163,7 @@ class CreateWarrantyProduct extends Command
             } else {
                 $this->clearStatusAttributeValues($warrantyProduct);
                 $warrantyProduct->setStatus(ProductStatus::STATUS_ENABLED);
-                $this->saveProduct($warrantyProduct);
+                $this->productRepository->save($warrantyProduct);
                 $output->writeln("Warranty product is enabled");
                 $this->logger->info("Warranty product is enabled");
             }
@@ -161,31 +171,6 @@ class CreateWarrantyProduct extends Command
             $this->createWarrantyProduct();
             $output->writeln("Warranty product is created");
             $this->logger->info("Warranty product is created");
-        }
-    }
-
-    /**
-     * @param ProductInterface $product
-     * @return void
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Exception\StateException
-     */
-    private function saveProduct($product)
-    {
-        if (in_array(
-            $this->productMetadata->getVersion(),
-            AddWarrantyProductPatch::MAGENTO_REPOSITORY_ISSUE_VERSIONS)
-        ) {
-            /**
-             * using deprecated method instead of repository as magento 2.4.0
-             * has issue with saving products attributes in multi stores
-             * It rewrites product->data['store_id'] and saves attribute values
-             * in substores instead of default store
-             */
-            $product->save();
-        } else {
-            $this->productRepository->save($product);
         }
     }
 
