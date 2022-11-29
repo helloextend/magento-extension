@@ -12,6 +12,7 @@ namespace Extend\Warranty\Console\Command;
 
 use Exception;
 use Extend\Warranty\Model\Product\Type as WarrantyType;
+use Extend\Warranty\Setup\Patch\Data\AddWarrantyProductPatch;
 use Extend\Warranty\Setup\Patch\Data\AddWarrantyProductPatch as WarrantyCreate;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -20,10 +21,12 @@ use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Store\Model\Store;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use \Magento\Catalog\Model\ResourceModel\ProductFactory as ResourceProductFactory;
 
 /**
  * Class CreateWarrantyProduct
@@ -58,24 +61,40 @@ class CreateWarrantyProduct extends Command
     protected $logger;
 
     /**
+     * @var ResourceProductFactory
+     */
+    protected $resourceProductFactory;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
      * @param ProductRepositoryInterface $productRepository
      * @param WarrantyCreate $warrantyProductCreate
      * @param State $appState
      * @param LoggerInterface $logger
+     * @param ResourceProductFactory $resourceProductFactory
+     * @param StoreManagerInterface $storeManager
      * @param string|null $name
      */
     public function __construct(
         ProductRepositoryInterface $productRepository,
-        WarrantyCreate $warrantyProductCreate,
-        State $appState,
-        LoggerInterface $logger,
-        string $name = null
+        WarrantyCreate             $warrantyProductCreate,
+        State                      $appState,
+        LoggerInterface            $logger,
+        ResourceProductFactory     $resourceProductFactory,
+        StoreManagerInterface      $storeManager,
+        string                     $name = null
     ) {
         parent::__construct($name);
         $this->productRepository = $productRepository;
         $this->warrantyProductCreate = $warrantyProductCreate;
         $this->appState = $appState;
         $this->logger = $logger;
+        $this->resourceProductFactory = $resourceProductFactory;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -118,6 +137,7 @@ class CreateWarrantyProduct extends Command
      */
     public function validateWarrantyProduct(OutputInterface $output): void
     {
+        $this->storeManager->setCurrentStore(Store::DEFAULT_STORE_ID);
         $warrantyProduct = $this->getWarrantyProduct();
 
         if ($warrantyProduct) {
@@ -132,6 +152,7 @@ class CreateWarrantyProduct extends Command
                 $output->writeln("Warranty product was exist and enabled");
                 $this->logger->info("Warranty product was exist and enabled");
             } else {
+                $this->clearStatusAttributeValues($warrantyProduct);
                 $warrantyProduct->setStatus(ProductStatus::STATUS_ENABLED);
                 $this->productRepository->save($warrantyProduct);
                 $output->writeln("Warranty product is enabled");
@@ -153,7 +174,7 @@ class CreateWarrantyProduct extends Command
     private function getWarrantyProduct(): ?ProductInterface
     {
         try {
-            return $this->productRepository->get(self::WARRANTY_PRODUCT_SKU, false, Store::DEFAULT_STORE_ID);
+            return $this->productRepository->get(self::WARRANTY_PRODUCT_SKU, true, Store::DEFAULT_STORE_ID);
         } catch (\Exception $e) {
             return null;
         }
@@ -196,5 +217,31 @@ class CreateWarrantyProduct extends Command
         $this->warrantyProductCreate->addImageToPubMedia();
         $this->warrantyProductCreate->createWarrantyProduct();
         $this->warrantyProductCreate->enablePriceForWarrantyProducts();
+    }
+
+    /**
+     *
+     * Clearing status attribute values for warranties product in sub stores
+     *
+     * @param \Magento\Catalog\Model\Product $product
+     * @return void
+     */
+    private function clearStatusAttributeValues($product)
+    {
+        $attributeCode = 'status';
+        $productResource = $this->resourceProductFactory->create();
+
+        $entityIdField = $productResource->getLinkField();
+        $entityId = $product->getData($entityIdField);
+
+        $connection = $productResource->getConnection();
+
+        $statusAttribute = $productResource->getAttribute($attributeCode);
+
+        $where = $connection->quoteInto('attribute_id = ?', $statusAttribute->getId());
+        $where .= $connection->quoteInto(" AND {$entityIdField} = ?", $entityId);
+        $where .= $connection->quoteInto(' AND store_id != ?', Store::DEFAULT_STORE_ID);
+
+        $connection->delete($statusAttribute->getBackendTable(), $where);
     }
 }
