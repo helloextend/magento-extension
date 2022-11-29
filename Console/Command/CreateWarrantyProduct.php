@@ -246,8 +246,6 @@ class CreateWarrantyProduct extends Command
     /**
      *
      * Clearing status attribute values for warranties product in sub stores
-     * In magento 2.4.0 there is an issue which creates useless multistore values
-     *
      *
      * @param \Magento\Catalog\Model\Product $product
      * @return void
