@@ -27,7 +27,7 @@ define([
             insertionPoint: 'div.field.option',
             insertionLogic: 'after',
             formInputName: 'warranty_%s',
-            bundleInputName: '.bundle-option-%s',
+            bundleInputName: '.bundle-option-%s, #bundle-option-%s',
             formInputClass: 'extend-warranty-input',
             selectors: {
                 addToCartForm: '#product_addtocart_form',
@@ -80,6 +80,11 @@ define([
                     this.warrantyBlocks[optionId] = this._initWarrantyOffersBlock(optionId, product.sku);
                 }
             }
+            else if(this.options.bundleSkus[optionId] && !this.options.bundleSkus[optionId][optionValue] && this.warrantyBlocks[optionId]){
+                this.warrantyBlocks[optionId].remove();
+                this.warrantyBlocks[optionId] = undefined;
+
+            }
         },
 
         /**
@@ -92,7 +97,7 @@ define([
         _getWarrantyOffersInsertion: function (productId, productSku) {
             var elem;
             if (this.options.insertionPoint) {
-                elem = $(this.options.bundleInputName.replace('%s', productId), this.element);
+                elem = $(this.options.bundleInputName.replaceAll('%s', productId), this.element);
                 elem = elem.closest(this.options.insertionPoint);
                 if (!elem.length) {
                     elem = this.element;
