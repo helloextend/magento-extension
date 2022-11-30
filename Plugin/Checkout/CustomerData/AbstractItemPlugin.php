@@ -86,6 +86,7 @@ class AbstractItemPlugin
             $result['warranty_add_url'] = $this->getWarrantyAddUrl();
             $result['product_parent_id'] = $this->getParentId($item);
             $result['product_is_tracking_enabled'] = $this->isTrackingEnabled();
+            $result['item_product_sku'] = $item->getProduct()->getData('sku');
         } else {
             $result['product_can_add_warranty'] = false;
         }

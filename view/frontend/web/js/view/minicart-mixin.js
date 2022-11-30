@@ -55,7 +55,7 @@ define([
         _initWarrantyOffers: function (cartItem, element) {
             var blockID = 'warranty-offers-' + cartItem.product_id;
             var warrantyElem = $('#' + blockID, element);
-            let relatedItemId = null;
+            let relatedItemId = null, product_sku = cartItem.product_sku;
 
             if (!cartItem.product_can_add_warranty) {
                 warrantyElem.remove();
@@ -71,10 +71,14 @@ define([
             }
 
             if (!warrantyElem.data('mageCartItemWarranty')) {
+                if(cartItem.item_product_sku){
+                    product_sku =  cartItem.item_product_sku;
+                }
+
                 warrantyElem.cartItemWarranty({
                     isInCartPage: window.location.href === this.shoppingCartUrl,
                     relatedItemId:relatedItemId,
-                    productSku: cartItem.product_sku,
+                    productSku: product_sku,
                     addToCartUrl: cartItem.warranty_add_url,
                     buttonEnabled: true,
                     trackingEnabled: cartItem.product_is_tracking_enabled
