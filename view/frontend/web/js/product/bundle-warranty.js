@@ -27,7 +27,7 @@ define([
             insertionPoint: 'div.field.option',
             insertionLogic: 'after',
             formInputName: 'warranty_%s',
-            bundleInputName: 'input[name="bundle_option[%s]"], .bundle-option-%s',
+            bundleInputName: '.bundle-option-%s, #bundle-option-%s',
             formInputClass: 'extend-warranty-input',
             selectors: {
                 addToCartForm: '#product_addtocart_form',
