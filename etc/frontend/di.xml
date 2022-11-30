@@ -54,4 +54,9 @@
         <plugin name="filterLastOrderItemsFromWarranties"
                 type="Extend\Warranty\Plugin\Checkout\CustomerData\LastOrderedItemsPlugin"/>
     </type>
+
+    <type name="\Magento\Checkout\Model\Cart">
+        <plugin name="check_reorder_items"
+                type="Extend\Warranty\Plugin\Checkout\Model\CartPlugin"/>
+    </type>
 </config>

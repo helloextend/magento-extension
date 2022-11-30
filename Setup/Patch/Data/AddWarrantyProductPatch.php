@@ -1,7 +1,17 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Setup\Patch\Data;
 
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\ProductRepository\MediaGalleryProcessor;
 use Magento\Framework\Phrase;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchRevertableInterface;
@@ -12,6 +22,7 @@ use Extend\Warranty\Model\Product\Type;
 use Magento\Eav\Setup\EavSetup;
 use Magento\Eav\Setup\EavSetupFactory;
 use Magento\Catalog\Model\Product;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Filesystem\Io\File;
 use Magento\Framework\Module\Dir\Reader;
@@ -33,7 +44,7 @@ use Magento\Framework\App\Area;
 /**
  * class AddWarrantyProductPatch
  *
- * Add warranty product
+ * Add warranty product to catalog
  */
 class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInterface, NonTransactionableInterface
 {
@@ -103,6 +114,11 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
     private $state;
 
     /**
+     * @var MediaGalleryProcessor
+     */
+    private $mediaProcessor;
+
+    /**
      * @param ModuleDataSetupInterface $moduleDataSetup
      * @param ProductFactory $productFactory
      * @param EavSetupFactory $eavSetupFactory
@@ -129,7 +145,8 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         EntryFactory $mediaGalleryEntryFactory,
         GalleryManagement $mediaGalleryManagement,
         ImageContentFactory $imageContentFactory,
-        State $state
+        State $state,
+        MediaGalleryProcessor $mediaProcessor
     ) {
         $this->moduleDataSetup = $moduleDataSetup;
         $this->productFactory = $productFactory;
@@ -143,6 +160,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
         $this->mediaGalleryManagement = $mediaGalleryManagement;
         $this->imageContentFactory = $imageContentFactory;
         $this->state = $state;
+        $this->mediaProcessor = $mediaProcessor;
     }
 
     /**
@@ -248,9 +266,7 @@ class AddWarrantyProductPatch implements DataPatchInterface, PatchRevertableInte
             ->setType(mime_content_type($filePath))
             ->setName('Extend Protection Plan')
             ->setBase64EncodedData(base64_encode($this->file->read($filePath)));
-
         $entry->setContent($imageContent);
-
         $this->mediaGalleryManagement->create($sku, $entry);
     }
 
