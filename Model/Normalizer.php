@@ -23,9 +23,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Quote\Api\CartItemRepositoryInterface;
 use Magento\Quote\Api\Data\CartInterface;
-use Magento\Quote\Api\Data\CartItemExtension;
 use Magento\Quote\Model\Quote\Item;
-use Magento\Bundle\Model\Product\Type as BundleProductType;
 
 /**
  * Class Normalizer
@@ -98,11 +96,6 @@ class Normalizer
         foreach ($quote->getAllItems() as $quoteItem) {
             if ($quoteItem->getProductType() === Type::TYPE_CODE) {
                 $warrantyItems[$quoteItem->getItemId()] = $quoteItem;
-            } elseif (BundleProductType::TYPE_CODE == $quoteItem->getProductType()) {
-                $productItems[] = $quoteItem;
-                foreach ($quoteItem->getChildren() as $bundleChildItem) {
-                    $productItems[] = $bundleChildItem;
-                }
             } else {
                 $productItems[$quoteItem->getItemId()] = $quoteItem;
             }

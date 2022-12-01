@@ -10,7 +10,6 @@
 
 namespace Extend\Warranty\Controller\Cart;
 
-use Extend\Warranty\Helper\Data as WarrantyHelper;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Checkout\Controller\Cart;
@@ -196,25 +195,35 @@ class Add extends Cart
             }
 
             $relatedProduct = $warrantyData['product'];
-            $relatedItemId = $warrantyData['related_item_id'] ?? null;
             $qty = 1;
 
             $quote = $this->_checkoutSession->getQuote();
             $items = $quote->getAllVisibleItems();
 
             foreach ($items as $item) {
-                if(!$relatedItemId && $relatedProduct == $item->getSku()){
-                    $relatedItemId = $item->getId();
+                $value = false;
+                $option = $item->getOptionByCode('associated_product');
+
+                if ($option instanceof \Magento\Quote\Model\Quote\Item\Option) {
+                    $value = $option->getValue();
+                }
+
+                if ($item->getProductType() === Type::TYPE_CODE && $value === $relatedProduct) {
+                    $this->cart->removeItem($item->getId());
                 }
 
                 $product = $item->getProduct();
+                $sku = $item->getSku();
 
-                if ($item->getId() === $relatedItemId) {
+                if (
+                    $product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE
+                ) {
+                    $sku = $product->getData('sku');
+                }
+
+                if ($sku === $relatedProduct) {
                     $qty = $item->getQty();
 
-                    if ($product->getTypeId() === 'bundle') {
-                        $warrantyData[Type::DYNAMIC_SKU] =  WarrantyHelper::getComplexProductSku($product);;
-                    }
                 }
             }
 
