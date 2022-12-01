@@ -72,22 +72,11 @@ class UpdateItemComplete implements \Magento\Framework\Event\ObserverInterface
         }
         /** @var \Magento\Quote\Model\Quote\Item $quoteItem */
         $quoteItem = $observer->getData('item');
-        $id = $observer->getData('request')->getParam('id');
+
         if (!$quoteItem instanceof \Magento\Quote\Model\Quote\Item) {
             return;
         }
-        $quote = $quoteItem->getQuote();
-        if ($quoteItem->getId() != $id) {
-            foreach ($quote->getAllItems() as $item) {
-                /* @var Item $item */
-                if ($item->getProductType() === TYPE::TYPE_CODE) {
-                    $warrantyItemOption = $item->getOptionByCode(Type::RELATED_ITEM_ID);
-                    if ($warrantyItemOption && (int)$warrantyItemOption->getValue() === (int)$id) {
-                        $warrantyItemOption->setValue($quoteItem->getId())->save();
-                    }
-                }
-            }
-        }
+
         $qty = (int)$quoteItem->getQty();
         $origQty = (int)$quoteItem->getOrigData('qty');
         if ($qty <> $origQty) {
@@ -113,12 +102,6 @@ class UpdateItemComplete implements \Magento\Framework\Event\ObserverInterface
                 ];
                 $this->_trackingHelper->setTrackingData($trackingData);
             }
-        }
-
-        try {
-            $this->normalizer->normalize($quote);
-        } catch (LocalizedException $exception) {
-            $this->logger->error($exception->getMessage());
         }
     }
 }

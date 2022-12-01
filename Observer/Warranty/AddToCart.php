@@ -154,22 +154,6 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
                 $warrantyData = $request->getPost('warranty_' . $id, []);
                 $this->addWarranty($cart, $warrantyData, $qty, $product);
             }
-        } else if ($product->getTypeId() === 'bundle') {
-            if ($this->dataHelper->isIndividualBundleItemOffersEnabled()) {
-                $items = $request->getPost('bundle_option');
-                $quantities = $request->getPost('bundle_option_qty');
-                foreach ($items as $id => $value) {
-                    $quantities[$id] = $quantities[$id] ?? 1;
-                    $warrantyData = $request->getPost('warranty_' . $id, []);
-                    $this->addWarranty($cart, $warrantyData, $quantities[$id] * $request->getPost('qty', 1), $product);
-                }
-            } else {
-                $qty = $request->getPost('qty', 1);
-                if($warrantyData = $request->getPost('warranty', [])){
-                    $warrantyData[WarrantyProductType::DYNAMIC_SKU] = WarrantyHelper::getComplexProductSku($product);
-                }
-                $this->addWarranty($cart, $warrantyData, $qty, $product);
-            }
         } else {
             $qty = $request->getPost('qty', 1);
             $warrantyData = $request->getPost('warranty', []);
@@ -245,7 +229,6 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         }
         $relatedItem = $cart->getQuote()->getItemByProduct($product);
         $warrantyData['qty'] = $qty;
-        $warrantyData[WarrantyProductType::RELATED_ITEM_ID] = $relatedItem->getId();
 
         try {
             $cart->addProduct($warranty, $warrantyData);
