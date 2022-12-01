@@ -35,19 +35,8 @@ $bundleCheck = $isBundle && !$viewModel->isIndividualBundleItemOffersEnabled() |
     $bundleCheck
 ): ?>
     <?php
-    $_itemID = '';
-    $productTypeInstance = $product->getTypeInstance();
-    if ($isConfigurable) {
-        $usedProducts = $productTypeInstance->getUsedProducts($product);
-        foreach ($usedProducts as $child) {
-            if ($child->getSku() == $product->getSku()) {
-                $_itemID = $child->getId();
-            }
-        }
-    }
-
-    $_itemID = empty($_itemID) ? $_item->getId() : $_itemID;
-    $_currentSku[$_itemID] = $product->getData('sku');
+    $_currentSku = $viewModel->getProductSkuByQuoteItem($_item);
+    $_itemID = $_item->getId();
     ?>
 
     <?php if (!$viewModel->hasWarranty($quote, (int)$_item->getId())): ?>
@@ -57,7 +46,7 @@ $bundleCheck = $isBundle && !$viewModel->isIndividualBundleItemOffersEnabled() |
             {
                 "#warranty-offers-<?= $block->escapeHtmlAttr($_itemID) ?>": {
                     "cartItemWarranty":{
-                        "productSku": "<?= $block->escapeJs($_currentSku[$_itemID]) ?>",
+                        "productSku": "<?= $block->escapeJs($_currentSku) ?>",
                         "relatedItemId":<?= $block->escapeHtmlAttr($_itemID);?>,
                         "addToCartUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/add')) ?>",
                         "buttonEnabled": true,

@@ -11,6 +11,7 @@
 namespace Extend\Warranty\Plugin\Checkout\CustomerData;
 
 use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\ViewModel\Warranty;
 use Magento\Framework\UrlInterface;
 use Magento\Checkout\CustomerData\AbstractItem;
 use Extend\Warranty\Model\Product\Type;
@@ -48,6 +49,11 @@ class AbstractItemPlugin
     private $trackingHelper;
 
     /**
+     * @var Warranty
+     */
+    private $warrantyViewModel;
+
+    /**
      * AbstractItemPlugin constructor
      *
      * @param UrlInterface $urlBuilder
@@ -57,11 +63,13 @@ class AbstractItemPlugin
     public function __construct(
         UrlInterface $urlBuilder,
         DataHelper $dataHelper,
-        TrackingHelper $trackingHelper
+        TrackingHelper $trackingHelper,
+        Warranty $warrantyViewModel
     ) {
         $this->urlBuilder = $urlBuilder;
         $this->dataHelper = $dataHelper;
         $this->trackingHelper = $trackingHelper;
+        $this->warrantyViewModel = $warrantyViewModel;
     }
 
     /**
@@ -86,7 +94,7 @@ class AbstractItemPlugin
             $result['warranty_add_url'] = $this->getWarrantyAddUrl();
             $result['product_parent_id'] = $this->getParentId($item);
             $result['product_is_tracking_enabled'] = $this->isTrackingEnabled();
-            $result['item_product_sku'] = $item->getProduct()->getData('sku');
+            $result['item_product_sku'] = $this->warrantyViewModel->getProductSkuByQuoteItem($item);
         } else {
             $result['product_can_add_warranty'] = false;
         }

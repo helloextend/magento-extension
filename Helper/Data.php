@@ -17,6 +17,7 @@ use Exception;
 use Magento\Quote\Model\Quote\Item;
 use Magento\Sales\Api\Data\OrderInterface;
 use \Magento\Bundle\Model\Product\Type as BundleProductType;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableProductType;
 
 /**
  * Class Data
@@ -223,21 +224,35 @@ class Data
     }
 
     /**
-     * Return dynamic sku for a bundle product
-     * even if product has "Fixed" Sku type
-     * is product is not bundle, method return default sku
+     * Return sku for a product to be used as associated option in warranty
+     *
+     * For bundle return dynamic sku even if product has "Fixed" Sku type
+     *
+     * For configurable it will return child sku value not main Product Sku
+     *
+     * the rest will get sku from ->data['sku']
      *
      * @param Product $product
      * @return string
      */
     static public function getComplexProductSku($product)
     {
-        if($product->getTypeId() != BundleProductType::TYPE_CODE){
-            return $product->getData('sku');
+        /**
+         * If configurable we need child SKU
+         */
+        if($product->getTypeId() == ConfigurableProductType::TYPE_CODE){
+            return $product->getSku();
         }
 
-        $productClone = clone $product;
-        $productClone->setData('sku_type', 0);
-        return $productClone->getSku();
+        /**
+         * For bundle we need dynamic sku even if configured as fixed sku
+         */
+        if($product->getTypeId() == BundleProductType::TYPE_CODE){
+            $productClone = clone $product;
+            $productClone->setData('sku_type', 0);
+            return $productClone->getSku();
+        }
+
+        return $product->getData('sku');
     }
 }
