@@ -302,4 +302,10 @@
                 type="Extend\Warranty\Plugin\Quote\Model\Item\SetItemDataToOrderPlugin"
                 sortOrder="10" />
     </type>
+
+    <type name="Magento\Sales\Model\Order">
+        <plugin name="extend_warranty_disallow_to_reorder"
+                type="Extend\Warranty\Plugin\Sales\Model\OrderPlugin"
+                sortOrder="10" />
+    </type>
 </config>
