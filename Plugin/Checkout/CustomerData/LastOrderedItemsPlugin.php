@@ -5,7 +5,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Plugin\Checkout\CustomerData;
@@ -47,7 +47,7 @@ class LastOrderedItemsPlugin
                 if (
                     $orderItem = $orderItemCollection->getItemById($item['id'])
                 ) {
-                    if ($orderItem && $orderItem->getProductType() == WarrantyProductType::TYPE_CODE) {
+                    if ($orderItem->getProductType() == WarrantyProductType::TYPE_CODE) {
                         unset($result['items'][$key]);
                     }
                 }
