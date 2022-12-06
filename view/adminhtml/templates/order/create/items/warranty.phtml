@@ -7,11 +7,10 @@ if ($_item = $block->getItem()):
     /** @var Extend\Warranty\ViewModel\Warranty $inCartViewModel */
     $inCartViewModel = $block->getData('viewModel');
     $productType = $_product->getTypeId();
-    $isBundle = $productType === \Magento\Bundle\Model\Product\Type::TYPE_CODE;
-    $isBundleAllowed = !$inCartViewModel->isIndividualBundleItemOffersEnabled();
+
     ?>
 
-    <?php if ($_product->getTypeId() !== 'warranty' && (!$isBundle || $isBundleAllowed)): ?>
+    <?php if ($_product->getTypeId() !== 'warranty'): ?>
     <?php if ($inCartViewModel->isExtendEnabled((int)$quote->getStoreId()) && $inCartViewModel->isShoppingCartOffersEnabled()): ?>
         <?php if (!$inCartViewModel->hasWarranty($quote, (int)$_item->getId())): ?>
             <tbody id="warranty-<?= /* @noEscape */

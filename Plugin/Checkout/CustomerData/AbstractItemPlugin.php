@@ -10,6 +10,7 @@
 
 namespace Extend\Warranty\Plugin\Checkout\CustomerData;
 
+use Extend\Warranty\Helper\Data as WarrantyHelper;
 use Magento\Framework\UrlInterface;
 use Magento\Checkout\CustomerData\AbstractItem;
 use Extend\Warranty\Model\Product\Type;
@@ -75,7 +76,11 @@ class AbstractItemPlugin
         $result['product_image']['isWarranty'] = isset($result['product_type'])
             && $result['product_type'] === Type::TYPE_CODE;
 
-        if ($this->isShoppingCartOffersEnabled() && !$this->hasWarranty($item)) {
+
+        if ($this->isShoppingCartOffersEnabled()
+            && !$result['product_image']['isWarranty']
+            && !$this->hasWarranty($item)
+        ) {
             $result['product_can_add_warranty'] = true;
             $result['warranty_add_url'] = $this->getWarrantyAddUrl();
             $result['product_parent_id'] = $this->getParentId($item);
@@ -88,23 +93,21 @@ class AbstractItemPlugin
     }
 
     /**
-     * Check if has warranty in cart
+     * Check if has warranty in cart by quote Item
      *
      * @param Item $item
      * @return bool
      */
-    private function hasWarranty(Item $item): bool
+    private function hasWarranty(Item $checkQuoteItem): bool
     {
         $hasWarranty = false;
-        $quote = $item->getQuote();
-        $id = $item->getId();
+        $quote = $checkQuoteItem->getQuote();
         $items = $quote->getAllVisibleItems();
         foreach ($items as $item) {
-            if ($item->getProductType() === Type::TYPE_CODE) {
-                $associatedProduct = $item->getOptionByCode(Type::RELATED_ITEM_ID);
-                if ($associatedProduct && $associatedProduct->getValue() === $id) {
-                    $hasWarranty = true;
-                }
+            if ($item->getProductType() === Type::TYPE_CODE
+                && WarrantyHelper::isWarrantyRelatedToQuoteItem($item, $checkQuoteItem)
+            ) {
+                $hasWarranty = true;
             }
         }
 
