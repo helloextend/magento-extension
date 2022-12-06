@@ -9,10 +9,12 @@
 define([
     'jquery',
     'underscore',
+    'priceUtils',
     'extendWarrantyOffers',
     'simpleProductWarranty',
+    'priceBundle',
     'domReady!'
-], function ($, _) {
+], function ($, _, priceUtils) {
     'use strict';
 
     $.widget('mage.bundleProductWarranty', $.mage.simpleProductWarranty, {
@@ -25,15 +27,15 @@ define([
             insertionPoint: 'div.field.option',
             insertionLogic: 'after',
             formInputName: 'warranty_%s',
-            bundleInputName: 'input[name="bundle_option[%s]"]',
+            bundleInputName: 'input[name="bundle_option[%s]"], .bundle-option-%s',
             formInputClass: 'extend-warranty-input',
             selectors: {
                 addToCartForm: '#product_addtocart_form',
                 addToCartButton: '#product-addtocart-button',
-                optionsWrap: 'div.product-options-wrapper'
+                optionsWrap: 'input.bundle.option, select.bundle.option, textarea.bundle.option'
             }
         },
-        warrantyBlocks: [],
+        warrantyBlocks: {},
 
         /**
          * Product warranty offers creation
@@ -42,8 +44,6 @@ define([
         _create: function () {
             this._initElements();
             this._bind();
-
-            this._initProductsWarrantyOffers();
         },
 
         /**
@@ -55,45 +55,35 @@ define([
 
             if (this.options.selectors.optionsWrap) {
                 $(this.options.selectors.optionsWrap, this.mainWrap).on('change', this._updateProductsWarrantyOffers.bind(this));
+                $(this.options.selectors.optionsWrap, this.mainWrap).trigger('change');
             }
-        },
-
-        /**
-         * Initialize warranty offers block for each associated product
-         * @protected
-         */
-        _initProductsWarrantyOffers: function () {
-            _.each(this.options.bundleSkus || [], function (item, index) {
-                var input = $(this.options.bundleInputName.replace('%s', index));
-                if (input.length > 1) {
-                    input = $(this.options.bundleInputName.replace('%s', index) + ':checked');
-                }
-
-                var product = item[input.val()];
-                var warrantyBlock = this._initWarrantyOffersBlock(index, product.sku);
-                this.warrantyBlocks.push(warrantyBlock);
-            }.bind(this));
         },
 
         /**
          * Update the current warranty offers block for each associated product based on their selected configuration
          * @protected
          */
-        _updateProductsWarrantyOffers: function () {
-            var newSkus = [];
+        _updateProductsWarrantyOffers: function (event) {
+            var newSkus = [],
+                bundleOptionElement = $(event.target),
+                optionId = priceUtils.findOptionId(bundleOptionElement),
+                optionValue = $(bundleOptionElement).val()
+            ;
 
-            _.each(this.options.bundleSkus || [], function (item, index) {
-                var input = $(this.options.bundleInputName.replace('%s', index));
-                if (input.length > 1) {
-                    input = $(this.options.bundleInputName.replace('%s', index) + ':checked');
+
+
+            if(this.options.bundleSkus[optionId] && this.options.bundleSkus[optionId][optionValue]){
+                let product = this.options.bundleSkus[optionId][optionValue];
+                if(this.warrantyBlocks[optionId]){
+                    this.warrantyBlocks[optionId].extendWarrantyOffers('updateActiveProduct', product.sku);
+                }else{
+                    this.warrantyBlocks[optionId] = this._initWarrantyOffersBlock(optionId, product.sku);
                 }
+            }
+            else if(this.options.bundleSkus[optionId] && !this.options.bundleSkus[optionId][optionValue] && this.warrantyBlocks[optionId]){
+                this.warrantyBlocks[optionId].remove();
+                this.warrantyBlocks[optionId] = undefined;
 
-                var product = item[input.val()];
-                newSkus.push(product.sku);
-            }.bind(this));
-
-            for (let i = 0; i < this.warrantyBlocks.length; i++) {
-                this.warrantyBlocks[i].extendWarrantyOffers('updateActiveProduct', newSkus[i]);
             }
         },
 
@@ -107,7 +97,7 @@ define([
         _getWarrantyOffersInsertion: function (productId, productSku) {
             var elem;
             if (this.options.insertionPoint) {
-                elem = $(this.options.bundleInputName.replace('%s', productId), this.element);
+                elem = $(this.options.bundleInputName.replaceAll('%s', productId), this.element);
                 elem = elem.closest(this.options.insertionPoint);
                 if (!elem.length) {
                     elem = this.element;
