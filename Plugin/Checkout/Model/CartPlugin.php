@@ -27,6 +27,7 @@ class CartPlugin
         $qtyFlag = null
     ) {
         if ($orderItem->getProductType() == WarrantyProductType::TYPE_CODE
+            && $orderItem->getLeadToken()
         ) {
             return $subject;
         }

@@ -29,7 +29,7 @@ class OrderPlugin
             $itemsCollection = $subject->getItemsCollection();
             /** @var Order\Item $item */
             foreach ($itemsCollection as $item) {
-                if ($item->getProductType() == Type::TYPE_CODE) {
+                if ($item->getProductType() == Type::TYPE_CODE && $item->getLeadToken()) {
                     $result = false;
                 }
             }
