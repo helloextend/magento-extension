@@ -61,11 +61,11 @@ class SetItemDataPlugin
     public function afterSetProduct(Item $item, Item $result): Item
     {
         $product = $result->getProduct();
-
+        $buyRequestValues = [];
         if ($result->getSku() && $product) {
             $buyRequest = $product->getCustomOption('info_buyRequest');
 
-            if ($buyRequest->getValue()) {
+            if ($buyRequest && $buyRequest->getValue()) {
                 $buyRequestValues = $this->getBuyRequestValues($buyRequest->getValue());
             }
 
