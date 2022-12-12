@@ -63,9 +63,10 @@ class SetItemDataPlugin
         $product = $result->getProduct();
 
         if ($result->getSku() && $product) {
+            $buyRequestValues = [];
             $buyRequest = $product->getCustomOption('info_buyRequest');
 
-            if ($buyRequest->getValue()) {
+            if ($buyRequest && $buyRequest->getValue()) {
                 $buyRequestValues = $this->getBuyRequestValues($buyRequest->getValue());
             }
 
