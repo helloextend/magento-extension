@@ -515,4 +515,19 @@ class Warranty implements ArgumentInterface
         $leadExpirationDate = $this->leadInfoRequest->create($leadToken)/1000;
         return $leadExpirationDate !== null && time() >= $leadExpirationDate;
     }
+
+    /**
+     * @param $quoteItem
+     * @return mixed
+     */
+    public function getProductSkuByQuoteItem($quoteItem)
+    {
+        $product = $quoteItem->getProduct();
+        $sku = $product->getData('sku');
+
+        if ($product->getTypeId() == Configurable::TYPE_CODE) {
+            $sku = $product->getSku();
+        }
+        return $sku;
+    }
 }
