@@ -21,7 +21,6 @@ define([
         options: {
             isInCartPage: true,
             productSku: null,
-            relatedItemId: null,
             addToCartUrl: null,
             addToCartEvent: null,
             buttonEnabled: true,
@@ -44,12 +43,6 @@ define([
         _addToCart: function (warranty) {
             if (!warranty)
                 return;
-
-            if(this.options.relatedItemId){
-                warranty = $.extend({
-                    related_item_id: this.options.relatedItemId
-                }, warranty);
-            }
 
             $.ajax({
                 url: this.options.addToCartUrl,

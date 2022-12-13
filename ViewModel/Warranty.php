@@ -208,6 +208,7 @@ class Warranty implements ArgumentInterface
         foreach ($items as $item) {
             if(
                 $item->getProductType() === Type::TYPE_CODE
+                && $checkQuoteItem
                 && WarrantyHelper::isWarrantyRelatedToQuoteItem($item,$checkQuoteItem)){
                 $hasWarranty = true;
             }
@@ -270,15 +271,6 @@ class Warranty implements ArgumentInterface
         return $this->dataHelper->isInterstitialCartOffersEnabled();
     }
 
-    /**
-     * Check if offers are enabled on individual bundle product items
-     *
-     * @return bool
-     */
-    public function isIndividualBundleItemOffersEnabled(): bool
-    {
-        return $this->dataHelper->isIndividualBundleItemOffersEnabled();
-    }
 
     /**
      * Check if product has warranty offers
@@ -475,22 +467,6 @@ class Warranty implements ArgumentInterface
         }
 
         return $leadToken;
-    }
-
-    public function getBundleProductsJsonFromOptions(array $options) {
-        $productsJson = [];
-
-        foreach ($options as $option) {
-            /* @var \Magento\Bundle\Model\Option $option */
-            foreach ($option->getSelections() as $selection) {
-                $productsJson[$option->getId()][$selection->getSelectionId()] = [
-                    'id' => $selection->getId(),
-                    'sku' => $selection->getSku()
-                ];
-            }
-        }
-
-        return $productsJson;
     }
 
     /**

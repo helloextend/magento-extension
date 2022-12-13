@@ -11,13 +11,12 @@
 namespace Extend\Warranty\Helper;
 
 use Extend\Warranty\Model\Product\Type;
+use Extend\Warranty\Plugin\Block\Product\View\Type\Configurable;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Exception;
 use Magento\Quote\Model\Quote\Item;
 use Magento\Sales\Api\Data\OrderInterface;
-use \Magento\Bundle\Model\Product\Type as BundleProductType;
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableProductType;
 
 /**
  * Class Data
@@ -187,72 +186,29 @@ class Data
      */
     static public function isWarrantyRelatedToQuoteItem(Item $warrantyItem, Item $quoteItem, $checkWithChildren = false): bool
     {
-
-        if($checkWithChildren === true && $quoteItem->getChildren()){
-            foreach($quoteItem->getChildren() as $child){
-                if(self::isWarrantyRelatedToQuoteItem($warrantyItem,$child)){
-                    return true;
-                }
-            }
-        }
         $associatedProductSku = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
 
         $relatedSkus = [$associatedProductSku->getValue()];
 
-        if ($dynamicSku = $warrantyItem->getOptionByCode(Type::DYNAMIC_SKU)) {
-            $relatedSkus[] = $dynamicSku->getValue();
-        }
-
         $itemSku = self::getComplexProductSku($quoteItem->getProduct());
         $skuCheck = in_array($itemSku, $relatedSkus);
 
-        if ($relatedItemOption = $warrantyItem->getOptionByCode(Type::RELATED_ITEM_ID)) {
-            $relatedCheck = in_array($relatedItemOption->getValue(), [$quoteItem->getId(), $quoteItem->getParentItemId()]);
-        } else {
-            // if no related id specified then skip it
-            $relatedCheck = true;
-        }
-
-        /**
-         * "relatedItemId" check should avoid situation when two quote item
-         * has same sku but connected to different warranty items.
-         *
-         * This case possible with bundles, when two different bundle could
-         * have same warrantable children
-         */
-        return $relatedCheck && $skuCheck;
+        return $skuCheck;
     }
 
     /**
-     * Return sku for a product to be used as associated option in warranty
-     *
-     * For bundle return dynamic sku even if product has "Fixed" Sku type
-     *
-     * For configurable it will return child sku value not main Product Sku
-     *
-     * the rest will get sku from ->data['sku']
+     * Return dynamic sku for a bundle product
+     * even if product has "Fixed" Sku type
+     * is product is not bundle, method return default sku
      *
      * @param Product $product
      * @return string
      */
     static public function getComplexProductSku($product)
     {
-        /**
-         * If configurable we need child SKU
-         */
-        if($product->getTypeId() == ConfigurableProductType::TYPE_CODE){
+        if($product->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE){
             return $product->getSku();
         }
-
-        /**
-         * For bundle we need dynamic sku even if configured as fixed sku
-         */
-        if($product->getTypeId() == BundleProductType::TYPE_CODE){
-            $productClone = clone $product;
-            $productClone->setData('sku_type', 0);
-            return $productClone->getSku();
-        }
-
         return $product->getData('sku');
     }
 }
