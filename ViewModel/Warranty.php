@@ -12,7 +12,7 @@ namespace Extend\Warranty\ViewModel;
 
 use Exception;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\Model\WarrantyRelation;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Api\Sync\Lead\LeadInfoRequest;
 use Extend\Warranty\Model\Offers as OfferModel;
@@ -119,6 +119,8 @@ class Warranty implements ArgumentInterface
      */
     private $leadInfoRequest;
 
+    protected $warrantyRelation;
+
     /**
      * Warranty constructor
      *
@@ -134,6 +136,7 @@ class Warranty implements ArgumentInterface
      * @param StoreManagerInterface $storeManager
      * @param AdminSession $adminSession
      * @param LeadInfoRequest $leadInfoRequest
+     * @param WarrantyRelation $warrantyRelation
      */
     public function __construct(
         DataHelper $dataHelper,
@@ -147,7 +150,8 @@ class Warranty implements ArgumentInterface
         SearchCriteriaBuilder $searchCriteriaBuilder,
         StoreManagerInterface $storeManager,
         AdminSession $adminSession,
-        LeadInfoRequest $leadInfoRequest
+        LeadInfoRequest $leadInfoRequest,
+        WarrantyRelation $warrantyRelation
     ) {
         $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
@@ -161,6 +165,7 @@ class Warranty implements ArgumentInterface
         $this->storeManager = $storeManager;
         $this->adminSession = $adminSession;
         $this->leadInfoRequest = $leadInfoRequest;
+        $this->warrantyRelation = $warrantyRelation;
     }
 
     /**
@@ -209,7 +214,7 @@ class Warranty implements ArgumentInterface
             if(
                 $item->getProductType() === Type::TYPE_CODE
                 && $checkQuoteItem
-                && WarrantyHelper::isWarrantyRelatedToQuoteItem($item,$checkQuoteItem)){
+                && $this->warrantyRelation->isWarrantyRelatedToQuoteItem($item,$checkQuoteItem)){
                 $hasWarranty = true;
             }
         }
@@ -494,16 +499,10 @@ class Warranty implements ArgumentInterface
 
     /**
      * @param $quoteItem
-     * @return mixed
+     * @return string
      */
     public function getProductSkuByQuoteItem($quoteItem)
     {
-        $product = $quoteItem->getProduct();
-        $sku = $product->getData('sku');
-
-        if ($product->getTypeId() == Configurable::TYPE_CODE) {
-            $sku = $product->getSku();
-        }
-        return $sku;
+        return $this->warrantyRelation->getComplexQuoteItemSku($quoteItem);
     }
 }

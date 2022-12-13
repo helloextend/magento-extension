@@ -302,4 +302,13 @@
                 type="Extend\Warranty\Plugin\Logger\LoggerPlugin"
                 sortOrder="10" />
     </type>
+
+    <type name="Extend\Warranty\Model\WarrantyRelation">
+        <arguments>
+            <argument xsi:type="array" name="skuProcessors">
+                <item name="default" xsi:type="object">Extend\Warranty\Model\SkuProcessor\DefaultProcessor</item>
+                <item name="configurable" xsi:type="object">Extend\Warranty\Model\SkuProcessor\ConfigurableProcessor</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

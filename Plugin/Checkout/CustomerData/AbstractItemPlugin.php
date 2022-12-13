@@ -10,7 +10,7 @@
 
 namespace Extend\Warranty\Plugin\Checkout\CustomerData;
 
-use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\Model\WarrantyRelation;
 use Extend\Warranty\ViewModel\Warranty;
 use Magento\Framework\UrlInterface;
 use Magento\Checkout\CustomerData\AbstractItem;
@@ -52,23 +52,29 @@ class AbstractItemPlugin
      */
     private $warrantyViewModel;
 
+    private $warrantyRelation;
+
     /**
      * AbstractItemPlugin constructor
      *
      * @param UrlInterface $urlBuilder
      * @param DataHelper $dataHelper
      * @param TrackingHelper $trackingHelper
+     * @param Warranty $warrantyViewModel
+     * @param WarrantyRelation $warrantyRelation
      */
     public function __construct(
         UrlInterface $urlBuilder,
         DataHelper $dataHelper,
         TrackingHelper $trackingHelper,
-        Warranty $warrantyViewModel
+        Warranty $warrantyViewModel,
+        WarrantyRelation $warrantyRelation
     ) {
         $this->urlBuilder = $urlBuilder;
         $this->dataHelper = $dataHelper;
         $this->trackingHelper = $trackingHelper;
         $this->warrantyViewModel = $warrantyViewModel;
+        $this->warrantyRelation = $warrantyRelation;
     }
 
     /**
@@ -114,7 +120,7 @@ class AbstractItemPlugin
         $items = $quote->getAllVisibleItems();
         foreach ($items as $item) {
             if ($item->getProductType() === Type::TYPE_CODE
-                && WarrantyHelper::isWarrantyRelatedToQuoteItem($item, $checkQuoteItem)
+                && $this->warrantyRelation->isWarrantyRelatedToQuoteItem($item, $checkQuoteItem)
             ) {
                 $hasWarranty = true;
             }
