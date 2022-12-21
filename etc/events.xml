@@ -22,7 +22,7 @@
     <event name="sales_order_place_after">
         <observer name="extend_warranty_create_lead_observer" instance="Extend\Warranty\Observer\CreateLead"/>
     </event>
-    <event name="sales_order_invoice_save_commit_after">
+    <event name="sales_order_invoice_pay">
         <observer name="extend_warranty_create_warranty_invoice_after_observer"
                   instance="Extend\Warranty\Observer\ContractCreate\InvoiceObserver"/>
     </event>
