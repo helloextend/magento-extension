@@ -37,7 +37,7 @@ class Type extends AbstractType
     public const TERM = 'warranty_term';
     public const PLAN_TYPE = 'plan_type';
     public const BUY_REQUEST = 'info_buyRequest';
-    public const DYNAMIC_SKU = 'dynamic_sku';
+    public const SECONDARY_SKU = 'secondary_sku';
 
     /**
      * Custom option labels
@@ -154,6 +154,10 @@ class Type extends AbstractType
         $product->addCustomOption(self::TERM, $buyRequest->getTerm());
         $product->addCustomOption(self::PLAN_TYPE, $buyRequest->getData('coverageType'));
         $product->addCustomOption(self::BUY_REQUEST, $this->serializer->serialize($buyRequest->getData()));
+
+        if($buyRequest->hasSecondarySku()){
+            $product->addCustomOption(self::SECONDARY_SKU, $buyRequest->getSecondarySku());
+        }
 
         if ($this->_isStrictProcessMode($processMode)) {
             $product->setCartQty($buyRequest->getQty());

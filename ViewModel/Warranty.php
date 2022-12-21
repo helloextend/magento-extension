@@ -214,7 +214,8 @@ class Warranty implements ArgumentInterface
             if(
                 $item->getProductType() === Type::TYPE_CODE
                 && $checkQuoteItem
-                && $this->warrantyRelation->isWarrantyRelatedToQuoteItem($item,$checkQuoteItem)){
+                && $this->warrantyRelation->isWarrantyRelatedToQuoteItem($item,$checkQuoteItem)
+            ){
                 $hasWarranty = true;
             }
         }
@@ -503,6 +504,15 @@ class Warranty implements ArgumentInterface
      */
     public function getProductSkuByQuoteItem($quoteItem)
     {
-        return $this->warrantyRelation->getComplexQuoteItemSku($quoteItem);
+        return $this->warrantyRelation->getOfferQuoteItemSku($quoteItem);
+    }
+
+    /**
+     * @param $quoteItem
+     * @return string
+     */
+    public function getRelationSkuByQuoteItem($quoteItem)
+    {
+        return $this->warrantyRelation->getRelationQuoteItemSku($quoteItem);
     }
 }

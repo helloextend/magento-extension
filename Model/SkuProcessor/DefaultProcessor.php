@@ -10,13 +10,21 @@ use Extend\Warranty\Model\SkuProcessorInterface;
 
 class DefaultProcessor implements SkuProcessorInterface
 {
-    public function getRelationProductSku($product): string
-    {
-        return $product->getData('sku');
-    }
-
+    /**
+     * @param $quoteItem
+     * @return string
+     */
     public function getRelationQuoteItemSku($quoteItem): string
     {
-        return self::getRelationProductSku($quoteItem->getProduct());
+        return $quoteItem->getProduct()->getData('sku');
+    }
+
+    /**
+     * @param $quoteItem
+     * @return string
+     */
+    public function getOfferQuoteItemSku($quoteItem): string
+    {
+        return $quoteItem->getProduct()->getData('sku');
     }
 }

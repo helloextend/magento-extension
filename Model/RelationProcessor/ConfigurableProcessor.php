@@ -4,11 +4,11 @@
  * @copyright  Copyright (c) 2022 Guidance Solutions (http://www.guidance.com)
  */
 
-namespace Extend\Warranty\Model\SkuProcessor;
+namespace Extend\Warranty\Model\RelationProcessor;
 
-use Extend\Warranty\Model\SkuProcessorInterface;
+use Extend\Warranty\Model\RelationProcessorInterface;
 
-class ConfigurableProcessor extends DefaultProcessor implements SkuProcessorInterface
+class ConfigurableProcessor extends DefaultProcessor implements RelationProcessorInterface
 {
     /**
      * For configurable we should return Child sku

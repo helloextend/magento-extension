@@ -10,8 +10,20 @@
 
 namespace Extend\Warranty\Model;
 
-interface SkuProcessorInterface
+interface RelationProcessorInterface
 {
+    public function isWarrantyRelatedToQuoteItem($warrantyItem,$quoteItem,$checkWithChildren = false):bool;
+
+    /**
+     * Return related quote item for warranty data
+     * It need in add warranty requests from mini cart or checkout cart
+     *
+     * @param $warrantyData
+     * @param $quoteItem
+     * @return bool
+     */
+    public function isWarrantyDataRelatedToQuoteItem($warrantyData,$quoteItem):bool;
+
     /**
      * Get Product SKU which is used to relate warrantable
      * and warranty quote item

@@ -11,23 +11,32 @@
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Model\Product\Type;
-use Magento\Catalog\Model\Product;
+use JMS\Serializer\Tests\Fixtures\Discriminator\Car;
+use Magento\Checkout\Model\Session;
+use Magento\Quote\Api\Data\CartItemInterface;
 use Magento\Quote\Model\Quote\Item;
 
 class WarrantyRelation
 {
     const DEFAULT_SKU_PROCESSOR = 'default';
-    /**
-     * @var SkuProcessorInterface[]
-     */
-    private $skuProcessors;
 
     /**
-     * @param $skuProcessors
+     * @var RelationProcessorInterface[]
      */
-    public function __construct($skuProcessors = [])
+    private array $relationProcessors = [];
+
+    protected $checkoutSession;
+
+    /**
+     * @param RelationProcessorInterface[] $relationProcessors
+     */
+    public function __construct(
+        Session $checkoutSession,
+                $relationProcessors = []
+    )
     {
-        $this->skuProcessors = $skuProcessors;
+        $this->relationProcessors = $relationProcessors;
+        $this->checkoutSession = $checkoutSession;
     }
 
     /**
@@ -38,14 +47,7 @@ class WarrantyRelation
      */
     public function isWarrantyRelatedToQuoteItem(Item $warrantyItem, Item $quoteItem, $checkWithChildren = false): bool
     {
-        $associatedProductSku = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-
-        $relatedSkus = [$associatedProductSku->getValue()];
-
-        $itemSku = $this->getComplexQuoteItemSku($quoteItem);
-        $skuCheck = in_array($itemSku, $relatedSkus);
-
-        return $skuCheck;
+        return $this->getProcessor($quoteItem->getProductType())->isWarrantyRelatedToQuoteItem($warrantyItem, $quoteItem, $checkWithChildren);
     }
 
     /**
@@ -54,14 +56,73 @@ class WarrantyRelation
      * @param Item $quoteItem
      * @return string
      */
-    public function getComplexQuoteItemSku($quoteItem): string
+    public function getRelationQuoteItemSku($quoteItem): string
     {
-        if (isset($this->skuProcessors[$quoteItem->getProductType()])) {
-            $relationSku = $this->skuProcessors[$quoteItem->getProductType()]->getRelationQuoteItemSku($quoteItem);
-        } else {
-            $relationSku =$this->skuProcessors[self::DEFAULT_SKU_PROCESSOR]->getRelationQuoteItemSku($quoteItem);
-        }
+        return $this->getProcessor($quoteItem->getProductType())
+            ->getRelationQuoteItemSku($quoteItem);;
+    }
 
-        return $relationSku;
+    public function getOfferQuoteItemSku(CartItemInterface $quoteItem): string
+    {
+        return $this->getProcessor($quoteItem->getProductType())
+            ->getOfferQuoteItemSku($quoteItem);
+    }
+
+    public function getRelatedQuoteItemByWarrantyData($warrantyData)
+    {
+        try {
+            $quote = $this->checkoutSession->getQuote();
+        } catch (\Exception $e) {
+            //log that quote is not loaded
+            return null;
+        }
+        /** @var CartItemInterface $quoteItem */
+        foreach ($quote->getAllItems() as $quoteItem) {
+            $relatedProcessor = $this->getProcessor($quoteItem->getProductType());
+            if ($relatedProcessor->isWarrantyDataRelatedToQuoteItem($warrantyData, $quoteItem)) {
+                return $quoteItem;
+            }
+        }
+        return null;
+    }
+
+    public function quoteItemHasWarranty($quoteItem)
+    {
+
+    }
+
+    public function getWarrantiesByQuoteItem($quoteItem)
+    {
+        $quote = $this->checkoutSession->getQuote();
+
+        $warranties = [];
+        foreach ($quote->getAllItems() as $item) {
+            $relatedProcessor = $this->getProcessor($quoteItem->getProductType());
+
+            if ($item->getProductType() !== Type::TYPE_CODE) {
+                continue;
+            }
+            if ($relatedProcessor->isWarrantyRelatedToQuoteItem($item, $quoteItem)) {
+                $warranties[] = $item;
+            }
+        }
+        return $warranties;
+
+    }
+
+    /**
+     * Get SKU processor by product type
+     *
+     * @param $productType
+     * @return RelationProcessorInterface
+     */
+    private function getProcessor($productType)
+    {
+        $processorType = self::DEFAULT_SKU_PROCESSOR;
+
+        if (isset($this->relationProcessors[$productType])) {
+            $processorType = $productType;
+        }
+        return $this->relationProcessors[$processorType];
     }
 }
