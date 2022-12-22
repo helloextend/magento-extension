@@ -275,7 +275,8 @@ class Add extends Cart
          */
         $relatedQuoteItem = $this->warrantyRelation->getRelatedQuoteItemByWarrantyData($warrantyData);
 
-        $relatedQty = $relatedQuoteItem->getQty();
+        $relatedQty = $relatedQuoteItem->getTotalQty();
+
         $existedWarranties = $this->warrantyRelation->getWarrantiesByQuoteItem($relatedQuoteItem);
         foreach ($existedWarranties as $warrantyItem) {
             $relatedQty -= $warrantyItem->getQty();
