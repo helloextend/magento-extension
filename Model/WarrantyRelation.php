@@ -185,27 +185,6 @@ class WarrantyRelation
     }
 
     /**
-     * @param OrderItemInterface $orderItem
-     * @return bool
-     */
-    public function orderItemHasWarranty($orderItem): bool
-    {
-        $order = $orderItem->getOrder();
-
-        $hasWarranty = false;
-        foreach ($order->getAllItems() as $warrantyOrderItem) {
-            if ($warrantyOrderItem->getProductType() === Type::TYPE_CODE) {
-                if ($this->getProcessor($orderItem->getProductType())
-                    ->isWarrantyRelatedToOrderItem($warrantyOrderItem, $orderItem)
-                ) {
-                    $hasWarranty = true;
-                }
-            }
-        }
-        return $hasWarranty;
-    }
-
-    /**
      * @param $quoteItem
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
