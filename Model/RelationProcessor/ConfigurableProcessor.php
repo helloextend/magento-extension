@@ -7,6 +7,8 @@
 namespace Extend\Warranty\Model\RelationProcessor;
 
 use Extend\Warranty\Model\RelationProcessorInterface;
+use Magento\Quote\Api\Data\CartItemInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
 
 class ConfigurableProcessor extends DefaultProcessor implements RelationProcessorInterface
 {
@@ -14,7 +16,7 @@ class ConfigurableProcessor extends DefaultProcessor implements RelationProcesso
      * For configurable we should return Child sku
      * so getting it not via getData but via getSku logic
      *
-     * @param $quoteItem
+     * @param CartItemInterface $quoteItem
      * @return string
      */
     public function getRelationQuoteItemSku($quoteItem): string
@@ -26,11 +28,24 @@ class ConfigurableProcessor extends DefaultProcessor implements RelationProcesso
      * For configurable we should return Child sku
      * so getting it not via getData but via getSku logic
      *
-     * @param $quoteItem
+     * @param CartItemInterface $quoteItem
      * @return string
      */
     public function getOfferQuoteItemSku($quoteItem): string
     {
         return $quoteItem->getProduct()->getSku();
+    }
+
+    /**
+     * For configurable order item logic is different so
+     * orderItem->getSku return correct sku for offers on
+     * order view page
+     *
+     * @param OrderItemInterface $quoteItem
+     * @return string
+     */
+    public function getOfferOrderItemSku($orderItem):string
+    {
+        return $orderItem->getSku();
     }
 }

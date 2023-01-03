@@ -10,25 +10,45 @@
 
 namespace Extend\Warranty\Model;
 
+use Magento\Quote\Api\Data\CartItemInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
+
 interface RelationProcessorInterface
 {
-    public function isWarrantyRelatedToQuoteItem($warrantyItem,$quoteItem,$checkWithChildren = false):bool;
+    /**
+     * @param CartItemInterface $warrantyItem
+     * @param CartItemInterface $item
+     * @param $checkWithChildren
+     * @return bool
+     */
+    public function isWarrantyRelatedToQuoteItem(CartItemInterface $warrantyItem, CartItemInterface $item, $checkWithChildren = false): bool;
 
     /**
-     * Return related quote item for warranty data
+     * this method need to decide if  order item has warranty and create
+     * lead if not
+     *
+     * @param OrderItemInterface $warrantyItem
+     * @param OrderItemInterface $item
+     * @param $checkWithChildren
+     * @return bool
+     */
+    public function isWarrantyRelatedToOrderItem(OrderItemInterface $warrantyItem, OrderItemInterface $item, $checkWithChildren = false): bool;
+
+    /**
+     * Return related quote item for warranty data from Request
      * It need in add warranty requests from mini cart or checkout cart
      *
      * @param $warrantyData
      * @param $quoteItem
      * @return bool
      */
-    public function isWarrantyDataRelatedToQuoteItem($warrantyData,$quoteItem):bool;
+    public function isWarrantyDataRelatedToQuoteItem($warrantyData, $quoteItem): bool;
 
     /**
      * Get Product SKU which is used to relate warrantable
      * and warranty quote item
      *
-     * @param $quoteItem
+     * @param CartItemInterface $quoteItem
      * @return string
      */
     public function getRelationQuoteItemSku($quoteItem): string;
@@ -37,8 +57,28 @@ interface RelationProcessorInterface
      * Get Product SKU to request offers on
      * checkout cart and mini cart
      *
-     * @param $quoteItem
+     * @param CartItemInterface $quoteItem
      * @return string
      */
     public function getOfferQuoteItemSku($quoteItem): string;
+
+    /**
+     * Get Order Item SKU to request offers
+     * needed on order view
+     *
+     * @param OrderItemInterface $quoteItem
+     * @return string
+     */
+    public function getOfferOrderItemSku($orderItem): string;
+
+    /**
+     * Get Order Item SKU which is used to relate warrantable
+     * and warranty quote item.
+     *
+     * Needed on order view page
+     *
+     * @param OrderItemInterface $quoteItem
+     * @return string
+     */
+    public function getRelationOrderItemSku($orderItem): string;
 }

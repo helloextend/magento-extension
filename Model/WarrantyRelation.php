@@ -11,10 +11,10 @@
 namespace Extend\Warranty\Model;
 
 use Extend\Warranty\Model\Product\Type;
-use JMS\Serializer\Tests\Fixtures\Discriminator\Car;
 use Magento\Checkout\Model\Session;
 use Magento\Quote\Api\Data\CartItemInterface;
 use Magento\Quote\Model\Quote\Item;
+use Magento\Sales\Api\Data\OrderItemInterface;
 
 class WarrantyRelation
 {
@@ -40,18 +40,48 @@ class WarrantyRelation
     }
 
     /**
-     * @param Item $warrantyItem
-     * @param Item $quoteItem
+     * @param CartItemInterface $warrantyItem
+     * @param CartItemInterface $quoteItem
      * @param $checkWithChildren
      * @return bool
      */
-    public function isWarrantyRelatedToQuoteItem(Item $warrantyItem, Item $quoteItem, $checkWithChildren = false): bool
+    public function isWarrantyRelatedToQuoteItem(
+        CartItemInterface $warrantyItem,
+        CartItemInterface $quoteItem,
+                          $checkWithChildren = false
+    ): bool
     {
-        return $this->getProcessor($quoteItem->getProductType())->isWarrantyRelatedToQuoteItem($warrantyItem, $quoteItem, $checkWithChildren);
+        return $this->getProcessor($quoteItem->getProductType())
+            ->isWarrantyRelatedToQuoteItem(
+                $warrantyItem,
+                $quoteItem,
+                $checkWithChildren
+            );
+    }
+
+    /**
+     * @param OrderItemInterface $warrantyItem
+     * @param OrderItemInterface $orderItem
+     * @param $checkWithChildren
+     * @return bool
+     */
+    public function isWarrantyRelatedToOrderItem(
+        OrderItemInterface $warrantyItem,
+        OrderItemInterface $orderItem,
+                           $checkWithChildren = false
+    ): bool
+    {
+        return $this->getProcessor($orderItem->getProductType())
+            ->isWarrantyRelatedToOrderItem(
+                $warrantyItem,
+                $orderItem,
+                $checkWithChildren
+            );
     }
 
     /**
      * Return sku for warrantable product
+     * which should be used for relation between warranty and warrantable items
      *
      * @param Item $quoteItem
      * @return string
@@ -62,12 +92,59 @@ class WarrantyRelation
             ->getRelationQuoteItemSku($quoteItem);;
     }
 
-    public function getOfferQuoteItemSku(CartItemInterface $quoteItem): string
+    /**
+     * @param $relationSku
+     * @return CartItemInterface
+     */
+    public function getWarrantyByRelationSku($relationSku)
     {
-        return $this->getProcessor($quoteItem->getProductType())
-            ->getOfferQuoteItemSku($quoteItem);
+        try {
+            $quote = $this->checkoutSession->getQuote();
+        } catch (\Exception $e) {
+            //log that quote is not loaded
+            return null;
+        }
+
+        /** @var CartItemInterface $quoteItem */
+        foreach ($quote->getAllItems() as $quoteItem) {
+            if ($quoteItem->getProductType() == Type::TYPE_CODE) {
+                $associatedProductSku = $quoteItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
+                if ($associatedProductSku && $associatedProductSku->getValue() == $relationSku) {
+                    return $quoteItem;
+                }
+            }
+        }
+        return null;
     }
 
+    /**
+     * Return product sku which is used to request offers from Extend
+     *
+     * @param CartItemInterface $item
+     * @return string
+     */
+    public function getOfferQuoteItemSku($item): string
+    {
+        return $this->getProcessor($item->getProductType())
+            ->getOfferQuoteItemSku($item);
+    }
+
+    /**
+     * Return product sku which is used to request offers from Extend
+     *
+     * @param CartItemInterface $item
+     * @return string
+     */
+    public function getOfferOrderItemSku($item): string
+    {
+        return $this->getProcessor($item->getProductType())
+            ->getOfferOrderItemSku($item);
+    }
+
+    /**
+     * @param $warrantyData
+     * @return CartItemInterface|null
+     */
     public function getRelatedQuoteItemByWarrantyData($warrantyData)
     {
         try {
@@ -86,11 +163,54 @@ class WarrantyRelation
         return null;
     }
 
-    public function quoteItemHasWarranty($quoteItem)
+    /**
+     * Checks if quote item has related warranty in cart
+     * @param CartItemInterface $quoteItem
+     * @return bool
+     */
+    public function quoteItemHasWarranty(CartItemInterface $quoteItem): bool
     {
+        $hasWarranty = false;
+        $quote = $quoteItem->getQuote();
+        $items = $quote->getAllVisibleItems();
+        foreach ($items as $item) {
+            if ($item->getProductType() === Type::TYPE_CODE
+                && $this->isWarrantyRelatedToQuoteItem($item, $quoteItem)
+            ) {
+                $hasWarranty = true;
+            }
+        }
 
+        return $hasWarranty;
     }
 
+    /**
+     * @param OrderItemInterface $orderItem
+     * @return bool
+     */
+    public function orderItemHasWarranty($orderItem): bool
+    {
+        $order = $orderItem->getOrder();
+
+        $hasWarranty = false;
+        foreach ($order->getAllItems() as $warrantyOrderItem) {
+            if ($warrantyOrderItem->getProductType() === Type::TYPE_CODE) {
+                if ($this->getProcessor($orderItem->getProductType())
+                    ->isWarrantyRelatedToOrderItem($warrantyOrderItem, $orderItem)
+                ) {
+                    $hasWarranty = true;
+                }
+            }
+        }
+        return $hasWarranty;
+    }
+
+    /**
+     * @param $quoteItem
+     * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
     public function getWarrantiesByQuoteItem($quoteItem)
     {
         $quote = $this->checkoutSession->getQuote();
@@ -111,7 +231,7 @@ class WarrantyRelation
     }
 
     /**
-     * Get SKU processor by product type
+     * Get Relation processor by product type
      *
      * @param $productType
      * @return RelationProcessorInterface

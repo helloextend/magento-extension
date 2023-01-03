@@ -116,18 +116,7 @@ class AbstractItemPlugin
      */
     private function hasWarranty(Item $checkQuoteItem): bool
     {
-        $hasWarranty = false;
-        $quote = $checkQuoteItem->getQuote();
-        $items = $quote->getAllVisibleItems();
-        foreach ($items as $item) {
-            if ($item->getProductType() === Type::TYPE_CODE
-                && $this->warrantyRelation->isWarrantyRelatedToQuoteItem($item, $checkQuoteItem)
-            ) {
-                $hasWarranty = true;
-            }
-        }
-
-        return $hasWarranty;
+        return $this->warrantyRelation->quoteItemHasWarranty($checkQuoteItem);
     }
 
     /**

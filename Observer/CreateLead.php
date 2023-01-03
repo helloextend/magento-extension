@@ -16,7 +16,7 @@ use Extend\Warranty\Model\Leads as LeadModel;
 use Extend\Warranty\Model\Offers as OfferModel;
 use Extend\Warranty\Model\Orders as ExtendOrder;
 use Extend\Warranty\Model\Product\Type;
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Extend\Warranty\Model\WarrantyRelation;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
@@ -76,6 +76,8 @@ class CreateLead implements ObserverInterface
      */
     private $logger;
 
+    protected $warrantyRelation;
+
     /**
      * CreateLead constructor
      *
@@ -85,21 +87,25 @@ class CreateLead implements ObserverInterface
      * @param ExtendOrder $extendOrder
      * @param DataHelper $dataHelper
      * @param LoggerInterface $logger
+     * @param WarrantyRelation $warrantyRelation
      */
     public function __construct(
         OrderItemRepositoryInterface $orderItemRepository,
-        OfferModel $offerModel,
-        LeadModel $leadModel,
-        ExtendOrder $extendOrder,
-        DataHelper $dataHelper,
-        LoggerInterface $logger
-    ) {
+        OfferModel                   $offerModel,
+        LeadModel                    $leadModel,
+        ExtendOrder                  $extendOrder,
+        DataHelper                   $dataHelper,
+        LoggerInterface              $logger,
+        WarrantyRelation             $warrantyRelation
+    )
+    {
         $this->orderItemRepository = $orderItemRepository;
         $this->offerModel = $offerModel;
         $this->leadModel = $leadModel;
         $this->extendOrder = $extendOrder;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->warrantyRelation = $warrantyRelation;
     }
 
     /**
@@ -122,6 +128,7 @@ class CreateLead implements ObserverInterface
 
             /** @var OrderItemInterface $orderItem */
             foreach ($order->getAllItems() as $orderItem) {
+                $orderItem->setOrder($order);
                 if ($orderItem->getProductType() === Type::TYPE_CODE) {
                     $warrantyItems[] = $orderItem;
                 } else {
@@ -136,7 +143,13 @@ class CreateLead implements ObserverInterface
             }
 
             foreach ($productItems as &$productItem) {
-                $hasWarranty = $this->hasWarranty($productItem, $warrantyItems);
+                $hasWarranty = false;
+                foreach ($warrantyItems as $warrantyItem) {
+                    if($this->warrantyRelation->isWarrantyRelatedToOrderItem($warrantyItem, $productItem)){
+                        $hasWarranty = true;
+                    }
+                }
+
                 if ($hasWarranty) {
                     continue;
                 }
@@ -195,35 +208,5 @@ class CreateLead implements ObserverInterface
         } catch (LocalizedException $exception) {
             $this->logger->error('Error during lead creation. ' . $exception->getMessage());
         }
-    }
-
-    /**
-     * Is Product has warranty
-     *
-     * @param OrderItemInterface $productItem
-     * @param array $warrantyItems
-     *
-     * @return bool
-     */
-    private function hasWarranty(OrderItemInterface $productItem, array $warrantyItems)
-    {
-        $hasWarranty = false;
-        $sku = $productItem->getSku();
-
-        foreach ($warrantyItems as $warrantyItem) {
-            $associatedSku = $warrantyItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
-            if ($associatedSku
-                && $sku === $associatedSku
-                && (
-                    $productItem->getProductType() === Configurable::TYPE_CODE
-                    || null === $productItem->getProductOptionByCode('parent_product_id')
-                )
-            ) {
-                $hasWarranty = true;
-                break;
-            }
-        }
-
-        return $hasWarranty;
     }
 }

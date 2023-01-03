@@ -185,6 +185,10 @@ class Type extends AbstractType
             $options[self::ASSOCIATED_PRODUCT] = $associatedProduct->getValue();
         }
 
+        if ($secondarySkuOption = $product->getCustomOption(self::SECONDARY_SKU)) {
+            $options[self::SECONDARY_SKU] = $secondarySkuOption->getValue();
+        }
+
         if ($term = $product->getCustomOption(self::TERM)) {
             $options[self::TERM] = $term->getValue();
         }
