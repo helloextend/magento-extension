@@ -36,13 +36,6 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
     $_currentSku = $viewModel->getProductSkuByQuoteItem($_item);
     $_secondarySku = $viewModel->getRelationSkuByQuoteItem($_item);
     ?>
-<!-- DO NOT COMMIT -->
-    <p>
-        <p>Item Sku: <?php echo $_item->getSku();?></p>
-        <p>Product Sku: <?php echo $_item->getProduct()->getSku();?></p>
-        <p>Product Data Sku: <?php echo $_item->getProduct()->getData('sku');?></p>
-    </p>
-<!-- DO NOT COMMIT -->
     <?php if (!$viewModel->hasWarranty($quote, (int)$_item->getId())): ?>
         <div class="cart-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_itemID) ?>"></div>
 

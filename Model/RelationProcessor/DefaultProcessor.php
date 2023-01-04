@@ -14,16 +14,16 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 class DefaultProcessor implements RelationProcessorInterface
 {
     /**
-     * @param CartItemInterface|OrderItemInterface $quoteItem
+     * @param CartItemInterface $quoteItem
      * @return string
      */
     public function getRelationQuoteItemSku($quoteItem): string
     {
-        return $quoteItem->getProduct()->getData('sku');
+        return $quoteItem->getProduct()->getSku();
     }
 
     /**
-     * @param CartItemInterface|OrderItemInterface $quoteItem
+     * @param CartItemInterface $quoteItem
      * @return string
      */
     public function getOfferQuoteItemSku($quoteItem): string
@@ -41,19 +41,16 @@ class DefaultProcessor implements RelationProcessorInterface
          *
          * In default scenario SECONDARY SKU = ASSOCIATED SKU
          */
-        $secondarySku = $warrantyItem->getOptionByCode(Type::SECONDARY_SKU);
-        if ($secondarySku
-            && $secondarySku->getValue()
-            && $associatedProductSku->getValue() !== $secondarySku->getValue()
-        ) {
-            return false;
-        }
+        $associatedProductSku = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
+        $relatedSku = $associatedProductSku->getValue();
 
-        $relatedSkus = $associatedProductSku->getValue();
+        $relatedSku = $warrantyItem->getOptionByCode(Type::SECONDARY_SKU)
+            ? $warrantyItem->getOptionByCode(Type::SECONDARY_SKU)->getValue()
+            : $relatedSku;
 
         $itemSku = $this->getRelationQuoteItemSku($item);
 
-        return $itemSku == $relatedSkus;
+        return $itemSku == $relatedSku;
     }
 
     /**
@@ -68,26 +65,34 @@ class DefaultProcessor implements RelationProcessorInterface
     {
         $relatedSku = $warrantyItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
 
-        $secondarySku = $warrantyItem->getProductOptionByCode(Type::SECONDARY_SKU);
-        if ($secondarySku
-            && $relatedSku !== $secondarySku
-        ) {
-            return false;
-        }
+        $relatedSku = $warrantyItem->getProductOptionByCode(Type::SECONDARY_SKU)
+            ? $warrantyItem->getProductOptionByCode(Type::SECONDARY_SKU)
+            : $relatedSku;
 
-        $itemSku = $this->getRelationQuoteItemSku($orderItem);
+        $itemSku = $this->getRelationOrderItemSku($orderItem);
 
         return $itemSku == $relatedSku;
     }
 
     public function isWarrantyDataRelatedToQuoteItem($warrantyData, $quoteItem): bool
     {
+        $relatedQuoteItemSku = $this->getRelationQuoteItemSku($quoteItem);
+
         if (isset($warrantyData['product'])
             && $quoteItem->getProduct()
-            && $warrantyData['product'] == $this->getRelationQuoteItemSku($quoteItem)
+            && $warrantyData['product'] == $relatedQuoteItemSku
+            && !$quoteItem->getProduct()->getOptions()
         ) {
             return true;
         }
+
+        if (
+            isset($warrantyData[Type::SECONDARY_SKU])
+            && $warrantyData[Type::SECONDARY_SKU] == $relatedQuoteItemSku
+        ) {
+            return true;
+        }
+
         return false;
     }
 
@@ -98,7 +103,7 @@ class DefaultProcessor implements RelationProcessorInterface
      * @param OrderItemInterface $quoteItem
      * @return string
      */
-    public function getOfferOrderItemSku($orderItem):string
+    public function getOfferOrderItemSku($orderItem): string
     {
         return $orderItem->getProduct()->getSku();
     }
@@ -112,8 +117,12 @@ class DefaultProcessor implements RelationProcessorInterface
      * @param OrderItemInterface $quoteItem
      * @return string
      */
-    public function getRelationOrderItemSku($orderItem):string
+    public function getRelationOrderItemSku($orderItem): string
     {
-        return $orderItem->getProduct()->getSku();
+        $relationSku = $orderItem->getProduct()->getSku();
+        if($orderItem->getProduct()->hasOptions()){
+            $relationSku = $orderItem->getSku();
+        }
+        return $relationSku;
     }
 }
