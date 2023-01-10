@@ -25,6 +25,12 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
     && !$viewModel->isWarrantyInLaterOrders($item)
     && !$isExpired): ?>
     <td>
+        <?php if (!empty($leadToken)): ?>
+            <div class="product-lead-token-block">
+                <span><?= $block->escapeHtml(__('Lead Token'))?>: </span>
+                <span><?= $block->escapeHtml(implode(',', $leadToken)) ?></span>
+            </div>
+        <?php endif; ?>
         <div id="extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
     </td>
     <script>

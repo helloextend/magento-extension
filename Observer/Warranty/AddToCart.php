@@ -10,6 +10,9 @@
 
 namespace Extend\Warranty\Observer\Warranty;
 
+use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\Model\Product\Type as WarrantyProductType;
+
 /**
  * Class AddToCart
  *
@@ -88,6 +91,11 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
     protected $normalizer;
 
     /**
+     * @var bool
+     */
+    protected $saveCartFlag = false;
+
+    /**
      * AddToCart constructor
      *
      * @param \Magento\Checkout\Helper\Cart $cartHelper
@@ -146,26 +154,15 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
                 $warrantyData = $request->getPost('warranty_' . $id, []);
                 $this->addWarranty($cart, $warrantyData, $qty, $product);
             }
-        } else if ($product->getTypeId() === 'bundle') {
-            if ($this->dataHelper->isIndividualBundleItemOffersEnabled()) {
-                $items = $request->getPost('bundle_option');
-                $quantities = $request->getPost('bundle_option_qty');
-                foreach ($items as $id => $value) {
-                    $warrantyData = $request->getPost('warranty_' . $id, []);
-                    $this->addWarranty($cart, $warrantyData, $quantities[$id] * $request->getPost('qty', 1), $product);
-                }
-            } else {
-                $qty = $request->getPost('qty', 1);
-                $warrantyData = $request->getPost('warranty', []);
-                $warrantyData[\Extend\Warranty\Model\Product\Type::DYNAMIC_SKU] = $product->getData('sku');
-
-                $this->addWarranty($cart, $warrantyData, $qty, $product);
-            }
         } else {
             $qty = $request->getPost('qty', 1);
             $warrantyData = $request->getPost('warranty', []);
 
             $this->addWarranty($cart, $warrantyData, $qty, $product);
+        }
+
+        if($this->saveCartFlag){
+            $cart->save();
         }
 
         if ($this->dataHelper->isBalancedCart()) {
@@ -210,7 +207,7 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         }
 
         $this->_searchCriteriaBuilder
-            ->setPageSize(1)->addFilter('type_id', \Extend\Warranty\Model\Product\Type::TYPE_CODE);
+            ->setPageSize(1)->addFilter('type_id', WarrantyProductType::TYPE_CODE);
         /** @var \Magento\Framework\Api\SearchCriteria $searchCriteria */
         $searchCriteria = $this->_searchCriteriaBuilder->create();
         $searchResults = $this->_productRepository->getList($searchCriteria);
@@ -232,14 +229,13 @@ class AddToCart implements \Magento\Framework\Event\ObserverInterface
         }
         $relatedItem = $cart->getQuote()->getItemByProduct($product);
         $warrantyData['qty'] = $qty;
-        $warrantyData[\Extend\Warranty\Model\Product\Type::RELATED_ITEM_ID] = $relatedItem->getId();
 
         try {
             $cart->addProduct($warranty, $warrantyData);
             $cart->getQuote()->removeAllAddresses();
             /** @noinspection PhpUndefinedMethodInspection */
             $cart->getQuote()->setTotalsCollectedFlag(false);
-            $cart->save();
+            $this->saveCartFlag = true;
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->_logger->critical($e);
             $this->_messageManager->addErrorMessage(

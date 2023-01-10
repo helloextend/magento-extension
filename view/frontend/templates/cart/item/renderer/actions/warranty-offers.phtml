@@ -23,15 +23,13 @@ $viewModel = $block->getData('viewModel');
 $productType = $product->getTypeId();
 $isConfigurable = $productType === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
 $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
-$isBundle = $productType === \Magento\Bundle\Model\Product\Type::TYPE_CODE;
-$isBundleAllowed = !$viewModel->isIndividualBundleItemOffersEnabled();
+
 ?>
 
 <?php if (
     !$isWarrantyItem &&
     $viewModel->isExtendEnabled() &&
-    $viewModel->isShoppingCartOffersEnabled() &&
-    (!$isBundle || $isBundleAllowed)
+    $viewModel->isShoppingCartOffersEnabled()
 ): ?>
     <?php
     $_itemID = '';

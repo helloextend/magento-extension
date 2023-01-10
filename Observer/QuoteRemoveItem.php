@@ -9,7 +9,8 @@
  */
 namespace Extend\Warranty\Observer;
 
-use Extend\Warranty\Model\Product\Type;
+use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\Model\Product\Type as WarrantyProductType;
 
 /**
  * Class QuoteRemoveItem
@@ -46,9 +47,8 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
         $quote = $quoteItem->getQuote();
 
         //if the item being removed is a warranty offer, send tracking for the offer removed, if tracking enabled
-        if ($quoteItem->getProductType() === \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
+        if ($quoteItem->getProductType() === WarrantyProductType::TYPE_CODE) {
             if ($this->_trackingHelper->isTrackingEnabled()) {
-                $relatedItemIdOption = $quoteItem->getOptionByCode(Type::RELATED_ITEM_ID);
                 $warrantySku = (string)$quoteItem->getOptionByCode('associated_product')->getValue();
                 $planId = (string)$quoteItem->getOptionByCode('warranty_id')->getValue();
                 $trackingData = [
@@ -62,7 +62,7 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
                 $trackProduct = true;
                 $items = $quote->getAllItems();
                 foreach ($items as $item) {
-                    if ($relatedItemIdOption && $item->getId() == $relatedItemIdOption->getValue()) {
+                    if ($item->getSku() === $warrantySku) {
                         $trackProduct = false;
                         break;
                     }
@@ -94,8 +94,10 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
             return;
         }
 
-        //there is an associated warranty item, remove it
-        //the removal will dispatch this event again where the offer removal will be tracked above
+        /**
+         * there is an associated warranty item, remove it
+         * the removal will dispatch this event again where the offer removal will be tracked above
+         */
 
         $removeWarranty = true;
         $items = $quote->getAllItems();
