@@ -16,6 +16,7 @@ $parentBlock = $block->getParentBlock();
 $item = $parentBlock->getItem();
 $leadToken = $viewModel->unserialize($item->getLeadToken()) ?? [];
 $isExpired = $viewModel->isExpired((string)reset($leadToken));
+$warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
 ?>
 
 <?php if ($viewModel->isExtendEnabled()
@@ -30,12 +31,12 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
                 <span><?= $block->escapeHtml(implode(',', $leadToken)) ?></span>
             </div>
         <?php endif; ?>
-        <div id="extend-offer-<?= /* @noEscape */ str_replace([' ','"'], '', $item->getSku()); ?>"></div>
+        <div id="extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
     </td>
     <script>
-        require(['jquery','mage/url'], function($, urlBuilder){
-            Extend.buttons.renderSimpleOffer(
-                '#extend-offer-<?= /* @noEscape */ str_replace([' ','"'], '', $item->getSku()) ?>', {
+        require(['jquery','mage/url'], function($, urlBuilder) {
+            const $elem = $('#extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>');
+            Extend.buttons.renderSimpleOffer($elem.get(0), {
                 referenceId: '<?= /* @noEscape */ $item->getSku() ?>',
                 onAddToCart: function (opts) {
 
@@ -66,6 +67,13 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
                     }
                 }
             });
+
+            let updateTimer = window.setInterval(() => {
+                if (!$elem.is(':empty')) {
+                    window.clearInterval(updateTimer);
+                    window.dispatchEvent(new Event('resize'));
+                }
+            }, 100);
         });
     </script>
 <?php endif; ?>
