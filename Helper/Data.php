@@ -173,40 +173,4 @@ class Data
 
         return $firstName . ' ' . $lastName;
     }
-
-
-    /**
-     * Return true if quote Item is related to warranty
-     *
-     * @param Item $warrantyItem
-     * @param Item $quoteItem
-     * @return bool
-     */
-    static public function isWarrantyRelatedToQuoteItem(Item $warrantyItem, Item $quoteItem, $checkWithChildren = false): bool
-    {
-        $associatedProductSku = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-
-        $relatedSkus = [$associatedProductSku->getValue()];
-
-        $itemSku = self::getComplexProductSku($quoteItem->getProduct());
-        $skuCheck = in_array($itemSku, $relatedSkus);
-
-        return $skuCheck;
-    }
-
-    /**
-     * Return dynamic sku for a bundle product
-     * even if product has "Fixed" Sku type
-     * is product is not bundle, method return default sku
-     *
-     * @param Product $product
-     * @return string
-     */
-    static public function getComplexProductSku($product)
-    {
-        if($product->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE){
-            return $product->getSku();
-        }
-        return $product->getData('sku');
-    }
 }

@@ -11,6 +11,7 @@
 namespace Extend\Warranty\Controller\Cart;
 
 use Extend\Warranty\Model\Product\Type;
+use Extend\Warranty\Model\WarrantyRelation;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Checkout\Controller\Cart;
 use Magento\Framework\App\Action\Context;
@@ -70,6 +71,8 @@ class Add extends Cart
      */
     private $logger;
 
+    private $warrantyRelation;
+
     /**
      * Add constructor
      *
@@ -84,6 +87,7 @@ class Add extends Cart
      * @param TrackingHelper $trackingHelper
      * @param OfferModel $offerModel
      * @param LoggerInterface $logger
+     * @param WarrantyRelation $logger
      */
     public function __construct(
         Context $context,
@@ -96,13 +100,15 @@ class Add extends Cart
         SearchCriteriaBuilder $searchCriteriaBuilder,
         TrackingHelper $trackingHelper,
         OfferModel $offerModel,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        WarrantyRelation $warrantyRelation
     ) {
         $this->productRepository = $productRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->trackingHelper = $trackingHelper;
         $this->offerModel = $offerModel;
         $this->logger = $logger;
+        $this->warrantyRelation = $warrantyRelation;
 
         parent::__construct(
             $context,
@@ -194,43 +200,14 @@ class Add extends Cart
                 return $this->jsonResponse($responseData);
             }
 
-            $relatedProduct = $warrantyData['product'];
-            $qty = 1;
-
-            $quote = $this->_checkoutSession->getQuote();
-            $items = $quote->getAllVisibleItems();
-
-            foreach ($items as $item) {
-                $value = false;
-                $option = $item->getOptionByCode('associated_product');
-
-                if ($option instanceof \Magento\Quote\Model\Quote\Item\Option) {
-                    $value = $option->getValue();
-                }
-
-                if ($item->getProductType() === Type::TYPE_CODE && $value === $relatedProduct) {
-                    $this->cart->removeItem($item->getId());
-                }
-
-                $product = $item->getProduct();
-                $sku = $item->getSku();
-
-                if (
-                    $product->hasCustomOptions() && $product->getTypeId() === \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE
-                ) {
-                    $sku = $product->getData('sku');
-                }
-
-                if ($sku === $relatedProduct) {
-                    $qty = $item->getQty();
-
-                }
-            }
+            $qty = $this->getQtyForWarranty($warrantyData);
 
             $warrantyData['qty'] = $qty;
 
-            $this->cart->addProduct($warranty, $warrantyData);
-            $this->cart->save();
+            if ($qty) {
+                $this->cart->addProduct($warranty, $warrantyData);
+                $this->cart->save();
+            }
 
             $this->messageManager->addSuccessMessage(
                 __('You added %1 to your shopping cart.', $warranty->getName())
@@ -283,5 +260,29 @@ class Add extends Cart
         $resultJson->setData($data);
 
         return $resultJson;
+    }
+
+    /**
+     * Calculates required qty for a warranty
+     *
+     * @param $warrantyData
+     * @return float
+     */
+    private function getQtyForWarranty($warrantyData)
+    {
+        /**
+         * We need related item to get Qty
+         */
+        $relatedQuoteItem = $this->warrantyRelation->getRelatedQuoteItemByWarrantyData($warrantyData);
+
+        $relatedQty = $relatedQuoteItem->getTotalQty();
+
+        $existedWarranties = $this->warrantyRelation->getWarrantiesByQuoteItem($relatedQuoteItem);
+        foreach ($existedWarranties as $warrantyItem) {
+            $relatedQty -= $warrantyItem->getQty();
+        }
+
+        return $relatedQty;
+
     }
 }

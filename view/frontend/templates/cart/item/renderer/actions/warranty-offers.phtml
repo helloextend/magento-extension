@@ -32,21 +32,10 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
     $viewModel->isShoppingCartOffersEnabled()
 ): ?>
     <?php
-    $_itemID = '';
-    $productTypeInstance = $product->getTypeInstance();
-    if ($isConfigurable) {
-        $usedProducts = $productTypeInstance->getUsedProducts($product);
-        foreach ($usedProducts as $child) {
-            if ($child->getSku() == $product->getSku()) {
-                $_itemID = $child->getId();
-            }
-        }
-    }
-
-    $_itemID = empty($_itemID) ? $_item->getId() : $_itemID;
-    $_currentSku[$_itemID] = $product->getData('sku');
+    $_itemID = $_item->getId();
+    $_currentSku = $viewModel->getProductSkuByQuoteItem($_item);
+    $_secondarySku = $viewModel->getRelationSkuByQuoteItem($_item);
     ?>
-
     <?php if (!$viewModel->hasWarranty($quote, (int)$_item->getId())): ?>
         <div class="cart-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_itemID) ?>"></div>
 
@@ -54,8 +43,8 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
             {
                 "#warranty-offers-<?= $block->escapeHtmlAttr($_itemID) ?>": {
                     "cartItemWarranty":{
-                        "productSku": "<?= $block->escapeJs($_currentSku[$_itemID]) ?>",
-                        "relatedItemId":<?= $block->escapeHtmlAttr($_itemID);?>,
+                        "productSku": "<?= $block->escapeJs($_currentSku) ?>",
+                        "secondarySku": "<?= $block->escapeJs($_secondarySku);?>",
                         "addToCartUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/add')) ?>",
                         "buttonEnabled": true,
                         "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>

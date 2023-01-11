@@ -9,7 +9,7 @@
  */
 namespace Extend\Warranty\Observer;
 
-use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\Model\Normalizer;
 use Extend\Warranty\Model\Product\Type as WarrantyProductType;
 
 /**
@@ -24,14 +24,18 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
      */
     protected $_trackingHelper;
 
+    protected $_normalizer;
+
     /**
      * QuoteRemoveItem constructor.
      * @param \Extend\Warranty\Helper\Tracking $trackingHelper
      */
     public function __construct(
-        \Extend\Warranty\Helper\Tracking $trackingHelper
+        \Extend\Warranty\Helper\Tracking $trackingHelper,
+        Normalizer $normalizer
     ) {
         $this->_trackingHelper = $trackingHelper;
+        $this->_normalizer = $normalizer;
     }
 
     /**
@@ -94,24 +98,10 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
             return;
         }
 
-        /**
-         * there is an associated warranty item, remove it
-         * the removal will dispatch this event again where the offer removal will be tracked above
-         */
 
-        $removeWarranty = true;
-        $items = $quote->getAllItems();
-        foreach ($items as $item) {
-            if ($item->getSku() === $quoteItem->getSku()) {
-                $removeWarranty = false;
-                break;
-            }
-        }
-
-        if ($warrantyItems && $removeWarranty) {
-            foreach ($warrantyItems as $warrantyItem) {
-                $quote->removeItem($warrantyItem->getItemId());
-            }
+        /** Normalizer will kick rellated warranties for warrantable product */
+        if($quoteItem->getProductType() !== WarrantyProductType::TYPE_CODE){
+            $this->_normalizer->normalize($quote);
         }
     }
 }

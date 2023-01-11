@@ -24,7 +24,7 @@ if ($_item = $block->getItem()):
             <script>
                 require(['jquery'], function ($) {
                     Extend.buttons.renderSimpleOffer('#extend-offer-<?= /* @noEscape */ $_item->getId() ?>', {
-                        referenceId: '<?= /* @noEscape */ $_product->getData('sku') ?>',
+                        referenceId: '<?= /* @noEscape */ $inCartViewModel->getProductSkuByQuoteItem($_item) ?>',
                         onAddToCart: function (opts) {
 
                             const plan = opts.plan;
@@ -32,7 +32,7 @@ if ($_item = $block->getItem()):
                                 let parentId = "<?= /* @noEscape */ $_item->getOptionByCode('simple_product') ?
                                     $_item->getProductId() : '' ?>";
                                 let url = "<?= /* @noEscape */ $block->getUrl('extend/warranty/add') ?>";
-                                plan.product = '<?= /* @noEscape */ $_product->getData('sku') ?>';
+                                plan.product = '<?= /* @noEscape */ $inCartViewModel->getProductSkuByQuoteItem($_item) ?>';
 
                                 $.post(url, {
                                     warranty: plan,
