@@ -37,7 +37,7 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
         require(['jquery','mage/url'], function($, urlBuilder) {
             const $elem = $('#extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>');
             Extend.buttons.renderSimpleOffer($elem.get(0), {
-                referenceId: '<?= /* @noEscape */ $item->getSku() ?>',
+                referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
                 onAddToCart: function (opts) {
 
                     const plan = opts.plan;
