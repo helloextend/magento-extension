@@ -21,6 +21,7 @@ define([
         options: {
             isInCartPage: true,
             productSku: null,
+            secondarySku:null,
             addToCartUrl: null,
             addToCartEvent: null,
             buttonEnabled: true,
@@ -44,6 +45,9 @@ define([
             if (!warranty)
                 return;
 
+            if(this.options.secondarySku){
+                warranty.secondary_sku = this.options.secondarySku;
+            }
             $.ajax({
                 url: this.options.addToCartUrl,
                 data: {

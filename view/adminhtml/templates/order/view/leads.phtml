@@ -36,8 +36,8 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
     <script>
         require(['jquery','mage/url'], function($, urlBuilder) {
             const $elem = $('#extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>');
-            Extend.buttons.renderSimpleOffer($elem.get(0), {
-                referenceId: '<?= /* @noEscape */ $item->getSku() ?>',
+            Extend.buttons.renderSimpleOffer($elem.get(0), {       
+                referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
                 onAddToCart: function (opts) {
 
                     const plan = opts.plan;
@@ -46,7 +46,7 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
                         let leadToken = "<?= /* @noEscape */ implode(", ", $leadToken); ?>";
                         let order = "<?= /* @noEscape */ $block->getOrder()->getId();?>";
                         let qty = "<?= /* @noEscape */ $item->getQtyOrdered(); ?>";
-                        plan.product = '<?= /* @noEscape */ $item->getSku() ?>';
+                        plan.product = '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>';
                         plan.qty = '<?= /* @noEscape */ $item->getQtyOrdered(); ?>';
 
                         $.post(url, {

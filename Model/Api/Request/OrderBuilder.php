@@ -4,6 +4,7 @@ namespace Extend\Warranty\Model\Api\Request;
 
 use Extend\Warranty\Helper\Data as DataHelper;
 use Extend\Warranty\Helper\Api\Data as ApiDataHelper;
+use Extend\Warranty\Model\WarrantyRelation;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -59,6 +60,11 @@ class OrderBuilder
     private $apiHelper;
 
     /**
+     * @var WarrantyRelation
+     */
+    private $warrantyRelation;
+
+    /**
      * ContractBuilder constructor
      *
      * @param StoreManagerInterface $storeManager
@@ -72,13 +78,15 @@ class OrderBuilder
         ProductRepositoryInterface $productRepository,
         CountryInformationAcquirerInterface $countryInformationAcquirer,
         DataHelper $helper,
-        ApiDataHelper $apiHelper
+        ApiDataHelper $apiHelper,
+        WarrantyRelation $warrantyRelation
     ) {
         $this->productRepository = $productRepository;
         $this->storeManager = $storeManager;
         $this->countryInformationAcquirer = $countryInformationAcquirer;
         $this->helper = $helper;
         $this->apiHelper = $apiHelper;
+        $this->warrantyRelation = $warrantyRelation;
     }
 
     /**
@@ -127,7 +135,7 @@ class OrderBuilder
             ];
 
         } elseif ($type == \Extend\Warranty\Model\Orders::LEAD) {
-            $productSku = $orderItem->getSku();
+            $productSku = $this->warrantyRelation->getOfferOrderItemSku($orderItem);
             $product = $this->prepareProductPayload($productSku);
 
             $lineItem = [
@@ -207,7 +215,7 @@ class OrderBuilder
 
         foreach ($order->getItems() as $orderItem) {
 
-            $productSku = $orderItem->getSku();
+            $productSku = $this->warrantyRelation->getOfferOrderItemSku($orderItem);
             $qty = $orderItem->getQtyOrdered();
 
             if ($orderItem->getProductType() == Type::TYPE_CODE) {
