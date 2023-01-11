@@ -1,7 +1,11 @@
 <?php
 /**
- * @author     Guidance Magento Team <magento@guidance.com>
- * @copyright  Copyright (c) 2022 Guidance Solutions (http://www.guidance.com)
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Model\RelationProcessor;

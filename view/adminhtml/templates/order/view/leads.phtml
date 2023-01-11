@@ -30,13 +30,13 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
                 <span><?= $block->escapeHtml(implode(',', $leadToken)) ?></span>
             </div>
         <?php endif; ?>
-        <div id="extend-offer-<?= /* @noEscape */ str_replace([' ','"'], '', $item->getSku()); ?>"></div>
+        <div id="extend-offer-<?= /* @noEscape */ str_replace([' ','"'], '', $item->getId()); ?>"></div>
     </td>
     <script>
         require(['jquery','mage/url'], function($, urlBuilder){
             Extend.buttons.renderSimpleOffer(
-                '#extend-offer-<?= /* @noEscape */ str_replace([' ','"'], '', $item->getSku()) ?>', {
-                referenceId: '<?= /* @noEscape */ $item->getSku() ?>',
+                '#extend-offer-<?= /* @noEscape */ str_replace([' ','"'], '', $item->getId()) ?>', {
+                referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
                 onAddToCart: function (opts) {
 
                     const plan = opts.plan;
