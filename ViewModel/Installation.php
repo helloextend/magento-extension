@@ -117,6 +117,75 @@ class Installation implements ArgumentInterface
     }
 
     /**
+     * Get 'Extend.integration' JSON config
+     *
+     * @return string
+     */
+    public function getIntegrationJsonConfig(): string
+    {
+        $jsonConfig = '';
+
+        $storeId = $this->storeManager->getStore()->getId();
+        $isLiveMode = $this->dataHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $storeId);
+
+        $config = [
+            'general' => [
+                'enableExtend' => $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId),
+                'balancedCart' => $this->dataHelper->isBalancedCart($storeId),
+                'enableLeads' => $this->dataHelper->isLeadEnabled($storeId),
+                'enableLogging' => $this->dataHelper->isLoggingEnabled()
+            ],
+            'auth' => [
+                'mode' => $isLiveMode ? AuthMode::LIVE : AuthMode::DEMO,
+                'id' => $isLiveMode ? $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId) : null,
+                'sandboxId' => $isLiveMode ? null : $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId),
+                'extendStoreName' => $this->dataHelper->getStoreName(ScopeInterface::SCOPE_STORES, $storeId)
+            ],
+            'contracts' => [
+                'createWarrantyContract' => $this->dataHelper->isWarrantyContractEnabled($storeId),
+                'contractEvent' => $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId),
+                'contractCreatingMode' => $this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId) ? __('scheduled') : __('event-based'),
+                'cronContractSettings' => [
+                    'frequency' => 0,   //TODO: use appropriate method
+                    'batchSize' => $this->dataHelper->getContractsBatchSize($storeId),
+                    'storagePeriod' => $this->dataHelper->getStoragePeriod($storeId)
+                ],
+                'enableRefunds' => $this->dataHelper->isRefundEnabled($storeId),
+                'createRefundAutomatically' => $this->dataHelper->isAutoRefundEnabled($storeId)
+            ],
+            'offers' => [
+                'displayCartOffers' => $this->dataHelper->isShoppingCartOffersEnabled($storeId),
+                'enablePDPOffers' => $this->dataHelper->isProductDetailPageOffersEnabled($storeId),
+                'enableProductsListOffers' => $this->dataHelper->isProductsListOffersEnabled($storeId),
+                'enableInterstitialCartOffers' => $this->dataHelper->isInterstitialCartOffersEnabled($storeId),
+                'enablePostPurchaseModal' => $this->dataHelper->isLeadsModalEnabled($storeId),
+                'enableOrderInformationOffers' => $this->dataHelper->isOrderOffersEnabled($storeId),
+                //'displayOffersOnIndividualBundleItems' => false
+            ],
+            'syncProducts' => [
+                'batchSize' => $this->dataHelper->getProductsBatchSize(ScopeInterface::SCOPE_STORES, $storeId),
+                'lastSyncDate' => $this->dataHelper->getLastProductSyncDate(ScopeInterface::SCOPE_STORES, $storeId),
+                'enableSpecialPrice' => $this->dataHelper->isProductSpecialPriceSyncEnabled(ScopeInterface::SCOPE_STORES, $storeId),
+                'enableCronSync' => $this->dataHelper->isProductSyncByCronEnabled()
+            ],
+            'syncHistoricalOrders' => [
+                'batchSize' => $this->dataHelper->getHistoricalOrdersBatchSize(ScopeInterface::SCOPE_STORES, $storeId),
+                'lastSendDate' => $this->dataHelper->getHistoricalOrdersSyncPeriod(ScopeInterface::SCOPE_STORES, $storeId),
+                'enableCronSync' => $this->dataHelper->isHistoricalOrdersCronSyncEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            ],
+            'trackingEnabled' => $this->dataHelper->isLoggingEnabled()
+        ];
+
+        try {
+            $jsonConfig = $this->jsonSerializer->serialize($config);
+        } catch (InvalidArgumentException $exception) {
+            $jsonConfig = '';
+        }
+
+        return $jsonConfig;
+    }
+
+    /**
      * Get JS mode
      *
      * @return string
