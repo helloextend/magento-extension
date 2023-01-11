@@ -618,6 +618,20 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Check if historical orders synchronization by cron is enabled
+     */
+    public function isHistoricalOrdersCronSyncEnabled(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_HISTORICAL_ORDERS_CRON_SYNC_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
+            $scopeId
+        );
+    }
+
+    /**
      * Check if leads enabled
      *
      * @param int|string|null $storeId

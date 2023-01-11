@@ -31,10 +31,16 @@ $viewModel = $block->getData('viewModel');
                     }
                 }
             });
+
             require(['extendSdk'], function(Extend) {
                 //<![CDATA[
                 Extend.config(<?= /* @noEscape */ $jsonConfig ?>);
                 window.Extend = Extend;
+
+                <?php $integrationConfig = $viewModel->getIntegrationJsonConfig(); ?>
+                <?php if ($integrationConfig && !empty($integrationConfig)): ?>
+                window.Extend.integration = <?= /* @noEscape */ $integrationConfig ?>
+                <?php endif; ?>
                 //]]>
             });
         </script>
