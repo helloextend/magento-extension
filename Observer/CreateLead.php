@@ -136,7 +136,7 @@ class CreateLead implements ObserverInterface
                 }
             }
 
-            if (count($productItems) == 0 && count($warrantyItems) > 0) {
+            if (count($warrantyItems) > 0) {
                 foreach ($warrantyItems as &$warrantyItem) {
                     $this->setLeadToken($warrantyItem);
                 }
