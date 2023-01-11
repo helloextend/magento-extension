@@ -12,6 +12,7 @@ namespace Extend\Warranty\ViewModel;
 
 use Extend\Warranty\Model\Config\Source\AuthMode;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -32,6 +33,13 @@ class Installation implements ArgumentInterface
      * @var DataHelper
      */
     private $dataHelper;
+
+    /**
+     * Warranty Tracking Helper
+     *
+     * @var TrackingHelper
+     */
+    private $trackingHelper;
 
     /**
      * Json Serializer Model
@@ -56,11 +64,13 @@ class Installation implements ArgumentInterface
      */
     public function __construct(
         DataHelper $dataHelper,
+        TrackingHelper $trackingHelper,
         JsonSerializer $jsonSerializer,
         StoreManagerInterface $storeManager,
         AdminSession $adminSession
     ) {
         $this->dataHelper = $dataHelper;
+        $this->trackingHelper = $trackingHelper;
         $this->jsonSerializer = $jsonSerializer;
         $this->storeManager = $storeManager;
         $this->adminSession = $adminSession;
@@ -173,7 +183,7 @@ class Installation implements ArgumentInterface
                 'lastSendDate' => $this->dataHelper->getHistoricalOrdersSyncPeriod(ScopeInterface::SCOPE_STORES, $storeId),
                 'enableCronSync' => $this->dataHelper->isHistoricalOrdersCronSyncEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             ],
-            'trackingEnabled' => $this->dataHelper->isLoggingEnabled()
+            'trackingEnabled' => $this->trackingHelper->isTrackingEnabled($storeId)
         ];
 
         try {
