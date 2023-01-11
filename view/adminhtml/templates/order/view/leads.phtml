@@ -45,7 +45,7 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
                         let leadToken = "<?= /* @noEscape */ implode(", ", $leadToken); ?>";
                         let order = "<?= /* @noEscape */ $block->getOrder()->getId();?>";
                         let qty = "<?= /* @noEscape */ $item->getQtyOrdered(); ?>";
-                        plan.product = '<?= /* @noEscape */ $item->getSku() ?>';
+                        plan.product = '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>';
                         plan.qty = '<?= /* @noEscape */ $item->getQtyOrdered(); ?>';
 
                         $.post(url, {
