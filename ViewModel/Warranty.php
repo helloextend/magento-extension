@@ -487,8 +487,16 @@ class Warranty implements ArgumentInterface
         $apiStoreId = $this->dataHelper->getStoreId();
         $apiKey = $this->dataHelper->getApiKey();
 
-        $this->leadInfoRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
-        $leadExpirationDate = $this->leadInfoRequest->create($leadToken)/1000;
+        try{
+            $this->leadInfoRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
+            $leadExpirationDate = $this->leadInfoRequest->create($leadToken)/1000;
+        }
+        catch (LocalizedException $e){
+            /**
+             * muting as view model should not throw exceptions
+             **/
+            return true;
+        }
         return $leadExpirationDate !== null && time() >= $leadExpirationDate;
     }
 }

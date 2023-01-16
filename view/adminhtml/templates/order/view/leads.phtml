@@ -15,14 +15,13 @@ $viewModel = $block->getViewModel();
 $parentBlock = $block->getParentBlock();
 $item = $parentBlock->getItem();
 $leadToken = $viewModel->unserialize($item->getLeadToken()) ?? [];
-$isExpired = $viewModel->isExpired((string)reset($leadToken));
 ?>
 
 <?php if ($viewModel->isExtendEnabled()
     && $viewModel->isLeadEnabled()
     && !empty($leadToken)
     && !$viewModel->isWarrantyInLaterOrders($item)
-    && !$isExpired): ?>
+    && !$viewModel->isExpired((string)reset($leadToken))): ?>
     <td>
         <?php if (!empty($leadToken)): ?>
             <div class="product-lead-token-block">

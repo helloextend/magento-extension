@@ -20,10 +20,7 @@ $viewModel = $block->getData('viewModel');
 
 
 $isWarrantyItem = $product && $product->getTypeId() === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
-
-
 $leadToken = $viewModel->unserialize($_item->getLeadToken()) ?? [];
-$isExpired = $viewModel->isExpired((string)reset($leadToken));
 ?>
 
 <?php if ($product
@@ -31,7 +28,7 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
     && $viewModel->isOrderOffersEnabled()
     && $viewModel->isLeadEnabled()
     && isset($leadToken)
-    && !$isExpired): ?>
+    && !$viewModel->isExpired((string)reset($leadToken))): ?>
     <?php $isWarrantyInLaterOrders = $viewModel->isWarrantyInLaterOrders($_item)?>
     <?php if (!$isWarrantyInLaterOrders): ?>
         <?php $isWarrantyInQuote = (int)$viewModel->isWarrantyInQuote((int)$_item->getId()) ?>
