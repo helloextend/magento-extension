@@ -33,6 +33,7 @@ if ($_item = $block->getItem()):
                                     $_item->getProductId() : '' ?>";
                                 let url = "<?= /* @noEscape */ $block->getUrl('extend/warranty/add') ?>";
                                 plan.product = '<?= /* @noEscape */ $inCartViewModel->getProductSkuByQuoteItem($_item) ?>';
+                                plan.secondary_sku = '<?= /* @noEscape */ $inCartViewModel->getRelationSkuByQuoteItem($_item) ?>';
 
                                 $.post(url, {
                                     warranty: plan,
