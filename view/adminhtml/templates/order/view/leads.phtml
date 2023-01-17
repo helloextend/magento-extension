@@ -9,7 +9,6 @@
  */
 
 /** @var Magento\Sales\Block\Adminhtml\Order\View $block */
-/** @var Magento\Framework\Escaper $escaper */
 /** @var Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getViewModel();
 $parentBlock = $block->getParentBlock();
@@ -31,11 +30,11 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
                 <span><?= $block->escapeHtml(implode(',', $leadToken)) ?></span>
             </div>
         <?php endif; ?>
-        <div id="extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
+        <div id="extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
     </td>
     <script>
         require(['jquery','mage/url'], function($, urlBuilder) {
-            const $elem = $('#extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>');
+            const $elem = $('#extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>');
             Extend.buttons.renderSimpleOffer($elem.get(0), {
                 referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
                 onAddToCart: function (opts) {
