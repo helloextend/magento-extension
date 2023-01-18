@@ -32,7 +32,7 @@ $leadToken = $viewModel->unserialize($_item->getLeadToken()) ?? [];
 
     <?php $isWarrantyInLaterOrders = $viewModel->isWarrantyInLaterOrders($_item)?>
     <?php if (!$isWarrantyInLaterOrders): ?>
-        <?php $isWarrantyInQuote = (int)$viewModel->isWarrantyInQuote((int)$_item->getId()) ?>
+        <?php $isWarrantyInQuote = (int)$viewModel->itemHasLeadWarrantyInQuote($_item) ?>
     <?php endif; ?>
     <div class="order-warranty-offers" id="warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>"></div>
     <script type="text/x-magento-init">
@@ -40,7 +40,7 @@ $leadToken = $viewModel->unserialize($_item->getLeadToken()) ?? [];
             "#warranty-offers-<?= $block->escapeHtmlAttr($_item->getId()) ?>": {
                 "leadOrderWarranty":{
                     "itemId": "<?= $block->escapeJs($_item->getId()) ?>",
-                    "productSku": "<?= $block->escapeJs($product->getData('sku')) ?>",
+                    "productSku": "<?= $block->escapeJs($viewModel->getProductSkuByOrderItem($_item)) ?>",
                     "qty": "<?= $block->escapeJs($_item->getQtyOrdered()) ?>",
                     "leadToken": "<?= $block->escapeJs(implode(", ", $leadToken)) ?>",
                     "addLeadUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/addlead')) ?>",

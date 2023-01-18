@@ -10,7 +10,7 @@
 
 namespace Extend\Warranty\Model;
 
-use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\Model\WarrantyRelation;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Product\Type;
 use InvalidArgumentException;
@@ -61,23 +61,31 @@ class Normalizer
     private $cartHelper;
 
     /**
+     * @var WarrantyRelation
+     */
+    private $warrantyRelation;
+
+    /**
      * Normalizer constructor
      *
      * @param TrackingHelper $trackingHelper
      * @param JsonSerializer $jsonSerializer
      * @param CartItemRepositoryInterface $quoteItemRepository
      * @param CartHelper $cartHelper
+     * @param WarrantyRelation $warrantyRelation
      */
     public function __construct(
         TrackingHelper $trackingHelper,
         JsonSerializer $jsonSerializer,
         CartItemRepositoryInterface $quoteItemRepository,
-        CartHelper $cartHelper
+        CartHelper $cartHelper,
+        WarrantyRelation $warrantyRelation
     ) {
         $this->trackingHelper = $trackingHelper;
         $this->jsonSerializer = $jsonSerializer;
         $this->quoteItemRepository = $quoteItemRepository;
         $this->cartHelper = $cartHelper;
+        $this->warrantyRelation = $warrantyRelation;
     }
 
     /**
@@ -111,7 +119,7 @@ class Normalizer
                     continue;
                 }
 
-                if (WarrantyHelper::isWarrantyRelatedToQuoteItem($warrantyItem, $productItem)) {
+                if ($this->warrantyRelation->isWarrantyRelatedToQuoteItem($warrantyItem, $productItem)) {
                     $warranties[$warrantyItem->getItemId()] = $warrantyItem;
                     $usedWarranties[$warrantyItem->getItemId()] = $warrantyItem->getItemId();
                 }
