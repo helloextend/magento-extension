@@ -23,7 +23,9 @@ $isWarrantyItem = $product && $product->getTypeId() === \Extend\Warranty\Model\P
 $leadToken = $viewModel->unserialize($_item->getLeadToken()) ?? [];
 ?>
 
-<?php if ($product
+<?php if (
+    $viewModel->isExtendEnabled()
+    && $product
     && !$isWarrantyItem
     && $viewModel->isOrderOffersEnabled()
     && $viewModel->isLeadEnabled()
