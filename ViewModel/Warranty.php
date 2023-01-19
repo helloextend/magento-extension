@@ -343,7 +343,7 @@ class Warranty implements ArgumentInterface
     /**
      * Check does later orders have warranty item for the item
      *
-     * @param Item $item
+     * @param OrderItemInterface $item
      * @return bool
      */
     public function isWarrantyInLaterOrders(Item $item): bool
@@ -423,7 +423,7 @@ class Warranty implements ArgumentInterface
      *
      * @param string|null $data
      *
-     * @return string|null
+     * @return array|null
      */
     public function unserialize($data)
     {
@@ -439,22 +439,12 @@ class Warranty implements ArgumentInterface
     /**
      * Get Lead Token
      *
-     * @param Item $item
-     * @return string
+     * @param OrderItemInterface $item
+     * @return array
      */
-    public function getLeadToken(Item $item)
+    public function getLeadToken(OrderItemInterface $item)
     {
-        $leadToken = $item->getLeadToken() ?? '';
-
-        if (!empty($leadToken)) {
-            try {
-                $leadToken = implode(", ", $this->unserialize($leadToken));
-            } catch (Exception $exception) {
-                $leadToken = '';
-            }
-        }
-
-        return $leadToken;
+        return $this->unserialize($item->getLeadToken()) ?? [];
     }
 
     /**
@@ -475,11 +465,10 @@ class Warranty implements ArgumentInterface
         $apiStoreId = $this->dataHelper->getStoreId();
         $apiKey = $this->dataHelper->getApiKey();
 
-        try{
+        try {
             $this->leadInfoRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
-            $leadExpirationDate = $this->leadInfoRequest->create($leadToken)/1000;
-        }
-        catch (LocalizedException $e){
+            $leadExpirationDate = $this->leadInfoRequest->create($leadToken) / 1000;
+        } catch (LocalizedException $e) {
             /**
              * muting as view model should not throw exceptions
              **/
@@ -513,5 +502,37 @@ class Warranty implements ArgumentInterface
     public function getProductSkuByOrderItem($orderItem): string
     {
         return $this->warrantyRelation->getOfferOrderItemSku($orderItem);
+    }
+
+    /**
+     * Checks if order has valid lead token
+     * to render offer
+     *
+     * @param OrderItemInterface $orderItem
+     * @return bool
+     */
+    public function showLeadOffer($orderItem)
+    {
+        $result = false;
+
+        $product = $orderItem->getProduct();
+        $isWarrantyItem = $product && $product->getTypeId() === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
+        $leadToken = $this->getLeadToken($orderItem);
+
+        if (
+            $this->isExtendEnabled()
+            && $this->isOrderOffersEnabled()
+            && $this->isLeadEnabled()
+            && $product // product can be deleted from db
+            && !$isWarrantyItem
+            && !empty($leadToken)
+            && !$this->isExpired(reset($leadToken))
+        ) {
+            $result = true;
+        }
+
+        return $result;
+
+
     }
 }
