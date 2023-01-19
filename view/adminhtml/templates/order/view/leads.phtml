@@ -8,6 +8,7 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
+
 /** @var \Extend\Warranty\Block\Adminhtml\Order\View\Items\Renderer\LeadOfferRenderer $block */
 /** @var Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getViewModel();
@@ -15,6 +16,7 @@ $item = $block->getItem();
 $leadToken = $viewModel->getLeadToken($item);
 $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
 ?>
+
 
 <td>
     <?php if (!empty($leadToken)): ?>
