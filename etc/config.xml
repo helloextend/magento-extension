@@ -13,6 +13,9 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <warranty>
+            <version>
+                <tag></tag>
+            </version>
             <enableExtend>
                 <enable>0</enable>
                 <enableBalance>1</enableBalance>

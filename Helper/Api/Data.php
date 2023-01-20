@@ -30,6 +30,7 @@ class Data extends AbstractHelper
      * General settings
      */
     public const WARRANTY_ENABLE_EXTEND_ENABLE_XML_PATH = 'warranty/enableExtend/enable';
+    public const WARRANTY_VERSION_TAG_EXTEND_ENABLE_XML_PATH = 'warranty/version/tag';
     public const WARRANTY_ENABLE_EXTEND_ENABLE_BALANCE_XML_PATH = 'warranty/enableExtend/enableBalance';
     public const WARRANTY_ENABLE_EXTEND_LOGGING_ENABLED_XML_PATH = 'warranty/enableExtend/logging_enabled';
 
@@ -149,6 +150,9 @@ class Data extends AbstractHelper
         return $module['setup_version'] ?? '';
     }
 
+    public function getVersionTag(){
+        return $this->scopeConfig->getValue(self::WARRANTY_VERSION_TAG_EXTEND_ENABLE_XML_PATH);
+    }
     /**
      * Check if enabled
      *
