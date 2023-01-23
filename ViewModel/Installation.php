@@ -156,7 +156,7 @@ class Installation implements ArgumentInterface
                 'contractEvent' => $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId),
                 'contractCreatingMode' => $this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId) ? __('scheduled') : __('event-based'),
                 'cronContractSettings' => [
-                    'frequency' => 0,   //TODO: use appropriate method
+                    'frequency' => $this->dataHelper->getContractFrequency($storeId),
                     'batchSize' => $this->dataHelper->getContractsBatchSize($storeId),
                     'storagePeriod' => $this->dataHelper->getStoragePeriod($storeId)
                 ],
