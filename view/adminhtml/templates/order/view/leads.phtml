@@ -9,7 +9,6 @@
  */
 
 /** @var Magento\Sales\Block\Adminhtml\Order\View $block */
-/** @var Magento\Framework\Escaper $escaper */
 /** @var Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getViewModel();
 $parentBlock = $block->getParentBlock();
@@ -31,11 +30,11 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
                 <span><?= $block->escapeHtml(implode(',', $leadToken)) ?></span>
             </div>
         <?php endif; ?>
-        <div id="extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
+        <div id="extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
     </td>
     <script>
-        require(['jquery','mage/url'], function($, urlBuilder) {
-            const $elem = $('#extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>');
+        require(['jquery','mage/url', 'domReady!'], function($, urlBuilder) {
+            const $elem = $('#extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>');
             Extend.buttons.renderSimpleOffer($elem.get(0), {
                 referenceId: '<?= /* @noEscape */ $item->getSku() ?>',
                 onAddToCart: function (opts) {
@@ -69,7 +68,10 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
             });
 
             let updateTimer = window.setInterval(() => {
-                if (!$elem.is(':empty')) {
+                const iframe = $elem.find('iframe:visible').get(0);
+                const iframeDoc = iframe ? (iframe.contentDocument || iframe.contentWindow.document) : null;
+
+                if (iframeDoc && iframeDoc.readyState === 'complete') {
                     window.clearInterval(updateTimer);
                     window.dispatchEvent(new Event('resize'));
                 }
