@@ -65,7 +65,7 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
         let updateTimer = window.setInterval(() => {
             const iframe = $elem.find('iframe:visible').get(0);
             const iframeDoc = iframe ? (iframe.contentDocument || iframe.contentWindow.document) : null;
-console.log('iframe', iframeDoc);
+
             if (iframeDoc && iframeDoc.readyState === 'complete') {
                 window.clearInterval(updateTimer);
                 window.dispatchEvent(new Event('resize'));
