@@ -13,6 +13,9 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <warranty>
+            <version>
+                <tag></tag>
+            </version>
             <enableExtend>
                 <enable>0</enable>
                 <enableBalance>1</enableBalance>
@@ -54,7 +57,7 @@
             </products>
             <historical_orders>
                 <batch_size>10</batch_size>
-                <cron_sync_enabled>1</cron_sync_enabled>
+                <cron_sync_enabled>0</cron_sync_enabled>
                 <cron>
                     <frequency>0 * * * *</frequency>
                 </cron>

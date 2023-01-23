@@ -313,4 +313,13 @@
         <plugin name="extend_warranty_sales_quote"
                 type="\Extend\Warranty\Plugin\Quote\Model\QuotePlugin"/>
     </type>
+
+    <type name="Extend\Warranty\Model\WarrantyRelation">
+        <arguments>
+            <argument xsi:type="array" name="relationProcessors">
+                <item name="default" xsi:type="object">Extend\Warranty\Model\RelationProcessor\DefaultProcessor</item>
+                <item name="configurable" xsi:type="object">Extend\Warranty\Model\RelationProcessor\ConfigurableProcessor</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

@@ -5,18 +5,20 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
 
-namespace Extend\Warranty\Plugin\Quote\Model;
+namespace Extend\Warranty\Observer;
 
 use Extend\Warranty\Model\Product\Type;
 use Extend\Warranty\Model\WarrantyRelation;
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Registry;
-use Magento\Quote\Model\Quote\Item;
 
-class QuotePlugin
+class AddToCart implements ObserverInterface
 {
     /**
      * @var Session
@@ -28,11 +30,7 @@ class QuotePlugin
      */
     protected $registry;
 
-    /**
-     * @var WarrantyRelation
-     */
     protected $warrantyRelation;
-
     const QUOTE_LAST_ADDED_PRODUCT = 'ex_quote_last_added_product';
 
     /**
@@ -50,18 +48,30 @@ class QuotePlugin
         $this->warrantyRelation = $warrantyRelation;
     }
 
-    public function beforeAddProduct($subject, $product, $request)
+    /**
+     * This method saves product to registry
+     * so when warranty added we have product
+     * in registry to refer to product in warranty
+     *
+     * @param Observer $observer
+     * @return void
+     */
+    public function execute(Observer $observer)
     {
-        if ($request->hasWarranty() && $product->getTypeId() !== Type::TYPE_CODE) {
+        $info = $observer->getInfo();
+        /** @var ProductInterface $product */
+        $product = $observer->getProduct();
+
+        if (isset($info['warranty']) && $product->getTypeId() !== Type::TYPE_CODE) {
             $this->registry->unregister(self::QUOTE_LAST_ADDED_PRODUCT);
             $this->registry->register(self::QUOTE_LAST_ADDED_PRODUCT, $product);
         } elseif (
             $product->getTypeId() === Type::TYPE_CODE
-            && $request->hasProduct()
-            && !$request->hasData(TYPE::SECONDARY_SKU)
+            && isset($info['product'])
+            && !isset($info[TYPE::SECONDARY_SKU])
             && $lastAddedProduct = $this->registry->registry(self::QUOTE_LAST_ADDED_PRODUCT)
         ) {
-            $secondarySku = $this->getSecondarySkuByProduct($lastAddedProduct, $subject);
+            $secondarySku = $this->getSecondarySkuByProduct($lastAddedProduct);
             if ($secondarySku) {
                 $product->addCustomOption(Type::SECONDARY_SKU, $secondarySku);
             }
@@ -82,8 +92,13 @@ class QuotePlugin
      * @param $product
      * @return string|null
      */
-    public function getSecondarySkuByProduct($product,$quote)
+    public function getSecondarySkuByProduct($product)
     {
+        try {
+            $quote = $this->getQuote();
+        } catch (\Exception $e) {
+            return null;
+        }
         $relatedQuoteItem = $quote->getItemByProduct($product);
         return $this->warrantyRelation->getRelationQuoteItemSku($relatedQuoteItem);
 

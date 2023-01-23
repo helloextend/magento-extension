@@ -169,7 +169,7 @@ class ProductDataBuilder
 
         $payload = [
             'category'          => $categories,
-            'description'       => $description,
+            'description'       => (string)$description,
             'price'             => $price,
             'title'             => (string)$product->getName(),
             'referenceId'       => (string)$product->getSku(),

@@ -8,74 +8,68 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
-/** @var Magento\Sales\Block\Adminhtml\Order\View $block */
+
+/** @var \Extend\Warranty\Block\Adminhtml\Order\View\Items\Renderer\LeadOfferRenderer $block */
 /** @var Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getViewModel();
-$parentBlock = $block->getParentBlock();
-$item = $parentBlock->getItem();
-$leadToken = $viewModel->unserialize($item->getLeadToken()) ?? [];
-$isExpired = $viewModel->isExpired((string)reset($leadToken));
+$item = $block->getItem();
+$leadToken = $viewModel->getLeadToken($item);
 $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
 ?>
 
-<?php if ($viewModel->isExtendEnabled()
-    && $viewModel->isLeadEnabled()
-    && !empty($leadToken)
-    && !$viewModel->isWarrantyInLaterOrders($item)
-    && !$isExpired): ?>
-    <td>
-        <?php if (!empty($leadToken)): ?>
-            <div class="product-lead-token-block">
-                <span><?= $block->escapeHtml(__('Lead Token'))?>: </span>
-                <span><?= $block->escapeHtml(implode(',', $leadToken)) ?></span>
-            </div>
-        <?php endif; ?>
-        <div id="extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
-    </td>
-    <script>
-        require(['jquery','mage/url', 'domReady!'], function($, urlBuilder) {
-            const $elem = $('#extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>');
-            Extend.buttons.renderSimpleOffer($elem.get(0), {
-                referenceId: '<?= /* @noEscape */ $item->getSku() ?>',
-                onAddToCart: function (opts) {
 
-                    const plan = opts.plan;
-                    if (plan) {
-                        let url      = "<?= /* @noEscape */ $block->getUrl('extend/warranty/leads') ?>";
-                        let leadToken = "<?= /* @noEscape */ implode(", ", $leadToken); ?>";
-                        let order = "<?= /* @noEscape */ $block->getOrder()->getId();?>";
-                        let qty = "<?= /* @noEscape */ $item->getQtyOrdered(); ?>";
-                        plan.product = '<?= /* @noEscape */ $item->getSku() ?>';
-                        plan.qty = '<?= /* @noEscape */ $item->getQtyOrdered(); ?>';
+<td>
+    <?php if (!empty($leadToken)): ?>
+        <div class="product-lead-token-block">
+            <span><?= $block->escapeHtml(__('Lead Token'))?>: </span>
+            <span><?= $block->escapeHtml(implode(',', $leadToken)) ?></span>
+        </div>
+    <?php endif; ?>
+    <div id="extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
+</td>
+<script>
+    require(['jquery','mage/url', 'domReady!'], function($, urlBuilder) {
+        const $elem = $('#extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>');
+        Extend.buttons.renderSimpleOffer($elem.get(0), {
+            referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
+            onAddToCart: function (opts) {
 
-                        $.post(url, {
-                            order: order,
-                            warranty: plan,
-                            qty: qty,
-                            leadToken : leadToken
-                        }).done(function (data) {
-                            if (data.status == "success") {
+                const plan = opts.plan;
+                if (plan) {
+                    let url      = "<?= /* @noEscape */ $block->getUrl('extend/warranty/leads') ?>";
+                    let leadToken = "<?= /* @noEscape */ implode(", ", $leadToken); ?>";
+                    let order = "<?= /* @noEscape */ $block->getOrder()->getId();?>";
+                    let qty = "<?= /* @noEscape */ $item->getQtyOrdered(); ?>";
+                    plan.product = '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>';
+                    plan.qty = '<?= /* @noEscape */ $item->getQtyOrdered(); ?>';
 
-                                var url = data.redirect;
-                                console.log(url);
-                                window.location.href = url;
-                            } else {
-                                console.log("Oops! There was an error adding the protection plan.");
-                            }
-                        });
-                    }
+                    $.post(url, {
+                        order: order,
+                        warranty: plan,
+                        qty: qty,
+                        leadToken : leadToken
+                    }).done(function (data) {
+                        if (data.status == "success") {
+
+                            var url = data.redirect;
+                            console.log(url);
+                            window.location.href = url;
+                        } else {
+                            console.log("Oops! There was an error adding the protection plan.");
+                        }
+                    });
                 }
-            });
-
-            let updateTimer = window.setInterval(() => {
-                const iframe = $elem.find('iframe:visible').get(0);
-                const iframeDoc = iframe ? (iframe.contentDocument || iframe.contentWindow.document) : null;
-
-                if (iframeDoc && iframeDoc.readyState === 'complete') {
-                    window.clearInterval(updateTimer);
-                    window.dispatchEvent(new Event('resize'));
-                }
-            }, 100);
+            }
         });
-    </script>
-<?php endif; ?>
+
+        let updateTimer = window.setInterval(() => {
+            const iframe = $elem.find('iframe:visible').get(0);
+            const iframeDoc = iframe ? (iframe.contentDocument || iframe.contentWindow.document) : null;
+console.log('iframe', iframeDoc);
+            if (iframeDoc && iframeDoc.readyState === 'complete') {
+                window.clearInterval(updateTimer);
+                window.dispatchEvent(new Event('resize'));
+            }
+        }, 100);
+    });
+</script>
