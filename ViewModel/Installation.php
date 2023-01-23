@@ -124,11 +124,13 @@ class Installation implements ArgumentInterface
         }
 
         return $jsonConfig;
-    }/**
- * Get 'Extend.integration' JSON config
- *
- * @return string
- */
+    }
+
+    /**
+     * Get 'Extend.integration' JSON config
+     *
+     * @return string
+     */
     public function getIntegrationJsonConfig(): string
     {
         $jsonConfig = '';
@@ -154,7 +156,7 @@ class Installation implements ArgumentInterface
                 'contractEvent' => $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId),
                 'contractCreatingMode' => $this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId) ? __('scheduled') : __('event-based'),
                 'cronContractSettings' => [
-                    'frequency' => 0,   //TODO: use appropriate method
+                    'frequency' => $this->dataHelper->getContractFrequency($storeId),
                     'batchSize' => $this->dataHelper->getContractsBatchSize($storeId),
                     'storagePeriod' => $this->dataHelper->getStoragePeriod($storeId)
                 ],

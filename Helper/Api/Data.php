@@ -52,6 +52,7 @@ class Data extends AbstractHelper
     public const WARRANTY_CONTRACTS_EVENT_XML_PATH = 'warranty/contracts/event';
     public const WARRANTY_CONTRACTS_MODE_XML_PATH = 'warranty/contracts/mode';
     public const WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH = 'warranty/contracts/batch_size';
+    public const WARRANTY_CONTRACTS_FREQUENCY_XML_PATH = 'warranty/contracts/cron/frequency';
     public const WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH = 'warranty/contracts/storage_period';
     public const WARRANTY_CONTRACTS_REFUND_ENABLED_XML_PATH = 'warranty/enableExtend/enableRefunds';
     public const WARRANTY_CONTRACTS_AUTO_REFUND_ENABLED_XML_PATH = 'warranty/contracts/auto_refund_enabled';
@@ -362,6 +363,21 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_CONTRACTS_AUTO_REFUND_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * Get contracts batch size
+     *
+     * @param string|int|null $storeId
+     * @return string
+     */
+    public function getContractFrequency($storeId = null)
+    {
+        return (string) $this->scopeConfig->getValue(
+            self::WARRANTY_CONTRACTS_FREQUENCY_XML_PATH,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
