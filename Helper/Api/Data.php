@@ -157,7 +157,7 @@ class Data extends AbstractHelper
      * @return string
      */
     public function getVersionTag(){
-        return $this->scopeConfig->getValue(self::WARRANTY_VERSION_TAG_EXTEND_ENABLE_XML_PATH);
+        return (string) $this->scopeConfig->getValue(self::WARRANTY_VERSION_TAG_EXTEND_ENABLE_XML_PATH);
     }
     /**
      * Check if enabled
