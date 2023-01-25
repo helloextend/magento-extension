@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Extend_Warranty
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="sales.email.order.renderers">
+            <block class="Extend\Warranty\Block\Sales\Order\Email\Items\WarrantyItem"
+                   name="sales.email.order.renderers.warranty" as="warranty"
+                   template="Extend_Warranty::email/items/order/warranty.phtml"/>
+        </referenceBlock>
+    </body>
+</page>
