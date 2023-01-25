@@ -251,7 +251,9 @@ class Normalizer
     /**
      * Checks if warranty item was created via lead token
      *
-     * Should be moved to helper if needed somewhere else
+     * and updated item if it has different qty then in buy request
+     *
+     * Logic with lead token conditions should be moved to helper if needed somewhere else
      *
      * @param Item $item
      * @return bool
@@ -259,6 +261,17 @@ class Normalizer
     private function checkLeadToken($item)
     {
         if ($item->getLeadToken() || ($item->getExtensionAttributes() && $item->getExtensionAttributes()->getLeadToken())) {
+            $infoBuyRequest = json_decode($item->getOptionByCode('info_buyRequest')->getValue(), 1);
+
+            if (isset($infoBuyRequest['qty']) && $infoBuyRequest['qty'] != $item->getTotalQty()) {
+                $this->normalizeWarrantiesAgainstProductQty(
+                    [$item],
+                    (int)$infoBuyRequest['qty'],
+                    $this->cartHelper->getCart(),
+                    $item->getQuote()
+                );
+            }
+
             return true;
         }
         return false;
