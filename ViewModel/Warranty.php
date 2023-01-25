@@ -228,7 +228,7 @@ class Warranty implements ArgumentInterface
         if ($this->isAdmin()) {
             $stores = $this->storeManager->getStores();
             foreach ($stores as $store) {
-                $result = $this->dataHelper->isShoppingCartOffersEnabled($store->getId());
+                $result = $this->dataHelper->isShoppingAdminCartOffersEnabled($store->getId());
                 if ($result) {
                     break;
                 }
