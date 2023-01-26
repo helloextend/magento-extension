@@ -9,7 +9,6 @@
  */
 namespace Extend\Warranty\Observer;
 
-use Extend\Warranty\Helper\Data as WarrantyHelper;
 use Extend\Warranty\Model\Product\Type as WarrantyProductType;
 
 /**
@@ -49,32 +48,40 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
         //if the item being removed is a warranty offer, send tracking for the offer removed, if tracking enabled
         if ($quoteItem->getProductType() === WarrantyProductType::TYPE_CODE) {
             if ($this->_trackingHelper->isTrackingEnabled()) {
-                $warrantySku = (string)$quoteItem->getOptionByCode('associated_product')->getValue();
-                $planId = (string)$quoteItem->getOptionByCode('warranty_id')->getValue();
-                $trackingData = [
-                    'eventName' => 'trackOfferRemovedFromCart',
-                    'productId' => $warrantySku,
-                    'planId'    => $planId,
-                ];
+                $warrantySku = $quoteItem->getOptionByCode(WarrantyProductType::ASSOCIATED_PRODUCT)
+                    ? (string)$quoteItem->getOptionByCode(WarrantyProductType::ASSOCIATED_PRODUCT)->getValue()
+                    : '';
 
-                $this->_trackingHelper->setTrackingData($trackingData);
+                $planId = $quoteItem->getOptionByCode(WarrantyProductType::WARRANTY_ID)
+                    ? (string)$quoteItem->getOptionByCode(WarrantyProductType::WARRANTY_ID)->getValue()
+                    : '';
 
-                $trackProduct = true;
-                $items = $quote->getAllItems();
-                foreach ($items as $item) {
-                    if ($item->getSku() === $warrantySku) {
-                        $trackProduct = false;
-                        break;
-                    }
-                }
-
-                if ($trackProduct) {
+                if($warrantySku && $planId) {
                     $trackingData = [
-                        'eventName' => 'trackProductRemovedFromCart',
+                        'eventName' => 'trackOfferRemovedFromCart',
                         'productId' => $warrantySku,
+                        'planId' => $planId,
                     ];
 
                     $this->_trackingHelper->setTrackingData($trackingData);
+
+                    $trackProduct = true;
+                    $items = $quote->getAllItems();
+                    foreach ($items as $item) {
+                        if ($item->getSku() === $warrantySku) {
+                            $trackProduct = false;
+                            break;
+                        }
+                    }
+
+                    if ($trackProduct) {
+                        $trackingData = [
+                            'eventName' => 'trackProductRemovedFromCart',
+                            'productId' => $warrantySku,
+                        ];
+
+                        $this->_trackingHelper->setTrackingData($trackingData);
+                    }
                 }
             }
             return;

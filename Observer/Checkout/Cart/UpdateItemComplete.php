@@ -80,19 +80,23 @@ class UpdateItemComplete implements \Magento\Framework\Event\ObserverInterface
         $qty = (int)$quoteItem->getQty();
         $origQty = (int)$quoteItem->getOrigData('qty');
         if ($qty <> $origQty) {
-            if ($quoteItem->getProductType() === \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
+            if ($quoteItem->getProductType() === Type::TYPE_CODE) {
                 //send tracking update for the warranty offer
-                $planId = (string)$quoteItem->getOptionByCode('warranty_id')->getValue();
-                /** @var \Magento\Quote\Model\Quote\Item $item */
-                $item = $this->_trackingHelper->getQuoteItemForWarrantyItem($quoteItem);
-                $trackingData = [
-                    'eventName'        => 'trackOfferUpdated',
-                    'productId'        => $quoteItem->getSku(),
-                    'planId'           => $planId,
-                    'warrantyQuantity' => $qty,
-                    'productQuantity'  => (int)$item->getQty(),
-                ];
-                $this->_trackingHelper->setTrackingData($trackingData);
+                $planId = $quoteItem->getOptionByCode(Type::WARRANTY_ID);
+
+                if($planId && $planId->getValue()){
+                    /** @var \Magento\Quote\Model\Quote\Item $item */
+                    $item = $this->_trackingHelper->getQuoteItemForWarrantyItem($quoteItem);
+                    $trackingData = [
+                        'eventName'        => 'trackOfferUpdated',
+                        'productId'        => $quoteItem->getSku(),
+                        'planId'           => $planId,
+                        'warrantyQuantity' => $qty,
+                        'productQuantity'  => (int)$item->getQty(),
+                    ];
+                    $this->_trackingHelper->setTrackingData($trackingData);
+                }
+
             } elseif (!count($this->_trackingHelper->getWarrantyItemsForQuoteItem($quoteItem))) {
                 //there is no associated warranty item, just send tracking for the product update
                 $trackingData = [
