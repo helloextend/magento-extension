@@ -16,6 +16,7 @@ $parentBlock = $block->getParentBlock();
 $item = $parentBlock->getItem();
 $leadToken = $viewModel->unserialize($item->getLeadToken()) ?? [];
 $isExpired = $viewModel->isExpired((string)reset($leadToken));
+$warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
 ?>
 
 <?php if ($viewModel->isExtendEnabled()
@@ -30,13 +31,13 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
                 <span><?= $block->escapeHtml(implode(',', $leadToken)) ?></span>
             </div>
         <?php endif; ?>
-        <div id="extend-offer-<?= /* @noEscape */ str_replace([' ','"'], '', $item->getSku()); ?>"></div>
+        <div id="extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
     </td>
     <script>
-        require(['jquery','mage/url'], function($, urlBuilder){
-            Extend.buttons.renderSimpleOffer(
-                '#extend-offer-<?= /* @noEscape */ str_replace([' ','"'], '', $item->getSku()) ?>', {
-                referenceId: '<?= /* @noEscape */ $item->getSku() ?>',
+        require(['jquery','mage/url', 'domReady!'], function($, urlBuilder) {
+            const $elem = $('#extend-offer-<?= $escaper->escapeHtmlAttr($warrantyUniqueID) ?>');
+            Extend.buttons.renderSimpleOffer($elem.get(0), {       
+                referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
                 onAddToCart: function (opts) {
 
                     const plan = opts.plan;
@@ -45,7 +46,7 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
                         let leadToken = "<?= /* @noEscape */ implode(", ", $leadToken); ?>";
                         let order = "<?= /* @noEscape */ $block->getOrder()->getId();?>";
                         let qty = "<?= /* @noEscape */ $item->getQtyOrdered(); ?>";
-                        plan.product = '<?= /* @noEscape */ $item->getSku() ?>';
+                        plan.product = '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>';
                         plan.qty = '<?= /* @noEscape */ $item->getQtyOrdered(); ?>';
 
                         $.post(url, {
@@ -66,6 +67,16 @@ $isExpired = $viewModel->isExpired((string)reset($leadToken));
                     }
                 }
             });
+
+            let updateTimer = window.setInterval(() => {
+                const iframe = $elem.find('iframe:visible').get(0);
+                const iframeDoc = iframe ? (iframe.contentDocument || iframe.contentWindow.document) : null;
+
+                if (iframeDoc && iframeDoc.readyState === 'complete') {
+                    window.clearInterval(updateTimer);
+                    window.dispatchEvent(new Event('resize'));
+                }
+            }, 100);
         });
     </script>
 <?php endif; ?>
