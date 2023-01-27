@@ -280,8 +280,13 @@ class Warranty implements ArgumentInterface
                 break;
             case ProductPagePlacement::OPTIONS_BEFORE:
             case ProductPagePlacement::OPTIONS_AFTER:
-                $placement['insertionPoint'] = $isSimpleProduct ? 'div.box-tocart' : 'div.product-options-wrapper';
-                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::OPTIONS_BEFORE ? $logicBefore : $logicAfter;
+                if ($isSimpleProduct) {
+                    $placement['insertionPoint'] = 'div.box-tocart .fieldset:first-child';
+                    $placement['insertionLogic'] = $logicBefore;
+                } else {
+                    $placement['insertionPoint'] = 'div.product-options-wrapper';
+                    $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::OPTIONS_BEFORE ? $logicBefore : $logicAfter;
+                }
                 break;
             case ProductPagePlacement::SOCIAL_BEFORE:
             case ProductPagePlacement::SOCIAL_AFTER:
