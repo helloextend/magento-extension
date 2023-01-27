@@ -434,9 +434,9 @@
                        showInWebsite="1"
                        showInStore="1"
                        canRestore="1">
-                    <label>Display Admin Cart Offers</label>
+                    <label>Display Admin Offers</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <config_path>warranty/enableExtend/enableAdminCartOffers</config_path>
+                    <config_path>warranty/enableExtend/enableAdminOffers</config_path>
                 </field>
                 <field id="pdp_enabled"
                        translate="label comment"
