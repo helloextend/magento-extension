@@ -404,7 +404,7 @@ class Data extends AbstractHelper
      * @param string|int|null $storeId
      * @return bool
      */
-    public function isShoppingAdminCartOffersEnabled($storeId = null)
+    public function isShoppingAdminOffersEnabled($storeId = null)
     {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_OFFERS_ADMIN_ENABLED_XML_PATH,
