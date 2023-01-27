@@ -259,32 +259,34 @@ class Warranty implements ArgumentInterface
             'insertionPoint' => null,
             'insertionLogic' => null
         ];
+        $logicBefore = 'before';
+        $logicAfter = 'after';
 
         switch ($pdpDisplay) {
             case ProductPagePlacement::ACTIONS_BEFORE:
             case ProductPagePlacement::ACTIONS_AFTER:
                 $placement['insertionPoint'] = 'div.actions';
-                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::ACTIONS_BEFORE ? 'before' : 'after';
+                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::ACTIONS_BEFORE ? $logicBefore : $logicAfter;
                 break;
             case ProductPagePlacement::ADD_TO_CART_BEFORE:
             case ProductPagePlacement::ADD_TO_CART_AFTER:
                 $placement['insertionPoint'] = 'button.tocart';
-                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::ADD_TO_CART_BEFORE ? 'before' : 'after';
+                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::ADD_TO_CART_BEFORE ? $logicBefore : $logicAfter;
                 break;
             case ProductPagePlacement::QUANTITY_BEFORE:
             case ProductPagePlacement::QUANTITY_AFTER:
                 $placement['insertionPoint'] = 'div.field.qty';
-                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::QUANTITY_BEFORE ? 'before' : 'after';
+                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::QUANTITY_BEFORE ? $logicBefore : $logicAfter;
                 break;
             case ProductPagePlacement::OPTIONS_BEFORE:
             case ProductPagePlacement::OPTIONS_AFTER:
                 $placement['insertionPoint'] = $isSimpleProduct ? 'div.box-tocart' : 'div.product-options-wrapper';
-                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::OPTIONS_BEFORE ? 'before' : 'after';
+                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::OPTIONS_BEFORE ? $logicBefore : $logicAfter;
                 break;
             case ProductPagePlacement::SOCIAL_BEFORE:
             case ProductPagePlacement::SOCIAL_AFTER:
                 $placement['insertionPoint'] = 'div.product-social-links';
-                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::SOCIAL_BEFORE ? 'before' : 'after';
+                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::SOCIAL_BEFORE ? $logicBefore : $logicAfter;
                 break;
         }
 
