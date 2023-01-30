@@ -70,6 +70,11 @@ class Data extends AbstractHelper
     public const ORDER_OFFERS_ENABLED_XML_PATH = 'warranty/offers/order_offers_enabled';
 
     /**
+     * Offers Display settings
+     */
+    public const WARRANTY_OFFERS_PDP_PLACEMENT_XML_PATH = 'warranty/offers/pdp_placement';
+
+    /**
      * Products settings
      */
     public const WARRANTY_PRODUCTS_BATCH_SIZE_XML_PATH = 'warranty/products/batch_size';
@@ -525,6 +530,24 @@ class Data extends AbstractHelper
             self::ORDER_OFFERS_ENABLED_XML_PATH,
             ScopeInterface::SCOPE_STORES,
             $storeId
+        );
+    }
+
+    /**
+     * Get PDP Offers Button placement config
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return int
+     */
+    public function getProductDetailPageOffersPlacement(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        return (int)$this->scopeConfig->getValue(
+            self::WARRANTY_OFFERS_PDP_PLACEMENT_XML_PATH,
+            $scopeType,
+            $scopeId
         );
     }
 
