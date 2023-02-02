@@ -109,6 +109,7 @@ abstract class AbstractRequest implements RequestInterface
     public function setConfig(string $apiUrl, string $storeId, string $apiKey)
     {
         if (empty($apiUrl) || empty($storeId) || empty($apiKey)) {
+            $this->logger->warning('Credentials not Set.');
             throw new LocalizedException(__('Credentials not set.'));
         }
 
