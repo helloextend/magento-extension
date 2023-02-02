@@ -20,6 +20,7 @@
                 <enable>0</enable>
                 <enableBalance>1</enableBalance>
                 <enableCartOffers>1</enableCartOffers>
+                <enableAdminOffers>1</enableAdminOffers>
                 <enableRefunds>1</enableRefunds>
                 <enableLeads>1</enableLeads>
                 <logging_enabled>1</logging_enabled>
