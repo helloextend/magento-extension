@@ -200,12 +200,12 @@ class Installation implements ArgumentInterface
                 'lastSendDate' => $this->dataHelper->getHistoricalOrdersSyncPeriod(ScopeInterface::SCOPE_STORES, $storeId),
                 'enableCronSync' => $this->dataHelper->isHistoricalOrdersCronSyncEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             ],
+
             'trackingEnabled' => $this->trackingHelper->isTrackingEnabled($storeId),
             'versions'=>[
                 'magentoVersion'=> $this->productMetadata->getVersion(),
                 'moduleVersion'=>$this->dataHelper->getModuleVersion()
             ]
-
         ];
 
         try {

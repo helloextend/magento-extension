@@ -87,4 +87,14 @@ class Intro extends Field
     {
         return $this->dataHelper->getModuleVersion();
     }
+
+    /**
+     * Get module tag version
+     *
+     * @return string
+     */
+    public function getVersionTag(): string
+    {
+        return $this->dataHelper->getVersionTag();
+    }
 }

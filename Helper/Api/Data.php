@@ -30,6 +30,7 @@ class Data extends AbstractHelper
      * General settings
      */
     public const WARRANTY_ENABLE_EXTEND_ENABLE_XML_PATH = 'warranty/enableExtend/enable';
+    public const WARRANTY_VERSION_TAG_EXTEND_ENABLE_XML_PATH = 'warranty/version/tag';
     public const WARRANTY_ENABLE_EXTEND_ENABLE_BALANCE_XML_PATH = 'warranty/enableExtend/enableBalance';
     public const WARRANTY_ENABLE_EXTEND_LOGGING_ENABLED_XML_PATH = 'warranty/enableExtend/logging_enabled';
 
@@ -60,6 +61,7 @@ class Data extends AbstractHelper
     /**
      * Offers settings
      */
+    public const WARRANTY_OFFERS_ADMIN_ENABLED_XML_PATH = 'warranty/enableExtend/enableAdminOffers';
     public const WARRANTY_OFFERS_SHOPPING_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableCartOffers';
     public const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
     public const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
@@ -155,6 +157,12 @@ class Data extends AbstractHelper
         return $module['setup_version'] ?? '';
     }
 
+    /**
+     * @return string
+     */
+    public function getVersionTag(){
+        return (string) $this->scopeConfig->getValue(self::WARRANTY_VERSION_TAG_EXTEND_ENABLE_XML_PATH);
+    }
     /**
      * Check if enabled
      *
@@ -414,6 +422,21 @@ class Data extends AbstractHelper
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH,
             ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if shopping cart offers enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isShoppingAdminOffersEnabled($storeId = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_OFFERS_ADMIN_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
             $storeId
         );
     }
