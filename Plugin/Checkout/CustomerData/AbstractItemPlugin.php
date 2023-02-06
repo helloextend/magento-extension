@@ -10,7 +10,8 @@
 
 namespace Extend\Warranty\Plugin\Checkout\CustomerData;
 
-use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\Model\WarrantyRelation;
+use Extend\Warranty\ViewModel\Warranty;
 use Magento\Framework\UrlInterface;
 use Magento\Checkout\CustomerData\AbstractItem;
 use Extend\Warranty\Model\Product\Type;
@@ -47,20 +48,33 @@ class AbstractItemPlugin
     private $trackingHelper;
 
     /**
+     * @var Warranty
+     */
+    private $warrantyViewModel;
+
+    private $warrantyRelation;
+
+    /**
      * AbstractItemPlugin constructor
      *
      * @param UrlInterface $urlBuilder
      * @param DataHelper $dataHelper
      * @param TrackingHelper $trackingHelper
+     * @param Warranty $warrantyViewModel
+     * @param WarrantyRelation $warrantyRelation
      */
     public function __construct(
         UrlInterface $urlBuilder,
         DataHelper $dataHelper,
-        TrackingHelper $trackingHelper
+        TrackingHelper $trackingHelper,
+        Warranty $warrantyViewModel,
+        WarrantyRelation $warrantyRelation
     ) {
         $this->urlBuilder = $urlBuilder;
         $this->dataHelper = $dataHelper;
         $this->trackingHelper = $trackingHelper;
+        $this->warrantyViewModel = $warrantyViewModel;
+        $this->warrantyRelation = $warrantyRelation;
     }
 
     /**
@@ -85,6 +99,8 @@ class AbstractItemPlugin
             $result['warranty_add_url'] = $this->getWarrantyAddUrl();
             $result['product_parent_id'] = $this->getParentId($item);
             $result['product_is_tracking_enabled'] = $this->isTrackingEnabled();
+            $result['item_product_sku'] = $this->warrantyViewModel->getProductSkuByQuoteItem($item);
+            $result['relation_sku'] = $this->warrantyViewModel->getRelationSkuByQuoteItem($item);
         } else {
             $result['product_can_add_warranty'] = false;
         }
@@ -100,18 +116,7 @@ class AbstractItemPlugin
      */
     private function hasWarranty(Item $checkQuoteItem): bool
     {
-        $hasWarranty = false;
-        $quote = $checkQuoteItem->getQuote();
-        $items = $quote->getAllVisibleItems();
-        foreach ($items as $item) {
-            if ($item->getProductType() === Type::TYPE_CODE
-                && WarrantyHelper::isWarrantyRelatedToQuoteItem($item, $checkQuoteItem)
-            ) {
-                $hasWarranty = true;
-            }
-        }
-
-        return $hasWarranty;
+        return $this->warrantyRelation->quoteItemHasWarranty($checkQuoteItem);
     }
 
     /**

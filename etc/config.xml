@@ -54,7 +54,7 @@
             </products>
             <historical_orders>
                 <batch_size>10</batch_size>
-                <cron_sync_enabled>1</cron_sync_enabled>
+                <cron_sync_enabled>0</cron_sync_enabled>
                 <cron>
                     <frequency>0 * * * *</frequency>
                 </cron>

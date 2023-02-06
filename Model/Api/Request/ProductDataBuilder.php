@@ -159,7 +159,7 @@ class ProductDataBuilder
             'type'  => (string)$product->getTypeId(),
         ];
 
-        $description = trim($product->getShortDescription());
+        $description = trim((string) $product->getShortDescription());
 
         if (strlen($description) > 2000) {
             $description = substr($description, 0, 2000);
@@ -171,7 +171,7 @@ class ProductDataBuilder
 
         $payload = [
             'category'          => $categories,
-            'description'       => (string)$description,
+            'description'       => $description,
             'price'             => $price,
             'title'             => (string)$product->getName(),
             'referenceId'       => (string)$product->getSku(),

@@ -12,11 +12,11 @@ namespace Extend\Warranty\ViewModel;
 
 use Exception;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
-use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\Model\WarrantyRelation;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Api\Sync\Lead\LeadInfoRequest;
 use Extend\Warranty\Model\Offers as OfferModel;
-use Extend\Warranty\Model\Product\Type;
+use Extend\Warranty\Model\Config\Source\ProductPagePlacement;
 use Magento\Backend\Model\Auth\Session as AdminSession;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Checkout\Model\Session as CheckoutSession;
@@ -24,10 +24,11 @@ use Magento\ConfigurableProduct\Api\LinkManagementInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Request\Http;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Quote\Api\Data\CartInterface;
+use Magento\Quote\Api\Data\CartItemInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\Data\OrderItemSearchResultInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Sales\Model\Order\Item;
@@ -119,6 +120,8 @@ class Warranty implements ArgumentInterface
      */
     private $leadInfoRequest;
 
+    protected $warrantyRelation;
+
     /**
      * Warranty constructor
      *
@@ -134,6 +137,7 @@ class Warranty implements ArgumentInterface
      * @param StoreManagerInterface $storeManager
      * @param AdminSession $adminSession
      * @param LeadInfoRequest $leadInfoRequest
+     * @param WarrantyRelation $warrantyRelation
      */
     public function __construct(
         DataHelper $dataHelper,
@@ -147,7 +151,8 @@ class Warranty implements ArgumentInterface
         SearchCriteriaBuilder $searchCriteriaBuilder,
         StoreManagerInterface $storeManager,
         AdminSession $adminSession,
-        LeadInfoRequest $leadInfoRequest
+        LeadInfoRequest $leadInfoRequest,
+        WarrantyRelation $warrantyRelation
     ) {
         $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
@@ -161,6 +166,7 @@ class Warranty implements ArgumentInterface
         $this->storeManager = $storeManager;
         $this->adminSession = $adminSession;
         $this->leadInfoRequest = $leadInfoRequest;
+        $this->warrantyRelation = $warrantyRelation;
     }
 
     /**
@@ -174,7 +180,7 @@ class Warranty implements ArgumentInterface
         $result = false;
 
         if ($storeId) {
-            return  $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId);
+            return $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId);
         }
 
         if ($this->isAdmin()) {
@@ -202,19 +208,8 @@ class Warranty implements ArgumentInterface
      */
     public function hasWarranty(CartInterface $quote, int $id): bool
     {
-        $hasWarranty = false;
         $checkQuoteItem = $quote->getItemById($id);
-        $items = $quote->getAllVisibleItems();
-        foreach ($items as $item) {
-            if(
-                $item->getProductType() === Type::TYPE_CODE
-                && $checkQuoteItem
-                && WarrantyHelper::isWarrantyRelatedToQuoteItem($item,$checkQuoteItem)){
-                $hasWarranty = true;
-            }
-        }
-
-        return $hasWarranty;
+        return $checkQuoteItem && $this->warrantyRelation->quoteItemHasWarranty($checkQuoteItem);
     }
 
     /**
@@ -249,6 +244,58 @@ class Warranty implements ArgumentInterface
     public function isProductDetailPageOffersEnabled(): bool
     {
         return $this->dataHelper->isProductDetailPageOffersEnabled();
+    }
+
+    /**
+     * Get PDP Offers Button placement (insertion point and logic)
+     *
+     * @param bool $isSimpleProduct
+     * @return array
+     */
+    public function getProductDetailPageOffersPlacement(bool $isSimpleProduct): array
+    {
+        $pdpDisplay = $this->dataHelper->getProductDetailPageOffersPlacement();
+        $placement = [
+            'insertionPoint' => null,
+            'insertionLogic' => null
+        ];
+        $logicBefore = 'before';
+        $logicAfter = 'after';
+
+        switch ($pdpDisplay) {
+            case ProductPagePlacement::ACTIONS_BEFORE:
+            case ProductPagePlacement::ACTIONS_AFTER:
+                $placement['insertionPoint'] = 'div.actions';
+                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::ACTIONS_BEFORE ? $logicBefore : $logicAfter;
+                break;
+            case ProductPagePlacement::ADD_TO_CART_BEFORE:
+            case ProductPagePlacement::ADD_TO_CART_AFTER:
+                $placement['insertionPoint'] = 'button.tocart';
+                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::ADD_TO_CART_BEFORE ? $logicBefore : $logicAfter;
+                break;
+            case ProductPagePlacement::QUANTITY_BEFORE:
+            case ProductPagePlacement::QUANTITY_AFTER:
+                $placement['insertionPoint'] = 'div.field.qty';
+                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::QUANTITY_BEFORE ? $logicBefore : $logicAfter;
+                break;
+            case ProductPagePlacement::OPTIONS_BEFORE:
+            case ProductPagePlacement::OPTIONS_AFTER:
+                if ($isSimpleProduct) {
+                    $placement['insertionPoint'] = 'div.box-tocart .fieldset:first-child';
+                    $placement['insertionLogic'] = $logicBefore;
+                } else {
+                    $placement['insertionPoint'] = 'div.product-options-wrapper';
+                    $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::OPTIONS_BEFORE ? $logicBefore : $logicAfter;
+                }
+                break;
+            case ProductPagePlacement::SOCIAL_BEFORE:
+            case ProductPagePlacement::SOCIAL_AFTER:
+                $placement['insertionPoint'] = 'div.product-social-links';
+                $placement['insertionLogic'] = $pdpDisplay === ProductPagePlacement::SOCIAL_BEFORE ? $logicBefore : $logicAfter;
+                break;
+        }
+
+        return $placement;
     }
 
     /**
@@ -334,22 +381,14 @@ class Warranty implements ArgumentInterface
     /**
      * Check does quote have warranty item for the item
      *
-     * @param int $id
+     * @param OrderItemInterface $id
      * @return bool
      */
-    public function isWarrantyInQuote(int $id): bool
+    public function itemHasLeadWarrantyInQuote($orderItem): bool
     {
-        try {
-            $quote = $this->checkoutSession->getQuote();
-        } catch (LocalizedException $exception) {
-            $quote = null;
-        }
-
-        if ($quote) {
-            $hasWarranty = $this->hasWarranty($quote, $id);
-        }
-
-        return $hasWarranty ?? false;
+        /** @var CartItemInterface $item */
+        $relationSku = $this->warrantyRelation->getOfferOrderItemSku($orderItem);
+        return !empty($this->warrantyRelation->getWarrantyByRelationSku($relationSku));
     }
 
     /**
@@ -488,7 +527,34 @@ class Warranty implements ArgumentInterface
         $apiKey = $this->dataHelper->getApiKey();
 
         $this->leadInfoRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
-        $leadExpirationDate = $this->leadInfoRequest->create($leadToken)/1000;
+        $leadExpirationDate = $this->leadInfoRequest->create($leadToken) / 1000;
         return $leadExpirationDate !== null && time() >= $leadExpirationDate;
+    }
+
+    /**
+     * @param CartItemInterface $quoteItem
+     * @return string
+     */
+    public function getProductSkuByQuoteItem($quoteItem): string
+    {
+        return $this->warrantyRelation->getOfferQuoteItemSku($quoteItem);
+    }
+
+    /**
+     * @param CartItemInterface $quoteItem
+     * @return string
+     */
+    public function getRelationSkuByQuoteItem($quoteItem): string
+    {
+        return $this->warrantyRelation->getRelationQuoteItemSku($quoteItem);
+    }
+
+    /**
+     * @param OrderItemInterface $orderItem
+     * @return string
+     */
+    public function getProductSkuByOrderItem($orderItem): string
+    {
+        return $this->warrantyRelation->getOfferOrderItemSku($orderItem);
     }
 }
