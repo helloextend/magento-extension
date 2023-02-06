@@ -128,7 +128,7 @@ define([
 
             var elem = this.element;
             if (this.options.insertionPoint) {
-                elem = $(this.options.insertionPoint, this.element);
+                elem = $(this.options.insertionPoint, this.mainWrap);
                 if (!elem.length) {
                     elem = this.element;
                     method = 'appendTo';

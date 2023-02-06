@@ -13,11 +13,14 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <warranty>
+            <version>
+                <tag></tag>
+            </version>
             <enableExtend>
                 <enable>0</enable>
                 <enableBalance>1</enableBalance>
                 <enableCartOffers>1</enableCartOffers>
-                <enableAdminCartOffers>1</enableAdminCartOffers>
+                <enableAdminOffers>1</enableAdminOffers>
                 <enableRefunds>1</enableRefunds>
                 <enableLeads>1</enableLeads>
                 <logging_enabled>1</logging_enabled>
