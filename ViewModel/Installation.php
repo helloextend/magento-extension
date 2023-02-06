@@ -13,6 +13,7 @@ namespace Extend\Warranty\ViewModel;
 use Extend\Warranty\Model\Config\Source\AuthMode;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
+use Magento\Framework\App\ProductMetadata;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -53,27 +54,40 @@ class Installation implements ArgumentInterface
      */
     private $storeManager;
 
+    /**
+     * @var AdminSession
+     */
     private $adminSession;
+
+    /**
+     * @var ProductMetadata
+     */
+    private $productMetadata;
 
     /**
      * Installation constructor
      *
      * @param DataHelper $dataHelper
+     * @param TrackingHelper $trackingHelper
      * @param JsonSerializer $jsonSerializer
      * @param StoreManagerInterface $storeManager
+     * @param AdminSession $adminSession
+     * @param ProductMetadata $productMetadata
      */
     public function __construct(
         DataHelper $dataHelper,
         TrackingHelper $trackingHelper,
         JsonSerializer $jsonSerializer,
         StoreManagerInterface $storeManager,
-        AdminSession $adminSession
+        AdminSession $adminSession,
+        ProductMetadata $productMetadata
     ) {
         $this->dataHelper = $dataHelper;
         $this->trackingHelper = $trackingHelper;
         $this->jsonSerializer = $jsonSerializer;
         $this->storeManager = $storeManager;
         $this->adminSession = $adminSession;
+        $this->productMetadata = $productMetadata;
     }
 
     /**
@@ -170,6 +184,9 @@ class Installation implements ArgumentInterface
                 'enableInterstitialCartOffers' => $this->dataHelper->isInterstitialCartOffersEnabled($storeId),
                 'enablePostPurchaseModal' => $this->dataHelper->isLeadsModalEnabled($storeId),
                 'enableOrderInformationOffers' => $this->dataHelper->isOrderOffersEnabled($storeId),
+                'displaySettings'=>[
+                    'pdpPlacement' => $this->dataHelper->getProductDetailPageOffersPlacement(ScopeInterface::SCOPE_STORES, $storeId)
+                ]
                 //'displayOffersOnIndividualBundleItems' => false
             ],
             'syncProducts' => [
@@ -183,7 +200,12 @@ class Installation implements ArgumentInterface
                 'lastSendDate' => $this->dataHelper->getHistoricalOrdersSyncPeriod(ScopeInterface::SCOPE_STORES, $storeId),
                 'enableCronSync' => $this->dataHelper->isHistoricalOrdersCronSyncEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             ],
-            'trackingEnabled' => $this->trackingHelper->isTrackingEnabled($storeId)
+            'trackingEnabled' => $this->trackingHelper->isTrackingEnabled($storeId),
+            'versions'=>[
+                'magentoVersion'=> $this->productMetadata->getVersion(),
+                'moduleVersion'=>$this->dataHelper->getModuleVersion()
+            ]
+
         ];
 
         try {
