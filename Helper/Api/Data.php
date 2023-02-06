@@ -59,6 +59,7 @@ class Data extends AbstractHelper
     /**
      * Offers settings
      */
+    public const WARRANTY_OFFERS_ADMIN_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableAdminCartOffers';
     public const WARRANTY_OFFERS_SHOPPING_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableCartOffers';
     public const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
     public const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
@@ -393,6 +394,21 @@ class Data extends AbstractHelper
         return (int)$this->scopeConfig->getValue(
             self::WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH,
             ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * Check if shopping cart offers enabled
+     *
+     * @param string|int|null $storeId
+     * @return bool
+     */
+    public function isShoppingAdminCartOffersEnabled($storeId = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_OFFERS_ADMIN_CART_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
             $storeId
         );
     }

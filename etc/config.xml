@@ -17,6 +17,7 @@
                 <enable>0</enable>
                 <enableBalance>1</enableBalance>
                 <enableCartOffers>1</enableCartOffers>
+                <enableAdminCartOffers>1</enableAdminCartOffers>
                 <enableRefunds>1</enableRefunds>
                 <enableLeads>1</enableLeads>
                 <logging_enabled>1</logging_enabled>
@@ -54,7 +55,7 @@
             </products>
             <historical_orders>
                 <batch_size>10</batch_size>
-                <cron_sync_enabled>1</cron_sync_enabled>
+                <cron_sync_enabled>0</cron_sync_enabled>
                 <cron>
                     <frequency>0 * * * *</frequency>
                 </cron>

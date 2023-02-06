@@ -12,7 +12,7 @@ namespace Extend\Warranty\Helper;
 use Extend\Warranty\Model\Product\Type;
 use Magento\Quote\Model\Quote\Item;
 use Magento\Quote\Model\Quote;
-use Extend\Warranty\Helper\Data as WarrantyHelper;
+use Extend\Warranty\Model\WarrantyRelation;
 
 /**
  * Class Tracking
@@ -35,6 +35,11 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
     private $_customerSession;
 
     /**
+     * @var WarrantyRelation
+     */
+    private $warrantyRelation;
+
+    /**
      * Tracking constructor.
      *
      * @param \Magento\Framework\App\Helper\Context $context
@@ -42,10 +47,12 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Customer\Model\Session $customerSession
+        \Magento\Customer\Model\Session $customerSession,
+        WarrantyRelation $warrantyRelation
     ) {
         $this->_customerSession = $customerSession;
 
+        $this->warrantyRelation = $warrantyRelation;
         parent::__construct(
             $context
         );
@@ -170,7 +177,7 @@ class Tracking extends \Magento\Framework\App\Helper\AbstractHelper
             if ($item->getProductType() !== Type::TYPE_CODE) {
                 continue;
             } else {
-                if (WarrantyHelper::isWarrantyRelatedToQuoteItem($item, $quoteItem, true)) {
+                if ($this->warrantyRelation->isWarrantyRelatedToQuoteItem($item, $quoteItem, true)) {
                     $possibleItems[] = $item;
                 }
             }
