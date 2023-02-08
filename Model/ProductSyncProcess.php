@@ -183,11 +183,6 @@ class ProductSyncProcess
             } while ($currentBatch <= $countOfBathes);
 
             $this->dataHelper->setLastProductSyncDate($currentDate, ScopeInterface::SCOPE_STORES, $storeId);
-            $this->dataHelper->setLastProductSyncDate(
-                $currentDate,
-                ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-                Store::DEFAULT_STORE_ID
-            );
             $this->syncLogger->info(sprintf('Finish sync products for %s store.', $storeCode));
         }
     }
