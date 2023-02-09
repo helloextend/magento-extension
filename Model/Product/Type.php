@@ -14,6 +14,7 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Catalog\Model\Product;
 use Extend\Warranty\Helper\Data;
+use Magento\Framework\Exception\LocalizedException;
 use \Magento\Framework\Exception\NoSuchEntityException;
 
 /**
@@ -136,10 +137,16 @@ class Type extends AbstractType
      * @param Product $product
      * @param string $processMode
      * @return array|Product|Product[]|string
+     * @throws LocalizedException
      */
     protected function _prepareProduct(\Magento\Framework\DataObject $buyRequest, $product, $processMode)
     {
-        $price = $this->helper->removeFormatPrice($buyRequest->getPrice() ?? 0);
+        if(!$buyRequest->getProduct()){
+            $this->_logger->error(sprintf(__('BuyRequest is not valid, product option is not provided.')));
+            throw new LocalizedException(__('Warranty was unable to be added. Please try again.'));
+        }
+
+        $price = $this->helper->removeFormatPrice($buyRequest->getPrice());
 
         $buyRequest->setData('custom_price', $price);
 
