@@ -190,7 +190,7 @@ class Normalizer
             }
         } elseif (count($warranties) === 1) {
             $warranty = array_shift($warranties);
-            if ($productItemQty !== $warranty->getQty()) {
+            if ($productItemQty !== (int) $warranty->getQty()) {
                 $warranty->setQty($productItemQty);
                 $this->quoteItemRepository->save($warranty);
             }
