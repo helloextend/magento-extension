@@ -16,11 +16,9 @@ $scopeData = $block->getScopeData();
 ?>
 <div class="extend-sync-button-container">
     <button id="syncBtn" data-mage-init='{"productSync": {
-            "url": "<?= $block->escapeJs($block->getUrl(
-                'extend/products/sync',
-                [$scopeData['scopeType'] => $scopeData['scopeId']]
-            )) ?>",
-            "resetFlagUrl": "<?= $block->escapeJs($block->getUrl('extend/products_sync/resetFlag')) ?>"
+            "syncUrls":<?= json_encode($block->getSyncUrls())?>,
+            "resetFlagUrl": "<?= $block->escapeJs($block->getUrl('extend/products_sync/resetFlag')) ?>",
+            "resetSyncDateUrl": "<?= $block->escapeJs($block->getUrl('extend/products_sync/resetSyncDate',[$scopeData['scopeType'] => $scopeData['scopeId']])) ?>"
         }}' <?php if (!$block->isButtonEnabled()): ?>class="disabled"<?php endif; ?>>
         <span><?= /* @noEscape */ __('Sync Products') ?></span>
     </button>
@@ -31,6 +29,9 @@ $scopeData = $block->getScopeData();
                 <?= /* @noEscape */ !empty($block->getLastSync()) ? $block->getLastSync() : __('Never') ?>
             </span>
         </p>
+        <a id="reset_sync" <?php if(!$block->getLastSync()):?> style="display:none;" <?php endif;?>>
+            <span><?= /* @noEscape */ __('Reset Sync Date') ?></span>
+        </a>
         <a id="cancel_sync">
             <span><?= /* @noEscape */ __('Cancel Sync') ?></span>
         </a>

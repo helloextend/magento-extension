@@ -120,6 +120,7 @@ class ProductDataBuilder
         CategoryRepositoryInterface $categoryRepository,
         ProductMediaConfig $configMedia,
         Helper $helper,
+        ApiHelper $apiHelper,
         ProductResourceModel $productResourceModel,
         OptionProvider $optionProvider,
         StoreManagerInterface $storeManager,
@@ -128,6 +129,7 @@ class ProductDataBuilder
         $this->categoryRepository = $categoryRepository;
         $this->configMedia = $configMedia;
         $this->helper = $helper;
+        $this->apiHelper = $apiHelper;
         $this->productResourceModel = $productResourceModel;
         $this->optionProvider = $optionProvider;
         $this->storeManager = $storeManager;
