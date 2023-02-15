@@ -23,6 +23,7 @@ use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Extend\Warranty\Api\SyncInterface as ProductSyncModel;
 use Extend\Warranty\Model\ProductSyncFlag;
@@ -110,6 +111,11 @@ class Sync extends Action
     private $syncLogger;
 
     /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
      * Sync constructor
      *
      * @param Context $context
@@ -123,16 +129,17 @@ class Sync extends Action
      * @param LoggerInterface $syncLogger
      */
     public function __construct(
-        Context $context,
-        DataHelper $dataHelper,
-        DateTime $dateTime,
-        Date $date,
-        FlagManager $flagManager,
-        ProductSyncModel $productSyncModel,
-        ApiProductModel $apiProductModel,
-        LoggerInterface $logger,
-        LoggerInterface $syncLogger
-    ) {
+        Context               $context,
+        DataHelper            $dataHelper,
+        DateTime              $dateTime,
+        Date                  $date,
+        FlagManager           $flagManager,
+        ProductSyncModel      $productSyncModel,
+        StoreManagerInterface $storeManager,
+        ApiProductModel       $apiProductModel,
+        LoggerInterface       $logger,
+        LoggerInterface       $syncLogger
+    ){
         parent::__construct($context);
         $this->flagManager = $flagManager;
         $this->dateTime = $dateTime;
@@ -140,6 +147,7 @@ class Sync extends Action
         $this->dataHelper = $dataHelper;
         $this->productSyncModel = $productSyncModel;
         $this->apiProductModel = $apiProductModel;
+        $this->storeManager = $storeManager;
         $this->logger = $logger;
         $this->syncLogger = $syncLogger;
     }
@@ -156,25 +164,20 @@ class Sync extends Action
         $currentBatch = (int)$request->getParam('currentBatchesProcessed');
 
         if (!(bool)$this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME) || $currentBatch > 1) {
+
             if (!$this->flagManager->getFlagData(ProductSyncFlag::FLAG_NAME)) {
                 $currentDate = $this->dateTime->formatDate($this->date->gmtTimestamp());
                 $this->flagManager->saveFlag(ProductSyncFlag::FLAG_NAME, $currentDate);
             }
 
             $filters = [];
-            $website = $request->getParam('website');
             $store = $request->getParam('store');
-            if ($website) {
-                $scopeType = ScopeInterface::SCOPE_WEBSITES;
-                $scopeId = $website;
-                $filters[self::WEBSITE_ID] = $website;
-            } elseif ($store) {
+            if ($store) {
                 $scopeType = ScopeInterface::SCOPE_STORES;
                 $scopeId = $store;
                 $filters[Product::STORE_ID] = $store;
             } else {
-                $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
-                $scopeId = Store::DEFAULT_STORE_ID;
+                throw new LocalizedException(__('Something went wrong. '));
             }
 
             $apiUrl = $this->dataHelper->getApiUrl($scopeType, $scopeId);
@@ -202,8 +205,8 @@ class Sync extends Action
                     $message = sprintf('Error found in products batch %s. %s', $currentBatch, $exception->getMessage());
                     $this->syncLogger->error($message);
                     $data = [
-                        'status'    => self::STATUS_FAIL,
-                        'message'   => __($message),
+                        'status' => self::STATUS_FAIL,
+                        'message' => __($message),
                     ];
                 }
 

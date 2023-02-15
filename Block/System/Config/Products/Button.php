@@ -103,14 +103,56 @@ class Button extends Field
      */
     public function getLastSync(): string
     {
-        $scopeData = $this->getScopeData();
+        $storeIds = $this->getScopeStoreIds();
+        $lastSyncDate = '';
+        foreach($storeIds as $storeId){
+            if($lastSyncDate){
+                continue;
+            }
 
-        $lastSyncDate = $this->dataHelper->getLastProductSyncDate($scopeData['scopeType'], $scopeData['scopeId']);
+            $lastSyncDate = $this->dataHelper->getLastProductSyncDate(ScopeInterface::SCOPE_STORE, $storeId);
+        }
+
         if (!empty($lastSyncDate)) {
             $lastSyncDate = $this->timezone->formatDate($lastSyncDate, 1, true);
         }
 
         return $lastSyncDate;
+    }
+
+    /**
+     * @return array|int[]|string[]
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getScopeStoreIds(){
+        $request = $this->getRequest();
+        $website = $request->getParam('website');
+        $store = $request->getParam('store');
+
+        if ($website) {
+            $stores = $this->_storeManager->getWebsite($website)->getStores();
+            $storeIds = array_keys($stores);
+        } elseif ($store) {
+            $storeIds = [$store];
+        } else {
+            $storeIds = array_keys($this->_storeManager->getStores());
+        }
+
+        return $storeIds;
+    }
+
+    /**
+     * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getSyncUrls()
+    {
+        $storeIds = $this->getScopeStoreIds();
+        $syncUrls = [];
+        foreach ($storeIds as $storeId) {
+            $syncUrls[] = $this->getUrl('extend/products/sync', [ScopeInterface::SCOPE_STORE => $storeId]);
+        }
+        return $syncUrls;
     }
 
     /**

@@ -5,7 +5,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Model;
@@ -15,12 +15,10 @@ use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Api\Sync\Product\ProductsRequest as ApiProductModel;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
 use Magento\Store\Model\ScopeInterface;
-use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Exception;
@@ -159,31 +157,43 @@ class ProductSyncProcess
                 $filters[ProductInterface::UPDATED_AT] = $lastSyncDate;
             }
 
-            $currentBatch = 1;
-            $products = $this->productSyncModel->getItems($currentBatch, $filters);
-            $countOfBathes = $this->productSyncModel->getCountOfBatches();
+            $currentBatch = $batchNumber ?? 1;
+            $countOfBathes = $batchNumber ?? $this->productSyncModel->getCountOfBatches();
 
             do {
-                if (!empty($products)) {
-                    try {
-                        $this->apiProductModel->create($products, $currentBatch, ScopeInterface::SCOPE_STORES, $storeId);
-                    } catch (LocalizedException $exception) {
-                        $this->syncLogger->info(sprintf(
-                            'Error found in products batch %s. %s',
-                            $currentBatch,
-                            $exception->getMessage()
-                        ));
-                    }
-                } else {
-                    $this->syncLogger->info(sprintf('Nothing to sync in batch %s.', $currentBatch));
-                }
-
+                $this->syncProducts($storeId,$currentBatch,$filters);
                 $currentBatch++;
-                $products = $this->productSyncModel->getItems($currentBatch);
             } while ($currentBatch <= $countOfBathes);
 
             $this->dataHelper->setLastProductSyncDate($currentDate, ScopeInterface::SCOPE_STORES, $storeId);
             $this->syncLogger->info(sprintf('Finish sync products for %s store.', $storeCode));
+        }
+    }
+
+    /**
+     * @param $storeId
+     * @param $currentBatch
+     * @param $filters
+     * @return void
+     */
+    public function syncProducts($storeId, $currentBatch, $filters)
+    {
+        $products = $this->productSyncModel->getItems($currentBatch, $filters);
+        if (!empty($products)) {
+            try {
+                $this->apiProductModel->create($products, $currentBatch, ScopeInterface::SCOPE_STORES, $storeId);
+            } catch (LocalizedException $exception) {
+                $this->syncLogger->info(sprintf(
+                    'Error found in products batch %s. %s',
+                    $currentBatch,
+                    $exception->getMessage()
+                ));
+            }
+        } else {
+            $this->syncLogger->info(sprintf(
+                'Nothing to sync in batch %s.',
+                $currentBatch
+            ));
         }
     }
 }

@@ -20,6 +20,7 @@ define(
         var shouldAbort = false;
         var synMsg = $("#sync-msg");
         var cancelSync = $("#cancel_sync");
+        var resetSync = $("#reset_sync");
         var resetFlagUrl = '';
 
         function restore(button) {
@@ -34,6 +35,8 @@ define(
         }
 
         async function syncAllProducts(url, button) {
+            currentBatchesProcessed = 1;
+            totalBatches = 0;
             do {
                 var data = await batchBeingProcessed(shouldAbort, url).then(data => {
                     return data;            //success
@@ -49,7 +52,7 @@ define(
                 totalBatches = data.totalBatches;
                 $("#sync-time").text(data.msg);
             } while (currentBatchesProcessed <= totalBatches);
-            restore(button);
+            return true;
         }
 
         function batchBeingProcessed(shouldAbort, url) {
@@ -93,7 +96,10 @@ define(
         $.widget('extend.productSync', {
             options: {
                 url: '',
-                resetFlagUrl: ''
+                syncUrls: [],
+                resetFlagUrl: '',
+                resetSyncDateUrl: '',
+
             },
 
             _create: function () {
@@ -110,8 +116,25 @@ define(
                     resetFlagUrl = self.options.resetFlagUrl;
                 });
 
+                $(resetSync).bind("click", function () {
+                    let resetText =resetSync.text();
+                    resetSync.text('Processing...');
+                    $.get({
+                        url: self.options.resetSyncDateUrl,
+                        dataType: 'json',
+                        success: function (data) {
+                            $('#sync-time').html(data.message);
+                            resetSync.hide();
+                            resetSync.text(resetText);
+                        },
+                        error: function (data) {
+                            resetSync.text(resetText);
+                        }
+                    })
+                });
+
             },
-            syncProducts: function (event) {
+            syncProducts: async function (event) {
                 event.preventDefault();
                 var button = $(this.element);
                 button.text('Sync in progress...');
@@ -121,8 +144,16 @@ define(
                 synMsg.hide();
                 cancelSync.show();
 
-                syncAllProducts(this.options.url, button);
 
+                for (let url of this.options.syncUrls) {
+                    let storeSync = new Promise(function (resolve) {
+                        resolve(syncAllProducts(url, button));
+                    });
+                    await storeSync;
+                };
+
+                resetSync.show();
+                restore(button);
             }
         });
 
