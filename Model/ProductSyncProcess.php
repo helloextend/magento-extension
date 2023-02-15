@@ -120,13 +120,10 @@ class ProductSyncProcess
     }
 
     /**
-     *
      * Execute sync for products
      *
      * @param int|null $defaultBatchSize
-     * @param int[]|null $forceStoreIds
      * @return void
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function execute(int $defaultBatchSize = null)
     {
@@ -166,7 +163,7 @@ class ProductSyncProcess
             $countOfBathes = $batchNumber ?? $this->productSyncModel->getCountOfBatches();
 
             do {
-                $this->syncProducts($storeId,$currentBatch,$filters);
+                $this->syncProducts($storeId, $currentBatch, $filters);
                 $currentBatch++;
             } while ($currentBatch <= $countOfBathes);
 

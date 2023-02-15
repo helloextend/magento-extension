@@ -101,7 +101,7 @@ class Sync implements SyncInterface
             if ($field === ProductInterface::UPDATED_AT) {
                 $this->searchCriteriaBuilder->addFilter($field, $value, 'gt');
             } else {
-                $this->searchCriteriaBuilder->addFilter($field, $value, is_array($value) ? 'in' : null);
+                $this->searchCriteriaBuilder->addFilter($field, $value);
             }
         }
 

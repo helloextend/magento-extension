@@ -117,14 +117,18 @@ define(
                 });
 
                 $(resetSync).bind("click", function () {
+                    let resetText = resetSync.text();
+                    resetSync.text('Processing...');
                     $.get({
                         url: self.options.resetSyncDateUrl,
                         dataType: 'json',
                         success: function (data) {
                             $('#sync-time').html(data.message);
                             resetSync.hide();
+                            resetSync.text(resetText);
                         },
                         error: function (data) {
+                            resetSync.text(resetText);
                         }
                     })
                 });
@@ -140,22 +144,13 @@ define(
                 synMsg.hide();
                 cancelSync.show();
 
-                //
-                // for (let url of this.options.syncUrls) {
-                //     let storeSync = new Promise(function (resolve) {
-                //         resolve(syncAllProducts(url, button));
-                //     });
-                //
-                //     await update(storeSync, url);
-                // }
-
-                // jQuery.each(this.options.syncUrls, async function (i, url) {
                 for (let url of this.options.syncUrls) {
                     let storeSync = new Promise(function (resolve) {
                         resolve(syncAllProducts(url, button));
                     });
                     await storeSync;
-                };
+                }
+                ;
 
                 resetSync.show();
                 restore(button);
