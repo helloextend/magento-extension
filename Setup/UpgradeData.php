@@ -134,6 +134,10 @@ class UpgradeData implements UpgradeDataInterface
         if (version_compare($context->getVersion(), '1.3.0', '<')) {
             $this->removeContractsApiConfiguration();
         }
+
+        if (version_compare($context->getVersion(), '1.3.1', '<')) {
+            $this->removeLastSyncValue();
+        }
     }
 
     /**
@@ -183,5 +187,9 @@ class UpgradeData implements UpgradeDataInterface
         if ($this->apiHelper->getContractCreateApi(ScopeConfigInterface::SCOPE_TYPE_DEFAULT) === \Extend\Warranty\Model\Config\Source\CreateContractApi::CONTACTS_API) {
             $this->writer->delete(Data::WARRANTY_CONTRACTS_ENABLED_XML_PATH, ScopeConfigInterface::SCOPE_TYPE_DEFAULT);
         }
+    }
+
+    public function removeLastSyncValue() {
+        $this->writer->delete(Data::WARRANTY_PRODUCTS_LAST_SYNC_DATE_XML_PATH, ScopeConfigInterface::SCOPE_TYPE_DEFAULT);
     }
 }
