@@ -14,6 +14,8 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Extend\Warranty\Api\SyncInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Api\SortOrder;
+use Magento\Framework\Api\SortOrderBuilder;
 
 /**
  * Class Sync
@@ -51,6 +53,11 @@ class Sync implements SyncInterface
     private $countOfBatches = 0;
 
     /**
+     * @var SortOrderBuilder
+     */
+    private $sortOrderBuilder;
+
+    /**
      * Sync constructor
      *
      * @param ProductRepositoryInterface $productRepository
@@ -59,11 +66,13 @@ class Sync implements SyncInterface
      */
     public function __construct(
         ProductRepositoryInterface $productRepository,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
-        int $batchSize = self::DEFAULT_BATCH_SIZE
+        SearchCriteriaBuilder      $searchCriteriaBuilder,
+        SortOrderBuilder           $sortOrderBuilder,
+        int                        $batchSize = self::DEFAULT_BATCH_SIZE
     ) {
         $this->productRepository = $productRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->sortOrderBuilder = $sortOrderBuilder;
         $this->batchSize = $batchSize;
     }
 
@@ -82,7 +91,7 @@ class Sync implements SyncInterface
      *
      * @param int $batchNumber
      * @param array $filters
-     * @return array
+     * @return ProductInterface[]
      */
     public function getItems(int $batchNumber = 1, array $filters = []): array
     {
@@ -99,6 +108,9 @@ class Sync implements SyncInterface
         $batchSize = $this->getBatchSize();
         $this->searchCriteriaBuilder->setPageSize($batchSize);
         $this->searchCriteriaBuilder->setCurrentPage($batchNumber);
+
+        $sortOrder = $this->sortOrderBuilder->setField(ProductInterface::UPDATED_AT)->setAscendingDirection()->create();
+        $this->searchCriteriaBuilder->setSortOrders([$sortOrder]);
 
         $searchCriteria = $this->searchCriteriaBuilder->create();
         $searchResults = $this->productRepository->getList($searchCriteria);
@@ -136,6 +148,6 @@ class Sync implements SyncInterface
     public function setCountOfBatches(int $countOfItems)
     {
         $batchSize = $this->getBatchSize();
-        $this->countOfBatches = (int)ceil($countOfItems/$batchSize);
+        $this->countOfBatches = (int)ceil($countOfItems / $batchSize);
     }
 }

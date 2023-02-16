@@ -52,7 +52,7 @@
         </referenceContainer>
 
         <referenceBlock name="order_item_extra_info">
-            <block class="Magento\Sales\Block\Adminhtml\Order\View"
+            <block class="Extend\Warranty\Block\Adminhtml\Order\View\Items\Renderer\LeadOfferRenderer"
                    name="add_warranty"
                    template="Extend_Warranty::order/view/leads.phtml"
                    after="-"

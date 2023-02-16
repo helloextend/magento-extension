@@ -19,6 +19,7 @@ $offerTypeArea = $block->getData('offerTypeArea');
 $product = $block->getProduct();
 ?>
 <?php if ($viewModel->isExtendEnabled()): ?>
+    <?php $placement = $viewModel->getProductDetailPageOffersPlacement(false); ?>
     <script type="text/x-magento-init">
     {
         "#product_addtocart_form .box-tocart": {
@@ -27,7 +28,9 @@ $product = $block->getProduct();
                 "productId": "<?= $block->escapeJs($product->getId()) ?>",
                 "productSku": "warranties_are_only_for_simples",
                 "buttonEnabled": <?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled() ? 1 : 0) ?>,
-                "modalEnabled": <?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled() ? 1 : 0) ?>
+                "modalEnabled": <?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled() ? 1 : 0) ?>,
+                "insertionPoint": "<?= $block->escapeJs($placement['insertionPoint']) ?>",
+                "insertionLogic": "<?= $block->escapeJs($placement['insertionLogic']) ?>"
             }
         }
     }

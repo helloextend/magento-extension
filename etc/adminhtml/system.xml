@@ -426,6 +426,18 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>warranty/enableExtend/enableCartOffers</config_path>
                 </field>
+                <field id="admin_cart_enabled"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="15"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>Display Admin Offers</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>warranty/enableExtend/enableAdminOffers</config_path>
+                </field>
                 <field id="pdp_enabled"
                        translate="label comment"
                        type="select"
@@ -480,6 +492,32 @@
                        canRestore="1">
                     <label>Order Information Offers</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="display_settings_title"
+                       translate="label comment"
+                       sortOrder="70"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Display Settings</label>
+                    <comment>These settings will give some control on where the Extend Offers button would show.</comment>
+                    <frontend_model>Magento\Config\Block\System\Config\Form\Field\Heading</frontend_model>
+                </field>
+                <field id="pdp_placement"
+                       translate="label comment"
+                       type="select"
+                       sortOrder="80"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="1">
+                    <label>PDP Offers Button placement</label>
+                    <comment>Applied to the Simple and Configurable product pages</comment>
+                    <depends>
+                        <field id="warranty/offers/pdp_enabled">1</field>
+                    </depends>
+                    <source_model>Extend\Warranty\Model\Config\Source\ProductPagePlacement</source_model>
                 </field>
             </group>
 
