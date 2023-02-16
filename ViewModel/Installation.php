@@ -106,6 +106,10 @@ class Installation implements ArgumentInterface
                 'environment' => $this->dataHelper->isExtendLive() ? AuthMode::LIVE : AuthMode::DEMO,
             ];
 
+            if($this->isAdmin()){
+                $config['region']='US';
+            }
+
             try {
                 $jsonConfig = $this->jsonSerializer->serialize($config);
             } catch (InvalidArgumentException $exception) {
