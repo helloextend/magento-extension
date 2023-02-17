@@ -1,0 +1,57 @@
+name: m2-master-changelog-manager
+
+on:  
+  push:
+  pull_request:
+    branches:
+      - master
+      
+jobs:
+  create-release:
+    if: (contains( github.event.head_commit.message, 'major release') || contains( github.event.head_commit.message,'minor release') || contains( github.event.head_commit.message, 'patch release'))
+    runs-on: ubuntu-latest
+    steps:     
+     - name: Checkout Code
+       uses: actions/checkout@v2
+     - name: setup python
+       uses: actions/setup-python@v4
+       with:
+            pthon-version: '3.9'
+     - name: update major version file
+       if: contains( github.event.head_commit.message, 'Major Release')
+       run: python ./.github/version_update.py 0 "${{github.event.head_commit.message}}"
+     - name: update minor version file
+       if: contains( github.event.head_commit.message, 'Minor Release')
+       run: python ./.github/version_update.py 1 "${{github.event.head_commit.message}}"
+     - name: update patch version file
+       if: contains( github.event.head_commit.message, 'Patch Release')
+       run: python ./.github/version_update.py 2 "${{github.event.head_commit.message}}"
+     - name: Set Tag Output
+       id: set-tag
+       run: echo "::set-output name=tag_name::$(sh ./.github/get-version.sh)"
+     - name: Create tag
+       id: create-tag
+       uses: actions/github-script@v6
+       with: 
+        script: |
+          github.rest.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: "refs/tags/${{ steps.set-tag.outputs.tag_name }}",
+            sha: context.sha
+          })
+     - name: Push release files
+       id: push-release-file
+       run: |
+          git config --global user.name 'extend-deployer'
+          git config --global user.email "martin.liriano@extend.com"
+          git add ./.github/version.txt ./etc/config.xml changelog.md ./.github/branch_changelog.md
+          git commit -m "version update deployment ${{ steps.set-tag.outputs.tag_name }}"
+          git push
+     - name: Create release
+       id: set-release
+       uses: ncipollo/release-action@v1
+       with:  
+        tag: ${{ steps.set-tag.outputs.tag_name }}
+
+        
