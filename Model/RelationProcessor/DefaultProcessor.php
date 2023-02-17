@@ -37,8 +37,6 @@ class DefaultProcessor implements RelationProcessorInterface
 
     public function isWarrantyRelatedToQuoteItem(CartItemInterface $warrantyItem, CartItemInterface $item, $checkWithChildren = false): bool
     {
-        $associatedProductSku = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-
         /**
          * In default Relation Secondary SKU = Associated SKU
          * Secondary SKU is more specific relation so it should be checked in specific processors
@@ -109,7 +107,7 @@ class DefaultProcessor implements RelationProcessorInterface
      */
     public function getOfferOrderItemSku($orderItem): string
     {
-        return $orderItem->getProduct()->getSku();
+        return $orderItem->getProduct() ? $orderItem->getProduct()->getSku() : $orderItem->getSku();
     }
 
     /**
