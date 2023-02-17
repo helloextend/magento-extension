@@ -1,0 +1,29 @@
+
+name: m2-branch-changelog-manager
+
+on:
+  push:
+    branches-ignore:
+      - 'master'
+      
+jobs:
+  update-branch-changelog:
+    if: ${{ github.event.head_commit.id != github.event.before && github.event.created != true }} 
+    runs-on: ubuntu-latest
+    steps:     
+     - name: Checkout Code
+       uses: actions/checkout@v2
+     - name: setup python
+       uses: actions/setup-python@v4
+       with:
+            pthon-version: '3.9'
+     - name: update changelog file
+       run: python ./.github/version_update.py 'branch' "${{github.event.head_commit.message}}"
+     - name: Push changelog file
+       id: push-changelog-file
+       run: |
+          git config --global user.name 'extend-deployer'
+          git config --global user.email "martin.liriano@extend.com"
+          git add ./.github/branch_changelog.md
+          git commit -m "branch update deployment ${{ steps.set-tag.outputs.tag_name }}"
+          git push
