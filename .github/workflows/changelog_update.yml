@@ -22,7 +22,7 @@ jobs:
      - name: Push changelog file
        id: push-changelog-file
        run: |
-          git config --global user.name 'extend-deployer'
+          git config --global user.name 'martin-liriano'
           git config --global user.email "martin.liriano@extend.com"
           git add ./.github/branch_changelog.md
           git commit -m "branch update deployment ${{ steps.set-tag.outputs.tag_name }}"
