@@ -3,8 +3,8 @@ name: m2-branch-changelog-manager
 
 on:
   push:
-    branches-ignore:
-      - 'master'
+    branches:
+      - 'develop'
       
 jobs:
   update-branch-changelog:
