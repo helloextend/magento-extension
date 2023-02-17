@@ -67,6 +67,7 @@ class HistoricalOrdersRequest extends AbstractRequest
     public function create(array $orders, int $currentBatch = 1): bool
     {
         $url = $this->apiUrl . self::CREATE_ORDER_ENDPOINT;
+        $url .= "?historical=true";
         $historicalOrders = [];
 
         foreach ($orders as $order) {
