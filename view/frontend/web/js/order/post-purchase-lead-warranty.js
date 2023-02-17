@@ -30,7 +30,8 @@ define([
             var self = this;
             Extend.aftermarketModal.open({
                 leadToken: self.options.leadToken,
-                onClose: function(plan, product) {
+                onClose: function(plan, product, qty) {
+                    self.options.qty = qty;
                     if (plan && product) {
                         self._addToCart({
                             leadToken: self.options.leadToken,

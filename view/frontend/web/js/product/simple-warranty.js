@@ -27,6 +27,7 @@ define([
             formInputName: 'warranty',
             formInputClass: 'extend-warranty-input',
             selectors: {
+                pdpWrapper: '.product-info-main',
                 addToCartForm: '#product_addtocart_form',
                 addToCartButton: '#product-addtocart-button'
             }
@@ -55,7 +56,7 @@ define([
          */
         _initElements: function () {
             this.mainWrap = this.options.isInProductView ?
-                this.element.parents('.column.main') :
+                this.element.closest(this.options.selectors.pdpWrapper) :
                 this.element;
 
             this.addToCartForm = $(this.options.selectors.addToCartForm, this.mainWrap);
@@ -128,7 +129,7 @@ define([
 
             var elem = this.element;
             if (this.options.insertionPoint) {
-                elem = $(this.options.insertionPoint, this.element);
+                elem = $(this.options.insertionPoint, this.mainWrap).first();
                 if (!elem.length) {
                     elem = this.element;
                     method = 'appendTo';
