@@ -1,20 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-/**
- * Extend Warranty
- *
- * @author      Extend Magento Team <magento@guidance.com>
- * @category    Extend
- * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
- */
--->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <warranty>
             <version>
-               <tag>2.0.2</tag>
+               <tag>2.1.2</tag>
             </version>
             <enableExtend>
                 <enable>0</enable>
