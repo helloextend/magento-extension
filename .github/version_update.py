@@ -70,7 +70,7 @@ def updateMinorVersion(Lines) :
     minorVersionString = int(minorVersionString)
     minorVersionString = minorVersionString + 1
 
-    version = majorVersionString + '.' + str(minorVersionString) + '.' + '.0'
+    version = majorVersionString + '.' + str(minorVersionString) + '.0'
     return version
 
 # updatePatchVersion(Lines) updates the Patch version 0.0.x
