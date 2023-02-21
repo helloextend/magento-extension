@@ -1,10 +1,18 @@
 # Extend Magento2 Changelog
 
-## version: 2.1.2
+## version: 2.1..0
 
 ### Changelog:
 
 ---
+
+
+**2.1..0**
+
+Minor Release - Merge pull request #341 from helloextend/feature/gitub-action-update
+
+
+
 
 **2.1.2**
 
