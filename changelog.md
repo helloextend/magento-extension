@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.2.0
+## version: 2.1.0
 
 ### Changelog:
 
 ---
+
+
+**2.1.0**
+
+Minor Release - Merge pull request #343 from helloextend/feature/github-action-update
+
+Feature/GitHub action update
+
+
+
 
 
 **2.2.0**
