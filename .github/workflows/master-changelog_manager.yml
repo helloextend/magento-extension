@@ -37,6 +37,7 @@ jobs:
           git add ./.github/version.txt ./etc/config.xml changelog.md ./.github/branch_changelog.md
           git commit -m "version update deployment ${{ steps.set-tag.outputs.tag_name }}"
           git push
+          git fetch
      - name: Create tag
        id: create-tag
        uses: actions/github-script@v6
