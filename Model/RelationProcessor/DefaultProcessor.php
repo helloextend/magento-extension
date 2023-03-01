@@ -121,10 +121,16 @@ class DefaultProcessor implements RelationProcessorInterface
      */
     public function getRelationOrderItemSku($orderItem): string
     {
-        $relationSku = $orderItem->getProduct()->getSku();
-        if($orderItem->getProduct()->hasOptions()){
+        if($orderItem->getProduct()){
+            $relationSku = $orderItem->getProduct()->getSku();
+            if($orderItem->getProduct()->hasOptions()){
+                $relationSku = $orderItem->getSku();
+            }
+        }
+        else{
             $relationSku = $orderItem->getSku();
         }
+
         return $relationSku;
     }
 }

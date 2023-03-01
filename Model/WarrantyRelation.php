@@ -142,6 +142,18 @@ class WarrantyRelation
     }
 
     /**
+     * Return product sku which is used to keep relation with warrantable product
+     *
+     * @param CartItemInterface $item
+     * @return string
+     */
+    public function getRelationOrderItemSku($item): string
+    {
+        return $this->getProcessor($item->getProductType())
+            ->getRelationOrderItemSku($item);
+    }
+
+    /**
      * @param $warrantyData
      * @return CartItemInterface|null
      */
