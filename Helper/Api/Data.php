@@ -30,6 +30,7 @@ class Data extends AbstractHelper
      * General settings
      */
     public const WARRANTY_ENABLE_EXTEND_ENABLE_XML_PATH = 'warranty/enableExtend/enable';
+    public const WARRANTY_VERSION_TAG_EXTEND_ENABLE_XML_PATH = 'warranty/version/tag';
     public const WARRANTY_ENABLE_EXTEND_ENABLE_BALANCE_XML_PATH = 'warranty/enableExtend/enableBalance';
     public const WARRANTY_ENABLE_EXTEND_LOGGING_ENABLED_XML_PATH = 'warranty/enableExtend/logging_enabled';
 
@@ -52,6 +53,7 @@ class Data extends AbstractHelper
     public const WARRANTY_CONTRACTS_EVENT_XML_PATH = 'warranty/contracts/event';
     public const WARRANTY_CONTRACTS_MODE_XML_PATH = 'warranty/contracts/mode';
     public const WARRANTY_CONTRACTS_BATCH_SIZE_XML_PATH = 'warranty/contracts/batch_size';
+    public const WARRANTY_CONTRACTS_FREQUENCY_XML_PATH = 'warranty/contracts/cron/frequency';
     public const WARRANTY_CONTRACTS_STORAGE_PERIOD_XML_PATH = 'warranty/contracts/storage_period';
     public const WARRANTY_CONTRACTS_REFUND_ENABLED_XML_PATH = 'warranty/enableExtend/enableRefunds';
     public const WARRANTY_CONTRACTS_AUTO_REFUND_ENABLED_XML_PATH = 'warranty/contracts/auto_refund_enabled';
@@ -59,13 +61,19 @@ class Data extends AbstractHelper
     /**
      * Offers settings
      */
-    public const WARRANTY_OFFERS_ADMIN_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableAdminCartOffers';
+
+    public const WARRANTY_OFFERS_ADMIN_ENABLED_XML_PATH = 'warranty/enableExtend/enableAdminOffers';
     public const WARRANTY_OFFERS_SHOPPING_CART_ENABLED_XML_PATH = 'warranty/enableExtend/enableCartOffers';
     public const WARRANTY_OFFERS_PDP_ENABLED_XML_PATH = 'warranty/offers/pdp_enabled';
     public const WARRANTY_OFFERS_PRODUCTS_LIST_ENABLED_XML_PATH = 'warranty/offers/products_list_enabled';
     public const WARRANTY_OFFERS_INTERSTITIAL_CART_ENABLED_XML_PATH = 'warranty/offers/interstitial_cart_enabled';
     public const LEADS_MODAL_ENABLED_XML_PATH = 'warranty/offers/leads_modal_enabled';
     public const ORDER_OFFERS_ENABLED_XML_PATH = 'warranty/offers/order_offers_enabled';
+
+    /**
+     * Offers Display settings
+     */
+    public const WARRANTY_OFFERS_PDP_PLACEMENT_XML_PATH = 'warranty/offers/pdp_placement';
 
     /**
      * Products settings
@@ -150,6 +158,12 @@ class Data extends AbstractHelper
         return $module['setup_version'] ?? '';
     }
 
+    /**
+     * @return string
+     */
+    public function getVersionTag(){
+        return (string) $this->scopeConfig->getValue(self::WARRANTY_VERSION_TAG_EXTEND_ENABLE_XML_PATH);
+    }
     /**
      * Check if enabled
      *
@@ -372,6 +386,21 @@ class Data extends AbstractHelper
      * Get contracts batch size
      *
      * @param string|int|null $storeId
+     * @return string
+     */
+    public function getContractFrequency($storeId = null)
+    {
+        return (string) $this->scopeConfig->getValue(
+            self::WARRANTY_CONTRACTS_FREQUENCY_XML_PATH,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * Get contracts batch size
+     *
+     * @param string|int|null $storeId
      * @return int
      */
     public function getContractsBatchSize($storeId = null)
@@ -404,10 +433,11 @@ class Data extends AbstractHelper
      * @param string|int|null $storeId
      * @return bool
      */
-    public function isShoppingAdminCartOffersEnabled($storeId = null)
+
+    public function isShoppingAdminOffersEnabled($storeId = null)
     {
         return $this->scopeConfig->isSetFlag(
-            self::WARRANTY_OFFERS_ADMIN_CART_ENABLED_XML_PATH,
+            self::WARRANTY_OFFERS_ADMIN_ENABLED_XML_PATH,
             ScopeInterface::SCOPE_STORES,
             $storeId
         );
@@ -500,6 +530,24 @@ class Data extends AbstractHelper
             self::ORDER_OFFERS_ENABLED_XML_PATH,
             ScopeInterface::SCOPE_STORES,
             $storeId
+        );
+    }
+
+    /**
+     * Get PDP Offers Button placement config
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return int
+     */
+    public function getProductDetailPageOffersPlacement(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        return (int)$this->scopeConfig->getValue(
+            self::WARRANTY_OFFERS_PDP_PLACEMENT_XML_PATH,
+            $scopeType,
+            $scopeId
         );
     }
 
@@ -629,6 +677,20 @@ class Data extends AbstractHelper
         return (string)$this->scopeConfig->getValue(
             self::WARRANTY_HISTORICAL_ORDERS_SYNC_PERIOD_XML_PATH,
             $scopeType,
+            $scopeId
+        );
+    }
+
+    /**
+     * Check if historical orders synchronization by cron is enabled
+     */
+    public function isHistoricalOrdersCronSyncEnabled(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::WARRANTY_HISTORICAL_ORDERS_CRON_SYNC_ENABLED_XML_PATH,
+            ScopeInterface::SCOPE_STORES,
             $scopeId
         );
     }

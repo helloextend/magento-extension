@@ -2,23 +2,19 @@
   "name": "extend/module-warranty",
   "description": "Extend Module for Magento 2",
   "require": {
-    "magento/framework": ">=101.0",
-    "magento/module-catalog": ">=102.0",
-    "magento/module-checkout": ">=100.2",
-    "magento/module-sales": ">=101.0",
-    "magento/module-store": ">=100.2"
+    "php": "~7.3.0 || ~7.4.0 || ~8.1.0",
+    "magento/magento2-base": "2.3.* || 2.4.*"
   },
   "type": "magento2-module",
-  "version": "100.3.0",
   "license": [
     "OSL-3.0",
     "AFL-3.0"
   ],
   "authors": [
     {
-      "name": "Gamma Partners LLC",
-      "email": "support@gammapartners.com",
-      "homepage": "https://www.gammapartners.com",
+      "name": "Extend, Inc.",
+      "email": "magento@extend.com",
+      "homepage": "https://www.extend.com",
       "role": "Support"
     }
   ],

@@ -9,6 +9,8 @@
  */
 namespace Extend\Warranty\Observer\Checkout\Cart;
 
+use Extend\Warranty\Model\Product\Type;
+
 /**
  * Class UpdateItemsAfter
  *
@@ -72,22 +74,24 @@ class UpdateItemsAfter implements \Magento\Framework\Event\ObserverInterface
             if ($qty == $origQty) {
                 continue;
             }
-            if ($quoteItem->getProductType() === \Extend\Warranty\Model\Product\Type::TYPE_CODE) {
+            if ($quoteItem->getProductType() === Type::TYPE_CODE) {
                 if ($this->dataHelper->isBalancedCart()) {
                     continue;
                 }
                 //send tracking update for the warranty offer
-                $planId = (string)$quoteItem->getOptionByCode('warranty_id')->getValue();
+                $planId = $quoteItem->getOptionByCode(Type::WARRANTY_ID);
                 /** @var \Magento\Quote\Model\Quote\Item $item */
                 $item = $this->_trackingHelper->getQuoteItemForWarrantyItem($quoteItem);
-                $trackingData = [
-                    'eventName'        => 'trackOfferUpdated',
-                    'productId'        => $item->getSku(),
-                    'planId'           => $planId,
-                    'warrantyQuantity' => $qty,
-                    'productQuantity'  => (int)$item->getQty(),
-                ];
-                $this->_trackingHelper->setTrackingData($trackingData);
+                if($planId && $planId->getValue()){
+                    $trackingData = [
+                        'eventName'        => 'trackOfferUpdated',
+                        'productId'        => $item->getSku(),
+                        'planId'           => $planId->getValue(),
+                        'warrantyQuantity' => $qty,
+                        'productQuantity'  => (int)$item->getQty(),
+                    ];
+                    $this->_trackingHelper->setTrackingData($trackingData);
+                }
             } else {
                 $warrantyItems = $this->_trackingHelper->getWarrantyItemsForQuoteItem($quoteItem);
                 if (!count($warrantyItems)) {

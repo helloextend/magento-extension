@@ -12,6 +12,8 @@ namespace Extend\Warranty\ViewModel;
 
 use Extend\Warranty\Model\Config\Source\AuthMode;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Helper\Tracking as TrackingHelper;
+use Magento\Framework\App\ProductMetadata;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -34,6 +36,13 @@ class Installation implements ArgumentInterface
     private $dataHelper;
 
     /**
+     * Warranty Tracking Helper
+     *
+     * @var TrackingHelper
+     */
+    private $trackingHelper;
+
+    /**
      * Json Serializer Model
      *
      * @var JsonSerializer
@@ -45,25 +54,40 @@ class Installation implements ArgumentInterface
      */
     private $storeManager;
 
+    /**
+     * @var AdminSession
+     */
     private $adminSession;
+
+    /**
+     * @var ProductMetadata
+     */
+    private $productMetadata;
 
     /**
      * Installation constructor
      *
      * @param DataHelper $dataHelper
+     * @param TrackingHelper $trackingHelper
      * @param JsonSerializer $jsonSerializer
      * @param StoreManagerInterface $storeManager
+     * @param AdminSession $adminSession
+     * @param ProductMetadata $productMetadata
      */
     public function __construct(
         DataHelper $dataHelper,
+        TrackingHelper $trackingHelper,
         JsonSerializer $jsonSerializer,
         StoreManagerInterface $storeManager,
-        AdminSession $adminSession
+        AdminSession $adminSession,
+        ProductMetadata $productMetadata
     ) {
         $this->dataHelper = $dataHelper;
+        $this->trackingHelper = $trackingHelper;
         $this->jsonSerializer = $jsonSerializer;
         $this->storeManager = $storeManager;
         $this->adminSession = $adminSession;
+        $this->productMetadata = $productMetadata;
     }
 
     /**
@@ -111,6 +135,83 @@ class Installation implements ArgumentInterface
             } catch (InvalidArgumentException $exception) {
                 $jsonConfig = '';
             }
+        }
+
+        return $jsonConfig;
+    }
+
+    /**
+     * Get 'Extend.integration' JSON config
+     *
+     * @return string
+     */
+    public function getIntegrationJsonConfig(): string
+    {
+        $jsonConfig = '';
+
+        $storeId = $this->storeManager->getStore()->getId();
+        $isLiveMode = $this->dataHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $storeId);
+
+        $config = [
+            'general' => [
+                'enableExtend' => $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId),
+                'balancedCart' => $this->dataHelper->isBalancedCart($storeId),
+                'enableLeads' => $this->dataHelper->isLeadEnabled($storeId),
+                'enableLogging' => $this->dataHelper->isLoggingEnabled()
+            ],
+            'auth' => [
+                'mode' => $isLiveMode ? AuthMode::LIVE : AuthMode::DEMO,
+                'id' => $isLiveMode ? $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId) : null,
+                'sandboxId' => $isLiveMode ? null : $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId),
+                'extendStoreName' => $this->dataHelper->getStoreName(ScopeInterface::SCOPE_STORES, $storeId)
+            ],
+            'contracts' => [
+                'createWarrantyContract' => $this->dataHelper->isWarrantyContractEnabled($storeId),
+                'contractEvent' => $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId),
+                'contractCreatingMode' => $this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId) ? __('scheduled') : __('event-based'),
+                'cronContractSettings' => [
+                    'frequency' => $this->dataHelper->getContractFrequency($storeId),
+                    'batchSize' => $this->dataHelper->getContractsBatchSize($storeId),
+                    'storagePeriod' => $this->dataHelper->getStoragePeriod($storeId)
+                ],
+                'enableRefunds' => $this->dataHelper->isRefundEnabled($storeId),
+                'createRefundAutomatically' => $this->dataHelper->isAutoRefundEnabled($storeId)
+            ],
+            'offers' => [
+                'displayCartOffers' => $this->dataHelper->isShoppingCartOffersEnabled($storeId),
+                'enablePDPOffers' => $this->dataHelper->isProductDetailPageOffersEnabled($storeId),
+                'enableProductsListOffers' => $this->dataHelper->isProductsListOffersEnabled($storeId),
+                'enableInterstitialCartOffers' => $this->dataHelper->isInterstitialCartOffersEnabled($storeId),
+                'enablePostPurchaseModal' => $this->dataHelper->isLeadsModalEnabled($storeId),
+                'enableOrderInformationOffers' => $this->dataHelper->isOrderOffersEnabled($storeId),
+                'displaySettings'=>[
+                    'pdpPlacement' => $this->dataHelper->getProductDetailPageOffersPlacement(ScopeInterface::SCOPE_STORES, $storeId)
+                ]
+                //'displayOffersOnIndividualBundleItems' => false
+            ],
+            'syncProducts' => [
+                'batchSize' => $this->dataHelper->getProductsBatchSize(ScopeInterface::SCOPE_STORES, $storeId),
+                'lastSyncDate' => $this->dataHelper->getLastProductSyncDate(ScopeInterface::SCOPE_STORES, $storeId),
+                'enableSpecialPrice' => $this->dataHelper->isProductSpecialPriceSyncEnabled(ScopeInterface::SCOPE_STORES, $storeId),
+                'enableCronSync' => $this->dataHelper->isProductSyncByCronEnabled()
+            ],
+            'syncHistoricalOrders' => [
+                'batchSize' => $this->dataHelper->getHistoricalOrdersBatchSize(ScopeInterface::SCOPE_STORES, $storeId),
+                'lastSendDate' => $this->dataHelper->getHistoricalOrdersSyncPeriod(ScopeInterface::SCOPE_STORES, $storeId),
+                'enableCronSync' => $this->dataHelper->isHistoricalOrdersCronSyncEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            ],
+
+            'trackingEnabled' => $this->trackingHelper->isTrackingEnabled($storeId),
+            'versions'=>[
+                'magentoVersion'=> $this->productMetadata->getVersion(),
+                'moduleVersion'=>$this->dataHelper->getModuleVersion()
+            ]
+        ];
+
+        try {
+            $jsonConfig = $this->jsonSerializer->serialize($config);
+        } catch (InvalidArgumentException $exception) {
+            $jsonConfig = '';
         }
 
         return $jsonConfig;
