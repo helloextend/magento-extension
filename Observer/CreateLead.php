@@ -136,12 +136,12 @@ class CreateLead implements ObserverInterface
             }
 
             if (count($warrantyItems) > 0) {
-                foreach ($warrantyItems as &$warrantyItem) {
+                foreach ($warrantyItems as $warrantyItem) {
                     $this->setLeadToken($warrantyItem);
                 }
             }
 
-            foreach ($productItems as &$productItem) {
+            foreach ($productItems as $productItem) {
                 $hasWarranty = false;
                 foreach ($warrantyItems as $warrantyItem) {
                     if($this->warrantyRelation->isWarrantyRelatedToOrderItem($warrantyItem, $productItem)){
@@ -169,7 +169,7 @@ class CreateLead implements ObserverInterface
      *
      * @param OrderItemInterface $warrantyItem
      */
-    private function setLeadToken(OrderItemInterface &$warrantyItem)
+    private function setLeadToken(OrderItemInterface $warrantyItem)
     {
         try {
             if (array_key_exists('leadToken', $warrantyItem->getProductOptionByCode('info_buyRequest'))) {
