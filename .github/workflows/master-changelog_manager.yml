@@ -29,6 +29,15 @@ jobs:
      - name: Set Tag Output
        id: set-tag
        run: echo "::set-output name=tag_name::$(sh ./.github/get-version.sh)"
+     - name: Push release files
+       id: push-release-file
+       run: |
+          git config --global user.name 'martin-liriano'
+          git config --global user.email "martin.liriano@extend.com"
+          git add ./.github/version.txt ./etc/config.xml changelog.md ./.github/branch_changelog.md
+          git commit -m "version update deployment ${{ steps.set-tag.outputs.tag_name }}"
+          git push
+          git fetch
      - name: Create tag
        id: create-tag
        uses: actions/github-script@v6
@@ -40,14 +49,6 @@ jobs:
             ref: "refs/tags/${{ steps.set-tag.outputs.tag_name }}",
             sha: context.sha
           })
-     - name: Push release files
-       id: push-release-file
-       run: |
-          git config --global user.name 'martin-liriano'
-          git config --global user.email "martin.liriano@extend.com"
-          git add ./.github/version.txt ./etc/config.xml changelog.md ./.github/branch_changelog.md
-          git commit -m "version update deployment ${{ steps.set-tag.outputs.tag_name }}"
-          git push
      - name: Create release
        id: set-release
        uses: ncipollo/release-action@v1
