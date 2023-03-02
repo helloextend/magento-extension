@@ -167,19 +167,13 @@ class HistoricalOrders extends Action
             }
 
             $filters = [];
-            $website = $request->getParam('website');
             $store = $request->getParam('store');
-            if ($website) {
-                $scopeType = ScopeInterface::SCOPE_WEBSITES;
-                $scopeId = $website;
-                $filters[self::WEBSITE_ID] = $website;
-            } elseif ($store) {
+            if ($store) {
                 $scopeType = ScopeInterface::SCOPE_STORES;
                 $scopeId = $store;
                 $filters[OrderItemInterface::STORE_ID] = $store;
             } else {
-                $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
-                $scopeId = Store::DEFAULT_STORE_ID;
+                throw new LocalizedException(__('Something went wrong. '));
             }
 
             $apiUrl = $this->dataHelper->getApiUrl($scopeType, $scopeId);
@@ -210,6 +204,7 @@ class HistoricalOrders extends Action
                         $this->trackHistoricalOrders($orders);
                     }
                     $data['status'] = self::STATUS_SUCCESS;
+                    $data['ordersCount'] = count($orders);
                 } catch (LocalizedException $exception) {
                     $message = sprintf('Error found in orders batch %s. %s', $currentBatch, $exception->getMessage());
                     $this->syncLogger->error($message);
@@ -225,6 +220,7 @@ class HistoricalOrders extends Action
                     $ordersIds[] = $order->getIncrementId();
                 }
 
+                $ordersIds = implode(',', $ordersIds);
                 $this->syncLogger->info(sprintf('Historical orders batch %s was sent to extend. Sent orders ids: %s', $currentBatch, $ordersIds));
 
                 if ($currentBatch >= $countOfBatches) {
