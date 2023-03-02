@@ -113,6 +113,7 @@ class OrderBuilder
         if (!$currencyCode) {
             $currencyCode = $store->getBaseCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
         }
+
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
         $lineItem = [];
 
