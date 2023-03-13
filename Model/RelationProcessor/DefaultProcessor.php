@@ -109,7 +109,7 @@ class DefaultProcessor implements RelationProcessorInterface
      */
     public function getOfferOrderItemSku($orderItem): string
     {
-        return $orderItem->getProduct()->getSku();
+        return $orderItem->getProduct() ? $orderItem->getProduct()->getSku() : $orderItem->getSku();
     }
 
     /**
@@ -123,10 +123,16 @@ class DefaultProcessor implements RelationProcessorInterface
      */
     public function getRelationOrderItemSku($orderItem): string
     {
-        $relationSku = $orderItem->getProduct()->getSku();
-        if($orderItem->getProduct()->hasOptions()){
+        if($orderItem->getProduct()){
+            $relationSku = $orderItem->getProduct()->getSku();
+            if($orderItem->getProduct()->hasOptions()){
+                $relationSku = $orderItem->getSku();
+            }
+        }
+        else{
             $relationSku = $orderItem->getSku();
         }
+
         return $relationSku;
     }
 }

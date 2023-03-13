@@ -61,6 +61,15 @@
                     <argument name="view_model" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
                 </arguments>
             </block>
+            <block class="Extend\Warranty\Block\Adminhtml\Order\View\Items\Renderer\WarrantyRelationInfo"
+                   name="warranty_realtion_info"
+                   template="Extend_Warranty::order/view/relation_info.phtml"
+                   after="-"
+            >
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Extend\Warranty\ViewModel\Warranty</argument>
+                </arguments>
+            </block>
         </referenceBlock>
     </body>
 </page>

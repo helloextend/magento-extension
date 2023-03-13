@@ -137,12 +137,18 @@ class Installation implements ArgumentInterface
                 'environment' => $this->dataHelper->isExtendLive() ? AuthMode::LIVE : AuthMode::DEMO,
             ];
 
+
             if ($storeCountry = $this->getRegion()) {
                 $config['region'] = $storeCountry;
             }
 
             if ($storeLocale = $this->getLocale()) {
                 $config['locale'] = $storeLocale;
+            }
+
+            if($this->isAdmin()){
+                $config['region']='US';
+
             }
 
             try {
