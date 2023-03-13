@@ -13,6 +13,7 @@ namespace Extend\Warranty\ViewModel;
 use Extend\Warranty\Model\Config\Source\AuthMode;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadata;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
@@ -64,6 +65,8 @@ class Installation implements ArgumentInterface
      */
     private $productMetadata;
 
+    protected $scopeConfig;
+
     /**
      * Installation constructor
      *
@@ -73,14 +76,16 @@ class Installation implements ArgumentInterface
      * @param StoreManagerInterface $storeManager
      * @param AdminSession $adminSession
      * @param ProductMetadata $productMetadata
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        DataHelper $dataHelper,
-        TrackingHelper $trackingHelper,
-        JsonSerializer $jsonSerializer,
+        DataHelper            $dataHelper,
+        TrackingHelper        $trackingHelper,
+        JsonSerializer        $jsonSerializer,
         StoreManagerInterface $storeManager,
-        AdminSession $adminSession,
-        ProductMetadata $productMetadata
+        AdminSession          $adminSession,
+        ProductMetadata       $productMetadata,
+        ScopeConfigInterface  $scopeConfig
     ) {
         $this->dataHelper = $dataHelper;
         $this->trackingHelper = $trackingHelper;
@@ -88,12 +93,14 @@ class Installation implements ArgumentInterface
         $this->storeManager = $storeManager;
         $this->adminSession = $adminSession;
         $this->productMetadata = $productMetadata;
+        $this->scopeConfig = $scopeConfig;
     }
 
     /**
      * Check if module enabled
      *
      * @return bool
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function isExtendEnabled(): bool
     {
@@ -130,6 +137,18 @@ class Installation implements ArgumentInterface
                 'environment' => $this->dataHelper->isExtendLive() ? AuthMode::LIVE : AuthMode::DEMO,
             ];
 
+            if ($storeCountry = $this->getRegion()) {
+                $config['region'] = $storeCountry;
+            }
+
+            if ($storeLocale = $this->getLocale()) {
+                $config['locale'] = $storeLocale;
+            }
+
+
+            /**
+             * Admin has more priority
+             */
             if($this->isAdmin()){
                 $config['region']='US';
             }
@@ -238,4 +257,33 @@ class Installation implements ArgumentInterface
     {
         return (bool)$this->adminSession->getUser();
     }
+
+    /**
+     *
+     * Return Store Country
+     *
+     * @return string
+     */
+    private function getRegion(): string
+    {
+        return (string) $this->scopeConfig->getValue(
+            \Magento\Config\Model\Config\Backend\Admin\Custom::XML_PATH_GENERAL_COUNTRY_DEFAULT,
+            ScopeInterface::SCOPE_STORES
+        );
+    }
+
+    /**
+     * Return Store Locale
+     *
+     * @return string
+     */
+    private function getLocale(): string
+    {
+        return (string) $this->scopeConfig->getValue(
+            \Magento\Config\Model\Config\Backend\Admin\Custom::XML_PATH_GENERAL_LOCALE_CODE,
+            ScopeInterface::SCOPE_STORES
+        );
+    }
+
+
 }
