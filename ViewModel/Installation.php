@@ -102,7 +102,7 @@ class Installation implements ArgumentInterface
      * @return bool
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function isExtendEnabled(): bool
+    public function isExtendEnabled($storeId = null): bool
     {
         $result = false;
         if ($this->isAdmin()) {
@@ -114,7 +114,7 @@ class Installation implements ArgumentInterface
                 }
             }
         } else {
-            $storeId = $this->storeManager->getStore()->getId();
+            $storeId = $storeId ?? $this->storeManager->getStore()->getId();
             $result = $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId);
         }
 
@@ -126,31 +126,28 @@ class Installation implements ArgumentInterface
      *
      * @return string
      */
-    public function getJsonConfig(): string
+    public function getJsonConfig($storeId = null): string
     {
         $jsonConfig = '';
 
-        $storeId = $this->dataHelper->getStoreId();
-        if ($storeId) {
+        $extendStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+        if ($extendStoreId) {
             $config = [
-                'storeId' => $storeId,
-                'environment' => $this->dataHelper->isExtendLive() ? AuthMode::LIVE : AuthMode::DEMO,
+                'storeId' => $extendStoreId,
+                'environment' => $this->dataHelper
+                    ->isExtendLive(
+                        ScopeInterface::SCOPE_STORES,
+                        $storeId)
+                    ? AuthMode::LIVE
+                    : AuthMode::DEMO,
             ];
 
-            if ($storeCountry = $this->getRegion()) {
+            if ($storeCountry = $this->getRegion($storeId)) {
                 $config['region'] = $storeCountry;
             }
 
-            if ($storeLocale = $this->getLocale()) {
+            if ($storeLocale = $this->getLocale($storeId)) {
                 $config['locale'] = $storeLocale;
-            }
-
-
-            /**
-             * Admin has more priority
-             */
-            if($this->isAdmin()){
-                $config['region']='US';
             }
 
             try {
@@ -168,11 +165,9 @@ class Installation implements ArgumentInterface
      *
      * @return string
      */
-    public function getIntegrationJsonConfig(): string
+    public function getIntegrationJsonConfig($storeId = null): string
     {
-        $jsonConfig = '';
-
-        $storeId = $this->storeManager->getStore()->getId();
+        $storeId = $storeId ?? $this->storeManager->getStore()->getId();
         $isLiveMode = $this->dataHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $storeId);
 
         $config = [
@@ -207,7 +202,7 @@ class Installation implements ArgumentInterface
                 'enableInterstitialCartOffers' => $this->dataHelper->isInterstitialCartOffersEnabled($storeId),
                 'enablePostPurchaseModal' => $this->dataHelper->isLeadsModalEnabled($storeId),
                 'enableOrderInformationOffers' => $this->dataHelper->isOrderOffersEnabled($storeId),
-                'displaySettings'=>[
+                'displaySettings' => [
                     'pdpPlacement' => $this->dataHelper->getProductDetailPageOffersPlacement(ScopeInterface::SCOPE_STORES, $storeId)
                 ]
                 //'displayOffersOnIndividualBundleItems' => false
@@ -223,12 +218,12 @@ class Installation implements ArgumentInterface
                 'lastSendDate' => $this->dataHelper->getHistoricalOrdersSyncPeriod(ScopeInterface::SCOPE_STORES, $storeId),
                 'enableCronSync' => $this->dataHelper->isHistoricalOrdersCronSyncEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             ],
-            'trackingEnabled' => $this->trackingHelper->isTrackingEnabled($storeId),
-            'versions'=>[
-                'magentoVersion'=> $this->productMetadata->getVersion(),
-                'moduleVersion'=>$this->dataHelper->getModuleVersion()
-            ]
 
+            'trackingEnabled' => $this->trackingHelper->isTrackingEnabled($storeId),
+            'versions' => [
+                'magentoVersion' => $this->productMetadata->getVersion(),
+                'moduleVersion' => $this->dataHelper->getModuleVersion()
+            ]
         ];
 
         try {
@@ -264,11 +259,12 @@ class Installation implements ArgumentInterface
      *
      * @return string
      */
-    private function getRegion(): string
+    private function getRegion($storeId = null): string
     {
-        return (string) $this->scopeConfig->getValue(
+        return (string)$this->scopeConfig->getValue(
             \Magento\Config\Model\Config\Backend\Admin\Custom::XML_PATH_GENERAL_COUNTRY_DEFAULT,
-            ScopeInterface::SCOPE_STORES
+            ScopeInterface::SCOPE_STORES,
+            $storeId
         );
     }
 
@@ -277,11 +273,12 @@ class Installation implements ArgumentInterface
      *
      * @return string
      */
-    private function getLocale(): string
+    private function getLocale($storeId = null): string
     {
-        return (string) $this->scopeConfig->getValue(
+        return (string)$this->scopeConfig->getValue(
             \Magento\Config\Model\Config\Backend\Admin\Custom::XML_PATH_GENERAL_LOCALE_CODE,
-            ScopeInterface::SCOPE_STORES
+            ScopeInterface::SCOPE_STORES,
+            $storeId
         );
     }
 
