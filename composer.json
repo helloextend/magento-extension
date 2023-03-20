@@ -1,6 +1,7 @@
 {
   "name": "extend/module-warranty",
   "description": "Extend Module for Magento 2",
+  "version": "2.1.0",
   "require": {
     "php": "~7.3.0 || ~7.4.0 || ~8.1.0",
     "magento/magento2-base": "2.3.* || 2.4.*"
