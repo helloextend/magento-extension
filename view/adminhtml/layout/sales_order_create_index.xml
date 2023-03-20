@@ -18,7 +18,7 @@
                 <argument name="viewModel" xsi:type="object">Extend\Warranty\ViewModel\Installation</argument>
             </arguments>
             <action method="setTemplate">
-                <argument name="template" xsi:type="string">Extend_Warranty::installation.phtml</argument>
+                <argument name="template" xsi:type="string">Extend_Warranty::extend-js.phtml</argument>
             </action>
         </referenceBlock>
 
