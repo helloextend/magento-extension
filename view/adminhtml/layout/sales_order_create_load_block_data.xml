@@ -12,6 +12,11 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+
+        <referenceBlock name="data">
+            <block class="Magento\Backend\Block\Template" name="additional_area" template="Magento_Sales::order/create/abstract.phtml"/>
+        </referenceBlock>
+
         <referenceBlock  name="additional_area">
             <block class="Extend\Warranty\Block\Adminhtml\Order\Create\Installation"
                    name="extend.warranty.js"
@@ -21,6 +26,7 @@
                 </arguments>
             </block>
         </referenceBlock>
+
         <referenceBlock name="order_item_extra_info">
             <block class="Extend\Warranty\Block\Adminhtml\Order\Create\Items\Warranties"
                    name="warranty_order_create_items_warranties"
