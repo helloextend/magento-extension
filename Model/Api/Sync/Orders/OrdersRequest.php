@@ -63,7 +63,9 @@ class OrdersRequest extends AbstractRequest
             } elseif ($type == \Extend\Warranty\Model\Orders::LEAD) {
                 $leadsTokens = [];
                 foreach ($responseBody['lineItems'] as $lineItem) {
-                    $leadsTokens[] = $lineItem['leadToken'];
+                    if(isset($lineItem['leadToken'])){
+                        $leadsTokens[] = $lineItem['leadToken'];
+                    }
                 }
 
                 $result = $leadsTokens;

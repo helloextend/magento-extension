@@ -15,6 +15,7 @@ define([
     'use strict';
 
     var currentBatchesProcessed = 1;
+    var syncedOrderAmount = 0;
     var totalBatches = 0;
     var shouldAbort = false;
     var synMsg = $("#orders-sync-msg");
@@ -46,10 +47,18 @@ define([
             });
             currentBatchesProcessed = data.currentBatchesProcessed;
             totalBatches = data.totalBatches;
-            $("#orders-sync-time").text(data.msg);
+
+            if (data.ordersCount) {
+                syncedOrderAmount += data.ordersCount;
+            }
+
+            if (!syncedOrderAmount && data.message) {
+                synMsg.text(data.message);
+            } else if (syncedOrderAmount > 0) {
+                synMsg.text('Synced ' + syncedOrderAmount + ' Orders');
+            }
 
         } while (currentBatchesProcessed <= totalBatches);
-        restore(button);
     }
 
     function batchBeingProcessed(shouldAbort, url) {
@@ -64,9 +73,8 @@ define([
                     },
                     success: function (data) {
                         if (data.hasOwnProperty('status') && data.status === 'COMPLETE') {
-                            window.location.reload();
+                            resolve(data)
                         }
-                         console.log('Batches Processed: ' + currentBatchesProcessed);
                         resolve(data)
                     },
                     error: function (data) {
@@ -97,7 +105,7 @@ define([
 
     $.widget('extend.ordersSync', {
         options: {
-            url: '',
+            syncUrls: [],
             resetFlagUrl: ''
         },
 
@@ -115,9 +123,10 @@ define([
             });
 
         },
-        syncHistoricalOrders: function (event) {
+        syncHistoricalOrders: async function (event) {
             event.preventDefault();
             var button = $(this.element);
+            syncedOrderAmount = 0;
             button.text('Sync in progress...');
             button.addClass("syncing");
             button.attr("disabled", true);
@@ -125,8 +134,13 @@ define([
             synMsg.hide();
             cancelSync.show();
 
-            syncAllHistoricalOrders(this.options.url, button);
-
+            for (let url of this.options.syncUrls) {
+                let storeSync = new Promise(function (resolve) {
+                    resolve(syncAllHistoricalOrders(url, button));
+                });
+                await storeSync;
+            }
+            restore(button);
         }
     });
 
