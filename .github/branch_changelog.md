@@ -1,3 +1,7 @@
+Merge pull request #357 from helloextend/EX-465
+
+Ex 465
+
 Merge pull request #355 from helloextend/EX-449
 
 [EX-449] [M2] Set Region and Locale Parameters for SDK based on User'…
