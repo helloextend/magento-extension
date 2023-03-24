@@ -4,6 +4,5 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <css src="Extend_Warranty::css/styles.css"/>
-        <link src="Extend_Warranty::js/extend_config.js"/>
     </head>
 </page>

@@ -195,6 +195,9 @@
                              to find your StoreID and then paste of type it here.
                         ]]>
                     </comment>
+                    <depends>
+                        <field id="warranty/authentication/auth_mode">1</field>
+                    </depends>
                 </field>
                 <field id="api_key"
                        translate="label comment"
@@ -212,6 +215,9 @@
                             <a href="https://merchants.extend.com">your Extend merchant dashboard</a>.
                         ]]>
                     </comment>
+                    <depends>
+                        <field id="warranty/authentication/auth_mode">1</field>
+                    </depends>
                 </field>
                 <field id="sandbox_store_id"
                        translate="label comment"
@@ -229,6 +235,9 @@
                              to find your StoreID and then paste of type it here.
                         ]]>
                     </comment>
+                    <depends>
+                        <field id="warranty/authentication/auth_mode">0</field>
+                    </depends>
                 </field>
                 <field id="sandbox_api_key"
                        translate="label comment"
@@ -246,6 +255,9 @@
                             <a href="https://demo.merchants.extend.com">your Extend merchant dashboard</a>.
                         ]]>
                     </comment>
+                    <depends>
+                        <field id="warranty/authentication/auth_mode">0</field>
+                    </depends>
                 </field>
                 <field id="store_name"
                        translate="label comment"
