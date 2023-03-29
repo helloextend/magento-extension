@@ -27,23 +27,17 @@ class Installation extends Template
      * @param Template\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param array $data
-     * @param JsonHelper|null $jsonHelper
-     * @param DirectoryHelper|null $directoryHelper
      */
     public function __construct(
         Template\Context            $context,
         \Magento\Framework\Registry $registry,
-        array                       $data = [],
-        ?JsonHelper                 $jsonHelper = null,
-        ?DirectoryHelper            $directoryHelper = null
+        array                       $data = []
     )
     {
         $this->_coreRegistry = $registry;
         parent::__construct(
             $context,
-            $data,
-            $jsonHelper,
-            $directoryHelper
+            $data
         );
     }
 
