@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
+ */
 namespace Extend\Warranty\Model\Api\Request;
 
 use Extend\Warranty\Helper\Data as DataHelper;
@@ -12,6 +19,7 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Locale\Currency;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Extend\Warranty\Model\Product\Type;
@@ -117,8 +125,11 @@ class OrderBuilder
         string $type = 'contract'
     ): array {
         $payload = [];
-        $store = $this->storeManager->getStore();
+        $store = $this->storeManager->getStore($order->getStoreId());
         $currencyCode = $order->getOrderCurrencyCode();
+
+        $extendStoreId = $this->apiHelper->getStoreId(ScopeInterface::SCOPE_STORES, $store->getId());
+        $extendStoreName = $this->apiHelper->getStoreName(ScopeInterface::SCOPE_STORES, $store->getId());
 
         if (!$currencyCode) {
             $currencyCode = $store->getBaseCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
@@ -138,7 +149,7 @@ class OrderBuilder
             $lineItem = [
                 'status'      => $this->getStatus(),
                 'quantity'    => $qty,
-                'storeId'     => $this->apiHelper->getStoreId(),
+                'storeId'     => $extendStoreId,
                 'warrantable' => true,
                 'product'     => $product,
                 'plan'        => $plan
@@ -151,7 +162,7 @@ class OrderBuilder
             $lineItem = [
                 'status'      => $this->getStatus(),
                 'quantity'    => $qty,
-                'storeId'     => $this->apiHelper->getStoreId(),
+                'storeId'     => $extendStoreId,
                 'warrantable' => true,
                 'product'     => $product
             ];
@@ -170,10 +181,10 @@ class OrderBuilder
             $lineItem = [
                 'status'      => $this->getStatus(),
                 'quantity'    => $qty,
-                'storeId'     => $this->apiHelper->getStoreId(),
+                'storeId'     => $extendStoreId,
                 'warrantable' => true,
                 'plan'        => $plan,
-                'leadToken'     => $leadToken
+                'leadToken'   => $leadToken
             ];
         }
 
@@ -195,14 +206,14 @@ class OrderBuilder
         }
 
         $payload = [
-            'isTest'            => !$this->apiHelper->isExtendLive(),
+            'isTest'            => !$this->apiHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $store->getId()),
             'currency'          => $currencyCode,
             'createdAt'         => $createdAt ? strtotime($createdAt) : 0,
             'customer'          => $customerData,
             'lineItems'         => $lineItems,
             'total'             => $transactionTotal,
-            'storeId'           => $this->apiHelper->getStoreId(),
-            'storeName'         => $this->apiHelper->getStoreName(),
+            'storeId'           => $extendStoreId,
+            'storeName'         => $extendStoreName,
             'transactionId'     => $order->getIncrementId(),
             'saleOrigin'        => $saleOrigin,
         ];
@@ -213,12 +224,15 @@ class OrderBuilder
     public function prepareHistoricalOrdersPayLoad(OrderInterface $order): array
     {
         $payload = [];
-        $store = $this->storeManager->getStore();
+        $store = $this->storeManager->getStore($order->getStoreId());
         $currencyCode = $order->getOrderCurrencyCode();
 
         if (!$currencyCode) {
             $currencyCode = $store->getBaseCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
         }
+        $extendStoreId = $this->apiHelper->getStoreId(ScopeInterface::SCOPE_STORES, $store->getId());
+        $extendStoreName = $this->apiHelper->getStoreName(ScopeInterface::SCOPE_STORES, $store->getId());
+
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
         $lineItem = [];
         $lineItems = [];
@@ -239,9 +253,9 @@ class OrderBuilder
             }
 
             $lineItem = [
-                'quantity' => $qty,
-                'storeId' => $this->apiHelper->getStoreId(),
-                'product' => $product,
+                'quantity'    => $qty,
+                'storeId'     => $extendStoreId,
+                'product'     => $product,
             ];
 
             $lineItems[] = $lineItem;
@@ -263,14 +277,14 @@ class OrderBuilder
         }
 
         $payload = [
-            'isTest'            => !$this->apiHelper->isExtendLive(),
+            'isTest'            => !$this->apiHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $store->getId()),
             'currency'          => $currencyCode,
             'createdAt'         => $createdAt ? strtotime($createdAt) : 0,
             'customer'          => $customerData,
             'lineItems'         => $lineItems,
             'total'             => $transactionTotal,
-            'storeId'           => $this->apiHelper->getStoreId(),
-            'storeName'         => $this->apiHelper->getStoreName(),
+            'storeId'           => $extendStoreId,
+            'storeName'         => $extendStoreName,
             'transactionId'     => $order->getIncrementId(),
             'saleOrigin'        => $saleOrigin,
         ];
