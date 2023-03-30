@@ -1,3 +1,7 @@
+Merge pull request #361 from helloextend/EX-453
+
+[EX-453] [M2] - Update Orders Create API POST to send additional Prod…
+
 Merge pull request #357 from helloextend/EX-465
 
 Ex 465
