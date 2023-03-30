@@ -73,6 +73,11 @@ class OrderBuilder
     private $warrantyRelation;
 
     /**
+     * @var ProductDataBuilder
+     */
+    protected $productDataBuilder;
+
+    /**
      * ContractBuilder constructor
      *
      * @param StoreManagerInterface $storeManager
@@ -80,21 +85,26 @@ class OrderBuilder
      * @param CountryInformationAcquirerInterface $countryInformationAcquirer
      * @param DataHelper $helper
      * @param ApiDataHelper $apiHelper
+     * @param WarrantyRelation $warrantyRelation
+     * @param ProductDataBuilder $productDataBuilder
      */
     public function __construct(
-        StoreManagerInterface $storeManager,
-        ProductRepositoryInterface $productRepository,
+        StoreManagerInterface               $storeManager,
+        ProductRepositoryInterface          $productRepository,
         CountryInformationAcquirerInterface $countryInformationAcquirer,
-        DataHelper $helper,
-        ApiDataHelper $apiHelper,
-        WarrantyRelation $warrantyRelation
-    ) {
+        DataHelper                          $helper,
+        ApiDataHelper                       $apiHelper,
+        WarrantyRelation                    $warrantyRelation,
+        ProductDataBuilder                  $productDataBuilder
+    )
+    {
         $this->productRepository = $productRepository;
         $this->storeManager = $storeManager;
         $this->countryInformationAcquirer = $countryInformationAcquirer;
         $this->helper = $helper;
         $this->apiHelper = $apiHelper;
         $this->warrantyRelation = $warrantyRelation;
+        $this->productDataBuilder = $productDataBuilder;
     }
 
     /**
@@ -288,7 +298,7 @@ class OrderBuilder
      * @param string|null $productSku
      * @return array
      */
-    protected function prepareProductPayload(?string $productSku) :array
+    protected function prepareProductPayload(?string $productSku): array
     {
         if (empty($productSku)) {
             return [];
@@ -300,13 +310,16 @@ class OrderBuilder
             return [];
         }
 
+        $productPayload = $this->productDataBuilder->preparePayload($product);
+
         $result = [
-            'id'            => $product->getSku(),
-            'listPrice'     => $this->helper->formatPrice($product->getFinalPrice()),
-            'name'          => $product->getName(),
+            'id' => $product->getSku(),
+            'listPrice' => $this->helper->formatPrice($product->getFinalPrice()),
+            'name' => $product->getName(),
             'purchasePrice' => $this->helper->formatPrice($product->getFinalPrice())
         ];
 
+        $result = array_merge($result,$productPayload);
         return $result;
     }
 
@@ -330,9 +343,9 @@ class OrderBuilder
         }
 
         $result = [
-            'id'            => $product->getSku(),
-            'listPrice'     => $this->helper->formatPrice($price),
-            'name'          => $product->getName(),
+            'id' => $product->getSku(),
+            'listPrice' => $this->helper->formatPrice($price),
+            'name' => $product->getName(),
             'purchasePrice' => $this->helper->formatPrice($price)
         ];
 
@@ -352,7 +365,7 @@ class OrderBuilder
 
         $plan = [
             'purchasePrice' => $this->helper->formatPrice($orderItem->getPrice()),
-            'id'            => $warrantyId,
+            'id' => $warrantyId,
         ];
 
         return $plan;
@@ -400,7 +413,7 @@ class OrderBuilder
      * @return array
      * @throws NoSuchEntityException
      */
-    protected function getCustomerData(OrderInterface $order) : array
+    protected function getCustomerData(OrderInterface $order): array
     {
         $customer = [];
         $billingAddress = $order->getBillingAddress();
@@ -431,11 +444,11 @@ class OrderBuilder
             $shippingStreet = $this->formatStreet($shippingAddress->getStreet());
 
             $customer['shippingAddress'] = [
-                'address1'      => $shippingStreet['address1'] ?? '',
-                'address2'      => $shippingStreet['address2'] ?? '',
-                'city'          => $shippingAddress->getCity(),
-                'countryCode'   => $shippingCountryInfo->getThreeLetterAbbreviation(),
-                'postalCode'    => $shippingAddress->getPostcode(),
+                'address1' => $shippingStreet['address1'] ?? '',
+                'address2' => $shippingStreet['address2'] ?? '',
+                'city' => $shippingAddress->getCity(),
+                'countryCode' => $shippingCountryInfo->getThreeLetterAbbreviation(),
+                'postalCode' => $shippingAddress->getPostcode(),
             ];
         }
 
