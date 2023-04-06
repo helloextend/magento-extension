@@ -455,11 +455,12 @@ class Warranty implements ArgumentInterface
     /**
      * Check is warranty information order offers enabled
      *
+     * @param $storeId
      * @return bool
      */
-    public function isOrderOffersEnabled(): bool
+    public function isOrderOffersEnabled($storeId = null): bool
     {
-        return $this->dataHelper->isOrderOffersEnabled();
+        return $this->dataHelper->isOrderOffersEnabled($storeId);
     }
 
     /**
@@ -513,7 +514,7 @@ class Warranty implements ArgumentInterface
      * @param OrderItemInterface $orderItem
      * @return bool
      */
-    public function isValid($orderItem): bool
+    public function isLeadValid($orderItem): bool
     {
         $storeId = $orderItem->getStoreId();
 
@@ -526,7 +527,6 @@ class Warranty implements ArgumentInterface
         try {
             $this->leadInfoRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
             $leadInfoResponse = $this->leadInfoRequest->create(reset($leadToken));
-
         } catch (LocalizedException $e) {
             /**
              * muting as view model should not throw exceptions
@@ -588,14 +588,16 @@ class Warranty implements ArgumentInterface
         $isWarrantyItem = $product && $product->getTypeId() === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
         $leadToken = $this->getLeadToken($orderItem);
 
+        $storeId = $orderItem->getStoreId();
+
         if (
-            $this->isExtendEnabled()
-            && $this->isOrderOffersEnabled()
+            $this->isExtendEnabled($storeId)
+            && $this->isOrderOffersEnabled($storeId)
             && $this->isLeadEnabled()
             && $product // product can be deleted from db
             && !$isWarrantyItem
             && !empty($leadToken)
-            && $this->isValid($orderItem)
+            && $this->isLeadValid($orderItem)
         ) {
             $result = true;
         }
