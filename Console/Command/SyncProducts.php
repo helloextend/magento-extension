@@ -134,6 +134,7 @@ class SyncProducts extends Command
             $this->logger->error($exception->getMessage());
             $output->writeln('<error>' . $exception->getMessage() . '</error>');
         }
+        return 0;
     }
 
     /**

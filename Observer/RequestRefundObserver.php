@@ -228,8 +228,12 @@ class RequestRefundObserver implements ObserverInterface
                     CreateContractApi::ORDERS_API
                 ) {
                     $refundData = $this->ordersApiRefund->validateRefund($contractId);
-                    if (isset($refundData['refundAmounts']['customer'])
-                        && $this->floatComparator->greaterThan((float)$refundData['refundAmounts']['customer'], 0)
+                    if (isset($refundData['refundAmounts'])
+                        && isset($refundData['refundAmounts']['customer'])
+                        && $this->floatComparator->greaterThan(
+                            (float)$refundData['refundAmounts']['customer']
+                            , 0
+                        )
                     ) {
                         $validContracts[$itemId][$key] = $contractId;
                     }

@@ -12,8 +12,6 @@
 namespace Extend\Warranty\Model\Api\Sync\Lead;
 
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
-use Zend_Http_Client;
-use Zend_Http_Client_Exception;
 use InvalidArgumentException;
 
 /**
@@ -42,24 +40,20 @@ class LeadsRequest extends AbstractRequest
     public function create(array $leadData): string
     {
         $leadToken = '';
-        try {
-            $response = $this->connector->call(
-                $this->buildUrl(self::CREATE_LEAD_ENDPOINT),
-                Zend_Http_Client::POST,
-                [self::ACCESS_TOKEN_HEADER => $this->apiKey],
-                $leadData
-            );
-            if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
-                $responseBody = $this->processResponse($response);
-                $leadToken = $responseBody['leadToken'] ?? '';
-                if ($leadToken) {
-                    $this->logger->info('Lead token is created successfully.');
-                } else {
-                    $this->logger->error('Lead token creation is failed.');
-                }
+        $response = $this->connector->call(
+            $this->buildUrl(self::CREATE_LEAD_ENDPOINT),
+            "POST",
+            [self::ACCESS_TOKEN_HEADER => $this->apiKey],
+            $leadData
+        );
+        if ($response->isSuccessful()) {
+            $responseBody = $this->processResponse($response);
+            $leadToken = $responseBody['leadToken'] ?? '';
+            if ($leadToken) {
+                $this->logger->info('Lead token is created successfully.');
+            } else {
+                $this->logger->error('Lead token creation is failed.');
             }
-        } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
-            $this->logger->error($exception->getMessage());
         }
 
         return $leadToken;

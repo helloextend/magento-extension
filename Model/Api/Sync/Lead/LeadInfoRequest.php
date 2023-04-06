@@ -11,9 +11,6 @@
 namespace Extend\Warranty\Model\Api\Sync\Lead;
 
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
-use Zend_Http_Client;
-use Zend_Http_Client_Exception;
-use InvalidArgumentException;
 
 /**
  * Class LeadInfoRequest
@@ -42,21 +39,18 @@ class LeadInfoRequest extends AbstractRequest
     {
         $url = $this->apiUrl . sprintf(self::GET_LEAD_INFO_ENDPOINT, $leadToken);
         $expirationDate = null;
-        try {
-            $response = $this->connector->call(
-                $url,
-                Zend_Http_Client::GET,
-                [self::ACCESS_TOKEN_HEADER => $this->apiKey]
-            );
-            if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
-                $responseBody = $this->processResponse($response);
-                $expirationDate = $responseBody['expirationDate'] ?? null;
-                if (!$expirationDate) {
-                    $this->logger->error('Lead token expiration date is not set');
-                }
+        $response = $this->connector->call(
+            $url,
+            "GET",
+            [self::ACCESS_TOKEN_HEADER => $this->apiKey]
+        );
+
+        if ($response->isSuccessful()) {
+            $responseBody = $this->processResponse($response);
+            $expirationDate = $responseBody['expirationDate'] ?? null;
+            if (!$expirationDate) {
+                $this->logger->error('Lead token expiration date is not set');
             }
-        } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
-            $this->logger->error($exception->getMessage());
         }
 
         return $expirationDate;
