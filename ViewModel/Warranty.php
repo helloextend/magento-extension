@@ -12,6 +12,7 @@ namespace Extend\Warranty\ViewModel;
 
 use Exception;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Model\Api\Response\LeadInfoResponse;
 use Extend\Warranty\Model\WarrantyRelation;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
 use Extend\Warranty\Model\Api\Sync\Lead\LeadInfoRequest;
@@ -141,20 +142,21 @@ class Warranty implements ArgumentInterface
      * @param WarrantyRelation $warrantyRelation
      */
     public function __construct(
-        DataHelper $dataHelper,
-        JsonSerializer $jsonSerializer,
-        LinkManagementInterface $linkManagement,
-        TrackingHelper $trackingHelper,
-        OfferModel $offerModel,
-        CheckoutSession $checkoutSession,
-        Http $request,
+        DataHelper                   $dataHelper,
+        JsonSerializer               $jsonSerializer,
+        LinkManagementInterface      $linkManagement,
+        TrackingHelper               $trackingHelper,
+        OfferModel                   $offerModel,
+        CheckoutSession              $checkoutSession,
+        Http                         $request,
         OrderItemRepositoryInterface $orderItemRepository,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
-        StoreManagerInterface $storeManager,
-        AdminSession $adminSession,
-        LeadInfoRequest $leadInfoRequest,
-        WarrantyRelation $warrantyRelation
-    ) {
+        SearchCriteriaBuilder        $searchCriteriaBuilder,
+        StoreManagerInterface        $storeManager,
+        AdminSession                 $adminSession,
+        LeadInfoRequest              $leadInfoRequest,
+        WarrantyRelation             $warrantyRelation
+    )
+    {
         $this->dataHelper = $dataHelper;
         $this->jsonSerializer = $jsonSerializer;
         $this->linkManagement = $linkManagement;
@@ -508,25 +510,40 @@ class Warranty implements ArgumentInterface
     }
 
     /**
-     * @param string $leadToken
+     * @param OrderItemInterface $orderItem
      * @return bool
      */
-    public function isExpired(string $leadToken): bool
+    public function isValid($orderItem): bool
     {
-        $apiUrl = $this->dataHelper->getApiUrl();
-        $apiStoreId = $this->dataHelper->getStoreId();
-        $apiKey = $this->dataHelper->getApiKey();
+        $storeId = $orderItem->getStoreId();
+
+        $leadToken = $this->getLeadToken($orderItem);
+
+        $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
+        $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+        $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
 
         try {
             $this->leadInfoRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
-            $leadExpirationDate = $this->leadInfoRequest->create($leadToken) / 1000;
+            $leadInfoResponse = $this->leadInfoRequest->create(reset($leadToken));
+
         } catch (LocalizedException $e) {
             /**
              * muting as view model should not throw exceptions
              **/
-            return true;
+            return false;
         }
-        return $leadExpirationDate !== null && time() >= $leadExpirationDate;
+
+        if ($leadInfoResponse->getStatus() !== LeadInfoResponse::STATUS_LIVE) {
+            return false;
+        }
+
+        $leadExpirationDate = $leadInfoResponse->getExpirationDate() / 1000;
+        if ($leadExpirationDate === null || time() >= $leadExpirationDate) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -578,7 +595,7 @@ class Warranty implements ArgumentInterface
             && $product // product can be deleted from db
             && !$isWarrantyItem
             && !empty($leadToken)
-            && !$this->isExpired(reset($leadToken))
+            && $this->isValid($orderItem)
         ) {
             $result = true;
         }
