@@ -35,6 +35,7 @@ use Magento\Sales\Api\Data\OrderItemSearchResultInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Backend\Model\Auth\Session as AdminSession;
+use Extend\Warranty\Model\Api\Response\LeadInfoResponse;
 use Exception;
 
 /**
@@ -454,11 +455,12 @@ class Warranty implements ArgumentInterface
     /**
      * Check is warranty information order offers enabled
      *
+     * @param $storeId
      * @return bool
      */
-    public function isOrderOffersEnabled(): bool
+    public function isOrderOffersEnabled($storeId = null): bool
     {
-        return $this->dataHelper->isOrderOffersEnabled();
+        return $this->dataHelper->isOrderOffersEnabled($storeId);
     }
 
     /**
@@ -509,25 +511,39 @@ class Warranty implements ArgumentInterface
     }
 
     /**
-     * @param string $leadToken
+     * @param OrderItemInterface $orderItem
      * @return bool
      */
-    public function isExpired(string $leadToken): bool
+    public function isLeadValid($orderItem): bool
     {
-        $apiUrl = $this->dataHelper->getApiUrl();
-        $apiStoreId = $this->dataHelper->getStoreId();
-        $apiKey = $this->dataHelper->getApiKey();
+        $storeId = $orderItem->getStoreId();
+
+        $leadToken = $this->getLeadToken($orderItem);
+
+        $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
+        $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+        $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
 
         try {
             $this->leadInfoRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
-            $leadExpirationDate = $this->leadInfoRequest->create($leadToken) / 1000;
+            $leadInfoResponse = $this->leadInfoRequest->create(reset($leadToken));
         } catch (LocalizedException $e) {
             /**
              * muting as view model should not throw exceptions
              **/
-            return true;
+            return false;
         }
-        return $leadExpirationDate !== null && time() >= $leadExpirationDate;
+
+        if ($leadInfoResponse->getStatus() !== LeadInfoResponse::STATUS_LIVE) {
+            return false;
+        }
+
+        $leadExpirationDate = $leadInfoResponse->getExpirationDate();
+        if ($leadExpirationDate === null || time() >= $leadExpirationDate) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -572,14 +588,16 @@ class Warranty implements ArgumentInterface
         $isWarrantyItem = $product && $product->getTypeId() === \Extend\Warranty\Model\Product\Type::TYPE_CODE;
         $leadToken = $this->getLeadToken($orderItem);
 
+        $storeId = $orderItem->getStoreId();
+
         if (
-            $this->isExtendEnabled()
-            && $this->isOrderOffersEnabled()
+            $this->isExtendEnabled($storeId)
+            && $this->isOrderOffersEnabled($storeId)
             && $this->isLeadEnabled()
             && $product // product can be deleted from db
             && !$isWarrantyItem
             && !empty($leadToken)
-            && !$this->isExpired(reset($leadToken))
+            && $this->isLeadValid($orderItem)
         ) {
             $result = true;
         }
