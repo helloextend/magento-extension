@@ -538,7 +538,7 @@ class Warranty implements ArgumentInterface
             return false;
         }
 
-        $leadExpirationDate = $leadInfoResponse->getExpirationDate() / 1000;
+        $leadExpirationDate = $leadInfoResponse->getExpirationDate();
         if ($leadExpirationDate === null || time() >= $leadExpirationDate) {
             return false;
         }

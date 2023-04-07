@@ -25,6 +25,8 @@ class LeadInfoResponse
     const STATUS_CONSUMED = 'consumed';
 
     /**
+     * Return timestamp of expiration date
+     *
      * @param int|null $date
      * @return $this
      */
