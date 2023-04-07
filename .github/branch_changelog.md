@@ -1,3 +1,7 @@
+Merge pull request #362 from helloextend/EX-474
+
+[EX-474] [M2] Admin/Telesales Lead Token always showing, even after being consumed
+
 Merge pull request #361 from helloextend/EX-453
 
 [EX-453] [M2] - Update Orders Create API POST to send additional Prod…
