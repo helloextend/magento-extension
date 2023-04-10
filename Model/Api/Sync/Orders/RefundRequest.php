@@ -10,14 +10,12 @@
 
 namespace Extend\Warranty\Model\Api\Sync\Orders;
 
+use Extend\Warranty\Model\Api\Response;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Extend\Warranty\Api\ConnectorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Psr\Log\LoggerInterface;
-use Zend_Http_Client;
-use Zend_Http_Response;
-use Zend_Http_Client_Exception;
 
 /**
  * Class RefundRequest
@@ -42,7 +40,6 @@ class RefundRequest extends AbstractRequest
      *
      * @param string $contractId
      * @return bool
-     * @throws Zend_Http_Client_Exception
      */
     public function refund(string $contractId): bool
     {
@@ -51,7 +48,7 @@ class RefundRequest extends AbstractRequest
         try {
             $response = $this->connector->call(
                 $url,
-                Zend_Http_Client::POST,
+                "POST",
                 [
                     'Accept'                  => 'application/json; version=2021-07-01',
                     'Content-Type'            => 'application/json',
@@ -60,6 +57,10 @@ class RefundRequest extends AbstractRequest
                 ],
                 ['contractId' => $contractId]
             );
+
+            /**
+             * processing response to log it
+             */
             $this->processResponse($response);
 
             if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
@@ -80,63 +81,29 @@ class RefundRequest extends AbstractRequest
      *
      * @param string $contractId
      * @return array
+     * @throws LocalizedException
      */
     public function validateRefund(string $contractId): array
     {
         $url = $this->apiUrl . self::REFUND_ENDPOINT . '?contractId=' . $contractId;
         $responseBody = [];
 
-        try {
-            $response = $this->connector->call(
-                $url,
-                Zend_Http_Client::GET,
-                [
-                    'Accept'                  => 'application/json; version=2021-07-01',
-                    'Content-Type'            => 'application/json',
-                    self::ACCESS_TOKEN_HEADER => $this->apiKey
-                ]
-            );
+        $response = $this->connector->call(
+            $url,
+            "GET",
+            [
+                'Accept'                  => 'application/json; version=2021-07-01',
+                'Content-Type'            => 'application/json',
+                self::ACCESS_TOKEN_HEADER => $this->apiKey
+            ]
+        );
 
-            if ($response->getStatus() === self::STATUS_CODE_SUCCESS
-                || $response->getStatus() === self::STATUS_CODE_SUCCESS_200
-            ) {
-                $responseBody = $this->processResponse($response);
-                $this->logger->info('Refund is validated successfully. ContractID: ' . $contractId);
-            } else {
-                $this->logger->error('Refund validation is failed. ContractID: ' . $contractId);
-            }
-        } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
-            $this->logger->error($exception->getMessage());
-        }
-
-        return $responseBody;
-    }
-
-    /**
-     * Process response
-     *
-     * @param Zend_Http_Response $response
-     * @return array
-     */
-    protected function processResponse(Zend_Http_Response $response): array
-    {
-        $responseBody = [];
-        $responseBodyJson = $response->getBody();
-
-        if ($responseBodyJson) {
-            $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
-
-            if (isset($responseBody['customer'])) {
-                $depersonalizedBody = $responseBody;
-                $depersonalizedBody['customer'] = [];
-                $rawBody = $this->jsonSerializer->serialize($depersonalizedBody);
-            } else {
-                $rawBody = $response->getRawBody();
-            }
-
-            $this->logger->info('Response: ' . $response->getHeadersAsString() . PHP_EOL . $rawBody);
+        if ($response->isSuccessful()) {
+            $responseBody = $this->processResponse($response);
+            $this->logger->info('Refund is validated successfully. ContractID: ' . $contractId);
         } else {
-            $this->logger->error('Response body is empty.');
+            $this->logger->error('Refund validation is failed. ContractID: ' . $contractId);
+            throw new LocalizedException(__('Refund validation is failed'));
         }
 
         return $responseBody;

@@ -104,6 +104,7 @@ class CreateContracts extends Command
             $output->writeln("Something went wrong while creating the warranty contracts.");
             $this->logger->error($exception->getMessage());
         }
+        return 0;
     }
 
     /**
