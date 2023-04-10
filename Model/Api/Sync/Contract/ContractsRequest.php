@@ -11,9 +11,7 @@
 
 namespace Extend\Warranty\Model\Api\Sync\Contract;
 
-use Extend\Warranty\Model\Api\Response;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
-use InvalidArgumentException;
 
 /**
  * Class ContractsRequest

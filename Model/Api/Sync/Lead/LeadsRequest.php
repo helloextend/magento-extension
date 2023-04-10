@@ -46,7 +46,7 @@ class LeadsRequest extends AbstractRequest
             [self::ACCESS_TOKEN_HEADER => $this->apiKey],
             $leadData
         );
-        if ($response->isSuccessful()) {
+        if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
             $responseBody = $this->processResponse($response);
             $leadToken = $responseBody['leadToken'] ?? '';
             if ($leadToken) {
