@@ -1,3 +1,7 @@
+Merge pull request #365 from helloextend/EX-472
+
+[EX-472] [M2] M2.4.6 incompatibility
+
 Merge pull request #362 from helloextend/EX-474
 
 [EX-474] [M2] Admin/Telesales Lead Token always showing, even after being consumed
