@@ -129,7 +129,7 @@ class Connector implements ConnectorInterface
         $client = $this->httpClientFactory->create();
         $client->setHeaders($headers);
 
-        $rawData = '';
+        $rawData = '{}';
         if (!empty($data)) {
             try {
                 $rawData = $this->jsonSerializer->serialize($data);
