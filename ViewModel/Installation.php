@@ -13,6 +13,7 @@ namespace Extend\Warranty\ViewModel;
 use Extend\Warranty\Model\Config\Source\AuthMode;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Helper\Tracking as TrackingHelper;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadata;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
@@ -64,6 +65,8 @@ class Installation implements ArgumentInterface
      */
     private $productMetadata;
 
+    protected $scopeConfig;
+
     /**
      * Installation constructor
      *
@@ -73,14 +76,16 @@ class Installation implements ArgumentInterface
      * @param StoreManagerInterface $storeManager
      * @param AdminSession $adminSession
      * @param ProductMetadata $productMetadata
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        DataHelper $dataHelper,
-        TrackingHelper $trackingHelper,
-        JsonSerializer $jsonSerializer,
+        DataHelper            $dataHelper,
+        TrackingHelper        $trackingHelper,
+        JsonSerializer        $jsonSerializer,
         StoreManagerInterface $storeManager,
-        AdminSession $adminSession,
-        ProductMetadata $productMetadata
+        AdminSession          $adminSession,
+        ProductMetadata       $productMetadata,
+        ScopeConfigInterface  $scopeConfig
     ) {
         $this->dataHelper = $dataHelper;
         $this->trackingHelper = $trackingHelper;
@@ -88,14 +93,16 @@ class Installation implements ArgumentInterface
         $this->storeManager = $storeManager;
         $this->adminSession = $adminSession;
         $this->productMetadata = $productMetadata;
+        $this->scopeConfig = $scopeConfig;
     }
 
     /**
      * Check if module enabled
      *
      * @return bool
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function isExtendEnabled(): bool
+    public function isExtendEnabled($storeId = null): bool
     {
         $result = false;
         if ($this->isAdmin()) {
@@ -107,7 +114,7 @@ class Installation implements ArgumentInterface
                 }
             }
         } else {
-            $storeId = $this->storeManager->getStore()->getId();
+            $storeId = $storeId ?? $this->storeManager->getStore()->getId();
             $result = $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId);
         }
 
@@ -119,16 +126,29 @@ class Installation implements ArgumentInterface
      *
      * @return string
      */
-    public function getJsonConfig(): string
+    public function getJsonConfig($storeId = null): string
     {
         $jsonConfig = '';
 
-        $storeId = $this->dataHelper->getStoreId();
-        if ($storeId) {
+        $extendStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+        if ($extendStoreId) {
             $config = [
-                'storeId' => $storeId,
-                'environment' => $this->dataHelper->isExtendLive() ? AuthMode::LIVE : AuthMode::DEMO,
+                'storeId' => $extendStoreId,
+                'environment' => $this->dataHelper
+                    ->isExtendLive(
+                        ScopeInterface::SCOPE_STORES,
+                        $storeId)
+                    ? AuthMode::LIVE
+                    : AuthMode::DEMO,
             ];
+
+            if ($storeCountry = $this->getRegion($storeId)) {
+                $config['region'] = $storeCountry;
+            }
+
+            if ($storeLocale = $this->getLocale($storeId)) {
+                $config['locale'] = $storeLocale;
+            }
 
             try {
                 $jsonConfig = $this->jsonSerializer->serialize($config);
@@ -145,11 +165,9 @@ class Installation implements ArgumentInterface
      *
      * @return string
      */
-    public function getIntegrationJsonConfig(): string
+    public function getIntegrationJsonConfig($storeId = null): string
     {
-        $jsonConfig = '';
-
-        $storeId = $this->storeManager->getStore()->getId();
+        $storeId = $storeId ?? $this->storeManager->getStore()->getId();
         $isLiveMode = $this->dataHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $storeId);
 
         $config = [
@@ -184,7 +202,7 @@ class Installation implements ArgumentInterface
                 'enableInterstitialCartOffers' => $this->dataHelper->isInterstitialCartOffersEnabled($storeId),
                 'enablePostPurchaseModal' => $this->dataHelper->isLeadsModalEnabled($storeId),
                 'enableOrderInformationOffers' => $this->dataHelper->isOrderOffersEnabled($storeId),
-                'displaySettings'=>[
+                'displaySettings' => [
                     'pdpPlacement' => $this->dataHelper->getProductDetailPageOffersPlacement(ScopeInterface::SCOPE_STORES, $storeId)
                 ]
                 //'displayOffersOnIndividualBundleItems' => false
@@ -202,9 +220,9 @@ class Installation implements ArgumentInterface
             ],
 
             'trackingEnabled' => $this->trackingHelper->isTrackingEnabled($storeId),
-            'versions'=>[
-                'magentoVersion'=> $this->productMetadata->getVersion(),
-                'moduleVersion'=>$this->dataHelper->getModuleVersion()
+            'versions' => [
+                'magentoVersion' => $this->productMetadata->getVersion(),
+                'moduleVersion' => $this->dataHelper->getModuleVersion()
             ]
         ];
 
@@ -234,4 +252,35 @@ class Installation implements ArgumentInterface
     {
         return (bool)$this->adminSession->getUser();
     }
+
+    /**
+     *
+     * Return Store Country
+     *
+     * @return string
+     */
+    private function getRegion($storeId = null): string
+    {
+        return (string)$this->scopeConfig->getValue(
+            \Magento\Config\Model\Config\Backend\Admin\Custom::XML_PATH_GENERAL_COUNTRY_DEFAULT,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+    /**
+     * Return Store Locale
+     *
+     * @return string
+     */
+    private function getLocale($storeId = null): string
+    {
+        return (string)$this->scopeConfig->getValue(
+            \Magento\Config\Model\Config\Backend\Admin\Custom::XML_PATH_GENERAL_LOCALE_CODE,
+            ScopeInterface::SCOPE_STORES,
+            $storeId
+        );
+    }
+
+
 }
