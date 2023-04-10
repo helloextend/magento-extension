@@ -29,6 +29,28 @@ class Response
     protected $statusCode;
 
     /**
+     * @var string
+     */
+    protected $requestEndpoint;
+
+    /**
+     * @param $requestEndpoint
+     * @return $this
+     */
+    public function setRequestEndpoint($requestEndpoint)
+    {
+        $this->requestEndpoint = (string) $requestEndpoint;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRequestEndpoint(){
+        return $this->requestEndpoint;
+    }
+
+    /**
      * @return string
      */
     public function getBody()
@@ -60,7 +82,13 @@ class Response
         $raw_headers = [];
 
         foreach ($headers as $name => $value) {
-            $raw_headers[] = $name . ': ' .  $value;
+            if (is_string($value)) {
+                $raw_headers[] = "{$name}: {$value}";
+            } elseif (is_array($value)) {
+                foreach ($value as $subval) {
+                    $raw_headers[] = "{$name}: {$subval}";
+                }
+            }
         }
 
         return implode("\r\n", $raw_headers);
@@ -90,7 +118,7 @@ class Response
      */
     public function setStatusCode($statusCode)
     {
-        $this->statusCode = (int) $statusCode;
+        $this->statusCode = (int)$statusCode;
         return $this;
     }
 

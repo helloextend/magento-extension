@@ -171,6 +171,7 @@ class Connector implements ConnectorInterface
         $response = $this->responseFactory->create();
 
         $response->setBody($client->getBody())
+            ->setRequestEndpoint($endpoint)
             ->setHeaders($client->getHeaders())
             ->setStatusCode($client->getStatus());
         return $response;

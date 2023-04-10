@@ -149,7 +149,11 @@ abstract class AbstractRequest implements RequestInterface
                 $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
 
                 if ($logResponse) {
-                    $this->_logResponse($responseBody, $response->getHeadersAsString());
+                    $this->_logResponse(
+                        $response->getRequestEndpoint(),
+                        $responseBody,
+                        $response->getHeadersAsString()
+                    );
                 }
             } catch (\InvalidArgumentException $e) {
                 $this->logger->error(
@@ -175,14 +179,15 @@ abstract class AbstractRequest implements RequestInterface
      * @param string $response
      * @return void
      */
-    protected function _logResponse($responseBody, $headers = '')
+    protected function _logResponse($requestEndpoint, $responseBody, $headers = '')
     {
         $depersonalizedBodyArray = $this->_depersonalizeData($responseBody);
         try {
             $depersonalizedBody = $this->jsonSerializer->serialize($depersonalizedBodyArray);
 
             $this->logger->info(
-                'Response Header: '. PHP_EOL
+                'Request URL:' . $requestEndpoint . PHP_EOL
+                . 'Response Header: '. PHP_EOL
                 . (string)$headers . PHP_EOL
                 . 'Response Body: ' . PHP_EOL
                 . $depersonalizedBody

@@ -117,10 +117,10 @@ class HistoricalOrdersRequest extends AbstractRequest
      */
     protected function _depersonalizeData($responseBody): array
     {
-        $depersonalizedData = $responseBody;
+        $depersonalizedData = [];
         if (is_array($depersonalizedData)) {
-            foreach ($depersonalizedData as $key => $depersonalizedData) {
-                $depersonalizedData[$key] = parent::_depersonalizeData($depersonalizedData);
+            foreach ($responseBody as $responseDataRow) {
+                $depersonalizedData[] = parent::_depersonalizeData($responseDataRow);
             }
         }
         return $depersonalizedData;
