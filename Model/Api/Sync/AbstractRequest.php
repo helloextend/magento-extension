@@ -12,10 +12,10 @@ namespace Extend\Warranty\Model\Api\Sync;
 
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Api\RequestInterface;
+use Extend\Warranty\Model\Api\Response;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
-use Zend_Http_Response;
 use Magento\Framework\Exception\LocalizedException;
 use Exception;
 
@@ -132,22 +132,88 @@ abstract class AbstractRequest implements RequestInterface
     /**
      * Process response
      *
-     * @param Zend_Http_Response $response
+     * @param Response $response
      * @return array
      */
-    protected function processResponse(Zend_Http_Response $response): array
+    protected function processResponse(
+        Response $response,
+                 $logResponse = true
+    ): array
     {
         $responseBody = [];
         $responseBodyJson = $response->getBody();
 
         if ($responseBodyJson) {
-            $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
-            $this->logger->info('Response: ' . $response->getHeadersAsString() . PHP_EOL . $response->getRawBody());
+            try {
+                $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
+
+                if ($logResponse) {
+                    $this->_logResponse(
+                        $response->getRequestEndpoint(),
+                        $responseBody,
+                        $response->getHeadersAsString()
+                    );
+                }
+            } catch (\InvalidArgumentException $e) {
+                $this->logger->error(
+                    'Response body failed to unserialize.'
+                    . PHP_EOL
+                    . 'Response:' . $responseBodyJson
+                    . PHP_EOL
+                    . 'Exception:' . $e->getMessage()
+                );
+            }
         } else {
             $this->logger->error('Response body is empty.');
         }
 
         return $responseBody;
+    }
+
+
+    /**
+     * Logs the response with headers
+     *
+     * @param array $response
+     * @param string $response
+     * @return void
+     */
+    protected function _logResponse($requestEndpoint, $responseBody, $headers = '')
+    {
+        $depersonalizedBodyArray = $this->_depersonalizeData($responseBody);
+        try {
+            $depersonalizedBody = $this->jsonSerializer->serialize($depersonalizedBodyArray);
+
+            $this->logger->info(
+                'Request URL:' . $requestEndpoint . PHP_EOL
+                . 'Response Header: '. PHP_EOL
+                . (string)$headers . PHP_EOL
+                . 'Response Body: ' . PHP_EOL
+                . $depersonalizedBody
+            );
+        } catch (\InvalidArgumentException $e) {
+            $this->logger->error(
+                'Failed process Response'
+                . PHP_EOL
+                . 'Exception:' . $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * Removes personal data from response if exist
+     *
+     * @param $responseBody
+     * @return array
+     */
+    protected function _depersonalizeData($responseBody): array
+    {
+        $depersonalizedBody = $responseBody;
+
+        if (isset($depersonalizedBody['customer'])) {
+            $depersonalizedBody['customer'] = [];
+        }
+        return $depersonalizedBody;
     }
 
     /**
