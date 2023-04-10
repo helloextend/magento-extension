@@ -113,7 +113,7 @@ class Connector implements ConnectorInterface
     public function callPost(
         string $endpoint,
         array  $headers,
-        array  $data
+        array  $data = []
     )
     {
 
@@ -128,11 +128,17 @@ class Connector implements ConnectorInterface
         /** @var Curl $client */
         $client = $this->httpClientFactory->create();
         $client->setHeaders($headers);
+
+        $rawData = '{}';
         if (!empty($data)) {
             try {
                 $rawData = $this->jsonSerializer->serialize($data);
             } catch (InvalidArgumentException $exception) {
-                $this->logger->error($exception->getMessage());
+                $this->logger->error(
+                    'Caught Exception on serializing data.' . PHP_EOL
+                    . 'Endpoint:' . $endpoint
+                    . 'Exception:' . $exception->getMessage()
+                );
             }
         }
 
