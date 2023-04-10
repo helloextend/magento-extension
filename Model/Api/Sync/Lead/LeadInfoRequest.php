@@ -5,7 +5,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Model\Api\Sync\Lead;
@@ -17,9 +17,6 @@ use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
-use Zend_Http_Client;
-use Zend_Http_Client_Exception;
-use InvalidArgumentException;
 
 /**
  * Class LeadInfoRequest
@@ -32,11 +29,6 @@ class LeadInfoRequest extends AbstractRequest
      * Create a lead
      */
     public const GET_LEAD_INFO_ENDPOINT = 'leads/%s';
-
-    /**
-     * Response status codes
-     */
-    public const STATUS_CODE_SUCCESS = 200;
 
     protected $leadResponseFactory;
 
@@ -72,24 +64,20 @@ class LeadInfoRequest extends AbstractRequest
         /** @var LeadInfoResponse $leadInfoResponse */
         $leadInfoResponse = $this->leadResponseFactory->create();
 
-        try {
-            $response = $this->connector->call(
-                $url,
-                Zend_Http_Client::GET,
-                [self::ACCESS_TOKEN_HEADER => $this->apiKey]
-            );
-            if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
-                $responseBody = $this->processResponse($response);
+        $response = $this->connector->call(
+            $url,
+            "GET",
+            [self::ACCESS_TOKEN_HEADER => $this->apiKey]
+        );
+        if ($response->isSuccessful()) {
+            $responseBody = $this->processResponse($response);
 
-                $leadInfoResponse->setExpirationDate($responseBody['expirationDate'] ?? null);
-                $leadInfoResponse->setStatus($responseBody['status'] ?? '');
+            $leadInfoResponse->setExpirationDate($responseBody['expirationDate'] ?? null);
+            $leadInfoResponse->setStatus($responseBody['status'] ?? '');
 
-                if (!$leadInfoResponse->getExpirationDate()) {
-                    $this->logger->error('Lead token expiration date is not set');
-                }
+            if (!$leadInfoResponse->getExpirationDate()) {
+                $this->logger->error('Lead token expiration date is not set');
             }
-        } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
-            $this->logger->error($exception->getMessage());
         }
         return $leadInfoResponse;
     }

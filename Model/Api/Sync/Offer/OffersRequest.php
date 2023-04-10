@@ -5,16 +5,12 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Model\Api\Sync\Offer;
 
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
-use Zend_Http_Response;
-use Zend_Http_Client;
-use Zend_Http_Client_Exception;
-use InvalidArgumentException;
 
 /**
  * Class OffersRequest
@@ -38,35 +34,14 @@ class OffersRequest extends AbstractRequest
     {
         $url = $this->apiUrl . sprintf(self::GET_OFFER_INFO_ENDPOINT, $this->storeId, $this->encode($productSku));
 
-        try {
-            $response = $this->connector->call(
-                $url,
-                Zend_Http_Client::GET,
-                [self::ACCESS_TOKEN_HEADER => $this->apiKey]
-            );
-            $responseBody = $this->processResponse($response);
-        } catch (Zend_Http_Client_Exception|InvalidArgumentException $exception) {
-            $responseBody = [];
-            $this->logger->error($exception->getMessage());
-        }
+        $response = $this->connector->call(
+            $url,
+            "GET",
+            [self::ACCESS_TOKEN_HEADER => $this->apiKey]
+        );
 
-        return $responseBody;
-    }
-
-    /**
-     * Process response
-     *
-     * @param Zend_Http_Response $response
-     * @return array
-     */
-    protected function processResponse(Zend_Http_Response $response): array
-    {
-        $responseBody = [];
-        $responseBodyJson = $response->getBody();
-
-        if ($responseBodyJson) {
-            $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
-        }
+        /** @var array $responseBody */
+        $responseBody = $this->processResponse($response, false);
 
         return $responseBody;
     }
