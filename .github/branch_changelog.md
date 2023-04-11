@@ -1,3 +1,7 @@
+Merge pull request #366 from helloextend/EX-472
+
+[EX-472] [M2] M2.4.6 incompatibility
+
 Merge pull request #368 from helloextend/EX-473
 
 [EX-473] The contract payload  shows a 3 character instead of 2 chara…
