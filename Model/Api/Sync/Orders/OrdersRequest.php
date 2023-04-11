@@ -64,7 +64,9 @@ class OrdersRequest extends AbstractRequest
                 $leadsTokens = [];
                 if(isset($responseBody['lineItems'])) {
                     foreach ($responseBody['lineItems'] as $lineItem) {
-                        $leadsTokens[] = $lineItem['leadToken'];
+                      if(isset($lineItem['leadToken'])){
+                          $leadsTokens[] = $lineItem['leadToken'];
+                      }
                     }
                 }
 

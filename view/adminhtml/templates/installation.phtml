@@ -7,24 +7,17 @@
  * @package     Warranty
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
+/** @var \Extend\Warranty\Block\Adminhtml\Order\Create\Installation $block */
 /** @var \Extend\Warranty\ViewModel\Installation $viewModel */
 $viewModel = $block->getData('viewModel');
+$currentStoreId = $block->getCurrentStore();
 ?>
 
-<?php if ($viewModel->isExtendEnabled()): ?>
-    <?php $jsonConfig = $viewModel->getJsonConfig(); ?>
+<?php if ($viewModel->isExtendEnabled($currentStoreId)): ?>
+    <?php $jsonConfig = $viewModel->getJsonConfig($currentStoreId); ?>
     <?php if ($jsonConfig): ?>
-        <script src="<?= /* @noEscape */ $viewModel->getJsMode() ?>"></script>
         <script>
-            Extend.config(<?=/* @noEscape */ $viewModel->getJsonConfig() ?>);
+            Extend.config(<?=/* @noEscape */ $viewModel->getJsonConfig($currentStoreId) ?>);
         </script>
     <?php endif; ?>
 <?php endif; ?>
-
-<script>
-    var BASE_URL = '<?= /* @noEscape */ $block->getUrl('*') ?>';
-    var FORM_KEY = '<?= /* @noEscape */ $block->getFormKey() ?>';
-    var require = {
-        "baseUrl": "<?= /* @noEscape */ $block->getViewFileUrl('/') ?>"
-    };
-</script>

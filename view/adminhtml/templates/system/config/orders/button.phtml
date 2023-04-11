@@ -16,10 +16,7 @@ $scopeData = $block->getScopeData();
 ?>
 <div class="extend-sync-button-container">
     <button id="syncOrderBtn" data-mage-init='{"ordersSync": {
-            "url": "<?= $block->escapeJs($block->getUrl(
-                'extend/orders/historicalorders',
-                [$scopeData['scopeType'] => $scopeData['scopeId']]
-            )) ?>",
+            "syncUrls":<?= json_encode($block->getSyncUrls())?>,
             "resetFlagUrl": "<?= $block->escapeJs($block->getUrl('extend/orders_sync/resetFlag')) ?>"
         }}' <?php if (!$block->isButtonEnabled()): ?>class="disabled"<?php endif; ?>>
         <span><?= /* @noEscape */ __('Send historical Orders') ?></span>
