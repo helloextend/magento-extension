@@ -1,3 +1,7 @@
+Merge pull request #371 from helloextend/EX-471
+
+[EX-471] [M2] Configuration Labels changes
+
 Merge pull request #366 from helloextend/EX-472
 
 [EX-472] [M2] M2.4.6 incompatibility
