@@ -96,7 +96,7 @@
                        showInWebsite="1"
                        showInStore="1"
                        canRestore="1">
-                    <label>Enable Extend</label>
+                    <label>Enable Extend Product Protection</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
