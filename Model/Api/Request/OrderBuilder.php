@@ -418,11 +418,12 @@ class OrderBuilder
                 'name' => $this->helper->getCustomerFullName($order),
                 'email' => $order->getCustomerEmail(),
                 'phone' => $billingAddress->getTelephone(),
+                'region'=> $billingCountryInfo->getTwoLetterAbbreviation(),
                 'billingAddress' => [
                     'address1' => $billingStreet['address1'] ?? '',
                     'address2' => $billingStreet['address2'] ?? '',
                     'city' => $billingAddress->getCity(),
-                    'countryCode' => $billingCountryInfo->getThreeLetterAbbreviation(),
+                    'countryCode' => $billingCountryInfo->getTwoLetterAbbreviation(),
                     'postalCode' => $billingAddress->getPostcode(),
                     'province' => $billingAddress->getRegionCode() ?? ''
                 ],
@@ -436,11 +437,11 @@ class OrderBuilder
             $shippingStreet = $this->formatStreet($shippingAddress->getStreet());
 
             $customer['shippingAddress'] = [
-                'address1'      => $shippingStreet['address1'] ?? '',
-                'address2'      => $shippingStreet['address2'] ?? '',
-                'city'          => $shippingAddress->getCity(),
-                'countryCode'   => $shippingCountryInfo->getThreeLetterAbbreviation(),
-                'postalCode'    => $shippingAddress->getPostcode(),
+                'address1' => $shippingStreet['address1'] ?? '',
+                'address2' => $shippingStreet['address2'] ?? '',
+                'city' => $shippingAddress->getCity(),
+                'countryCode' => $shippingCountryInfo->getTwoLetterAbbreviation(),
+                'postalCode' => $shippingAddress->getPostcode(),
             ];
         }
 
