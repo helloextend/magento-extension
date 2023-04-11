@@ -23,7 +23,7 @@
                  showInStore="1"
                  canRestore="1">
             <tab>extend</tab>
-            <label>Extend Protection Plans</label>
+            <label>Extend Product Protection</label>
             <resource>Extend_Warranty::warranty</resource>
 
             <group id="extend_info"
