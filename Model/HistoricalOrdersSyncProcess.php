@@ -133,7 +133,10 @@ class HistoricalOrdersSyncProcess
     {
         $stores = $this->storeManager->getStores();
         foreach ($stores as $storeId => $store) {
-            if (!$this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)) {
+            if (
+                !$this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId) ||
+                !$this->dataHelper->isHistoricalOrdersCronSyncEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            ) {
                 continue;
             }
 
