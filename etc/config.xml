@@ -15,7 +15,8 @@
             </enableExtend>
             <contracts>
                 <create>2</create>
-                <mode>1</mode>
+                <mode>0</mode>
+                <event>1</event>
                 <cron>
                     <frequency>*/5 * * * *</frequency>
                 </cron>
