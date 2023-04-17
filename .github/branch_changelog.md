@@ -1,3 +1,7 @@
+Merge pull request #372 from helloextend/EX-476
+
+[EX-476][M2] Default Contract Event and Contract Create Mode Incorrec…
+
 Merge pull request #371 from helloextend/EX-471
 
 [EX-471] [M2] Configuration Labels changes
