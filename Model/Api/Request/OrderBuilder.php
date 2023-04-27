@@ -216,6 +216,7 @@ class OrderBuilder
             'customer' => $customerData,
             'lineItems' => $lineItems,
             'total' => $transactionTotal,
+            'taxCostTotal' => $this->helper->formatPrice($order->getBaseTaxAmount()),
             'productCostTotal' => $this->helper->formatPrice($order->getBaseSubtotal()),
             'discountAmountTotal' => $this->helper->formatPrice(abs($order->getBaseDiscountAmount())),
             'storeId' => $extendStoreId,

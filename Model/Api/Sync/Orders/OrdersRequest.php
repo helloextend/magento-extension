@@ -40,7 +40,7 @@ class OrdersRequest extends AbstractRequest
                 $url,
                 Zend_Http_Client::POST,
                 [
-                    'Accept'                  => 'application/json; version=2021-07-01',
+                    'Accept'                  => 'application/json; version=2022-02-01',
                     'Content-Type'            => 'application/json',
                     self::ACCESS_TOKEN_HEADER => $this->apiKey,
                     'X-Idempotency-Key'       => $this->getUuid4()

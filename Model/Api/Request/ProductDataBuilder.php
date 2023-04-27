@@ -170,7 +170,7 @@ class ProductDataBuilder
         }
 
         $payload = [
-            'category'          => $categories,
+            'category'          => $categories ? : 'No category',
             'description'       => $description,
             'price'             => $price,
             'title'             => (string)$product->getName(),
