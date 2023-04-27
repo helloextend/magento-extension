@@ -7,6 +7,7 @@
  * @package     Warranty
  * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
+
 namespace Extend\Warranty\Model\Api\Request;
 
 use Extend\Warranty\Helper\Data as DataHelper;
@@ -119,11 +120,12 @@ class OrderBuilder
      * @throws NoSuchEntityException
      */
     public function preparePayload(
-        OrderInterface $order,
+        OrderInterface     $order,
         OrderItemInterface $orderItem,
-        int $qty,
-        string $type = 'contract'
-    ): array {
+        int                $qty,
+        string             $type = 'contract'
+    ): array
+    {
         $payload = [];
         $store = $this->storeManager->getStore($order->getStoreId());
         $currencyCode = $order->getOrderCurrencyCode();
@@ -138,6 +140,9 @@ class OrderBuilder
         $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
         $lineItem = [];
 
+        $discountAmount = $this->helper->formatPrice($orderItem->getBaseDiscountAmount());
+        $taxCost = $this->helper->formatPrice($orderItem->getBaseTaxAmount());
+
         if ($type == \Extend\Warranty\Model\Orders::CONTRACT) {
             $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
             $productSku = is_array($productSku) ? array_shift($productSku) : $productSku;
@@ -147,12 +152,12 @@ class OrderBuilder
             $product = $this->prepareProductPayload($productSku);
 
             $lineItem = [
-                'status'      => $this->getStatus(),
-                'quantity'    => $qty,
-                'storeId'     => $extendStoreId,
-                'warrantable' => true,
-                'product'     => $product,
-                'plan'        => $plan
+                'status' => $this->getStatus(),
+                'product' => $product,
+                'plan' => $plan,
+                'discountAmount' => $discountAmount,
+                'taxCost' => $taxCost,
+                'quantity' => $qty
             ];
 
         } elseif ($type == \Extend\Warranty\Model\Orders::LEAD) {
@@ -160,11 +165,10 @@ class OrderBuilder
             $product = $this->prepareProductPayload($productSku);
 
             $lineItem = [
-                'status'      => $this->getStatus(),
-                'quantity'    => $qty,
-                'storeId'     => $extendStoreId,
-                'warrantable' => true,
-                'product'     => $product
+                'status' => $this->getStatus(),
+                'discountAmount' => $discountAmount,
+                'taxCost' => $taxCost,
+                'product' => $product
             ];
         } elseif ($type == \Extend\Warranty\Model\Orders::LEAD_CONTRACT) {
             $plan = $this->getPlan($orderItem);
@@ -179,12 +183,12 @@ class OrderBuilder
             }
 
             $lineItem = [
-                'status'      => $this->getStatus(),
-                'quantity'    => $qty,
-                'storeId'     => $extendStoreId,
-                'warrantable' => true,
-                'plan'        => $plan,
-                'leadToken'   => $leadToken
+                'status' => $this->getStatus(),
+                'quantity' => $qty,
+                'plan' => $plan,
+                'discountAmount' => $discountAmount,
+                'taxCost' => $taxCost,
+                'leadToken' => $leadToken
             ];
         }
 
@@ -195,7 +199,7 @@ class OrderBuilder
         }
 
         $saleOrigin = [
-            'platform'  => self::PLATFORM_CODE,
+            'platform' => self::PLATFORM_CODE,
         ];
 
         $createdAt = $order->getCreatedAt();
@@ -206,16 +210,18 @@ class OrderBuilder
         }
 
         $payload = [
-            'isTest'            => !$this->apiHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $store->getId()),
-            'currency'          => $currencyCode,
-            'createdAt'         => $createdAt ? strtotime($createdAt) : 0,
-            'customer'          => $customerData,
-            'lineItems'         => $lineItems,
-            'total'             => $transactionTotal,
-            'storeId'           => $extendStoreId,
-            'storeName'         => $extendStoreName,
-            'transactionId'     => $order->getIncrementId(),
-            'saleOrigin'        => $saleOrigin,
+            'isTest' => !$this->apiHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $store->getId()),
+            'currency' => $currencyCode,
+            'createdAt' => $createdAt ? strtotime($createdAt) : 0,
+            'customer' => $customerData,
+            'lineItems' => $lineItems,
+            'total' => $transactionTotal,
+            'productCostTotal' => $this->helper->formatPrice($order->getBaseSubtotal()),
+            'discountAmountTotal' => $this->helper->formatPrice(abs($order->getBaseDiscountAmount())),
+            'storeId' => $extendStoreId,
+            'storeName' => $extendStoreName,
+            'transactionId' => $order->getIncrementId(),
+            'saleOrigin' => $saleOrigin,
         ];
 
         return $payload;
@@ -253,9 +259,9 @@ class OrderBuilder
             }
 
             $lineItem = [
-                'quantity'    => $qty,
-                'storeId'     => $extendStoreId,
-                'product'     => $product,
+                'quantity' => $qty,
+                'storeId' => $extendStoreId,
+                'product' => $product,
             ];
 
             $lineItems[] = $lineItem;
@@ -266,7 +272,7 @@ class OrderBuilder
         }
 
         $saleOrigin = [
-            'platform'  => self::PLATFORM_CODE,
+            'platform' => self::PLATFORM_CODE,
         ];
 
         $createdAt = $order->getCreatedAt();
@@ -277,16 +283,16 @@ class OrderBuilder
         }
 
         $payload = [
-            'isTest'            => !$this->apiHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $store->getId()),
-            'currency'          => $currencyCode,
-            'createdAt'         => $createdAt ? strtotime($createdAt) : 0,
-            'customer'          => $customerData,
-            'lineItems'         => $lineItems,
-            'total'             => $transactionTotal,
-            'storeId'           => $extendStoreId,
-            'storeName'         => $extendStoreName,
-            'transactionId'     => $order->getIncrementId(),
-            'saleOrigin'        => $saleOrigin,
+            'isTest' => !$this->apiHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $store->getId()),
+            'currency' => $currencyCode,
+            'createdAt' => $createdAt ? strtotime($createdAt) : 0,
+            'customer' => $customerData,
+            'lineItems' => $lineItems,
+            'total' => $transactionTotal,
+            'storeId' => $extendStoreId,
+            'storeName' => $extendStoreName,
+            'transactionId' => $order->getIncrementId(),
+            'saleOrigin' => $saleOrigin,
         ];
 
         return $payload;
@@ -314,12 +320,14 @@ class OrderBuilder
 
         $result = [
             'id' => $product->getSku(),
-            'listPrice' => $this->helper->formatPrice($product->getFinalPrice()),
+            'listPrice' => $this->helper->formatPrice(
+                $this->productDataBuilder->calculateSyncProductPrice($product)
+            ),
             'name' => $product->getName(),
             'purchasePrice' => $this->helper->formatPrice($product->getFinalPrice())
         ];
 
-        $result = array_merge($result,$productPayload);
+        $result = array_merge($result, $productPayload);
         return $result;
     }
 
@@ -330,7 +338,7 @@ class OrderBuilder
      * @param float $price
      * @return array
      */
-    protected function prepareWarrantyProductPayload(?string $productSku, float $price) :array
+    protected function prepareWarrantyProductPayload(?string $productSku, float $price): array
     {
         if (empty($productSku)) {
             return [];
