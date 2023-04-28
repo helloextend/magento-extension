@@ -150,7 +150,7 @@ class ProductDataBuilder
         $currencyCode = $this->getCurrencyCode($storeId);
 
         $price = [
-            'amount'        => $this->helper->formatPrice($this->_calculateSyncProductPrice($product, $scopeType, $scopeId)),
+            'amount'        => $this->helper->formatPrice($this->calculateSyncProductPrice($product, $scopeType, $scopeId)),
             'currencyCode'  => $currencyCode,
         ];
 
@@ -170,7 +170,7 @@ class ProductDataBuilder
         }
 
         $payload = [
-            'category'          => $categories,
+            'category'          => $categories ? : 'No Category',
             'description'       => $description,
             'price'             => $price,
             'title'             => (string)$product->getName(),
@@ -194,7 +194,16 @@ class ProductDataBuilder
         return $payload;
     }
 
-    private function _calculateSyncProductPrice(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null) {
+    /**
+     * Calculates price with checking if special price should be used
+     * for syncing
+     *
+     * @param ProductInterface $product
+     * @param $scopeType
+     * @param $scopeId
+     * @return float|null
+     */
+    public function calculateSyncProductPrice(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null) {
         $price = $product->getPrice();
         $specialPricesEnabled = $this->_getIsSpecialPricesSyncEnabled($scopeType, $scopeId);
         $specialPrice = $this->catalogProductType->priceFactory($product->getTypeId())->getFinalPrice(1, $product);
