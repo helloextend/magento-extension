@@ -167,7 +167,7 @@ class ContractCreateProcess
                         && $this->dataHelper->isContractCreateModeScheduled()
                     ) {
                         $processedContractCreateRecords[$recordId] =
-                            $this->extendOrdersApi->createOrder($order, $orderItem, $qty);
+                            $this->extendOrdersApi->createOrderPerLineItem($order, $orderItem, $qty);
                     }
                 } catch (LocalizedException $exception) {
                     $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;

@@ -73,7 +73,7 @@ interface RelationProcessorInterface
 
     /**
      * Get Order Item SKU which is used to relate warrantable
-     * and warranty quote item.
+     * and warranty order item.
      *
      * Needed on order view page
      *

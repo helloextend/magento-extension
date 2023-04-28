@@ -13,6 +13,7 @@ namespace Extend\Warranty\Observer\ContractCreate;
 use Magento\Framework\Event\Observer;
 use Extend\Warranty\Model\Product\Type as WarrantyType;
 use Extend\Warranty\Model\CreateContract as WarrantyContractCreate;
+use Extend\Warranty\Model\Orders as ExtendOrder;
 use Magento\Framework\Event\ObserverInterface;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Exception\LocalizedException;
@@ -37,6 +38,11 @@ class OrderObserver implements ObserverInterface
     private $warrantyContractCreate;
 
     /**
+     * @var ExtendOrder
+     */
+    protected $extendOrder;
+
+    /**
      * Warranty Api DataHelper
      *
      * @var DataHelper
@@ -55,12 +61,15 @@ class OrderObserver implements ObserverInterface
      */
     public function __construct(
         WarrantyContractCreate $warrantyContractCreate,
+        ExtendOrder $extendOrder,
         DataHelper $dataHelper,
         LoggerInterface $logger
     ) {
         $this->warrantyContractCreate = $warrantyContractCreate;
+        $this->extendOrder = $extendOrder;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->extendOrder = $extendOrder;
     }
 
     /**
@@ -72,6 +81,9 @@ class OrderObserver implements ObserverInterface
     {
         $event = $observer->getEvent();
         $order = $event->getOrder();
+
+
+        $this->extendOrder->create($order);
 
         $storeId = $order->getStoreId();
         $contractCreateEvent = $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId);

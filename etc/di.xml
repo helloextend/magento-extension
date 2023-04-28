@@ -315,4 +315,17 @@
             </argument>
         </arguments>
     </type>
+
+
+    <type name="\Extend\Warranty\Model\Api\Request\LineItemBuilder">
+        <arguments>
+            <argument xsi:type="array" name="lineItemBuilders">
+                <item name="warranty" xsi:type="object">\Extend\Warranty\Model\Api\Request\LineItem\WarrantyContractLineItemBuilder</item>
+                <item name="non_warranty" xsi:type="object">\Extend\Warranty\Model\Api\Request\LineItem\NonWarrantableLineItemBuilder</item>
+                <item name="lead" xsi:type="object">\Extend\Warranty\Model\Api\Request\LineItem\LeadLineItemBuilder</item>
+            </argument>
+        </arguments>
+    </type>
+
+
 </config>

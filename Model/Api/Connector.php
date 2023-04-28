@@ -101,6 +101,7 @@ class Connector implements ConnectorInterface
         if (!empty($data)) {
             try {
                 $rawData = $this->jsonSerializer->serialize($data);
+                $this->logger->debug("Request:".$rawData);
                 $this->httpClient->setRawData($rawData);
             } catch (InvalidArgumentException $exception) {
                 $this->logger->error($exception->getMessage());

@@ -6,13 +6,11 @@
  * @category    Extend
  * @package     Warranty
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ *
  */
 
 namespace Extend\Warranty\Model;
 
-use Extend\Warranty\Model\Product\Type as WarrantyType;
-use Extend\Warranty\Model\WarrantyContract;
-use Extend\Warranty\Model\ContractCreateFactory;
 use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource;
 use Extend\Warranty\Model\Orders as ExtendOrder;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -22,10 +20,10 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
-use Exception;
 
 /**
  * Class CreateContractApi
+ * @deprecated 1.3.0 Orders API should be used in all circumstances instead of the Contracts API
  */
 class CreateContract
 {
@@ -115,14 +113,14 @@ class CreateContract
                 if ($warrantyItem->getLeadToken() != null &&
                     implode(", ", json_decode($warrantyItem->getLeadToken(), true)) != null
                 ) {
-                    $this->extendOrder->createOrder(
+                    $this->extendOrder->createOrderPerLineItem(
                         $order,
                         $warrantyItem,
                         $qty,
                         \Extend\Warranty\Model\Orders::LEAD_CONTRACT
                     );
                 } else {
-                    $this->extendOrder->createOrder(
+                    $this->extendOrder->createOrderPerLineItem(
                         $order,
                         $warrantyItem,
                         $qty,

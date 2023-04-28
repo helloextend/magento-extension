@@ -193,7 +193,7 @@ class CreateLead implements ObserverInterface
     private function saveLeadTokenForOrders(OrderInterface $order, OrderItemInterface $productItem)
     {
         try {
-            $leadToken = $this->extendOrder->createOrder(
+            $leadToken = $this->extendOrder->createOrderPerLineItem(
                 $order,
                 $productItem,
                 (int)$productItem->getQtyOrdered(),

@@ -2,6 +2,7 @@
 
 namespace Extend\Warranty\Model;
 
+use Extend\Warranty\Model\Api\Request\FullOrderBuilder;
 use Extend\Warranty\Model\Api\Request\OrderBuilder;
 use Extend\Warranty\Model\Api\Sync\Orders\OrdersRequest;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
@@ -27,7 +28,7 @@ class Orders
     protected $ordersRequest;
 
     /**
-     * @var OrderBuilder
+     * @var FullOrderBuilder
      */
     protected $orderBuilder;
 
@@ -53,20 +54,21 @@ class Orders
 
     /**
      * @param OrdersRequest $ordersRequest
-     * @param OrderBuilder $orderBuilder
+     * @param FullOrderBuilder $orderBuilder
      * @param DataHelper $dataHelper
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param JsonSerializer $jsonSerializer
      * @param LoggerInterface $logger
      */
     public function __construct(
-        OrdersRequest $ordersRequest,
-        OrderBuilder $orderBuilder,
-        DataHelper $dataHelper,
+        OrdersRequest                $ordersRequest,
+        FullOrderBuilder             $orderBuilder,
+        DataHelper                   $dataHelper,
         OrderItemRepositoryInterface $orderItemRepository,
-        JsonSerializer $jsonSerializer,
-        LoggerInterface $logger
-    ) {
+        JsonSerializer               $jsonSerializer,
+        LoggerInterface              $logger
+    )
+    {
         $this->ordersRequest = $ordersRequest;
         $this->orderBuilder = $orderBuilder;
         $this->dataHelper = $dataHelper;
@@ -75,8 +77,31 @@ class Orders
         $this->logger = $logger;
     }
 
+
+    public function create($order)
+    {
+        $storeId = $order->getStoreId();
+        $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
+        $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
+        $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
+
+        $orderData = $this->orderBuilder->preparePayload($order);
+
+        try {
+            $this->ordersRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
+            $response = $this->ordersRequest->create($orderData);
+
+            /**
+             * @todo save order data and orderitems data from response
+             */
+        } catch (Exception $e) {
+            $this->logger->error($e->getMessage(), ['exception' => $e]);
+            throw new LocalizedException(new Phrase('Order API contract create error'), $e);
+        }
+    }
+
     /**
-     * Create Order
+     * Create Order in an way when order created per one orderItem on extend side
      *
      * @param OrderInterface $orderMagento
      * @param OrderItemInterface $orderItem
@@ -85,13 +110,15 @@ class Orders
      * @return string
      *
      * @throws LocalizedException
+     * @deprecated use create
      */
-    public function createOrder(
-        OrderInterface $orderMagento,
+    public function createOrderPerLineItem(
+        OrderInterface     $orderMagento,
         OrderItemInterface $orderItem,
-        int $qty,
-        ?string $type = self::CONTRACT
-    ) :string {
+        int                $qty,
+        ?string            $type = self::CONTRACT
+    ): string
+    {
         $storeId = $orderItem->getStoreId();
         $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
         $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
@@ -101,7 +128,7 @@ class Orders
 
         try {
             $this->ordersRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
-            $response =  $this->ordersRequest->create($orderData, $type);
+            $response = $this->ordersRequest->create($orderData, $type);
             if (!empty($response) && ($type == self::CONTRACT || $type == self::LEAD_CONTRACT)) {
                 $orderExtend = $this->saveContract($orderItem, $qty, $response);
             } elseif (!empty($response) && $type == self::LEAD) {
@@ -116,6 +143,7 @@ class Orders
 
         return empty($orderExtend) ? '' : $orderExtend;
     }
+
     /**
      * Save Contract
      *

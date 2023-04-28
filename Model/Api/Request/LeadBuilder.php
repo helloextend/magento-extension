@@ -1,6 +1,5 @@
 <?php
 /**
- * @deprecated 1.3.0 Orders API should be used in all circumstances instead of the Contracts API.
  * Extend Warranty
  *
  * @author      Extend Magento Team <magento@guidance.com>
@@ -20,6 +19,8 @@ use Magento\Sales\Api\Data\OrderItemInterface;
  * Class LeadBuilder
  *
  * Warranty LeadBuilder
+ *
+ * @deprecated 1.3.0 Orders API should be used in all circumstances instead of the Contracts API.
  */
 class LeadBuilder
 {
