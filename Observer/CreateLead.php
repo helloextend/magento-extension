@@ -130,7 +130,7 @@ class CreateLead implements ObserverInterface
                 $orderItem->setOrder($order);
                 if ($orderItem->getProductType() === Type::TYPE_CODE) {
                     $warrantyItems[] = $orderItem;
-                } else {
+                } elseif(!$orderItem->getParentItem()) {
                     $productItems[] = $orderItem;
                 }
             }
