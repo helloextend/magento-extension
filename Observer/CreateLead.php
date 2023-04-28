@@ -131,7 +131,7 @@ class CreateLead implements ObserverInterface
                 $orderItem->setOrder($order);
                 if ($orderItem->getProductType() === Type::TYPE_CODE) {
                     $warrantyItems[] = $orderItem;
-                } else {
+                } elseif (!$orderItem->getParentItem()) { //ignoring children from create leads process
                     $productItems[] = $orderItem;
                 }
             }
@@ -145,7 +145,7 @@ class CreateLead implements ObserverInterface
             foreach ($productItems as $productItem) {
                 $hasWarranty = false;
                 foreach ($warrantyItems as $warrantyItem) {
-                    if($this->warrantyRelation->isWarrantyRelatedToOrderItem($warrantyItem, $productItem)){
+                    if ($this->warrantyRelation->isWarrantyRelatedToOrderItem($warrantyItem, $productItem)) {
                         $hasWarranty = true;
                     }
                 }
