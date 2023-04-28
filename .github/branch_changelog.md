@@ -1,3 +1,7 @@
+Merge pull request #375 from helloextend/EX-479
+
+EX-425  [M2] Orders POST is not providing the correct Product Purchase Price, while other fields are missing from the line item or order header
+
 Merge pull request #372 from helloextend/EX-476
 
 [EX-476][M2] Default Contract Event and Contract Create Mode Incorrec…
