@@ -1,3 +1,7 @@
+Merge pull request #376 from helloextend/EX-479
+
+[EX-479] [M2] Orders POST is not providing the correct Product Purcha…
+
 Merge pull request #375 from helloextend/EX-479
 
 EX-425  [M2] Orders POST is not providing the correct Product Purchase Price, while other fields are missing from the line item or order header
