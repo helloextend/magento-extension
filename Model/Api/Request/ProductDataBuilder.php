@@ -150,7 +150,7 @@ class ProductDataBuilder
         $currencyCode = $this->getCurrencyCode($storeId);
 
         $price = [
-            'amount'        => $this->helper->formatPrice($this->_calculateSyncProductPrice($product, $scopeType, $scopeId)),
+            'amount'        => $this->helper->formatPrice($this->calculateSyncProductPrice($product, $scopeType, $scopeId)),
             'currencyCode'  => $currencyCode,
         ];
 
@@ -159,7 +159,7 @@ class ProductDataBuilder
             'type'  => (string)$product->getTypeId(),
         ];
 
-        $description = trim($product->getShortDescription());
+        $description = trim((string) $product->getShortDescription());
 
         if (strlen($description) > 2000) {
             $description = substr($description, 0, 2000);
@@ -170,8 +170,8 @@ class ProductDataBuilder
         }
 
         $payload = [
-            'category'          => $categories,
-            'description'       => (string)$description,
+            'category'          => $categories ? : 'No Category',
+            'description'       => $description,
             'price'             => $price,
             'title'             => (string)$product->getName(),
             'referenceId'       => (string)$product->getSku(),
@@ -194,7 +194,16 @@ class ProductDataBuilder
         return $payload;
     }
 
-    private function _calculateSyncProductPrice(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null) {
+    /**
+     * Calculates price with checking if special price should be used
+     * for syncing
+     *
+     * @param ProductInterface $product
+     * @param $scopeType
+     * @param $scopeId
+     * @return float|null
+     */
+    public function calculateSyncProductPrice(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null) {
         $price = $product->getPrice();
         $specialPricesEnabled = $this->_getIsSpecialPricesSyncEnabled($scopeType, $scopeId);
         $specialPrice = $this->catalogProductType->priceFactory($product->getTypeId())->getFinalPrice(1, $product);
