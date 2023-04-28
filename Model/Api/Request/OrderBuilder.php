@@ -137,11 +137,20 @@ class OrderBuilder
             $currencyCode = $store->getBaseCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
         }
 
-        $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
         $lineItem = [];
 
-        $discountAmount = $this->helper->formatPrice($orderItem->getBaseDiscountAmount());
-        $taxCost = $this->helper->formatPrice($orderItem->getBaseTaxAmount());
+        $transactionTotal = $this->helper->formatPrice($order->getGrandTotal());
+        $discountAmount = $this->helper->formatPrice($orderItem->getDiscountAmount() / $qty);
+        $taxCost = $this->helper->formatPrice($orderItem->getTaxAmount() / $qty);
+        $purchasePrice = $this->helper->formatPrice($orderItem->getRowTotal() / $qty);
+
+        if ($orderItem->getProductType() == Type::TYPE_CODE && $associatedOrderItem = $this->getAssociatedOrderItem($orderItem)) {
+            $relatedOrderItemQty = $associatedOrderItem->getQtyOrdered();
+            $discountAmount = $this->helper->formatPrice($associatedOrderItem->getDiscountAmount() / $relatedOrderItemQty);
+            $taxCost = $this->helper->formatPrice($associatedOrderItem->getTaxAmount() / $relatedOrderItemQty);
+            $purchasePrice = $this->helper->formatPrice($associatedOrderItem->getRowTotal() / $relatedOrderItemQty);
+        }
+
 
         if ($type == \Extend\Warranty\Model\Orders::CONTRACT) {
             $productSku = $orderItem->getProductOptionByCode(Type::ASSOCIATED_PRODUCT);
@@ -150,6 +159,7 @@ class OrderBuilder
             $plan = $this->getPlan($orderItem);
 
             $product = $this->prepareProductPayload($productSku);
+            $product['purchasePrice'] = $purchasePrice;
 
             $lineItem = [
                 'status' => $this->getStatus(),
@@ -163,6 +173,7 @@ class OrderBuilder
         } elseif ($type == \Extend\Warranty\Model\Orders::LEAD) {
             $productSku = $this->warrantyRelation->getOfferOrderItemSku($orderItem);
             $product = $this->prepareProductPayload($productSku);
+            $product['purchasePrice'] = $purchasePrice;
 
             $lineItem = [
                 'status' => $this->getStatus(),
@@ -216,9 +227,9 @@ class OrderBuilder
             'customer' => $customerData,
             'lineItems' => $lineItems,
             'total' => $transactionTotal,
-            'taxCostTotal' => $this->helper->formatPrice($order->getBaseTaxAmount()),
-            'productCostTotal' => $this->helper->formatPrice($order->getBaseSubtotal()),
-            'discountAmountTotal' => $this->helper->formatPrice(abs($order->getBaseDiscountAmount())),
+            'taxCostTotal' => $this->helper->formatPrice($order->getTaxAmount()),
+            'productCostTotal' => $this->helper->formatPrice($order->getSubtotal()),
+            'discountAmountTotal' => $this->helper->formatPrice(abs($order->getDiscountAmount())),
             'storeId' => $extendStoreId,
             'storeName' => $extendStoreName,
             'transactionId' => $order->getIncrementId(),
@@ -240,8 +251,7 @@ class OrderBuilder
         $extendStoreId = $this->apiHelper->getStoreId(ScopeInterface::SCOPE_STORES, $store->getId());
         $extendStoreName = $this->apiHelper->getStoreName(ScopeInterface::SCOPE_STORES, $store->getId());
 
-        $transactionTotal = $this->helper->formatPrice($order->getBaseGrandTotal());
-        $lineItem = [];
+        $transactionTotal = $this->helper->formatPrice($order->getGrandTotal());
         $lineItems = [];
 
         foreach ($order->getItems() as $orderItem) {
@@ -254,6 +264,8 @@ class OrderBuilder
             } else {
                 $product = $this->prepareProductPayload($productSku);
             }
+
+            $product['purchasePrice'] = $this->helper->formatPrice($orderItem->getRowTotal() / $qty);
 
             if (empty($product)) {
                 continue;
@@ -462,6 +474,23 @@ class OrderBuilder
         }
 
         return $customer;
+    }
+
+    /**
+     * @param OrderItemInterface $warrantyOrderItem
+     * @return OrderItemInterface|null
+     */
+    protected function getAssociatedOrderItem($warrantyOrderItem)
+    {
+        $order = $warrantyOrderItem->getOrder();
+
+        foreach ($order->getAllItems() as $item) {
+            if ($this->warrantyRelation->isWarrantyRelatedToOrderItem($warrantyOrderItem, $item)) {
+                return $item;
+            }
+        }
+
+        return null;
     }
 
     /**
