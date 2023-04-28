@@ -17,9 +17,6 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
-use Zend_Http_Client;
-use Zend_Http_Client_Exception;
-use InvalidArgumentException;
 
 /**
  * Class ProductsRequest
@@ -104,30 +101,30 @@ class ProductsRequest extends AbstractRequest
         }
 
         if (!empty($productData)) {
-            try {
-                $response = $this->connector->call(
-                    $this->buildUrl(self::CREATE_PRODUCT_ENDPOINT . '?batch=true'),
-                    Zend_Http_Client::POST,
-                    [self::ACCESS_TOKEN_HEADER => $this->apiKey],
-                    $productData
+            $response = $this->connector->call(
+                $this->buildUrl(self::CREATE_PRODUCT_ENDPOINT . '?batch=true'),
+                "POST",
+                [self::ACCESS_TOKEN_HEADER => $this->apiKey],
+                $productData
+            );
+            $responseBody = $this->processResponse($response);
+
+            if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
+                $this->logger->info(
+                    sprintf(
+                        'Product batch %s is synchronized successfully.',
+                        $currentBatch
+                    )
                 );
-                $responseBody = $this->processResponse($response);
 
-                if ($response->getStatus() === self::STATUS_CODE_SUCCESS) {
-                    $this->logger->info(sprintf('Product batch %s is synchronized successfully.', $currentBatch));
-                    $this->syncLogger->info('Synced ' . count($productData) . ' product(s) in batch ' . $currentBatch);
+                $this->syncLogger->info('Synced ' . count($productData) . ' product(s) in batch ' . $currentBatch);
 
-                    foreach ($responseBody as $name => $section) {
-                        $info = array_column($section, 'referenceId');
-                        $this->syncLogger->info($name, $info);
-                    }
-                } else {
-                    $this->logger->error(sprintf('Product batch %s synchronization is failed.', $currentBatch));
+                foreach ($responseBody as $name => $section) {
+                    $info = array_column($section, 'referenceId');
+                    $this->syncLogger->info($name, $info);
                 }
-            } catch (Zend_Http_Client_Exception $exception) {
-                $this->logger->error($exception->getMessage());
-            } catch (InvalidArgumentException $exception) {
-                $this->logger->error($exception->getMessage());
+            } else {
+                $this->logger->error(sprintf('Product batch %s synchronization is failed.', $currentBatch));
             }
         }
     }
@@ -139,17 +136,13 @@ class ProductsRequest extends AbstractRequest
      */
     public function isConnectionSuccessful(): bool
     {
-        try {
-            $response = $this->connector->call(
-                $this->buildUrl(self::GET_PRODUCT_ENDPOINT),
-                Zend_Http_Client::GET,
-                [self::ACCESS_TOKEN_HEADER => $this->apiKey]
-            );
+        $response = $this->connector->call(
+            $this->buildUrl(self::GET_PRODUCT_ENDPOINT),
+            'GET',
+            [self::ACCESS_TOKEN_HEADER => $this->apiKey]
+        );
 
-            $isConnectionSuccessful = $response->isSuccessful();
-        } catch (Zend_Http_Client_Exception $exception) {
-            $isConnectionSuccessful = false;
-        }
+        $isConnectionSuccessful = $response->isSuccessful();
 
         return $isConnectionSuccessful;
     }

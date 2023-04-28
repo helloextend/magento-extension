@@ -122,6 +122,7 @@ class CreateWarrantyProduct extends Command
             $output->writeln("Something went wrong while creating the warranty-1 product.");
             $this->logger->error($exception->getMessage());
         }
+        return 0;
     }
 
     /**

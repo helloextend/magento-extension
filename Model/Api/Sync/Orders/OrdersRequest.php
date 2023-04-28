@@ -2,14 +2,12 @@
 
 namespace Extend\Warranty\Model\Api\Sync\Orders;
 
+use Extend\Warranty\Model\Api\Response;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Extend\Warranty\Api\ConnectorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Psr\Log\LoggerInterface;
-use Zend_Http_Client;
-use Zend_Http_Response;
-use Zend_Http_Client_Exception;
 
 class OrdersRequest extends AbstractRequest
 {
@@ -29,7 +27,6 @@ class OrdersRequest extends AbstractRequest
      * @param array $orderData
      * @param string|null $type
      * @return array
-     * @throws Zend_Http_Client_Exception
      */
     public function create(array $orderData, ?string $type = 'contract'): array
     {
@@ -38,9 +35,9 @@ class OrdersRequest extends AbstractRequest
         try {
             $response = $this->connector->call(
                 $url,
-                Zend_Http_Client::POST,
+                "POST",
                 [
-                    'Accept'                  => 'application/json; version=2021-07-01',
+                    'Accept'                  => 'application/json; version=2022-02-01',
                     'Content-Type'            => 'application/json',
                     self::ACCESS_TOKEN_HEADER => $this->apiKey,
                     'X-Idempotency-Key'       => $this->getUuid4()
@@ -53,17 +50,24 @@ class OrdersRequest extends AbstractRequest
                 || $type == \Extend\Warranty\Model\Orders::LEAD_CONTRACT
             ) {
                 $contractsIds = [];
-                foreach ($responseBody['lineItems'] as $lineItem) {
-                    if ($lineItem['status'] != 'unfulfilled') {
-                        $contractsIds[] = $lineItem['contractId'];
+
+                if(isset($responseBody['lineItems'])){
+                    foreach ($responseBody['lineItems'] as $lineItem) {
+                        if ($lineItem['status'] != 'unfulfilled') {
+                            $contractsIds[] = $lineItem['contractId'];
+                        }
                     }
                 }
 
                 $result = $contractsIds;
             } elseif ($type == \Extend\Warranty\Model\Orders::LEAD) {
                 $leadsTokens = [];
-                foreach ($responseBody['lineItems'] as $lineItem) {
-                    $leadsTokens[] = $lineItem['leadToken'];
+                if(isset($responseBody['lineItems'])) {
+                    foreach ($responseBody['lineItems'] as $lineItem) {
+                      if(isset($lineItem['leadToken'])){
+                          $leadsTokens[] = $lineItem['leadToken'];
+                      }
+                    }
                 }
 
                 $result = $leadsTokens;
@@ -89,35 +93,5 @@ class OrdersRequest extends AbstractRequest
         }
 
         return $result;
-    }
-
-    /**
-     * Process response
-     *
-     * @param Zend_Http_Response $response
-     * @return array
-     */
-    protected function processResponse(Zend_Http_Response $response): array
-    {
-        $responseBody = [];
-        $responseBodyJson = $response->getBody();
-
-        if ($responseBodyJson) {
-            $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
-
-            if (isset($responseBody['customer'])) {
-                $depersonalizedBody = $responseBody;
-                $depersonalizedBody['customer'] = [];
-                $rawBody = $this->jsonSerializer->serialize($depersonalizedBody);
-            } else {
-                $rawBody = $response->getRawBody();
-            }
-
-            $this->logger->info('Response: ' . $response->getHeadersAsString() . PHP_EOL . $rawBody);
-        } else {
-            $this->logger->error('Response body is empty.');
-        }
-
-        return $responseBody;
     }
 }

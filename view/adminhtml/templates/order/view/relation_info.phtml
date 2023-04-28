@@ -1,0 +1,37 @@
+<?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
+ */
+
+/** @var \Extend\Warranty\Block\Adminhtml\Order\View\Items\Renderer\WarrantyRelationInfo $block */
+/** @var Extend\Warranty\ViewModel\Warranty $viewModel */
+$viewModel = $block->getViewModel();
+$warrantyItemView = $block->getWarrantyItemView();
+
+$block->getWarrantyItemViewModel();
+/** @var \Magento\Sales\Api\Data\OrderItemInterface $currentItem */
+$currentItem = $block->getItem();
+$currenOrder = $block->getOrder();
+?>
+
+<?php if ($currentItem->getProductType() == \Extend\Warranty\Model\Product\Type::TYPE_CODE): ?>
+    <td>
+        <dl>
+            <dt><span><?= $block->escapeHtml(__('Covered Product Name')) ?>: </span></dt>
+            <dd>
+                <span><?= $block->escapeHtml($warrantyItemView->getAssociatedItemName($currentItem, $currenOrder)) ?></span>
+            </dd>
+        </dl>
+        <dl>
+            <dt><span><?= $block->escapeHtml(__('Covered Product SKU')) ?>: </span></dt>
+            <dd>
+                <span><?= $block->escapeHtml($warrantyItemView->getAssociatedItemSku($currentItem, $currenOrder)) ?></span>
+            </dd>
+        </dl>
+    </td>
+<?php endif; ?>
