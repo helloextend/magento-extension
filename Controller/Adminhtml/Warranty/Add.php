@@ -178,7 +178,7 @@ class Add extends Action
                 'error' => $errorMessage
             ];
 
-            $this->logger->critical($e, ['exception' => $e]);
+            $this->logger->critical($e);
         }
 
         return $this->jsonResponse($data);

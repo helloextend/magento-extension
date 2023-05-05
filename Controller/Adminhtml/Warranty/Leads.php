@@ -325,7 +325,7 @@ class Leads extends Action
                 "status" => "fail",
                 'error' => $errorMessage
             ];
-            $this->logger->critical($e->getMessage(), ["exception" => $e]);
+            $this->logger->critical($e);
         }
 
         return $this->jsonResponse($data);
