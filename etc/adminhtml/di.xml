@@ -28,4 +28,16 @@
             type="Extend\Warranty\Plugin\Catalog\Controller\Adminhtml\Product\NewAction\DisableCreateNewWarrantyPlugin"
             sortOrder="10" />
     </type>
+
+    <type name="\Extend\Warranty\Controller\Adminhtml\Warranty\Add">
+        <arguments>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
+        </arguments>
+    </type>
+
+    <type name="\Extend\Warranty\Controller\Adminhtml\Warranty\Leads">
+        <arguments>
+            <argument name="logger" xsi:type="object">ExtendLogger</argument>
+        </arguments>
+    </type>
 </config>
