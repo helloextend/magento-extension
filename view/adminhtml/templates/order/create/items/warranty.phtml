@@ -22,7 +22,7 @@ if ($_item = $block->getItem()):
                 </td>
             </tr>
             <script>
-                require(['jquery'], function ($) {
+                require(['jquery', 'Magento_Ui/js/modal/alert'], function ($, alert) {
                     Extend.buttons.renderSimpleOffer('#extend-offer-<?= /* @noEscape */ $_item->getId() ?>', {
                         referenceId: '<?= /* @noEscape */ $inCartViewModel->getProductSkuByQuoteItem($_item) ?>',
                         onAddToCart: function (opts) {
@@ -42,7 +42,9 @@ if ($_item = $block->getItem()):
                                     if (data.status == "success") {
                                         order.itemsUpdate();
                                     } else {
-                                        console.log("Oops! There was an error adding the protection plan.");
+                                        alert({
+                                            content: data.error
+                                        });
                                     }
                                 });
                             }
