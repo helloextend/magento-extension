@@ -89,27 +89,24 @@ class QuoteRemoveItem implements \Magento\Framework\Event\ObserverInterface
                     }
                 }
             }
-            return;
-        }
+        }else{
+            //this is a regular product, check if there is an associated warranty item
+            /** @var \Magento\Quote\Model\Quote\Item $warrantyItem */
 
-        //this is a regular product, check if there is an associated warranty item
-        /** @var \Magento\Quote\Model\Quote\Item $warrantyItem */
-        $warrantyItems = $this->_trackingHelper->getWarrantyItemsForQuoteItem($quoteItem);
-        if (!count($warrantyItems) && $this->_trackingHelper->isTrackingEnabled()) {
-            //there is no associated warranty item. Just track the product removal
-            $sku = $quoteItem->getSku();
-            $trackingData = [
-                'eventName' => 'trackProductRemovedFromCart',
-                'productId' => $sku,
-            ];
-            $this->_trackingHelper->setTrackingData($trackingData);
-            return;
+            $warrantyItems = $this->_trackingHelper->getWarrantyItemsForQuoteItem($quoteItem);
+            if (!count($warrantyItems) && $this->_trackingHelper->isTrackingEnabled()) {
+                //there is no associated warranty item. Just track the product removal
+                $sku = $quoteItem->getSku();
+                $trackingData = [
+                    'eventName' => 'trackProductRemovedFromCart',
+                    'productId' => $sku,
+                ];
+                $this->_trackingHelper->setTrackingData($trackingData);
+                return;
+            }
         }
-
 
         /** Normalizer will kick rellated warranties for warrantable product */
-        if($quoteItem->getProductType() !== WarrantyProductType::TYPE_CODE){
-            $this->_normalizer->normalize($quote);
-        }
+        $this->_normalizer->normalize($quote);
     }
 }
