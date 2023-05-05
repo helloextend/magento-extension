@@ -28,7 +28,11 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
     <div id="extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
 </td>
 <script>
-    require(['jquery','mage/url', 'domReady!'], function($, urlBuilder) {
+    require(['jquery',
+            'mage/url',
+            'Magento_Ui/js/modal/alert',
+            'domReady!'
+        ], function($, urlBuilder, alert) {
         const $elem = $('#extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>');
         Extend.buttons.renderSimpleOffer($elem.get(0), {
             referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
@@ -52,10 +56,11 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
                         if (data.status == "success") {
 
                             var url = data.redirect;
-                            console.log(url);
                             window.location.href = url;
                         } else {
-                            console.log("Oops! There was an error adding the protection plan.");
+                            alert({
+                                content: data.error
+                            });
                         }
                     });
                 }
