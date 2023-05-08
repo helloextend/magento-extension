@@ -1,3 +1,7 @@
+Update composer.json
+
+Update composer.json version to v2.2.1
+
 Merge pull request #379 from helloextend/EX-486
 
 [EX-486] [M2] Missing logging for add to cart failures, and overall n…
