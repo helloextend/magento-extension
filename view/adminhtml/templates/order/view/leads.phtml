@@ -8,6 +8,7 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
+
 /** @var \Extend\Warranty\Block\Adminhtml\Order\View\Items\Renderer\LeadOfferRenderer $block */
 /** @var Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getViewModel();
@@ -15,6 +16,7 @@ $item = $block->getItem();
 $leadToken = $viewModel->getLeadToken($item);
 $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
 ?>
+
 
 <td>
     <?php if (!empty($leadToken)): ?>
@@ -25,9 +27,14 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
     <?php endif; ?>
     <div id="extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
 </td>
+
 <?php if ($viewModel->showLeadOffer($item)):?>
     <script>
-        require(['jquery','mage/url', 'domReady!'], function($, urlBuilder) {
+        require(['jquery',
+                'mage/url',
+                'Magento_Ui/js/modal/alert',
+                'domReady!'
+            ], function($, urlBuilder, alert) {
             const $elem = $('#extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>');
             Extend.buttons.renderSimpleOffer($elem.get(0), {
                 referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
@@ -51,10 +58,11 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
                             if (data.status == "success") {
 
                                 var url = data.redirect;
-                                console.log(url);
                                 window.location.href = url;
                             } else {
-                                console.log("Oops! There was an error adding the protection plan.");
+                                alert({
+                                    content: data.error
+                                });
                             }
                         });
                     }
@@ -72,4 +80,4 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
             }, 100);
         });
     </script>
-<?php endif;?>
+<?php endif; ?>

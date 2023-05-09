@@ -1,12 +1,20 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Controller\Adminhtml\Warranty;
 
+use Extend\Warranty\Model\Offers as OfferModel;
 use Magento\Backend\App\Action;
 use Magento\Backend\Model\Session\Quote;
 use Magento\Backend\Model\UrlInterface;
 use Magento\Framework\Controller\ResultFactory;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Sales\Model\AdminOrder\Create as OrderCreate;
 use Extend\Warranty\Model\Product\Type as WarrantyType;
@@ -26,6 +34,7 @@ use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\ResultInterface;
 use Exception;
+use Psr\Log\LoggerInterface;
 
 class Leads extends Action
 {
@@ -124,10 +133,19 @@ class Leads extends Action
     protected $url;
 
     /**
+     * @var OfferModel
+     */
+    protected $offerModel;
+
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * Leads constructor
      *
      * @param Action\Context $context
-     * @param ScopeConfigInterface $scopeConfig
      * @param StoreManagerInterface $storeManager
      * @param ProductRepositoryInterface $productRepository
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
@@ -142,25 +160,29 @@ class Leads extends Action
      * @param DataObjectFactory $dataObjectFactory
      * @param Quote $quoteSession
      * @param UrlInterface $url
+     * @param OfferModel $offerModel
+     * @param LoggerInterface $logger
      */
     public function __construct(
-        Action\Context $context,
-        ScopeConfigInterface $scopeConfig,
-        StoreManagerInterface $storeManager,
-        ProductRepositoryInterface $productRepository,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
-        SerializerInterface $serializer,
-        OrderCreate $orderCreate,
-        OrderRepository $orderRepository,
-        QuoteManagement $quoteManagement,
-        QuoteFactory $quoteFactory,
-        CustomerInterfaceFactory $customerFactory,
+        Action\Context              $context,
+        StoreManagerInterface       $storeManager,
+        ProductRepositoryInterface  $productRepository,
+        SearchCriteriaBuilder       $searchCriteriaBuilder,
+        SerializerInterface         $serializer,
+        OrderCreate                 $orderCreate,
+        OrderRepository             $orderRepository,
+        QuoteManagement             $quoteManagement,
+        QuoteFactory                $quoteFactory,
+        CustomerInterfaceFactory    $customerFactory,
         CustomerRepositoryInterface $customerRepository,
-        QuoteRepository $quoteRepository,
-        DataObjectFactory $dataObjectFactory,
-        Quote $quoteSession,
-        UrlInterface $url
-    ) {
+        QuoteRepository             $quoteRepository,
+        DataObjectFactory           $dataObjectFactory,
+        Quote                       $quoteSession,
+        UrlInterface                $url,
+        OfferModel                  $offerModel,
+        LoggerInterface             $logger
+    )
+    {
         parent::__construct($context);
 
         $this->productRepository = $productRepository;
@@ -177,6 +199,8 @@ class Leads extends Action
         $this->dataObjectFactory = $dataObjectFactory;
         $this->quoteSession = $quoteSession;
         $this->url = $url;
+        $this->offerModel = $offerModel;
+        $this->logger = $logger;
     }
 
     /**
@@ -190,8 +214,8 @@ class Leads extends Action
             ->setPageSize(1)->addFilter('type_id', WarrantyType::TYPE_CODE);
 
         $searchCriteria = $this->searchCriteriaBuilder->create();
-        $searchResults  = $this->productRepository->getList($searchCriteria);
-        $results        = $searchResults->getItems();
+        $searchResults = $this->productRepository->getList($searchCriteria);
+        $results = $searchResults->getItems();
 
         return reset($results);
     }
@@ -209,8 +233,8 @@ class Leads extends Action
             ->setPageSize(1)->addFilter('email', $customerEmail);
 
         $searchCriteria = $this->searchCriteriaBuilder->create();
-        $searchResults  = $this->customerRepository->getList($searchCriteria);
-        $results        = $searchResults->getItems();
+        $searchResults = $this->customerRepository->getList($searchCriteria);
+        $results = $searchResults->getItems();
 
         return reset($results);
     }
@@ -230,58 +254,94 @@ class Leads extends Action
             $warrantyDataRequest = $this->dataObjectFactory->create($warrantyData);
 
             if (!$warranty) {
-                $data = ["status"=>"fail"];
-            } else {
-                $orderInit = $this->orderRepository->get($orderId);
-                $store = $this->storeManager->getStore();
-                $quote = $this->quoteFactory->create();
-                $customer = $this->getCustomer($orderInit->getCustomerEmail());
-
-                if (!$customer) {
-                    $customer = $this->customerFactory->create();
-                    $customer->setFirstname($orderInit->getCustomerFirstname())
-                        ->setLastname($orderInit->getCustomerLastname())
-                        ->setEmail($orderInit->getCustomerEmail());
-                    $quote->setCustomerIsGuest(true);
-                    $customer = $this->customerRepository->save($customer);
-                }
-
-                $billingAddress = [
-                    'firstname' => $orderInit->getCustomerFirstname(),
-                    'lastname' => $orderInit->getCustomerLastname(),
-                    'street' => $orderInit->getBillingAddress()->getStreet(),
-                    'city' => $orderInit->getBillingAddress()->getCity(),
-                    'country_id' => $orderInit->getBillingAddress()->getCountryId(),
-                    'region_id' => $orderInit->getBillingAddress()->getRegionId(),
-                    'postcode' => $orderInit->getBillingAddress()->getPostcode(),
-                    'telephone' => $orderInit->getBillingAddress()->getTelephone()
-                ];
-
-                $quote->setStore($store);
-                $quote->assignCustomer($customer);
-                $quote->getBillingAddress()->addData($billingAddress);
-                $quote->addProduct($warranty, $warrantyDataRequest);
-                $quote->setPaymentMethod('checkmo');
-                $this->quoteRepository->save($quote);
-                $quote->getPayment()->importData(['method' => 'checkmo']);
-                $quote->collectTotals();
-                $this->quoteRepository->save($quote);
-
-                $session = $this->quoteSession;
-                $session->setCurrencyId($orderInit->getOrderCurrencyCode());
-                $session->setCustomerId($customer->getId() ?: false);
-                $session->setStoreId($orderInit->getStoreId());
-                $session->setQuoteId($quote->getId());
+                $errorMessage = __('Oops! There was an error finding the protection plan product,' .
+                    ' please ensure the protection plan product is in your catalog and is enabled!');
 
                 $data = [
-                    "status" => "success",
-                    "redirect" => $this->url->getUrl('sales/order_create/')
+                    "status" => "fail",
+                    'error' => $errorMessage
                 ];
+
+                $this->logger->error(
+                    'Oops! There was an error finding the protection plan product,' .
+                    ' please ensure the protection plan product is in your catalog and is enabled! '
+                    . 'Warranty data: ' . $this->offerModel->getWarrantyDataAsString($warrantyData)
+                );
+                return $this->jsonResponse($data);
             }
+
+            $orderInit = $this->orderRepository->get($orderId);
+            $store = $this->storeManager->getStore();
+            $quote = $this->quoteFactory->create();
+            $customer = $this->getCustomer($orderInit->getCustomerEmail());
+
+            if (!$customer) {
+                $customer = $this->customerFactory->create();
+                $customer->setFirstname($orderInit->getCustomerFirstname())
+                    ->setLastname($orderInit->getCustomerLastname())
+                    ->setEmail($orderInit->getCustomerEmail());
+                $quote->setCustomerIsGuest(true);
+                $customer = $this->customerRepository->save($customer);
+            }
+
+            $billingAddress = [
+                'firstname' => $orderInit->getCustomerFirstname(),
+                'lastname' => $orderInit->getCustomerLastname(),
+                'street' => $orderInit->getBillingAddress()->getStreet(),
+                'city' => $orderInit->getBillingAddress()->getCity(),
+                'country_id' => $orderInit->getBillingAddress()->getCountryId(),
+                'region_id' => $orderInit->getBillingAddress()->getRegionId(),
+                'postcode' => $orderInit->getBillingAddress()->getPostcode(),
+                'telephone' => $orderInit->getBillingAddress()->getTelephone()
+            ];
+
+            $quote->setStore($store);
+            $quote->assignCustomer($customer);
+            $quote->getBillingAddress()->addData($billingAddress);
+            $quote->addProduct($warranty, $warrantyDataRequest);
+            $quote->setPaymentMethod('checkmo');
+            $this->quoteRepository->save($quote);
+            $quote->getPayment()->importData(['method' => 'checkmo']);
+            $quote->collectTotals();
+            $this->quoteRepository->save($quote);
+
+            $session = $this->quoteSession;
+            $session->setCurrencyId($orderInit->getOrderCurrencyCode());
+            $session->setCustomerId($customer->getId() ?: false);
+            $session->setStoreId($orderInit->getStoreId());
+            $session->setQuoteId($quote->getId());
+
+            $data = [
+                "status" => "success",
+                "redirect" => $this->url->getUrl('sales/order_create/')
+            ];
         } catch (Exception $e) {
-            $data = ["status"=>"fail"];
+            $errorMessage = __(
+                'Sorry! We can\'t add this product protection to your shopping cart right now. ' .
+                '<br/> Check extend logs for more details.'
+            );
+
+            $data = [
+                "status" => "fail",
+                'error' => $errorMessage
+            ];
+            $this->logger->critical($e);
         }
 
-        return $this->resultFactory->create(ResultFactory::TYPE_JSON)->setHttpResponseCode(200)->setData($data);
+        return $this->jsonResponse($data);
+    }
+
+    /**
+     * JSON response builder
+     *
+     * @param array $data
+     * @return ResultInterface
+     */
+    private function jsonResponse(array $data = []): ResultInterface
+    {
+        $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+        $resultJson->setData($data);
+
+        return $resultJson;
     }
 }
