@@ -140,10 +140,15 @@ class FullOrderBuilder
         $transactionTotal = $this->helper->formatPrice($order->getGrandTotal());
 
         foreach ($order->getItems() as $orderItem) {
+            if ($orderItem->getParentItem()) {
+                continue;
+            }
+
             /** @var LineItemBuilder $lineItemBuilder */
             $lineItemBuilder = $this->lineItemBuilderFactory->create(['item' => $orderItem]);
-            $lineItem = $lineItemBuilder->preparePayload();
-            $lineItems[] = $lineItem;
+            if ($lineItem = $lineItemBuilder->preparePayload()) {
+                $lineItems[] = $lineItem;
+            }
         }
 
         if (empty($lineItems)) {
@@ -161,7 +166,7 @@ class FullOrderBuilder
             return [];
         }
 
-        $payload = [
+        return [
             'isTest' => !$this->apiHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $storeId),
             'currency' => $currencyCode,
             'createdAt' => $createdAt ? strtotime($createdAt) : 0,
@@ -176,8 +181,6 @@ class FullOrderBuilder
             'transactionId' => $order->getIncrementId(),
             'saleOrigin' => $saleOrigin,
         ];
-
-        return $payload;
     }
 
     public function prepareHistoricalOrdersPayLoad(OrderInterface $order): array
@@ -236,7 +239,7 @@ class FullOrderBuilder
             return $payload;
         }
 
-        $payload = [
+        return [
             'isTest' => !$this->apiHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $store->getId()),
             'currency' => $currencyCode,
             'createdAt' => $createdAt ? strtotime($createdAt) : 0,
@@ -248,8 +251,6 @@ class FullOrderBuilder
             'transactionId' => $order->getIncrementId(),
             'saleOrigin' => $saleOrigin,
         ];
-
-        return $payload;
     }
 
     /**

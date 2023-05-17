@@ -23,7 +23,6 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class CreateContractApi
- * @deprecated 1.3.0 Orders API should be used in all circumstances instead of the Contracts API
  */
 class CreateContract
 {
@@ -82,13 +81,14 @@ class CreateContract
      * @param LoggerInterface $logger
      */
     public function __construct(
-        WarrantyContract $warrantyContract,
-        ExtendOrder $extendOrder,
-        DataHelper $dataHelper,
-        ContractCreateFactory $contractCreateFactory,
+        WarrantyContract       $warrantyContract,
+        ExtendOrder            $extendOrder,
+        DataHelper             $dataHelper,
+        ContractCreateFactory  $contractCreateFactory,
         ContractCreateResource $contractCreateResource,
-        LoggerInterface $logger
-    ) {
+        LoggerInterface        $logger
+    )
+    {
         $this->warrantyContract = $warrantyContract;
         $this->extendOrder = $extendOrder;
         $this->dataHelper = $dataHelper;
@@ -104,29 +104,17 @@ class CreateContract
      * @param int|string|null $storeId
      * @return void
      */
-    public function createContract(OrderInterface $order, OrderItemInterface $warrantyItem, int $qty, $storeId) :void
+    public function createContract(OrderInterface $order, OrderItemInterface $warrantyItem, int $qty, $storeId): void
     {
         if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
             CreateContractApi::ORDERS_API
         ) {
             try {
-                if ($warrantyItem->getLeadToken() != null &&
-                    implode(", ", json_decode($warrantyItem->getLeadToken(), true)) != null
-                ) {
-                    $this->extendOrder->createOrderPerLineItem(
-                        $order,
-                        $warrantyItem,
-                        $qty,
-                        \Extend\Warranty\Model\Orders::LEAD_CONTRACT
-                    );
-                } else {
-                    $this->extendOrder->createOrderPerLineItem(
-                        $order,
-                        $warrantyItem,
-                        $qty,
-                        \Extend\Warranty\Model\Orders::CONTRACT
-                    );
-                }
+                $this->extendOrder->updateOrderItemStatus(
+                    $order,
+                    $warrantyItem,
+                    $qty
+                );
             } catch (LocalizedException $exception) {
                 $this->addContractToQueue($warrantyItem, $qty);
                 $this->logger->error(
@@ -150,6 +138,27 @@ class CreateContract
                     self::ORDER_ITEM_ID => $warrantyItem->getId(),
                     self::ORDER_ID => $warrantyItem->getOrderId(),
                     self::QTY_ORDERED => $qtyOrdered,
+                ]);
+                $this->contractCreateResource->save($contractCreate);
+            }
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
+        }
+    }
+
+    /**
+     * @param OrderInterface $order
+     * @return void
+     */
+    public function addOrderToQueue($order)
+    {
+        try {
+            $orderId = $order->getEntityId();
+            if (!$this->isContractQueued($orderId, 0)) {
+                $contractCreate = $this->contractCreateFactory->create();
+                $contractCreate->setData([
+                    self::ORDER_ITEM_ID => 0,
+                    self::ORDER_ID => $orderId
                 ]);
                 $this->contractCreateResource->save($contractCreate);
             }

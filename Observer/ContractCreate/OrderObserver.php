@@ -82,9 +82,6 @@ class OrderObserver implements ObserverInterface
         $event = $observer->getEvent();
         $order = $event->getOrder();
 
-
-        $this->extendOrder->create($order);
-
         $storeId = $order->getStoreId();
         $contractCreateEvent = $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId);
 
@@ -107,7 +104,7 @@ class OrderObserver implements ObserverInterface
 
                 $qtyOrdered = (int)$orderItem->getQtyOrdered();
 
-                if (!$this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)) {
+                if (!$this->dataHelper->isContractCreateModeScheduled($storeId)) {
                     try {
                         $this->warrantyContractCreate->createContract($order, $orderItem, $qtyOrdered, $storeId);
                     } catch (LocalizedException $exception) {

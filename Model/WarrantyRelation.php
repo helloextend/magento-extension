@@ -199,22 +199,21 @@ class WarrantyRelation
     /**
      * Checks if order item has related warranty in order items
      * @param OrderItemInterface $orderItem
-     * @return bool
+     * @return OrderItemInterface[]
      */
-    public function orderItemHasWarranty(OrderItemInterface $orderItem): bool
+    public function getOrderItemWarranty(OrderItemInterface $orderItem)
     {
-        $hasWarranty = false;
         $order = $orderItem->getOrder();
         $items = $order->getAllVisibleItems();
+        $warrantyItems = [];
         foreach ($items as $item) {
             if ($item->getProductType() === Type::TYPE_CODE
                 && $this->isWarrantyRelatedToOrderItem($item, $orderItem)
             ) {
-                $hasWarranty = true;
+                $warrantyItems[] = $item;
             }
         }
-
-        return $hasWarranty;
+        return $warrantyItems;
     }
 
     /**

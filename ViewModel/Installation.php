@@ -186,7 +186,7 @@ class Installation implements ArgumentInterface
             'contracts' => [
                 'createWarrantyContract' => $this->dataHelper->isWarrantyContractEnabled($storeId),
                 'contractEvent' => $this->dataHelper->getContractCreateEvent(ScopeInterface::SCOPE_STORES, $storeId),
-                'contractCreatingMode' => $this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId) ? __('scheduled') : __('event-based'),
+                'contractCreatingMode' => $this->dataHelper->isContractCreateModeScheduled($storeId) ? __('scheduled') : __('event-based'),
                 'cronContractSettings' => [
                     'frequency' => $this->dataHelper->getContractFrequency($storeId),
                     'batchSize' => $this->dataHelper->getContractsBatchSize($storeId),

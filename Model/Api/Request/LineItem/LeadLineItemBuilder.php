@@ -1,14 +1,20 @@
 <?php
 /**
- * @author     Guidance Magento Team <magento@guidance.com>
- * @copyright  Copyright (c) 2023 Guidance Solutions (http://www.guidance.com)
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Model\Api\Request\LineItem;
 
 use Extend\Warranty\Model\Api\Request\LineItemBuilder;
+use Extend\Warranty\Model\Product\Type;
+use Magento\Sales\Api\Data\OrderItemInterface;
 
-class LeadLineItemBuilder extends  AbstractLineItemBuilder
+class LeadLineItemBuilder extends AbstractLineItemBuilder
 {
     public function preparePayload($item)
     {
@@ -16,17 +22,75 @@ class LeadLineItemBuilder extends  AbstractLineItemBuilder
             return [];
         }
 
-        $productSku = $this->warrantyRelation->getOfferOrderItemSku($orderItem);
-        $product = $this->prepareProductPayload($productSku);
-        $product['purchasePrice'] = $purchasePrice;
+        $lineItem = parent::preparePayload($item);
 
-        $lineItem = [
+        $product = $this->getProductPayload($item);
+
+        $lineItem = array_merge($lineItem, [
             'status' => $this->getStatus(),
-            'discountAmount' => $discountAmount,
-            'taxCost' => $taxCost,
-            'product' => $product
-        ];
+            'discountAmount' => $this->helper->formatPrice(
+                $item->getDiscountAmount() / $item->getQtyOrdered()
+            ),
+            'taxCost' => $this->helper->formatPrice(
+                $item->getTaxAmount() / $item->getQtyOrdered()
+            ),
+            'product' => $product,
+            'quantity' => $this->getLeadsQty($item)
+        ]);
 
         return $lineItem;
+    }
+
+    /**
+     * @param OrderItemInterface $item
+     * @return float
+     */
+    protected function getLeadsQty($item)
+    {
+        $warrantiesQty = 0;
+
+        foreach ($this->warrantyRelation->getOrderItemWarranty($item) as $warrantyItem) {
+            $warrantiesQty += $warrantyItem->getQtyOrdered();
+        }
+
+        if ($warrantiesQty <= $item->getQtyOrdered()) {
+            return $item->getQtyOrdered() - $warrantiesQty;
+        }
+
+        return $item->getQtyOrdered();
+    }
+
+    /**
+     * @param OrderItemInterface $item
+     * @return bool
+     */
+    protected function validate($item)
+    {
+        $result = true;
+        if ($item->getProductType() === Type::TYPE_CODE) {
+            $result = false;
+        }
+
+        if (!$this->dataHelper->isLeadEnabled($item->getStoreId())) {
+            $result = false;
+        }
+
+        /**
+         * If amount of warranties is less then associated products
+         * then we should create a leads for the rest.
+         */
+        if ($this->getLeadsQty($item) == 0) {
+            $result = false;
+        }
+        return $result;
+    }
+
+    /**
+     * we want create lead immediately, so set "fulfilled"
+     * @return string
+     */
+    protected function getStatus()
+    {
+        return 'fulfilled';
     }
 }

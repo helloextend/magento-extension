@@ -15,7 +15,7 @@ use Extend\Warranty\Model\Product\Type;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\ScopeInterface;
 
-class WarrantyContractLineItemBuilder extends AbstractLineItemBuilder
+class WarrantyLeadContractLineItemBuilder extends WarrantyContractLineItemBuilder
 {
     /**
      * @param OrderItemInterface $orderItem
@@ -27,19 +27,19 @@ class WarrantyContractLineItemBuilder extends AbstractLineItemBuilder
             return [];
         }
 
-        $warrantableOrderItem = $this->warrantyRelation->getAssociatedOrderItem($orderItem);
+        $lineItem = AbstractLineItemBuilder::preparePayload($orderItem);
 
-        $lineItem = parent::preparePayload($orderItem);
+        $leadToken = implode(',', $this->helper->unserialize($orderItem->getLeadToken()));
 
         $lineItem = array_merge([
+            'leadToken' => $leadToken,
             'status' => $this->getStatus($orderItem),
-            'product' => $this->getProductPayload($warrantableOrderItem),
             'plan' => $this->getPlan($orderItem),
             'discountAmount' => $this->helper->formatPrice(
-                $warrantableOrderItem->getDiscountAmount() / $warrantableOrderItem->getQtyOrdered()
+                $orderItem->getDiscountAmount() / $orderItem->getQtyOrdered()
             ),
             'taxCost' => $this->helper->formatPrice(
-                $warrantableOrderItem->getTaxAmount() / $warrantableOrderItem->getQtyOrdered()
+                $orderItem->getTaxAmount() / $orderItem->getQtyOrdered()
             ),
             'quantity' => $orderItem->getQtyOrdered()
         ], $lineItem);
@@ -53,36 +53,19 @@ class WarrantyContractLineItemBuilder extends AbstractLineItemBuilder
      */
     protected function validate($item)
     {
+        $result = true;
+
+        if (!$this->dataHelper->isLeadEnabled($item->getStoreId())) {
+            $result = false;
+        }
         if ($item->getProductType() !== Type::TYPE_CODE) {
-            return false;
+            $result = false;
         }
 
-        if ($item->getLeadToken()) {
-            return false;
+        if (!$item->getLeadToken()) {
+            $result = false;
         }
 
-        return true;
-    }
-
-    /**
-     * @param OrderItemInterface $orderItem
-     * @return string
-     */
-    protected function getStatus($orderItem)
-    {
-        $orderItem->getStoreId();
-
-        $contractCreateEvent = $this->dataHelper->getContractCreateEvent(
-            ScopeInterface::SCOPE_STORES,
-            $orderItem->getStoreId()
-        );
-
-        $status = 'unfulfilled';
-
-        if ($contractCreateEvent == CreateContractEvent::ORDER_CREATE) {
-            $status = 'fulfilled';
-        }
-
-        return $status;
+        return $result;
     }
 }

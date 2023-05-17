@@ -1,12 +1,17 @@
 <?php
 /**
- * @author     Guidance Magento Team <magento@guidance.com>
- * @copyright  Copyright (c) 2023 Guidance Solutions (http://www.guidance.com)
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Model\Api\Request;
 
 use Extend\Warranty\Helper\Data;
+use Extend\Warranty\Model\Api\Request\LineItem\AbstractLineItemBuilder;
 use Extend\Warranty\Model\Product\Type;
 use Extend\Warranty\Model\WarrantyRelation;
 
@@ -24,8 +29,8 @@ class LineItemBuilder
         WarrantyRelation $warrantyRelation,
         Data             $helper,
                          $item,
-                         $lineItemBuilders = [])
-    {
+                         $lineItemBuilders = []
+    ) {
         $this->warrantyRelation = $warrantyRelation;
         $this->helper = $helper;
         $this->item = $item;
@@ -48,6 +53,7 @@ class LineItemBuilder
     public function preparePayload()
     {
         $payload = [];
+        /** @var AbstractLineItemBuilder $lineItemBuilder */
         foreach ($this->lineItemBuilders as $lineItemBuilder) {
             $payload = array_merge($payload, $lineItemBuilder->preparePayload($this->getItem()));
         }
