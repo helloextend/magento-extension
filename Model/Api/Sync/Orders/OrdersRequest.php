@@ -10,6 +10,7 @@
 
 namespace Extend\Warranty\Model\Api\Sync\Orders;
 
+use Extend\Warranty\Model\Api\Response;
 use Extend\Warranty\Model\Api\Response\OrderResponse;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Extend\Warranty\Api\ConnectorInterface;
@@ -18,9 +19,6 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
 use Extend\Warranty\Model\Api\Response\OrderResponseFactory;
-use Zend_Http_Client;
-use Zend_Http_Response;
-use Zend_Http_Client_Exception;
 
 class OrdersRequest extends AbstractRequest
 {
@@ -58,7 +56,7 @@ class OrdersRequest extends AbstractRequest
      *
      * @param array $orderData
      * @return OrderResponse
-     * @throws Zend_Http_Client_Exception
+     * @return array
      */
     public function create(array $orderData): OrderResponse
     {
@@ -67,12 +65,12 @@ class OrdersRequest extends AbstractRequest
         try {
             $response = $this->connector->call(
                 $url,
-                Zend_Http_Client::POST,
+                "POST",
                 [
-                    'Accept' => 'application/json; version=2022-02-01',
-                    'Content-Type' => 'application/json',
+                    'Accept'                  => 'application/json; version=2022-02-01',
+                    'Content-Type'            => 'application/json',
                     self::ACCESS_TOKEN_HEADER => $this->apiKey,
-                    'X-Idempotency-Key' => $this->getUuid4()
+                    'X-Idempotency-Key'       => $this->getUuid4()
                 ],
                 $orderData
             );
@@ -90,35 +88,5 @@ class OrdersRequest extends AbstractRequest
         }
 
         return $orderResponse;
-    }
-
-    /**
-     * Process response
-     *
-     * @param Zend_Http_Response $response
-     * @return array
-     */
-    protected function processResponse(Zend_Http_Response $response): array
-    {
-        $responseBody = [];
-        $responseBodyJson = $response->getBody();
-
-        if ($responseBodyJson) {
-            $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
-
-            if (isset($responseBody['customer'])) {
-                $depersonalizedBody = $responseBody;
-                $depersonalizedBody['customer'] = [];
-                $rawBody = $this->jsonSerializer->serialize($depersonalizedBody);
-            } else {
-                $rawBody = $response->getRawBody();
-            }
-
-            $this->logger->info('Response: ' . $response->getHeadersAsString() . PHP_EOL . $rawBody);
-        } else {
-            $this->logger->error('Response body is empty.');
-        }
-
-        return $responseBody;
     }
 }

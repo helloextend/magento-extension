@@ -5,14 +5,12 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Api;
 
-use Zend_Http_Client;
-use Zend_Http_Response;
-use Zend_Http_Client_Exception;
+use Extend\Warranty\Model\Api\Response;
 
 /**
  * Interface ConnectorInterface
@@ -26,13 +24,12 @@ interface ConnectorInterface
      * @param string $method
      * @param array $headers
      * @param array $data
-     * @return Zend_Http_Response
-     * @throws Zend_Http_Client_Exception
+     * @return Response
      */
     public function call(
         string $endpoint,
-        string $method = Zend_Http_Client::GET,
-        array $headers = [],
-        array $data = []
-    ): Zend_Http_Response;
+        string $method = "GET",
+        array  $headers = [],
+        array  $data = []
+    ): Response;
 }
