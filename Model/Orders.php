@@ -186,6 +186,17 @@ class Orders
                 if (!empty($leads)) {
                     $leadTokens = $this->prepareLead($leads);
                     $orderItem->setLeadToken($leadTokens);
+
+                    /**
+                     * fixes magento issue with storing entities in registry by entity_id
+                     * in some cases entity_id is null and ItemRepository::get($orderItemId)
+                     * returns wrong entity. So setting entity_id manually
+                     * so registry will have correct entity with contract id.
+                     *
+                     * without it contract id can be cleared on next save method call
+                     */
+
+                    $orderItem->setEntityId($orderItem->getId());
                     $this->orderItemRepository->save($orderItem);
                 }
 
@@ -364,6 +375,17 @@ class Orders
         $options = $orderItem->getProductOptions();
         $options['refund'] = false;
         $orderItem->setProductOptions($options);
+
+        /**
+         * fixes magento issue with storing entities in registry by entity_id
+         * in some cases entity_id is null and ItemRepository::get($orderItemId)
+         * returns wrong entity. So setting entity_id manually
+         * so registry will have correct entity with contract id.
+         *
+         * without it contract id can be cleared on next save method call
+         */
+
+        $orderItem->setEntityId($orderItem->getId());
         $this->orderItemRepository->save($orderItem);
 
         return count($contractIds) == $orderItem->getQtyOrdered()
@@ -392,7 +414,8 @@ class Orders
     private function getStoredContractIds(OrderItemInterface $orderItem): array
     {
         try {
-            $contractIdsJson = $orderItem->getContractId();
+            $orderItemDb = $this->orderItemRepository->get($orderItem->getId());
+            $contractIdsJson = $orderItemDb->getContractId();
             $contractIds = $contractIdsJson ? $this->jsonSerializer->unserialize($contractIdsJson) : [];
         } catch (Exception $exception) {
             $contractIds = [];

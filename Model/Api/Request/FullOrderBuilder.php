@@ -176,76 +176,8 @@ class FullOrderBuilder
             'taxCostTotal' => $this->helper->formatPrice($order->getTaxAmount()),
             'productCostTotal' => $this->helper->formatPrice($order->getSubtotal()),
             'discountAmountTotal' => $this->helper->formatPrice(abs($order->getDiscountAmount())),
-            'storeId' => $extendStoreId,
-            'storeName' => $extendStoreName,
-            'transactionId' => $order->getIncrementId(),
-            'saleOrigin' => $saleOrigin,
-        ];
-    }
-
-    public function prepareHistoricalOrdersPayLoad(OrderInterface $order): array
-    {
-        $payload = [];
-        $store = $this->storeManager->getStore($order->getStoreId());
-        $currencyCode = $order->getOrderCurrencyCode();
-
-        if (!$currencyCode) {
-            $currencyCode = $store->getBaseCurrencyCode() ?? Currency::DEFAULT_CURRENCY;
-        }
-        $extendStoreId = $this->apiHelper->getStoreId(ScopeInterface::SCOPE_STORES, $store->getId());
-        $extendStoreName = $this->apiHelper->getStoreName(ScopeInterface::SCOPE_STORES, $store->getId());
-
-        $transactionTotal = $this->helper->formatPrice($order->getGrandTotal());
-        $lineItems = [];
-
-        foreach ($order->getItems() as $orderItem) {
-
-            $productSku = $this->warrantyRelation->getOfferOrderItemSku($orderItem);
-            $qty = $orderItem->getQtyOrdered();
-
-            if ($orderItem->getProductType() == Type::TYPE_CODE) {
-                $product = $this->prepareWarrantyProductPayload($productSku, $orderItem->getPrice());
-            } else {
-                $product = $this->prepareProductPayload($productSku);
-            }
-
-            $product['purchasePrice'] = $this->helper->formatPrice($orderItem->getRowTotal() / $qty);
-
-            if (empty($product)) {
-                continue;
-            }
-
-            $lineItem = [
-                'quantity' => $qty,
-                'storeId' => $extendStoreId,
-                'product' => $product,
-            ];
-
-            $lineItems[] = $lineItem;
-        }
-
-        if (empty($lineItems)) {
-            return $payload;
-        }
-
-        $saleOrigin = [
-            'platform' => self::PLATFORM_CODE,
-        ];
-
-        $createdAt = $order->getCreatedAt();
-        $customerData = $this->getCustomerData($order);
-
-        if (empty($customerData)) {
-            return $payload;
-        }
-
-        return [
-            'isTest' => !$this->apiHelper->isExtendLive(ScopeInterface::SCOPE_STORES, $store->getId()),
-            'currency' => $currencyCode,
-            'createdAt' => $createdAt ? strtotime($createdAt) : 0,
-            'customer' => $customerData,
-            'lineItems' => $lineItems,
-            'total' => $transactionTotal,
+            'shippingCostTotal' => $this->helper->formatPrice($order->getShippingAmount()),
+            'shippingTaxCostTotal' => $this->helper->formatPrice($order->getShippingTaxAmount()),
             'storeId' => $extendStoreId,
             'storeName' => $extendStoreName,
             'transactionId' => $order->getIncrementId(),

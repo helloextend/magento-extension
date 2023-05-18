@@ -37,8 +37,6 @@ class DefaultProcessor implements RelationProcessorInterface
 
     public function isWarrantyRelatedToQuoteItem($warrantyItem, $item, $checkWithChildren = false): bool
     {
-        $associatedProductSku = $warrantyItem->getOptionByCode(Type::ASSOCIATED_PRODUCT);
-
         /**
          * In default Relation Secondary SKU = Associated SKU
          * Secondary SKU is more specific relation so it should be checked in specific processors
@@ -54,7 +52,7 @@ class DefaultProcessor implements RelationProcessorInterface
 
         $itemSku = $this->getRelationQuoteItemSku($item);
 
-        return $itemSku == $relatedSku;
+        return $itemSku == $relatedSku && !$this->quoteItemIsLead($warrantyItem);
     }
 
     /**
@@ -75,7 +73,7 @@ class DefaultProcessor implements RelationProcessorInterface
 
         $itemSku = $this->getRelationOrderItemSku($orderItem);
 
-        return $itemSku == $relatedSku;
+        return $itemSku == $relatedSku && !$this->orderItemIsLead($warrantyItem);
     }
 
     public function isWarrantyDataRelatedToQuoteItem($warrantyData, $quoteItem): bool
@@ -123,16 +121,55 @@ class DefaultProcessor implements RelationProcessorInterface
      */
     public function getRelationOrderItemSku($orderItem): string
     {
-        if($orderItem->getProduct()){
+        if ($orderItem->getProduct()) {
             $relationSku = $orderItem->getProduct()->getSku();
-            if($orderItem->getProduct()->hasOptions()){
+            if ($orderItem->getProduct()->hasOptions()) {
                 $relationSku = $orderItem->getSku();
             }
-        }
-        else{
+        } else {
             $relationSku = $orderItem->getSku();
         }
 
         return $relationSku;
+    }
+
+    /**
+     * @param CartItemInterface $warrantyItem
+     * @return bool
+     */
+    protected function quoteItemIsLead($warrantyItem): bool
+    {
+        if ($warrantyItem->getProductOptionByCode(Type::LEAD_TOKEN)) {
+            return true;
+        }
+
+        if ($warrantyItem->getLeadToken()) {
+            return true;
+        }
+
+        if ($warrantyItem->getExtensionAttributes()->getLeadToken()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param OrderItemInterface $warrantyItem
+     * @return bool
+     */
+    protected function orderItemIsLead($warrantyItem): bool
+    {
+        if ($warrantyItem->getProductOptionByCode(Type::LEAD_TOKEN)) {
+            return true;
+        }
+
+        if ($warrantyItem->getLeadToken()) {
+            return true;
+        }
+
+        if ($warrantyItem->getExtensionAttributes()->getLeadToken()) {
+            return true;
+        }
+        return false;
     }
 }

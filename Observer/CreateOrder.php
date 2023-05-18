@@ -80,13 +80,14 @@ class CreateOrder implements ObserverInterface
         ExtendOrder                  $extendOrder,
         DataHelper                   $dataHelper,
         LoggerInterface              $logger,
-
+        WarrantyContractCreate       $warrantyContractCreate
     )
     {
         $this->orderItemRepository = $orderItemRepository;
         $this->extendOrder = $extendOrder;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->warrantyContractCreate = $warrantyContractCreate;
     }
 
     /**
@@ -103,14 +104,13 @@ class CreateOrder implements ObserverInterface
         $order = $event->getOrder();
         $storeId = $order->getStoreId();
 
-        /** DO WE STILL NEED THIS CHECK?! */
         $contractCreateApi = $this->dataHelper->getContractCreateApi(
             ScopeInterface::SCOPE_STORES,
             $storeId
         );
 
         if (
-            $this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
+            !$this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             || $contractCreateApi != CreateContractApi::ORDERS_API
         ) {
             return;

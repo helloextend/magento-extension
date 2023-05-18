@@ -71,7 +71,13 @@ class LeadLineItemBuilder extends AbstractLineItemBuilder
             $result = false;
         }
 
-        if (!$this->dataHelper->isLeadEnabled($item->getStoreId())) {
+        /**
+         * We don't want to create new lead if it already created
+         * It possible if it was created by old code
+         * and create order initiated after new code deployed.
+         *
+         */
+        if ($item->getLeadToken()) {
             $result = false;
         }
 

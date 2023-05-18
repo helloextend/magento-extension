@@ -49,19 +49,23 @@ class WarrantyContractLineItemBuilder extends AbstractLineItemBuilder
 
     /**
      * @param OrderItemInterface $item
-     * @return void
+     * @return bool
      */
     protected function validate($item)
     {
+        $result = true;
         if ($item->getProductType() !== Type::TYPE_CODE) {
-            return false;
+            $result = false;
         }
 
         if ($item->getLeadToken()) {
-            return false;
+            $result = false;
         }
 
-        return true;
+        if (!$this->warrantyRelation->getAssociatedOrderItem($item)) {
+            $result = false;
+        }
+        return $result;
     }
 
     /**
@@ -80,6 +84,16 @@ class WarrantyContractLineItemBuilder extends AbstractLineItemBuilder
         $status = 'unfulfilled';
 
         if ($contractCreateEvent == CreateContractEvent::ORDER_CREATE) {
+            $status = 'fulfilled';
+        }
+
+        /**
+         * if order item invoiced and shipped then it fulfilled
+         */
+        if (
+            $orderItem->getQtyInvoiced() == $orderItem->getQtyOrdered()
+            && $orderItem->getQtyInvoiced() == $orderItem->getQtyShipped()
+        ) {
             $status = 'fulfilled';
         }
 

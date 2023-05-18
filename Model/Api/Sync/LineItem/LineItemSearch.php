@@ -12,7 +12,6 @@ namespace Extend\Warranty\Model\Api\Sync\LineItem;
 
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Magento\Framework\Exception\LocalizedException;
-use Zend_Http_Client;
 
 class LineItemSearch extends AbstractRequest
 {
@@ -32,7 +31,7 @@ class LineItemSearch extends AbstractRequest
         try {
             $response = $this->connector->call(
                 $url,
-                Zend_Http_Client::GET,
+                "GET",
                 [
                     'Accept' => 'application/json; version=2022-02-01',
                     'Content-Type' => 'application/json',

@@ -10,7 +10,9 @@
 
 namespace Extend\Warranty\Model\Api\Response;
 
-class LeadInfoResponse
+use Magento\Framework\DataObject;
+
+class LeadInfoResponse  extends DataObject
 {
     /** @var int|null */
     protected $expirationDate;
@@ -60,5 +62,18 @@ class LeadInfoResponse
     public function getStatus()
     {
         return (string)$this->status;
+    }
+
+    public function getQuantity(){
+
+    }
+    public function getQuantityConsumed()
+    {
+
+    }
+
+    public function getQty()
+    {
+
     }
 }
