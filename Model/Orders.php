@@ -40,6 +40,9 @@ class Orders
      */
     protected $ordersRequest;
 
+    /**
+     * @var FulfillRequest
+     */
     protected $fulfillRequest;
 
     /**
@@ -72,7 +75,14 @@ class Orders
      */
     protected $logger;
 
+    /**
+     * @var \Extend\Warranty\Model\ExtendOrderFactory
+     */
     protected $extendOrderFactory;
+
+    /**
+     * @var ExtendOrderRepository
+     */
     protected $extendOrderRepository;
 
     /**
@@ -284,9 +294,6 @@ class Orders
         ];
 
         if (!$this->checkAndCreateOrder($orderMagento, $orderItem)) {
-            /**
-             * @TODO add logic to process negative case
-             */
             throw new LocalizedException('Order doesn\'t exist on extend side and wasnt properly created.');
         }
 
@@ -353,7 +360,11 @@ class Orders
              * then create it at this step
              */
             if (empty($foundLineItems)) {
-                $this->create($magentoOrder);
+                try {
+                    $this->create($magentoOrder);
+                } catch (LocalizedException $e) {
+                    return false;
+                }
             }
         }
         return true;

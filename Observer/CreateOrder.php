@@ -142,7 +142,7 @@ class CreateOrder implements ObserverInterface
     /**
      * Saving lead token to warranty order item
      * from buy request so it can be connected to
-     * warrantable order item then.
+     * warrantable order item later.
      *
      * This code can be moved to plugin
      * beforeOrderItem save to move lead tokens

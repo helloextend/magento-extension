@@ -193,9 +193,9 @@ class ContractCreateProcess
             $batchCount = count($ordersCreateBatch);
 
             $processedContractCreateRecords = [];
-            foreach ($ordersCreateBatch as $ordersCreateBatch) {
-                $recordId = $ordersCreateBatch['id'];
-                $order = $this->getOrder((int)$ordersCreateBatch['order_id']);
+            foreach ($ordersCreateBatch as $ordersCreateRecord) {
+                $recordId = $ordersCreateRecord['id'];
+                $order = $this->getOrder((int)$ordersCreateRecord['order_id']);
 
                 if (!$order) {
                     $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;

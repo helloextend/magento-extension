@@ -63,17 +63,4 @@ class LeadInfoResponse  extends DataObject
     {
         return (string)$this->status;
     }
-
-    public function getQuantity(){
-
-    }
-    public function getQuantityConsumed()
-    {
-
-    }
-
-    public function getQty()
-    {
-
-    }
 }

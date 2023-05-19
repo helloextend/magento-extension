@@ -17,10 +17,20 @@ use Magento\Framework\Exception\NoSuchEntityException;
 
 class ExtendOrderRepository
 {
+    /**
+     * @var ExtendOrderResourceModel
+     */
     protected $extendOrderResourceModel;
 
+    /**
+     * @var \Extend\Warranty\Model\ExtendOrderFactory
+     */
     protected $extendOrderFactory;
 
+    /**
+     * @param ExtendOrderResourceModel $extendOrderResourceModel
+     * @param \Extend\Warranty\Model\ExtendOrderFactory $extendOrderFactory
+     */
     public function __construct(
         ExtendOrderResourceModel $extendOrderResourceModel,
         ExtendOrderFactory       $extendOrderFactory
@@ -30,6 +40,11 @@ class ExtendOrderRepository
         $this->extendOrderFactory = $extendOrderFactory;
     }
 
+    /**
+     * @param $orderId
+     * @return ExtendOrder
+     * @throws NoSuchEntityException
+     */
     public function get($orderId)
     {
         /** @var ExtendOrder $extendOrder */
@@ -42,6 +57,11 @@ class ExtendOrderRepository
         return $extendOrder;
     }
 
+    /**
+     * @param $extendOrder
+     * @return $this
+     * @throws CouldNotSaveException
+     */
     public function save($extendOrder)
     {
         try {

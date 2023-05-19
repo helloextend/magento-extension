@@ -34,6 +34,13 @@ class OrdersRequest extends AbstractRequest
 
     protected $orderResponseFactory;
 
+    /**
+     * @param ConnectorInterface $connector
+     * @param Json $jsonSerializer
+     * @param ZendEscaper $encoder
+     * @param LoggerInterface $logger
+     * @param OrderResponseFactory $orderResponseFactory
+     */
     public function __construct(
         ConnectorInterface   $connector,
         Json                 $jsonSerializer,
@@ -67,10 +74,10 @@ class OrdersRequest extends AbstractRequest
                 $url,
                 "POST",
                 [
-                    'Accept'                  => 'application/json; version=2022-02-01',
-                    'Content-Type'            => 'application/json',
+                    'Accept' => 'application/json; version=2022-02-01',
+                    'Content-Type' => 'application/json',
                     self::ACCESS_TOKEN_HEADER => $this->apiKey,
-                    'X-Idempotency-Key'       => $this->getUuid4()
+                    'X-Idempotency-Key' => $this->getUuid4()
                 ],
                 $orderData
             );
