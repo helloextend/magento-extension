@@ -52,7 +52,7 @@ class DefaultProcessor implements RelationProcessorInterface
 
         $itemSku = $this->getRelationQuoteItemSku($item);
 
-        return $itemSku == $relatedSku;
+        return $itemSku == $relatedSku && !$this->quoteItemIsLead($warrantyItem);
     }
 
     /**
@@ -73,7 +73,7 @@ class DefaultProcessor implements RelationProcessorInterface
 
         $itemSku = $this->getRelationOrderItemSku($orderItem);
 
-        return $itemSku == $relatedSku;
+        return $itemSku == $relatedSku && !$this->orderItemIsLead($warrantyItem);
     }
 
     public function isWarrantyDataRelatedToQuoteItem($warrantyData, $quoteItem): bool
@@ -121,16 +121,57 @@ class DefaultProcessor implements RelationProcessorInterface
      */
     public function getRelationOrderItemSku($orderItem): string
     {
-        if($orderItem->getProduct()){
+        if ($orderItem->getProduct()) {
             $relationSku = $orderItem->getProduct()->getSku();
-            if($orderItem->getProduct()->hasOptions()){
+            if ($orderItem->getProduct()->hasOptions()) {
                 $relationSku = $orderItem->getSku();
             }
-        }
-        else{
+        } else {
             $relationSku = $orderItem->getSku();
         }
 
         return $relationSku;
+    }
+
+    /**
+     * @param CartItemInterface $warrantyItem
+     * @return bool
+     */
+    protected function quoteItemIsLead($warrantyItem): bool
+    {
+        $hasLead = false;
+        if ($warrantyItem->getOptionByCode(Type::LEAD_TOKEN)) {
+            $hasLead = true;
+        }
+
+        if ($warrantyItem->getLeadToken()) {
+            $hasLead = true;
+        }
+
+        if ($warrantyItem->getExtensionAttributes() && $warrantyItem->getExtensionAttributes()->getLeadToken()) {
+            $hasLead = true;
+        }
+        return $hasLead;
+    }
+
+    /**
+     * @param OrderItemInterface $warrantyItem
+     * @return bool
+     */
+    protected function orderItemIsLead($warrantyItem): bool
+    {
+        $hasLead = false;
+        if ($warrantyItem->getProductOptionByCode(Type::LEAD_TOKEN)) {
+            $hasLead = true;
+        }
+
+        if ($warrantyItem->getLeadToken()) {
+            $hasLead = true;
+        }
+
+        if ($warrantyItem->getExtensionAttributes() && $warrantyItem->getExtensionAttributes()->getLeadToken()) {
+            $hasLead = true;
+        }
+        return $hasLead;
     }
 }

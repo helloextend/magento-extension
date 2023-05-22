@@ -37,6 +37,7 @@ class Type extends AbstractType
     public const ASSOCIATED_PRODUCT_NAME = 'associated_product_name';
     public const TERM = 'warranty_term';
     public const PLAN_TYPE = 'plan_type';
+    public const LEAD_TOKEN = 'lead_token';
     public const BUY_REQUEST = 'info_buyRequest';
     public const SECONDARY_SKU = 'secondary_sku';
 
@@ -166,6 +167,10 @@ class Type extends AbstractType
             $product->addCustomOption(self::SECONDARY_SKU, $buyRequest->getSecondarySku());
         }
 
+        if ($buyRequest->hasData('leadToken')) {
+            $product->addCustomOption(self::LEAD_TOKEN, $buyRequest->getData('leadToken'));
+        }
+
         if ($this->_isStrictProcessMode($processMode)) {
             $product->setCartQty($buyRequest->getQty());
         }
@@ -202,6 +207,10 @@ class Type extends AbstractType
 
         if ($planType = $product->getCustomOption(self::PLAN_TYPE)) {
             $options[self::PLAN_TYPE] = $planType->getValue();
+        }
+
+        if ($leadToken = $product->getCustomOption(self::LEAD_TOKEN)) {
+            $options[self::LEAD_TOKEN] = $leadToken->getValue();
         }
 
         return $options;
