@@ -26,6 +26,7 @@ use Psr\Log\LoggerInterface;
 use Exception;
 
 /**
+ *
  * Class WarrantyContract
  *
  * Warranty Contract Model
