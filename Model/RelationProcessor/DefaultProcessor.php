@@ -139,7 +139,7 @@ class DefaultProcessor implements RelationProcessorInterface
      */
     protected function quoteItemIsLead($warrantyItem): bool
     {
-        if ($warrantyItem->getProductOptionByCode(Type::LEAD_TOKEN)) {
+        if ($warrantyItem->getOptionByCode(Type::LEAD_TOKEN)) {
             return true;
         }
 
@@ -147,7 +147,7 @@ class DefaultProcessor implements RelationProcessorInterface
             return true;
         }
 
-        if ($warrantyItem->getExtensionAttributes()->getLeadToken()) {
+        if ($warrantyItem->getExtensionAttributes() && $warrantyItem->getExtensionAttributes()->getLeadToken()) {
             return true;
         }
         return false;
@@ -167,7 +167,7 @@ class DefaultProcessor implements RelationProcessorInterface
             return true;
         }
 
-        if ($warrantyItem->getExtensionAttributes()->getLeadToken()) {
+        if ($warrantyItem->getExtensionAttributes() && $warrantyItem->getExtensionAttributes()->getLeadToken()) {
             return true;
         }
         return false;

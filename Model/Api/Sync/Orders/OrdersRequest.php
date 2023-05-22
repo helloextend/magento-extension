@@ -32,6 +32,9 @@ class OrdersRequest extends AbstractRequest
      */
     public const STATUS_CODE_SUCCESS = 200;
 
+    /**
+     * @var OrderResponseFactory
+     */
     protected $orderResponseFactory;
 
     /**

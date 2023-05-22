@@ -11,6 +11,7 @@
 
 namespace Extend\Warranty\Model;
 
+use Extend\Warranty\Model\ContractCreateFactory;
 use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource;
 use Extend\Warranty\Model\Orders as ExtendOrder;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
