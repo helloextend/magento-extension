@@ -1,5 +1,6 @@
 <?php
 // phpcs:ignoreFile -- UpgradeSchema scripts are obsolete
+
 /**
  * Extend Warranty
  *
@@ -38,7 +39,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
      */
     public function __construct(
         LoggerInterface $logger
-    ) {
+    )
+    {
         $this->logger = $logger;
     }
 
@@ -177,7 +179,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         'order_item_id',
                         'sales_order_item',
                         'item_id'
-		            );
+                    );
 
                     if ($salesOrderItemForeignKeyName) {
                         $connection->dropForeignKey($tableWarrantyContact, $salesOrderItemForeignKeyName);
@@ -268,6 +270,17 @@ class UpgradeSchema implements UpgradeSchemaInterface
             }
         }
 
+
+        error_log($context->getVersion());
+        error_log('version_compare' . version_compare($context->getVersion(), '1.3.1', '<'));
+        if (version_compare($context->getVersion(), '1.3.1', '<')) {
+            try {
+                error_log('createExtendOrdersTable');
+                $this->createExtendOrdersTable($setup);
+            } catch (Zend_Db_Exception $exception) {
+                $this->logger->critical($exception->getMessage());
+            }
+        }
         $setup->endSetup();
     }
 
@@ -306,7 +319,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $table->addColumn(
             'qty_invoiced',
             Table::TYPE_DECIMAL,
-            [12,4],
+            [12, 4],
             ['nullable' => false, 'unsigned' => false],
             'Qty Invoiced'
         );
@@ -372,5 +385,46 @@ class UpgradeSchema implements UpgradeSchemaInterface
         );
 
         $connection->createTable($table);
+    }
+
+    protected function createExtendOrdersTable(SchemaSetupInterface $setup)
+    {
+        try {
+            $connection = $setup->getConnection();
+
+            $table = $connection->newTable('extend_order');
+
+            $table->addColumn(
+                'order_id',
+                Table::TYPE_INTEGER,
+                null,
+                ['identity' => false, 'nullable' => false, 'unsigned' => true],
+                'ID'
+            );
+            $table->addColumn(
+                'extend_order_id',
+                Table::TYPE_TEXT,
+                40,
+                ['nullable' => true, 'unique' => true],
+                'Extend Order Id'
+            );
+
+            $table->addForeignKey(
+                'EXTEND_ORDERS_SALES_ORDER_ENTITY_ID',
+                'order_id',
+                'sales_order',
+                'entity_id',
+                Table::ACTION_CASCADE
+            );
+
+            $table->addIndex(
+                'EXTEND_ORDER_EXTEND_ORDER_ID',
+                ['extend_order_id'],
+                AdapterInterface::INDEX_TYPE_UNIQUE
+            );
+            $connection->createTable($table);
+        } catch (Zend_Db_Exception $exception) {
+            $this->logger->critical($exception->getMessage());
+        }
     }
 }

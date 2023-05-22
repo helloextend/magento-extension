@@ -133,6 +133,7 @@ class Connector implements ConnectorInterface
         if (!empty($data)) {
             try {
                 $rawData = $this->jsonSerializer->serialize($data);
+                $this->logger->debug($rawData);
             } catch (InvalidArgumentException $exception) {
                 $this->logger->error(
                     'Caught Exception on serializing data.' . PHP_EOL

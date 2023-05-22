@@ -10,7 +10,9 @@
 
 namespace Extend\Warranty\Model\Api\Response;
 
-class LeadInfoResponse
+use Magento\Framework\DataObject;
+
+class LeadInfoResponse  extends DataObject
 {
     /** @var int|null */
     protected $expirationDate;
