@@ -14,7 +14,7 @@ namespace Extend\Warranty\Model\Api\Request\LineItem;
 class ShippingProtectionContractLineItemBuilder extends AbstractLineItemBuilder
 {
 
-    public function preparePayload()
+    public function preparePayload($item)
     {
         return [];
     }

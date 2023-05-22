@@ -44,6 +44,7 @@ class FulfillRequest extends AbstractRequest
                 $this->logger->info('Line Item updated successfully.');
             } else {
                 $this->logger->error('LineItem update is failed.');
+                throw new \Exception('LineItem update is failed.');
             }
         } catch (LocalizedException $exception) {
             $this->logger->error($exception->getMessage());
@@ -52,11 +53,11 @@ class FulfillRequest extends AbstractRequest
         return $lineItemResponse;
     }
 
-    private function checkLineItemResponse($lineItem)
+    private function checkLineItemResponse($lineItemResponse)
     {
-        /**
-         * @TODO add logic here
-         */
+        if (!empty($lineItemResponse['code'])) {
+            return false;
+        }
         return true;
     }
 }
