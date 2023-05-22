@@ -187,6 +187,10 @@ class Orders
 
             $this->extendOrderRepository->save($extendOrder);
 
+            if (!$extendOrder->getExtendOrderId()) {
+                throw new Exception('Extend didn\'t create Order properly.');
+            }
+
             foreach ($order->getItems() as $orderItem) {
                 $lineItems = $orderResponse->getLineItemsByOrderItem($orderItem);
 
@@ -294,7 +298,7 @@ class Orders
         ];
 
         if (!$this->checkAndCreateOrder($orderMagento, $orderItem)) {
-            throw new LocalizedException('Order doesn\'t exist on extend side and wasnt properly created.');
+            throw new LocalizedException(__('Order doesn\'t exist on extend side and wasnt properly created.'));
         }
 
         try {
@@ -346,7 +350,7 @@ class Orders
             );
         }
 
-        if (!$extendOrder) {
+        if (!$extendOrder || !$extendOrder->getExtendOrderId()) {
             /**
              * If some lineitems found it means order exist on Extend Side
              * as lineItem has unique lineItemTransactionId=> "{orderId}:{itemId}"
