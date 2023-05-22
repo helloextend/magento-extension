@@ -1,3 +1,7 @@
+Merge pull request #383 from helloextend/EX-466
+
+Ex 466
+
 Update composer.json
 
 Update composer.json version to v2.2.1
