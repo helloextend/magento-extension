@@ -139,18 +139,19 @@ class DefaultProcessor implements RelationProcessorInterface
      */
     protected function quoteItemIsLead($warrantyItem): bool
     {
+        $hasLead = false;
         if ($warrantyItem->getOptionByCode(Type::LEAD_TOKEN)) {
-            return true;
+            $hasLead = true;
         }
 
         if ($warrantyItem->getLeadToken()) {
-            return true;
+            $hasLead = true;
         }
 
         if ($warrantyItem->getExtensionAttributes() && $warrantyItem->getExtensionAttributes()->getLeadToken()) {
-            return true;
+            $hasLead = true;
         }
-        return false;
+        return $hasLead;
     }
 
     /**
@@ -159,17 +160,18 @@ class DefaultProcessor implements RelationProcessorInterface
      */
     protected function orderItemIsLead($warrantyItem): bool
     {
+        $hasLead = false;
         if ($warrantyItem->getProductOptionByCode(Type::LEAD_TOKEN)) {
-            return true;
+            $hasLead = true;
         }
 
         if ($warrantyItem->getLeadToken()) {
-            return true;
+            $hasLead = true;
         }
 
         if ($warrantyItem->getExtensionAttributes() && $warrantyItem->getExtensionAttributes()->getLeadToken()) {
-            return true;
+            $hasLead = true;
         }
-        return false;
+        return $hasLead;
     }
 }
