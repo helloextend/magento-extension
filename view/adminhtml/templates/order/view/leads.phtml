@@ -45,9 +45,9 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
                         let url      = "<?= /* @noEscape */ $block->getUrl('extend/warranty/leads') ?>";
                         let leadToken = "<?= /* @noEscape */ implode(", ", $leadToken); ?>";
                         let order = "<?= /* @noEscape */ $block->getOrder()->getId();?>";
-                        let qty = "<?= /* @noEscape */ $item->getQtyOrdered(); ?>";
+                        let qty = "<?= /* @noEscape */ $viewModel->getLeftLeadsQty($item); ?>";
                         plan.product = '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>';
-                        plan.qty = '<?= /* @noEscape */ $item->getQtyOrdered(); ?>';
+                        plan.qty = '<?= /* @noEscape */ $viewModel->getLeftLeadsQty($item); ?>';
 
                         $.post(url, {
                             order: order,

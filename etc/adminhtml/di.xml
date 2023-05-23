@@ -29,6 +29,9 @@
             sortOrder="10" />
     </type>
 
+    <type name="Magento\Quote\Model\Quote\Item">
+        <plugin name="extend_warranty_check_quote_item" type="\Extend\Warranty\Plugin\Quote\ItemPlugin"/>
+    </type>
     <type name="\Extend\Warranty\Controller\Adminhtml\Warranty\Add">
         <arguments>
             <argument name="logger" xsi:type="object">ExtendLogger</argument>
