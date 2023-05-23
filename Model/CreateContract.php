@@ -6,12 +6,11 @@
  * @category    Extend
  * @package     Warranty
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ *
  */
 
 namespace Extend\Warranty\Model;
 
-use Extend\Warranty\Model\Product\Type as WarrantyType;
-use Extend\Warranty\Model\WarrantyContract;
 use Extend\Warranty\Model\ContractCreateFactory;
 use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource;
 use Extend\Warranty\Model\Orders as ExtendOrder;
@@ -22,7 +21,6 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
-use Exception;
 
 /**
  * Class CreateContractApi
@@ -84,13 +82,14 @@ class CreateContract
      * @param LoggerInterface $logger
      */
     public function __construct(
-        WarrantyContract $warrantyContract,
-        ExtendOrder $extendOrder,
-        DataHelper $dataHelper,
-        ContractCreateFactory $contractCreateFactory,
+        WarrantyContract       $warrantyContract,
+        ExtendOrder            $extendOrder,
+        DataHelper             $dataHelper,
+        ContractCreateFactory  $contractCreateFactory,
         ContractCreateResource $contractCreateResource,
-        LoggerInterface $logger
-    ) {
+        LoggerInterface        $logger
+    )
+    {
         $this->warrantyContract = $warrantyContract;
         $this->extendOrder = $extendOrder;
         $this->dataHelper = $dataHelper;
@@ -106,29 +105,17 @@ class CreateContract
      * @param int|string|null $storeId
      * @return void
      */
-    public function createContract(OrderInterface $order, OrderItemInterface $warrantyItem, int $qty, $storeId) :void
+    public function createContract(OrderInterface $order, OrderItemInterface $warrantyItem, int $qty, $storeId): void
     {
         if ($this->dataHelper->getContractCreateApi(ScopeInterface::SCOPE_STORES, $storeId) ==
             CreateContractApi::ORDERS_API
         ) {
             try {
-                if ($warrantyItem->getLeadToken() != null &&
-                    implode(", ", json_decode($warrantyItem->getLeadToken(), true)) != null
-                ) {
-                    $this->extendOrder->createOrder(
-                        $order,
-                        $warrantyItem,
-                        $qty,
-                        \Extend\Warranty\Model\Orders::LEAD_CONTRACT
-                    );
-                } else {
-                    $this->extendOrder->createOrder(
-                        $order,
-                        $warrantyItem,
-                        $qty,
-                        \Extend\Warranty\Model\Orders::CONTRACT
-                    );
-                }
+                $this->extendOrder->updateOrderItemStatus(
+                    $order,
+                    $warrantyItem,
+                    $qty
+                );
             } catch (LocalizedException $exception) {
                 $this->addContractToQueue($warrantyItem, $qty);
                 $this->logger->error(
@@ -152,6 +139,27 @@ class CreateContract
                     self::ORDER_ITEM_ID => $warrantyItem->getId(),
                     self::ORDER_ID => $warrantyItem->getOrderId(),
                     self::QTY_ORDERED => $qtyOrdered,
+                ]);
+                $this->contractCreateResource->save($contractCreate);
+            }
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
+        }
+    }
+
+    /**
+     * @param OrderInterface $order
+     * @return void
+     */
+    public function addOrderToQueue($order)
+    {
+        try {
+            $orderId = $order->getEntityId();
+            if (!$this->isContractQueued($orderId, 0)) {
+                $contractCreate = $this->contractCreateFactory->create();
+                $contractCreate->setData([
+                    self::ORDER_ITEM_ID => 0,
+                    self::ORDER_ID => $orderId
                 ]);
                 $this->contractCreateResource->save($contractCreate);
             }

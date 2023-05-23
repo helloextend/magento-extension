@@ -12,10 +12,11 @@ namespace Extend\Warranty\Model\Api\Response;
 
 use Magento\Framework\DataObject;
 
+
 /**
  * @method int getQuantity()
  */
-class LeadInfoResponse extends DataObject
+class LeadInfoResponse  extends DataObject
 {
     /** @var int|null */
     protected $expirationDate;

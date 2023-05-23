@@ -10,12 +10,15 @@
 
 namespace Extend\Warranty\Observer\ContractCreate;
 
+use Extend\Warranty\Model\WarrantyRelation;
 use Magento\Framework\Event\Observer;
 use Extend\Warranty\Model\Product\Type as WarrantyType;
 use Extend\Warranty\Model\CreateContract as WarrantyContractCreate;
 use Magento\Framework\Event\ObserverInterface;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\ShipmentItemInterface;
 use Magento\Store\Model\ScopeInterface;
 use Extend\Warranty\Model\Config\Source\Event as CreateContractEvent;
 use Psr\Log\LoggerInterface;
@@ -47,16 +50,24 @@ class ShipmentObserver implements ObserverInterface
     private $logger;
 
     /**
+     * @var WarrantyRelation
+     */
+    private $warrantyRelation;
+
+    /**
      * @param WarrantyContractCreate $warrantyContractCreate
      * @param DataHelper $dataHelper
      * @param LoggerInterface $logger
      */
     public function __construct(
         WarrantyContractCreate $warrantyContractCreate,
-        DataHelper $dataHelper,
-        LoggerInterface $logger
-    ) {
+        DataHelper             $dataHelper,
+        WarrantyRelation       $warrantyRelation,
+        LoggerInterface        $logger
+    )
+    {
         $this->warrantyContractCreate = $warrantyContractCreate;
+        $this->warrantyRelation = $warrantyRelation;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
     }
@@ -70,6 +81,7 @@ class ShipmentObserver implements ObserverInterface
     {
         $event = $observer->getEvent();
         $shipment = $event->getShipment();
+        /** @var OrderInterface $order */
         $order = $shipment->getOrder();
 
         $storeId = $order->getStoreId();
@@ -79,6 +91,7 @@ class ShipmentObserver implements ObserverInterface
             && $this->dataHelper->isWarrantyContractEnabled($storeId)
             && ($contractCreateEvent == CreateContractEvent::SHIPMENT_CREATE)
         ) {
+            /** @var ShipmentItemInterface $shipmentItem */
             foreach ($shipment->getAllItems() as $shipmentItem) {
                 $orderItems = [];
                 $qtyShipped = [];
@@ -95,7 +108,9 @@ class ShipmentObserver implements ObserverInterface
                         }
                     }
 
-                    if ($shipmentItem->getSku() == $orderWarrantyItem->getProductOptionByCode('associated_product')) {
+                    $orderItem = $order->getItemById($shipmentItem->getOrderItemId());
+
+                    if ($this->warrantyRelation->isWarrantyRelatedToOrderItem($orderWarrantyItem, $orderItem)) {
                         if ($orderWarrantyItem->getQtyOrdered() < $shipmentItem->getQty()) {
                             $orderItems[] = $orderWarrantyItem;
                             $qtyShipped[$orderWarrantyItem->getId()] = (int)$orderWarrantyItem->getQtyOrdered();
@@ -110,7 +125,7 @@ class ShipmentObserver implements ObserverInterface
                 }
 
                 foreach ($orderItems as $orderItem) {
-                    if (!$this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)) {
+                    if (!$this->dataHelper->isContractCreateModeScheduled($storeId)) {
                         try {
                             $this->warrantyContractCreate->createContract($order, $orderItem, $qtyShipped[$orderItem->getId()], $storeId);
                         } catch (LocalizedException $exception) {

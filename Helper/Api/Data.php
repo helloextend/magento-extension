@@ -342,8 +342,8 @@ class Data extends AbstractHelper
      * @return bool
      */
     public function isContractCreateModeScheduled(
-        string $scopeType = ScopeInterface::SCOPE_STORES,
-        $scopeId = null
+        $scopeId = null,
+        string $scopeType = ScopeInterface::SCOPE_STORES
     ) {
         return $this->scopeConfig->isSetFlag(
             self::WARRANTY_CONTRACTS_MODE_XML_PATH,

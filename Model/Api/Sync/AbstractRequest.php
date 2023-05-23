@@ -175,22 +175,27 @@ abstract class AbstractRequest implements RequestInterface
     /**
      * Logs the response with headers
      *
-     * @param array $response
-     * @param string $response
+     * @param $requestEndpoint
+     * @param $responseBody
+     * @param $headers
      * @return void
      */
     protected function _logResponse($requestEndpoint, $responseBody, $headers = '')
     {
-        $depersonalizedBodyArray = $this->_depersonalizeData($responseBody);
+
+        /** If Code exists then Response contains some error and it should be depersonalized*/
+        if (empty($responseBody['code'])) {
+            $responseBody = $this->_depersonalizeData($responseBody);
+        }
         try {
-            $depersonalizedBody = $this->jsonSerializer->serialize($depersonalizedBodyArray);
+            $rawResponseBody = $this->jsonSerializer->serialize($responseBody);
 
             $this->logger->info(
                 'Request URL:' . $requestEndpoint . PHP_EOL
-                . 'Response Header: '. PHP_EOL
+                . 'Response Header: ' . PHP_EOL
                 . (string)$headers . PHP_EOL
                 . 'Response Body: ' . PHP_EOL
-                . $depersonalizedBody
+                . $rawResponseBody
             );
         } catch (\InvalidArgumentException $e) {
             $this->logger->error(
