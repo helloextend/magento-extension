@@ -21,6 +21,7 @@ define([
             productSku: null,
             buttonEnabled: true,
             modalEnabled: false,
+            productInfo: {},
             blockClass: 'product-warranty-offers',
             insertionPoint: 'div.actions',
             insertionLogic: 'before',
@@ -47,7 +48,11 @@ define([
             this._initElements();
             this._bind();
 
-            this.warrantyBlock = this._initWarrantyOffersBlock(this.options.productId, this.options.productSku);
+            this.warrantyBlock = this._initWarrantyOffersBlock(
+                this.options.productId,
+                this.options.productSku,
+                this.options.productInfo
+            );
         },
 
         /**
@@ -83,7 +88,7 @@ define([
          * @param {String} productSku - product SKU
          * @return {jQuery|HTMLElement}
          */
-        _initWarrantyOffersBlock: function (productId, productSku) {
+        _initWarrantyOffersBlock: function (productId, productSku, productInfo) {
             var blockID = 'warranty-offers-' + productId;
 
             if (this.warrantyBlock.length) {
@@ -98,6 +103,7 @@ define([
             warrantyBlock.extendWarrantyOffers({
                 productSku: productSku,
                 buttonEnabled: this.options.buttonEnabled,
+                productInfo: productInfo,
                 modalEnabled: this.options.modalEnabled,
                 formInputName: this.options.formInputName.replace('%s', productId)
             });

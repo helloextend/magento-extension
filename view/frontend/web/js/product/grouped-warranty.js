@@ -53,7 +53,11 @@ define([
             }
 
             _.each(this.options.products || [], function (product) {
-                var warrantyBlock = this._initWarrantyOffersBlock(product.id, product.sku);
+                var warrantyBlock = this._initWarrantyOffersBlock(
+                    product.id,
+                    product.sku,
+                    product.productInfo
+                );
                 this.warrantyBlocks.push(warrantyBlock);
             }.bind(this));
         },

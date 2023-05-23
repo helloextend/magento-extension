@@ -17,6 +17,7 @@ define([
         options: {
             productSku: null,
             buttonEnabled: true,
+            productInfo: {},
             modalEnabled: false,
             formInputName: 'warranty'
         },
@@ -29,7 +30,9 @@ define([
                 return;
 
             Extend.buttons.render(this.element.get(0), {
-                referenceId: this.options.productSku
+                referenceId: this.options.productSku,
+                category: this.options.productInfo.category,
+                price:this.options.productInfo.price
             });
         },
 
@@ -44,6 +47,8 @@ define([
 
             Extend.buttons.renderSimpleOffer(this.element.get(0), {
                 referenceId: this.options.productSku,
+                category: this.options.productInfo.category,
+                price:this.options.productInfo.price,
                 onAddToCart: function (data) {
                     var warranty = data.plan;
                     if (warranty && data.product) {
