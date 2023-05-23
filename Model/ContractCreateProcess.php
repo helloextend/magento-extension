@@ -111,7 +111,7 @@ class ContractCreateProcess
      * @param WarrantyContract $warrantyContract
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param OrderRepositoryInterface $orderRepository
-     * @param Orders $extendOrdersApi
+     * @param ExtendOrdersAPI $extendOrdersApi
      * @param ExtendOrderRepository $extendOrderRepository
      * @param LoggerInterface $logger
      */
