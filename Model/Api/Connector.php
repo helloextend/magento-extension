@@ -162,24 +162,30 @@ class Connector implements ConnectorInterface
         array  $data = []
     ): Response
     {
-        switch (strtoupper($method)) {
-            case "GET":
-                /** @var ClientInterface $client */
-                $client = $this->callGet($endpoint, $headers);
-                break;
-            case "POST":
-                /** @var ClientInterface $client */
-                $client = $this->callPost($endpoint, $headers, $data);
-                break;
-        }
 
         /** @var Response $response */
         $response = $this->responseFactory->create();
 
-        $response->setBody($client->getBody())
-            ->setRequestEndpoint($endpoint)
-            ->setHeaders($client->getHeaders())
-            ->setStatusCode($client->getStatus());
+        try {
+            switch (strtoupper($method)) {
+                case "GET":
+                    /** @var ClientInterface $client */
+                    $client = $this->callGet($endpoint, $headers);
+                    break;
+                case "POST":
+                    /** @var ClientInterface $client */
+                    $client = $this->callPost($endpoint, $headers, $data);
+                    break;
+            }
+
+            $response->setBody($client->getBody())
+                ->setRequestEndpoint($endpoint)
+                ->setHeaders($client->getHeaders())
+                ->setStatusCode($client->getStatus());
+        } catch (\Exception $e) {
+            $this->logger->critical($e->getMessage());
+        }
+
         return $response;
     }
 }
