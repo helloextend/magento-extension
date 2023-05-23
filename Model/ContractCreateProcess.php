@@ -22,6 +22,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -95,6 +96,11 @@ class ContractCreateProcess
     private $logger;
 
     /**
+     * @var ExtendOrderRepository
+     */
+    protected $extendOrderRepository;
+
+    /**
      * ContractCreateProcess constructor
      *
      * @param ContractCreateResource $contractCreateResource
@@ -104,7 +110,8 @@ class ContractCreateProcess
      * @param WarrantyContract $warrantyContract
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param OrderRepositoryInterface $orderRepository
-     * @param ExtendOrdersAPI $extendOrdersApi
+     * @param Orders $extendOrdersApi
+     * @param ExtendOrderRepository $extendOrderRepository
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -116,6 +123,7 @@ class ContractCreateProcess
         OrderItemRepositoryInterface $orderItemRepository,
         OrderRepositoryInterface     $orderRepository,
         ExtendOrdersAPI              $extendOrdersApi,
+        ExtendOrderRepository        $extendOrderRepository,
         LoggerInterface              $logger
     )
     {
@@ -127,6 +135,7 @@ class ContractCreateProcess
         $this->orderItemRepository = $orderItemRepository;
         $this->orderRepository = $orderRepository;
         $this->extendOrdersApi = $extendOrdersApi;
+        $this->extendOrderRepository = $extendOrderRepository;
         $this->logger = $logger;
     }
 
@@ -204,7 +213,16 @@ class ContractCreateProcess
 
                 try {
                     if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API) {
-                        $this->extendOrdersApi->create($order);
+                        $extendOrder = $this->extendOrderRepository->get($order->getId());
+                        /**
+                         * if order was canceled before sending to Extend then ignore it
+                         */
+                        if ($order->getState() == Order::STATE_CANCELED && $extendOrder->getExtendOrderId()) {
+                            $this->extendOrdersApi->cancel($order);
+                        } elseif (!$extendOrder->getExtendOrderId()) {
+                            $this->extendOrdersApi->create($order);
+                        }
+
                         $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_SUCCESS;
                     }
                 } catch (LocalizedException $exception) {

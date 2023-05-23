@@ -27,6 +27,8 @@ class OrdersRequest extends AbstractRequest
      */
     public const CREATE_ORDER_ENDPOINT = 'orders';
 
+    public const CANCEL_ORDER_ENDPOINT = 'orders/%s/cancel';
+
     /**
      * Response status codes
      */
@@ -92,6 +94,48 @@ class OrdersRequest extends AbstractRequest
                 $this->logger->info('Order is created successfully. OrderApiID: ' . $orderResponse->getId());
             } else {
                 $this->logger->error('Order creation is failed.');
+            }
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
+        }
+
+        return $orderResponse;
+    }
+
+    /**
+     * @param string $extendOrderId
+     * @throws \Exception
+     */
+    public function cancel($extendOrderId)
+    {
+        if (!$extendOrderId) {
+            throw new \Exception('Extend Order id is empty');
+        }
+        $url = $this->apiUrl . sprintf(self::CANCEL_ORDER_ENDPOINT, $extendOrderId);
+
+        $orderData = ['orderId' => $extendOrderId];
+
+        $orderResponse = $this->orderResponseFactory->create();
+        try {
+            $response = $this->connector->call(
+                $url,
+                "POST",
+                [
+                    'Accept' => 'application/json; version=2022-02-01',
+                    'Content-Type' => 'application/json',
+                    self::ACCESS_TOKEN_HEADER => $this->apiKey,
+                    'X-Idempotency-Key' => $this->getUuid4()
+                ],
+                $orderData
+            );
+
+            $responseBody = $this->processResponse($response);
+            $orderResponse->setData($responseBody);
+
+            if ($response->getStatus() == self::STATUS_CODE_SUCCESS) {
+                $this->logger->info('Order was canceled successfully. OrderApiID: ' . $orderResponse->getId());
+            } else {
+                $this->logger->error(__('Order cancelation was failed.'));
             }
         } catch (LocalizedException $exception) {
             $this->logger->error($exception->getMessage());
