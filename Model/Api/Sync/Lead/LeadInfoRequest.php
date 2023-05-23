@@ -30,6 +30,14 @@ class LeadInfoRequest extends AbstractRequest
      */
     public const GET_LEAD_INFO_ENDPOINT = 'leads/%s';
 
+    /**
+     * Response status codes
+     */
+    public const STATUS_CODE_SUCCESS = 200;
+
+    /**
+     * @var LeadInfoResponseFactory
+     */
     protected $leadResponseFactory;
 
     /**
@@ -40,10 +48,10 @@ class LeadInfoRequest extends AbstractRequest
      * @param LeadInfoResponseFactory $leadInfoResponseFactory
      */
     public function __construct(
-        ConnectorInterface $connector,
-        JsonSerializer $jsonSerializer,
-        ZendEscaper $encoder,
-        LoggerInterface $logger,
+        ConnectorInterface      $connector,
+        JsonSerializer          $jsonSerializer,
+        ZendEscaper             $encoder,
+        LoggerInterface         $logger,
         LeadInfoResponseFactory $leadInfoResponseFactory
     )
     {
@@ -57,7 +65,7 @@ class LeadInfoRequest extends AbstractRequest
      * @param string $leadToken
      * @return LeadInfoResponse
      */
-    public function create(string $leadToken): LeadInfoResponse
+    public function getLead(string $leadToken): LeadInfoResponse
     {
         $url = $this->apiUrl . sprintf(self::GET_LEAD_INFO_ENDPOINT, $leadToken);
 
@@ -69,16 +77,18 @@ class LeadInfoRequest extends AbstractRequest
             "GET",
             [self::ACCESS_TOKEN_HEADER => $this->apiKey]
         );
+
         if ($response->isSuccessful()) {
             $responseBody = $this->processResponse($response);
 
             $leadInfoResponse->setExpirationDate($responseBody['expirationDate'] ?? null);
             $leadInfoResponse->setStatus($responseBody['status'] ?? '');
-
+            $leadInfoResponse->setData($responseBody);
             if (!$leadInfoResponse->getExpirationDate()) {
                 $this->logger->error('Lead token expiration date is not set');
             }
         }
+
         return $leadInfoResponse;
     }
 }

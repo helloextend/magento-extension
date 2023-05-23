@@ -27,54 +27,57 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
     <?php endif; ?>
     <div id="extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>"></div>
 </td>
-<script>
-    require(['jquery',
-            'mage/url',
-            'Magento_Ui/js/modal/alert',
-            'domReady!'
-        ], function($, urlBuilder, alert) {
-        const $elem = $('#extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>');
-        Extend.buttons.renderSimpleOffer($elem.get(0), {
-            referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
-            onAddToCart: function (opts) {
 
-                const plan = opts.plan;
-                if (plan) {
-                    let url      = "<?= /* @noEscape */ $block->getUrl('extend/warranty/leads') ?>";
-                    let leadToken = "<?= /* @noEscape */ implode(", ", $leadToken); ?>";
-                    let order = "<?= /* @noEscape */ $block->getOrder()->getId();?>";
-                    let qty = "<?= /* @noEscape */ $item->getQtyOrdered(); ?>";
-                    plan.product = '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>';
-                    plan.qty = '<?= /* @noEscape */ $item->getQtyOrdered(); ?>';
+<?php if ($viewModel->showLeadOffer($item)):?>
+    <script>
+        require(['jquery',
+                'mage/url',
+                'Magento_Ui/js/modal/alert',
+                'domReady!'
+            ], function($, urlBuilder, alert) {
+            const $elem = $('#extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>');
+            Extend.buttons.renderSimpleOffer($elem.get(0), {
+                referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
+                onAddToCart: function (opts) {
 
-                    $.post(url, {
-                        order: order,
-                        warranty: plan,
-                        qty: qty,
-                        leadToken : leadToken
-                    }).done(function (data) {
-                        if (data.status == "success") {
+                    const plan = opts.plan;
+                    if (plan) {
+                        let url      = "<?= /* @noEscape */ $block->getUrl('extend/warranty/leads') ?>";
+                        let leadToken = "<?= /* @noEscape */ implode(", ", $leadToken); ?>";
+                        let order = "<?= /* @noEscape */ $block->getOrder()->getId();?>";
+                        let qty = "<?= /* @noEscape */ $viewModel->getLeftLeadsQty($item); ?>";
+                        plan.product = '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>';
+                        plan.qty = '<?= /* @noEscape */ $viewModel->getLeftLeadsQty($item); ?>';
 
-                            var url = data.redirect;
-                            window.location.href = url;
-                        } else {
-                            alert({
-                                content: data.error
-                            });
-                        }
-                    });
+                        $.post(url, {
+                            order: order,
+                            warranty: plan,
+                            qty: qty,
+                            leadToken : leadToken
+                        }).done(function (data) {
+                            if (data.status == "success") {
+
+                                var url = data.redirect;
+                                window.location.href = url;
+                            } else {
+                                alert({
+                                    content: data.error
+                                });
+                            }
+                        });
+                    }
                 }
-            }
+            });
+
+            let updateTimer = window.setInterval(() => {
+                const iframe = $elem.find('iframe:visible').get(0);
+                const iframeDoc = iframe ? (iframe.contentDocument || iframe.contentWindow.document) : null;
+
+                if (iframeDoc && iframeDoc.readyState === 'complete') {
+                    window.clearInterval(updateTimer);
+                    window.dispatchEvent(new Event('resize'));
+                }
+            }, 100);
         });
-
-        let updateTimer = window.setInterval(() => {
-            const iframe = $elem.find('iframe:visible').get(0);
-            const iframeDoc = iframe ? (iframe.contentDocument || iframe.contentWindow.document) : null;
-
-            if (iframeDoc && iframeDoc.readyState === 'complete') {
-                window.clearInterval(updateTimer);
-                window.dispatchEvent(new Event('resize'));
-            }
-        }, 100);
-    });
-</script>
+    </script>
+<?php endif; ?>

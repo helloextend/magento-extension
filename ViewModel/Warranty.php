@@ -10,6 +10,7 @@
 
 namespace Extend\Warranty\ViewModel;
 
+use Extend\Warranty\Model\LeadInfo;
 use Extend\Warranty\Model\WarrantyRelation;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
@@ -19,7 +20,6 @@ use Magento\ConfigurableProduct\Api\LinkManagementInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
 use Extend\Warranty\Model\Product\Type;
-use Extend\Warranty\Model\Api\Sync\Lead\LeadInfoRequest;
 use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Api\Data\CartItemInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
@@ -119,9 +119,9 @@ class Warranty implements ArgumentInterface
     private $adminSession;
 
     /**
-     * @var LeadInfoRequest
+     * @var LeadInfo
      */
-    private $leadInfoRequest;
+    private $leadInfo;
 
     protected $warrantyRelation;
 
@@ -139,7 +139,7 @@ class Warranty implements ArgumentInterface
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param StoreManagerInterface $storeManager
      * @param AdminSession $adminSession
-     * @param LeadInfoRequest $leadInfoRequest
+     * @param LeadInfo $leadInfo
      * @param WarrantyRelation $warrantyRelation
      */
     public function __construct(
@@ -154,7 +154,7 @@ class Warranty implements ArgumentInterface
         SearchCriteriaBuilder $searchCriteriaBuilder,
         StoreManagerInterface $storeManager,
         AdminSession $adminSession,
-        LeadInfoRequest $leadInfoRequest,
+        LeadInfo $leadInfo,
         WarrantyRelation $warrantyRelation
     ) {
         $this->dataHelper = $dataHelper;
@@ -168,7 +168,7 @@ class Warranty implements ArgumentInterface
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->storeManager = $storeManager;
         $this->adminSession = $adminSession;
-        $this->leadInfoRequest = $leadInfoRequest;
+        $this->leadInfo = $leadInfo;
         $this->warrantyRelation = $warrantyRelation;
     }
 
@@ -511,30 +511,37 @@ class Warranty implements ArgumentInterface
     }
 
     /**
+     * @param $orderItem
+     * @return LeadInfoResponse|mixed|null
+     */
+    protected function getExtendLeadByOrderItem($orderItem)
+    {
+        $storeId = $orderItem->getStoreId();
+
+        $leadToken = $this->getLeadToken($orderItem);
+        $leadToken = reset($leadToken);
+        return $this->leadInfo->getLeadInfo($leadToken, $storeId);
+    }
+
+    /**
+     * @param OrderItemInterface $orderItem
+     * @return void
+     */
+    public function getLeftLeadsQty($orderItem)
+    {
+        $lead = $this->getExtendLeadByOrderItem($orderItem);
+        return $lead->getLeftQty();
+    }
+
+    /**
      * @param OrderItemInterface $orderItem
      * @return bool
      */
     public function isLeadValid($orderItem): bool
     {
-        $storeId = $orderItem->getStoreId();
+        $leadInfoResponse = $this->getExtendLeadByOrderItem($orderItem);
 
-        $leadToken = $this->getLeadToken($orderItem);
-
-        $apiUrl = $this->dataHelper->getApiUrl(ScopeInterface::SCOPE_STORES, $storeId);
-        $apiStoreId = $this->dataHelper->getStoreId(ScopeInterface::SCOPE_STORES, $storeId);
-        $apiKey = $this->dataHelper->getApiKey(ScopeInterface::SCOPE_STORES, $storeId);
-
-        try {
-            $this->leadInfoRequest->setConfig($apiUrl, $apiStoreId, $apiKey);
-            $leadInfoResponse = $this->leadInfoRequest->create(reset($leadToken));
-        } catch (LocalizedException $e) {
-            /**
-             * muting as view model should not throw exceptions
-             **/
-            return false;
-        }
-
-        if ($leadInfoResponse->getStatus() !== LeadInfoResponse::STATUS_LIVE) {
+        if (!$leadInfoResponse || $leadInfoResponse->getStatus() !== LeadInfoResponse::STATUS_LIVE) {
             return false;
         }
 
