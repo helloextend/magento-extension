@@ -30,4 +30,9 @@
         <observer name="extend_warranty_add_to_cart"
                   instance="Extend\Warranty\Observer\AddToCart" />
     </event>
+
+    <event name="order_cancel_after">
+        <observer name="extend_warranty_order_cancel"
+                  instance="Extend\Warranty\Observer\CancelOrder" />
+    </event>
 </config>

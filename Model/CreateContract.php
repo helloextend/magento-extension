@@ -184,7 +184,9 @@ class CreateContract
             ['id']
         );
         $select->where('order_id = ?', $orederId)
-            ->where('order_item_id = ?', $orderItemId);
+            ->where('order_item_id = ?', $orderItemId)
+            ->where('status IS NULL')
+        ;
 
         $contract = $connection->fetchOne($select);
 

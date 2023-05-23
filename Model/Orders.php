@@ -272,6 +272,26 @@ class Orders
         return $contracts;
     }
 
+
+    /**
+     * @param OrderInterface $order
+     * @return void
+     * @throws LocalizedException
+     */
+    public function cancel($order)
+    {
+        try {
+            $extendOrder = $this->extendOrderRepository->get($order->getId());
+        } catch (NoSuchEntityException $e) {
+            $this->logger->info(__("Extend Order %1 was not found", $order->getId()));
+        } catch (Exception $e) {
+            throw new LocalizedException(__('Order cancelation was failed:' . $e->getMessage()));
+        }
+
+        $this->getOrderRequest($order->getStoreId())
+            ->cancel($extendOrder->getExtendOrderId());
+    }
+
     /**
      * Sends fulfill status for order item
      *

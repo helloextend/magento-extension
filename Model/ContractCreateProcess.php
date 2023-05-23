@@ -16,12 +16,14 @@ use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource
 use Extend\Warranty\Model\Orders as ExtendOrdersAPI;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -95,6 +97,11 @@ class ContractCreateProcess
     private $logger;
 
     /**
+     * @var ExtendOrderRepository
+     */
+    protected $extendOrderRepository;
+
+    /**
      * ContractCreateProcess constructor
      *
      * @param ContractCreateResource $contractCreateResource
@@ -105,6 +112,7 @@ class ContractCreateProcess
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param OrderRepositoryInterface $orderRepository
      * @param ExtendOrdersAPI $extendOrdersApi
+     * @param ExtendOrderRepository $extendOrderRepository
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -116,6 +124,7 @@ class ContractCreateProcess
         OrderItemRepositoryInterface $orderItemRepository,
         OrderRepositoryInterface     $orderRepository,
         ExtendOrdersAPI              $extendOrdersApi,
+        ExtendOrderRepository        $extendOrderRepository,
         LoggerInterface              $logger
     )
     {
@@ -127,6 +136,7 @@ class ContractCreateProcess
         $this->orderItemRepository = $orderItemRepository;
         $this->orderRepository = $orderRepository;
         $this->extendOrdersApi = $extendOrdersApi;
+        $this->extendOrderRepository = $extendOrderRepository;
         $this->logger = $logger;
     }
 
@@ -204,7 +214,30 @@ class ContractCreateProcess
 
                 try {
                     if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API) {
-                        $this->extendOrdersApi->create($order);
+                        try {
+                            $extendOrder = $this->extendOrderRepository->get($order->getId());
+                        } catch (NoSuchEntityException $e) {
+                            $extendOrder = false;
+                        }
+
+                        if ($order->getState() != Order::STATE_CANCELED
+                            && (!$extendOrder || !$extendOrder->getExtendOrderId())) {
+                            /**
+                             * create order only no extend order was created
+                             */
+                            $this->extendOrdersApi->create($order);
+                        }
+
+                        if ($order->getState() == Order::STATE_CANCELED
+                            && $extendOrder
+                            && $extendOrder->getExtendOrderId()) {
+                            /**
+                             * we cancel order only if was already sent to extend
+                             * and have state canceled
+                             */
+                            $this->extendOrdersApi->cancel($order);
+                        }
+
                         $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_SUCCESS;
                     }
                 } catch (LocalizedException $exception) {
