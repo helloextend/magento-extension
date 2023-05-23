@@ -12,7 +12,10 @@ namespace Extend\Warranty\Model\Api\Response;
 
 use Magento\Framework\DataObject;
 
-class LeadInfoResponse  extends DataObject
+/**
+ * @method int getQuantity()
+ */
+class LeadInfoResponse extends DataObject
 {
     /** @var int|null */
     protected $expirationDate;
@@ -27,18 +30,18 @@ class LeadInfoResponse  extends DataObject
     const STATUS_CONSUMED = 'consumed';
 
     /**
+     * Return timestamp of expiration date
+     *
      * @param int|null $date
      * @return $this
      */
     public function setExpirationDate($date)
     {
-        $this->expirationDate = $date ? (int) ($date / 1000) : null;
+        $this->expirationDate = $date ? $date / 1000 : null;
         return $this;
     }
 
     /**
-     * Return timestamp of expiration date
-     *
      * @return int|null
      */
     public function getExpirationDate()
@@ -62,5 +65,15 @@ class LeadInfoResponse  extends DataObject
     public function getStatus()
     {
         return (string)$this->status;
+    }
+
+    public function getQuantityConsumed()
+    {
+        return $this->getData('quantityConsumed');
+    }
+
+    public function getLeftQty()
+    {
+        return (int)$this->getQuantity() - (int)$this->getQuantityConsumed();
     }
 }
