@@ -16,6 +16,7 @@ use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource
 use Extend\Warranty\Model\Orders as ExtendOrdersAPI;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -213,14 +214,28 @@ class ContractCreateProcess
 
                 try {
                     if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API) {
-                        $extendOrder = $this->extendOrderRepository->get($order->getId());
-                        /**
-                         * if order was canceled before sending to Extend then ignore it
-                         */
-                        if ($order->getState() == Order::STATE_CANCELED && $extendOrder->getExtendOrderId()) {
-                            $this->extendOrdersApi->cancel($order);
-                        } elseif (!$extendOrder->getExtendOrderId()) {
+                        try {
+                            $extendOrder = $this->extendOrderRepository->get($order->getId());
+                        } catch (NoSuchEntityException $e) {
+                            $extendOrder = false;
+                        }
+
+                        if ($order->getState() != Order::STATE_CANCELED
+                            && (!$extendOrder || !$extendOrder->getExtendOrderId())) {
+                            /**
+                             * create order only no extend order was created
+                             */
                             $this->extendOrdersApi->create($order);
+                        }
+
+                        if ($order->getState() == Order::STATE_CANCELED
+                            && $extendOrder
+                            && $extendOrder->getExtendOrderId()) {
+                            /**
+                             * we cancel order only if was already sent to extend
+                             * and have state canceled
+                             */
+                            $this->extendOrdersApi->cancel($order);
                         }
 
                         $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_SUCCESS;

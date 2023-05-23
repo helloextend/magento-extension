@@ -52,7 +52,7 @@ class ExtendOrderRepository
         $this->extendOrderResourceModel->load($extendOrder, $orderId);
 
         if (!$extendOrder->getId()) {
-            throw new NoSuchEntityException(__("Extend order for order %s doesn't exist."));
+            throw new NoSuchEntityException(__("Extend order for order %1 doesn't exist.", $orderId));
         }
         return $extendOrder;
     }
