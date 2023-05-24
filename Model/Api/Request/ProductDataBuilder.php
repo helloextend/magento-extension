@@ -38,6 +38,8 @@ class ProductDataBuilder
      */
     public const DELIMITER_CATEGORY = '/';
 
+    public const NO_CATEGORY_DEFAULT_VALUE = 'No Category';
+
     /**
      * Configuration identifier
      */
@@ -175,7 +177,7 @@ class ProductDataBuilder
         }
 
         $payload = [
-            'category' => $categories ?: 'No Category',
+            'category' => $categories ? : self::NO_CATEGORY_DEFAULT_VALUE,
             'description' => $description,
             'price' => $price,
             'title' => (string)$product->getName(),

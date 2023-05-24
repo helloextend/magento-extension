@@ -10,9 +10,11 @@
 
 namespace Extend\Warranty\ViewModel;
 
+use Extend\Warranty\Helper\Data as ExtendHelper;
 use Extend\Warranty\Model\LeadInfo;
 use Extend\Warranty\Model\WarrantyRelation;
 use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
@@ -126,6 +128,11 @@ class Warranty implements ArgumentInterface
     protected $warrantyRelation;
 
     /**
+     * @var ExtendHelper
+     */
+    protected $helper;
+
+    /**
      * Warranty constructor
      *
      * @param DataHelper $dataHelper
@@ -155,9 +162,11 @@ class Warranty implements ArgumentInterface
         StoreManagerInterface $storeManager,
         AdminSession $adminSession,
         LeadInfo $leadInfo,
-        WarrantyRelation $warrantyRelation
+        WarrantyRelation $warrantyRelation,
+        ExtendHelper $helper
     ) {
         $this->dataHelper = $dataHelper;
+        $this->helper = $helper;
         $this->jsonSerializer = $jsonSerializer;
         $this->linkManagement = $linkManagement;
         $this->trackingHelper = $trackingHelper;
@@ -610,7 +619,24 @@ class Warranty implements ArgumentInterface
         }
 
         return $result;
+    }
 
+    public function getProductInfo($product)
+    {
+        $price = $product->getFinalPrice();
 
+        /** @var Collection $categoryCollection */
+        $categoryCollection = $product->getCategoryCollection();
+        $categoryCollection->addAttributeToSelect('name');
+        $categoryCollection->addIsActiveFilter();
+        $categoryCollection->addAttributeToSort('created_at', 'desc');
+        $category = $categoryCollection->getFirstItem();
+
+        return [
+            'price' => $this->helper->formatPrice($price),
+            'category' => $category && $category->getId()
+                ? $category->getName()
+                : \Extend\Warranty\Model\Api\Request\ProductDataBuilder::NO_CATEGORY_DEFAULT_VALUE
+        ];
     }
 }
