@@ -158,7 +158,7 @@ class Warranty implements ArgumentInterface
         StoreManagerInterface        $storeManager,
         AdminSession                 $adminSession,
         LeadInfo                     $leadInfo,
-        WarrantyRelation             $warrantyRelation
+        WarrantyRelation             $warrantyRelation,
         ExtendHelper                 $helper
     )
     {
