@@ -30,7 +30,8 @@ $_productsData = [];
         <?php if ($_item->isSaleable()): ?>
             <?php $_productsData[] = [
                 'id' => $_item->getId(),
-                'sku' => $_item->getSku()
+                'sku' => $_item->getSku(),
+                'productInfo' => $viewModel->getProductInfo($_item)
             ]; ?>
         <?php endif; ?>
     <?php endforeach; ?>
