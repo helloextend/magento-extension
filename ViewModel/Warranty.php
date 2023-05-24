@@ -12,6 +12,7 @@ namespace Extend\Warranty\ViewModel;
 
 use Exception;
 use Extend\Warranty\Helper\Api\Data as DataHelper;
+use Extend\Warranty\Helper\Data as ExtendHelper;
 use Extend\Warranty\Model\Api\Response\LeadInfoResponse;
 use Extend\Warranty\Model\LeadInfo;
 use Extend\Warranty\Model\WarrantyRelation;
@@ -20,6 +21,7 @@ use Extend\Warranty\Model\Offers as OfferModel;
 use Extend\Warranty\Model\Config\Source\ProductPagePlacement;
 use Magento\Backend\Model\Auth\Session as AdminSession;
 use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\ConfigurableProduct\Api\LinkManagementInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
@@ -124,6 +126,8 @@ class Warranty implements ArgumentInterface
 
     protected $warrantyRelation;
 
+    protected $helper;
+
     /**
      * Warranty constructor
      *
@@ -155,9 +159,11 @@ class Warranty implements ArgumentInterface
         AdminSession                 $adminSession,
         LeadInfo                     $leadInfo,
         WarrantyRelation             $warrantyRelation
+        ExtendHelper                 $helper
     )
     {
         $this->dataHelper = $dataHelper;
+        $this->helper = $helper;
         $this->jsonSerializer = $jsonSerializer;
         $this->linkManagement = $linkManagement;
         $this->trackingHelper = $trackingHelper;
@@ -610,7 +616,24 @@ class Warranty implements ArgumentInterface
         }
 
         return $result;
+    }
 
+    public function getProductInfo($product)
+    {
+        $price = $product->getFinalPrice();
 
+        /** @var Collection $categoryCollection */
+        $categoryCollection = $product->getCategoryCollection();
+        $categoryCollection->addAttributeToSelect('name');
+        $categoryCollection->addIsActiveFilter();
+        $categoryCollection->addAttributeToSort('created_at', 'desc');
+        $category = $categoryCollection->getFirstItem();
+
+        return [
+            'price' => $this->helper->formatPrice($price),
+            'category' => $category && $category->getId()
+                ? $category->getName()
+                : \Extend\Warranty\Model\Api\Request\ProductDataBuilder::NO_CATEGORY_DEFAULT_VALUE
+        ];
     }
 }
