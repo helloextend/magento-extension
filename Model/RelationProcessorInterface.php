@@ -5,7 +5,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Model;
@@ -73,7 +73,7 @@ interface RelationProcessorInterface
 
     /**
      * Get Order Item SKU which is used to relate warrantable
-     * and warranty quote item.
+     * and warranty order item.
      *
      * Needed on order view page
      *

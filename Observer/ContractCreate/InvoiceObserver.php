@@ -53,9 +53,10 @@ class InvoiceObserver implements ObserverInterface
      */
     public function __construct(
         WarrantyContractCreate $warrantyContractCreate,
-        DataHelper $dataHelper,
-        LoggerInterface $logger
-    ) {
+        DataHelper             $dataHelper,
+        LoggerInterface        $logger
+    )
+    {
         $this->warrantyContractCreate = $warrantyContractCreate;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
@@ -77,7 +78,6 @@ class InvoiceObserver implements ObserverInterface
 
         if ($this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
             && $this->dataHelper->isWarrantyContractEnabled($storeId)
-            && ($contractCreateEvent == CreateContractEvent::INVOICE_CREATE)
         ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();
@@ -93,9 +93,21 @@ class InvoiceObserver implements ObserverInterface
                     }
                 }
 
+                /**
+                 * we need to create contracts for lead warranty if they were not created before
+                 * despite the shipping event
+                 */
+                if (
+                    $contractCreateEvent !== CreateContractEvent::INVOICE_CREATE
+                    && (!$orderItem->getBuyRequest()->hasData('leadToken'))
+                ) {
+                    continue;
+                }
+
+
                 $qtyInvoiced = (int)$invoiceItem->getQty();
 
-                if (!$this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)) {
+                if (!$this->dataHelper->isContractCreateModeScheduled($storeId)) {
                     try {
                         $this->warrantyContractCreate->createContract($order, $orderItem, $qtyInvoiced, $storeId);
                     } catch (LocalizedException $exception) {

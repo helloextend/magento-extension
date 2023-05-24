@@ -26,6 +26,10 @@ use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Extend\Warranty\Model\Product\Type;
 use Exception;
 
+/**
+ * @deprecated 1.3.0 Orders API should be used in all circumstances instead of the Contracts API
+ * @see FullOrderBuilder
+ */
 class OrderBuilder
 {
     /**

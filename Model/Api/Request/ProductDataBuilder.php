@@ -5,7 +5,7 @@
  * @author      Extend Magento Team <magento@guidance.com>
  * @category    Extend
  * @package     Warranty
- * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
  */
 
 namespace Extend\Warranty\Model\Api\Request;
@@ -120,14 +120,15 @@ class ProductDataBuilder
      */
     public function __construct(
         CategoryRepositoryInterface $categoryRepository,
-        ProductMediaConfig $configMedia,
-        Helper $helper,
-        ApiHelper $apiHelper,
-        ProductResourceModel $productResourceModel,
-        OptionProvider $optionProvider,
-        StoreManagerInterface $storeManager,
-        Type $catalogProductType
-    ) {
+        ProductMediaConfig          $configMedia,
+        Helper                      $helper,
+        ApiHelper                   $apiHelper,
+        ProductResourceModel        $productResourceModel,
+        OptionProvider              $optionProvider,
+        StoreManagerInterface       $storeManager,
+        Type                        $catalogProductType
+    )
+    {
         $this->categoryRepository = $categoryRepository;
         $this->configMedia = $configMedia;
         $this->helper = $helper;
@@ -144,7 +145,11 @@ class ProductDataBuilder
      * @param ProductInterface $product
      * @return array
      */
-    public function preparePayload(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null): array
+    public function preparePayload(
+        ProductInterface $product,
+                         $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                         $scopeId = null
+    ): array
     {
         $categories = $this->getCategories($product);
 
@@ -152,16 +157,16 @@ class ProductDataBuilder
         $currencyCode = $this->getCurrencyCode($storeId);
 
         $price = [
-            'amount'        => $this->helper->formatPrice($this->calculateSyncProductPrice($product, $scopeType, $scopeId)),
-            'currencyCode'  => $currencyCode,
+            'amount' => $this->helper->formatPrice($this->calculateSyncProductPrice($product, $scopeType, $scopeId)),
+            'currencyCode' => $currencyCode,
         ];
 
         $identifiers = [
-            'sku'   => (string)$product->getSku(),
-            'type'  => (string)$product->getTypeId(),
+            'sku' => (string)$product->getSku(),
+            'type' => (string)$product->getTypeId(),
         ];
 
-        $description = trim((string) $product->getShortDescription());
+        $description = trim((string)$product->getShortDescription());
 
         if (strlen($description) > 2000) {
             $description = substr($description, 0, 2000);
@@ -172,12 +177,12 @@ class ProductDataBuilder
         }
 
         $payload = [
-            'category'          => $categories ? : self::NO_CATEGORY_DEFAULT_VALUE,
-            'description'       => $description,
-            'price'             => $price,
-            'title'             => (string)$product->getName(),
-            'referenceId'       => (string)$product->getSku(),
-            'identifiers'       => $identifiers,
+            'category' => $categories ?: self::NO_CATEGORY_DEFAULT_VALUE,
+            'description' => $description,
+            'price' => $price,
+            'title' => (string)$product->getName(),
+            'referenceId' => (string)$product->getSku(),
+            'identifiers' => $identifiers,
         ];
 
         $imageUrl = $this->getProductImageUrl($product);
@@ -205,7 +210,11 @@ class ProductDataBuilder
      * @param $scopeId
      * @return float|null
      */
-    public function calculateSyncProductPrice(ProductInterface $product, $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null) {
+    public function calculateSyncProductPrice(
+        ProductInterface $product,
+                         $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                         $scopeId = null
+    ) {
         $price = $product->getPrice();
         $specialPricesEnabled = $this->_getIsSpecialPricesSyncEnabled($scopeType, $scopeId);
         $specialPrice = $this->catalogProductType->priceFactory($product->getTypeId())->getFinalPrice(1, $product);
@@ -219,7 +228,8 @@ class ProductDataBuilder
     /**
      * @return bool
      */
-    private function _getIsSpecialPricesSyncEnabled($scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null): bool {
+    private function _getIsSpecialPricesSyncEnabled($scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = null): bool
+    {
         if ($this->_isSpecialPriceSyncEnabled && isset($this->_isSpecialPriceSyncEnabled[$scopeType][$scopeId ?? Store::DEFAULT_STORE_ID])) {
             return $this->_isSpecialPriceSyncEnabled[$scopeType][$scopeId ?? Store::DEFAULT_STORE_ID];
         }

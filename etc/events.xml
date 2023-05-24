@@ -19,19 +19,20 @@
         <observer name="extend_warranty_request_refund_observer"
                   instance="Extend\Warranty\Observer\RequestRefundObserver" />
     </event>
-    <event name="sales_order_place_after">
-        <observer name="extend_warranty_create_lead_observer" instance="Extend\Warranty\Observer\CreateLead"/>
+    <event name="sales_model_service_quote_submit_success">
+        <observer name="extend_warranty_create_order_observer" instance="Extend\Warranty\Observer\CreateOrder"/>
     </event>
     <event name="sales_order_invoice_pay">
         <observer name="extend_warranty_create_warranty_invoice_after_observer"
                   instance="Extend\Warranty\Observer\ContractCreate\InvoiceObserver"/>
     </event>
-    <event name="sales_order_save_commit_after">
-        <observer name="extend_warranty_create_warranty_order_after_observer"
-                  instance="Extend\Warranty\Observer\ContractCreate\OrderObserver"/>
-    </event>
     <event name="checkout_cart_product_add_before">
         <observer name="extend_warranty_add_to_cart"
                   instance="Extend\Warranty\Observer\AddToCart" />
+    </event>
+
+    <event name="order_cancel_after">
+        <observer name="extend_warranty_order_cancel"
+                  instance="Extend\Warranty\Observer\CancelOrder" />
     </event>
 </config>

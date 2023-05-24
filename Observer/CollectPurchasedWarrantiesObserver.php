@@ -96,7 +96,7 @@ class CollectPurchasedWarrantiesObserver implements ObserverInterface
         $storeId = $invoice->getStoreId();
 
         if ($this->dataHelper->isExtendEnabled(ScopeInterface::SCOPE_STORES, $storeId)
-            && $this->dataHelper->isContractCreateModeScheduled(ScopeInterface::SCOPE_STORES, $storeId)
+            && $this->dataHelper->isContractCreateModeScheduled($storeId)
         ) {
             foreach ($invoice->getAllItems() as $invoiceItem) {
                 $orderItem = $invoiceItem->getOrderItem();

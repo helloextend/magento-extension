@@ -65,7 +65,7 @@ class LeadInfoRequest extends AbstractRequest
      * @param string $leadToken
      * @return LeadInfoResponse
      */
-    public function create(string $leadToken): LeadInfoResponse
+    public function getLead(string $leadToken): LeadInfoResponse
     {
         $url = $this->apiUrl . sprintf(self::GET_LEAD_INFO_ENDPOINT, $leadToken);
 
@@ -83,7 +83,7 @@ class LeadInfoRequest extends AbstractRequest
 
             $leadInfoResponse->setExpirationDate($responseBody['expirationDate'] ?? null);
             $leadInfoResponse->setStatus($responseBody['status'] ?? '');
-
+            $leadInfoResponse->setData($responseBody);
             if (!$leadInfoResponse->getExpirationDate()) {
                 $this->logger->error('Lead token expiration date is not set');
             }
