@@ -86,6 +86,7 @@ define([
          * @protected
          * @param {String} productId - product ID
          * @param {String} productSku - product SKU
+         * @param {Object} productInfo - {price:"$price", category:"$category"}
          * @return {jQuery|HTMLElement}
          */
         _initWarrantyOffersBlock: function (productId, productSku, productInfo) {
