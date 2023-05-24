@@ -83,7 +83,12 @@ define([
 
             var product = component.getActiveProduct() || { id: '' };
             if (product.id !== productSku) {
-                component.setActiveProduct(productSku);
+                let activeProduct = {
+                    referenceId:productSku,
+                    price: product.price,
+                    category: product.category
+                };
+                component.setActiveProduct(activeProduct);
             }
         },
 
@@ -91,9 +96,10 @@ define([
          * Opens warranty offers modal
          *
          * @param {String} productSku - product SKU
+         * @param {Object} productInfo
          * @param {Function} closeCallback - function to be invoked after the modal is closed
          */
-        openOffersModal: function (productSku, closeCallback) {
+        openOffersModal: function (productSku,productInfo, closeCallback) {
             if (!this.options.modalEnabled) {
                 closeCallback(null);
                 return;
@@ -101,6 +107,8 @@ define([
 
             Extend.modal.open({
                 referenceId: productSku,
+                price:productInfo.price,
+                category:productInfo.category,
                 onClose: closeCallback.bind(this)
             });
         },

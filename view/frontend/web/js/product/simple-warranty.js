@@ -199,7 +199,7 @@ define([
 
             // Plan is not selected & warranty offers modal is enabled
             if (this.options.modalEnabled) {
-                this._addToCartFromModal(productSku);
+                this._addToCartFromModal(productSku,this.options.productInfo);
 
                 event.preventDefault();
                 event.stopPropagation();
@@ -213,16 +213,21 @@ define([
          * Opens Extend Warranty modal
          * @protected
          * @param {String} productSku - currently selected product SKU
+         * @param {Object} productInfo
          */
-        _addToCartFromModal: function (productSku) {
-            this.warrantyBlock.extendWarrantyOffers('openOffersModal', productSku, function (plan) {
-                this._removeWarrantyInputs();
+        _addToCartFromModal: function (productSku,productInfo) {
+            this.warrantyBlock.extendWarrantyOffers(
+                'openOffersModal',
+                productSku,
+                productInfo,
+                function (plan) {
+                    this._removeWarrantyInputs();
 
-                if (plan) {
-                    this._appendWarrantyInputs(this.warrantyBlock, productSku, plan, 'modal');
-                }
-                this._submitAddToCartForm();
-            }.bind(this));
+                    if (plan) {
+                        this._appendWarrantyInputs(this.warrantyBlock, productSku, plan, 'modal');
+                    }
+                    this._submitAddToCartForm();
+                }.bind(this));
         },
 
         /**
