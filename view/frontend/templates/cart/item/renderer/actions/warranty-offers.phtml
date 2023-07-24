@@ -45,6 +45,7 @@ $isWarrantyItem = $productType === \Extend\Warranty\Model\Product\Type::TYPE_COD
                     "cartItemWarranty":{
                         "productSku": "<?= $block->escapeJs($_currentSku) ?>",
                         "secondarySku": "<?= $block->escapeJs($_secondarySku);?>",
+                        "productInfo": <?= json_encode($viewModel->getProductInfo($product)); ?>,
                         "addToCartUrl" : "<?= $block->escapeUrl($block->getUrl('warranty/cart/add')) ?>",
                         "buttonEnabled": true,
                         "trackingEnabled": <?= $block->escapeJs($viewModel->isTrackingEnabled() ? 1 : 0) ?>

@@ -28,6 +28,7 @@ $product = $block->getProduct();
                 "productId": "<?= $block->escapeJs($product->getId()) ?>",
                 "productSku": "<?= $block->escapeJs($product->getData('sku')) ?>",
                 "buttonEnabled": <?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled() ? 1 : 0) ?>,
+                "productInfo": <?= json_encode($viewModel->getProductInfo($product)); ?>,
                 "modalEnabled": <?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled() ? 1 : 0) ?>,
                 "insertionPoint": "<?= $block->escapeJs($placement['insertionPoint']) ?>",
                 "insertionLogic": "<?= $block->escapeJs($placement['insertionLogic']) ?>"

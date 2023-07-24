@@ -27,6 +27,7 @@ $product = $block->getProduct();
                 "isInProductView": true,
                 "productId": "<?= $block->escapeJs($product->getId()) ?>",
                 "productSku": "warranties_are_only_for_simples",
+                "productInfo": <?= json_encode($viewModel->getProductInfo($product)); ?>,
                 "buttonEnabled": <?= $block->escapeJs($viewModel->isProductDetailPageOffersEnabled() ? 1 : 0) ?>,
                 "modalEnabled": <?= $block->escapeJs($viewModel->isInterstitialCartOffersEnabled() ? 1 : 0) ?>,
                 "insertionPoint": "<?= $block->escapeJs($placement['insertionPoint']) ?>",

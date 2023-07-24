@@ -16,12 +16,14 @@ use Extend\Warranty\Model\ResourceModel\ContractCreate as ContractCreateResource
 use Extend\Warranty\Model\Orders as ExtendOrdersAPI;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTime as Date;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -95,6 +97,11 @@ class ContractCreateProcess
     private $logger;
 
     /**
+     * @var ExtendOrderRepository
+     */
+    protected $extendOrderRepository;
+
+    /**
      * ContractCreateProcess constructor
      *
      * @param ContractCreateResource $contractCreateResource
@@ -105,19 +112,22 @@ class ContractCreateProcess
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param OrderRepositoryInterface $orderRepository
      * @param ExtendOrdersAPI $extendOrdersApi
+     * @param ExtendOrderRepository $extendOrderRepository
      * @param LoggerInterface $logger
      */
     public function __construct(
-        ContractCreateResource $contractCreateResource,
-        DateTime $dateTime,
-        Date $date,
-        DataHelper $dataHelper,
-        WarrantyContract $warrantyContract,
+        ContractCreateResource       $contractCreateResource,
+        DateTime                     $dateTime,
+        Date                         $date,
+        DataHelper                   $dataHelper,
+        WarrantyContract             $warrantyContract,
         OrderItemRepositoryInterface $orderItemRepository,
-        OrderRepositoryInterface $orderRepository,
-        ExtendOrdersAPI $extendOrdersApi,
-        LoggerInterface $logger
-    ) {
+        OrderRepositoryInterface     $orderRepository,
+        ExtendOrdersAPI              $extendOrdersApi,
+        ExtendOrderRepository        $extendOrderRepository,
+        LoggerInterface              $logger
+    )
+    {
         $this->contractCreateResource = $contractCreateResource;
         $this->dateTime = $dateTime;
         $this->date = $date;
@@ -126,6 +136,7 @@ class ContractCreateProcess
         $this->orderItemRepository = $orderItemRepository;
         $this->orderRepository = $orderRepository;
         $this->extendOrdersApi = $extendOrdersApi;
+        $this->extendOrderRepository = $extendOrderRepository;
         $this->logger = $logger;
     }
 
@@ -133,6 +144,15 @@ class ContractCreateProcess
      * Process records
      */
     public function execute()
+    {
+
+        $this->createScheduledOrders();
+        $this->createScheduledContracts();
+
+        $this->purgeOldContractCreateRecords();
+    }
+
+    private function createScheduledContracts()
     {
         $batchSize = $this->dataHelper->getContractsBatchSize();
         $offset = 0;
@@ -146,28 +166,20 @@ class ContractCreateProcess
             $processedContractCreateRecords = [];
             foreach ($contractCreateRecordsBatch as $contractCreateRecord) {
                 $recordId = $contractCreateRecord['id'];
-                $orderItem = $this->getOrderItem((int)$contractCreateRecord['order_item_id']);
-                if (!$orderItem) {
-                    $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
-                    continue;
-                }
-
-                $orderId = (int)$orderItem->getOrderId();
-                $order = $this->getOrder($orderId);
-
-                if (!$order) {
-                    $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
-                    continue;
-                }
-
                 $qty = (int)$contractCreateRecord['qty'];
 
+                $orderItem = $this->getOrderItem((int)$contractCreateRecord['order_item_id']);
+                $order = $this->getOrder((int)$contractCreateRecord['order_id']);
+
+                if (!$orderItem || !$order || $order->getId() != $orderItem->getOrderId()) {
+                    $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
+                    continue;
+                }
+
                 try {
-                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API
-                        && $this->dataHelper->isContractCreateModeScheduled()
-                    ) {
+                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API) {
                         $processedContractCreateRecords[$recordId] =
-                            $this->extendOrdersApi->createOrder($order, $orderItem, $qty);
+                            $this->extendOrdersApi->updateOrderItemStatus($order, $orderItem, $qty);
                     }
                 } catch (LocalizedException $exception) {
                     $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
@@ -178,8 +190,65 @@ class ContractCreateProcess
             $this->updateContractCreateRecords($processedContractCreateRecords);
             $offset += $batchSize;
         } while ($batchCount == $batchSize);
+    }
 
-        $this->purgeOldContractCreateRecords();
+    private function createScheduledOrders()
+    {
+        $offset = 0;
+        $batchSize = $this->dataHelper->getContractsBatchSize();
+        $orderCreateRecords = $this->getOrdersCreateRecords();
+
+        do {
+            $ordersCreateBatch = array_slice($orderCreateRecords, $offset, $batchSize);
+            $batchCount = count($ordersCreateBatch);
+
+            $processedContractCreateRecords = [];
+            foreach ($ordersCreateBatch as $ordersCreateRecord) {
+                $recordId = $ordersCreateRecord['id'];
+                $order = $this->getOrder((int)$ordersCreateRecord['order_id']);
+
+                if (!$order) {
+                    $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
+                    continue;
+                }
+
+                try {
+                    if ($this->dataHelper->getContractCreateApi() == CreateContractApi::ORDERS_API) {
+                        try {
+                            $extendOrder = $this->extendOrderRepository->get($order->getId());
+                        } catch (NoSuchEntityException $e) {
+                            $extendOrder = false;
+                        }
+
+                        if ($order->getState() != Order::STATE_CANCELED
+                            && (!$extendOrder || !$extendOrder->getExtendOrderId())) {
+                            /**
+                             * create order only no extend order was created
+                             */
+                            $this->extendOrdersApi->create($order);
+                        }
+
+                        if ($order->getState() == Order::STATE_CANCELED
+                            && $extendOrder
+                            && $extendOrder->getExtendOrderId()) {
+                            /**
+                             * we cancel order only if was already sent to extend
+                             * and have state canceled
+                             */
+                            $this->extendOrdersApi->cancel($order);
+                        }
+
+                        $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_SUCCESS;
+                    }
+                } catch (LocalizedException $exception) {
+                    $processedContractCreateRecords[$recordId] = ContractCreate::STATUS_FAILED;
+                    $this->logger->error($exception->getMessage());
+                }
+            }
+
+            $this->updateContractCreateRecords($processedContractCreateRecords);
+            $offset += $batchSize;
+        } while ($batchCount == $batchSize);
     }
 
     /**
@@ -195,9 +264,31 @@ class ContractCreateProcess
         $select = $connection->select();
         $select->from(
             $tableName,
-            ['id', 'order_item_id', 'qty']
+            ['id', 'order_item_id', 'order_id', 'qty']
         );
-        $select->where('status is null');
+        $select->where('status is null')
+            ->where('order_item_id != ?', 0);
+
+        return $connection->fetchAssoc($select);
+    }
+
+    /**
+     * Get records
+     *
+     * @return array
+     */
+    protected function getOrdersCreateRecords(): array
+    {
+        $connection = $this->contractCreateResource->getConnection();
+        $tableName = $connection->getTableName('extend_warranty_contract_create');
+
+        $select = $connection->select();
+        $select->from(
+            $tableName,
+            ['id', 'order_id']
+        );
+        $select->where('status is null')
+            ->where('order_item_id = ?', 0);
 
         return $connection->fetchAssoc($select);
     }

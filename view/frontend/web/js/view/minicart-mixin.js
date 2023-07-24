@@ -80,6 +80,7 @@ define([
                     isInCartPage: window.location.href === this.shoppingCartUrl,
                     productSku: product_sku,
                     secondarySku: secondary_sku,
+                    productInfo: cartItem.product_info,
                     addToCartUrl: cartItem.warranty_add_url,
                     buttonEnabled: true,
                     trackingEnabled: cartItem.product_is_tracking_enabled

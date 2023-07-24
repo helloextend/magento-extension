@@ -37,6 +37,7 @@ class Type extends AbstractType
     public const ASSOCIATED_PRODUCT_NAME = 'associated_product_name';
     public const TERM = 'warranty_term';
     public const PLAN_TYPE = 'plan_type';
+    public const LEAD_TOKEN = 'lead_token';
     public const BUY_REQUEST = 'info_buyRequest';
     public const SECONDARY_SKU = 'secondary_sku';
 
@@ -82,7 +83,8 @@ class Type extends AbstractType
         ProductRepositoryInterface                         $productRepository,
         Data                                               $helper,
         \Magento\Framework\Serialize\Serializer\Json       $serializer = null
-    ) {
+    )
+    {
         $this->helper = $helper;
         parent::__construct(
             $catalogProductOption,
@@ -141,7 +143,7 @@ class Type extends AbstractType
      */
     protected function _prepareProduct(\Magento\Framework\DataObject $buyRequest, $product, $processMode)
     {
-        if(!$buyRequest->getProduct()){
+        if (!$buyRequest->getProduct()) {
             $this->_logger->error(sprintf(__('BuyRequest is not valid, product option is not provided.')));
             throw new LocalizedException(__('Warranty was unable to be added. Please try again.'));
         }
@@ -162,8 +164,12 @@ class Type extends AbstractType
         $product->addCustomOption(self::PLAN_TYPE, $buyRequest->getData('coverageType'));
         $product->addCustomOption(self::BUY_REQUEST, $this->serializer->serialize($buyRequest->getData()));
 
-        if($buyRequest->hasSecondarySku()){
+        if ($buyRequest->hasSecondarySku()) {
             $product->addCustomOption(self::SECONDARY_SKU, $buyRequest->getSecondarySku());
+        }
+
+        if ($buyRequest->hasData('leadToken')) {
+            $product->addCustomOption(self::LEAD_TOKEN, $buyRequest->getData('leadToken'));
         }
 
         if ($this->_isStrictProcessMode($processMode)) {
@@ -202,6 +208,10 @@ class Type extends AbstractType
 
         if ($planType = $product->getCustomOption(self::PLAN_TYPE)) {
             $options[self::PLAN_TYPE] = $planType->getValue();
+        }
+
+        if ($leadToken = $product->getCustomOption(self::LEAD_TOKEN)) {
+            $options[self::LEAD_TOKEN] = $leadToken->getValue();
         }
 
         return $options;

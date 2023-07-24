@@ -12,7 +12,7 @@ namespace Extend\Warranty\Model\Api\Sync\Orders;
 
 use Extend\Warranty\Api\ConnectorInterface;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
-use Extend\Warranty\Model\Api\Request\OrderBuilder;
+use Extend\Warranty\Model\Api\Request\HistoricalOrderBuilder;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\ZendEscaper;
@@ -23,7 +23,7 @@ class HistoricalOrdersRequest extends AbstractRequest
     /**
      * Create a warranty contract
      */
-    const CREATE_ORDER_ENDPOINT = 'orders/batch';
+    const CREATE_ORDER_ENDPOINT = 'orders/batch?historical=true';
 
     /**
      * Response status codes
@@ -31,7 +31,7 @@ class HistoricalOrdersRequest extends AbstractRequest
     const STATUS_CODE_SUCCESS = 201;
 
     /**
-     * @var OrderBuilder
+     * @var HistoricalOrderBuilder
      */
     protected $orderBuilder;
 
@@ -40,14 +40,14 @@ class HistoricalOrdersRequest extends AbstractRequest
      * @param JsonSerializer $jsonSerializer
      * @param ZendEscaper $encoder
      * @param LoggerInterface $logger
-     * @param OrderBuilder $orderBuilder
+     * @param HistoricalOrderBuilder $orderBuilder
      */
     public function __construct(
-        ConnectorInterface $connector,
-        JsonSerializer     $jsonSerializer,
-        ZendEscaper        $encoder,
-        LoggerInterface    $logger,
-        OrderBuilder       $orderBuilder
+        ConnectorInterface     $connector,
+        JsonSerializer         $jsonSerializer,
+        ZendEscaper            $encoder,
+        LoggerInterface        $logger,
+        HistoricalOrderBuilder $orderBuilder
 
     )
     {
@@ -65,11 +65,10 @@ class HistoricalOrdersRequest extends AbstractRequest
     public function create(array $orders, int $currentBatch = 1): bool
     {
         $url = $this->apiUrl . self::CREATE_ORDER_ENDPOINT;
-        $url .= "?historical=true";
         $historicalOrders = [];
 
         foreach ($orders as $order) {
-            $historicalOrder = $this->orderBuilder->prepareHistoricalOrdersPayLoad($order);
+            $historicalOrder = $this->orderBuilder->preparePayload($order);
 
             if (!empty($historicalOrder)) {
                 $historicalOrders[] = $historicalOrder;
@@ -98,6 +97,7 @@ class HistoricalOrdersRequest extends AbstractRequest
                     return true;
                 } else {
                     $this->logger->error(sprintf('Order batch %s synchronization is failed.', $currentBatch));
+                    return false;
                 }
             } catch (LocalizedException $exception) {
                 $this->logger->error(sprintf('Order batch %s synchronization is failed. Error message: %s', $currentBatch, $exception->getMessage()));

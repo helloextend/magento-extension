@@ -1,13 +1,24 @@
 <?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
+ */
 
 namespace Extend\Warranty\Model\Api\Sync\Orders;
 
 use Extend\Warranty\Model\Api\Response;
+use Extend\Warranty\Model\Api\Response\OrderResponse;
 use Extend\Warranty\Model\Api\Sync\AbstractRequest;
 use Extend\Warranty\Api\ConnectorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\ZendEscaper;
 use Psr\Log\LoggerInterface;
+use Extend\Warranty\Model\Api\Response\OrderResponseFactory;
 
 class OrdersRequest extends AbstractRequest
 {
@@ -16,75 +27,71 @@ class OrdersRequest extends AbstractRequest
      */
     public const CREATE_ORDER_ENDPOINT = 'orders';
 
+    public const CANCEL_ORDER_ENDPOINT = 'orders/%s/cancel';
+
     /**
      * Response status codes
      */
     public const STATUS_CODE_SUCCESS = 200;
 
     /**
+     * @var OrderResponseFactory
+     */
+    protected $orderResponseFactory;
+
+    /**
+     * @param ConnectorInterface $connector
+     * @param Json $jsonSerializer
+     * @param ZendEscaper $encoder
+     * @param LoggerInterface $logger
+     * @param OrderResponseFactory $orderResponseFactory
+     */
+    public function __construct(
+        ConnectorInterface   $connector,
+        Json                 $jsonSerializer,
+        ZendEscaper          $encoder,
+        LoggerInterface      $logger,
+        OrderResponseFactory $orderResponseFactory
+    )
+    {
+        parent::__construct(
+            $connector,
+            $jsonSerializer,
+            $encoder,
+            $logger
+        );
+        $this->orderResponseFactory = $orderResponseFactory;
+    }
+
+    /**
      * Create an order
      *
      * @param array $orderData
-     * @param string|null $type
+     * @return OrderResponse
      * @return array
      */
-    public function create(array $orderData, ?string $type = 'contract'): array
+    public function create(array $orderData): OrderResponse
     {
-        $result = [];
         $url = $this->apiUrl . self::CREATE_ORDER_ENDPOINT;
+        $orderResponse = $this->orderResponseFactory->create();
         try {
             $response = $this->connector->call(
                 $url,
                 "POST",
                 [
-                    'Accept'                  => 'application/json; version=2022-02-01',
-                    'Content-Type'            => 'application/json',
+                    'Accept' => 'application/json; version=2022-02-01',
+                    'Content-Type' => 'application/json',
                     self::ACCESS_TOKEN_HEADER => $this->apiKey,
-                    'X-Idempotency-Key'       => $this->getUuid4()
+                    'X-Idempotency-Key' => $this->getUuid4()
                 ],
                 $orderData
             );
+
             $responseBody = $this->processResponse($response);
+            $orderResponse->setData($responseBody);
 
-            if ($type == \Extend\Warranty\Model\Orders::CONTRACT
-                || $type == \Extend\Warranty\Model\Orders::LEAD_CONTRACT
-            ) {
-                $contractsIds = [];
-
-                if(isset($responseBody['lineItems'])){
-                    foreach ($responseBody['lineItems'] as $lineItem) {
-                        if ($lineItem['status'] != 'unfulfilled') {
-                            $contractsIds[] = $lineItem['contractId'];
-                        }
-                    }
-                }
-
-                $result = $contractsIds;
-            } elseif ($type == \Extend\Warranty\Model\Orders::LEAD) {
-                $leadsTokens = [];
-                if(isset($responseBody['lineItems'])) {
-                    foreach ($responseBody['lineItems'] as $lineItem) {
-                      if(isset($lineItem['leadToken'])){
-                          $leadsTokens[] = $lineItem['leadToken'];
-                      }
-                    }
-                }
-
-                $result = $leadsTokens;
-            }
-
-            $orderApiId = $responseBody['id'] ?? '';
-            if ($orderApiId) {
-                $this->logger->info('Order is created successfully. OrderApiID: ' . $orderApiId);
-                if (!empty($contractsIds)) {
-                    $this->logger->info('Contracts is created successfully. OrderApiID: ' . $orderApiId .
-                        ' Contracts: ' . implode(', ', $contractsIds));
-                }
-
-                if (!empty($leadsTokens)) {
-                    $this->logger->info('Leads is created successfully.
-                     OrderApiID: ' . $orderApiId . ' Leads: ' . implode(', ', $leadsTokens));
-                }
+            if ($orderResponse->getId()) {
+                $this->logger->info('Order is created successfully. OrderApiID: ' . $orderResponse->getId());
             } else {
                 $this->logger->error('Order creation is failed.');
             }
@@ -92,6 +99,48 @@ class OrdersRequest extends AbstractRequest
             $this->logger->error($exception->getMessage());
         }
 
-        return $result;
+        return $orderResponse;
+    }
+
+    /**
+     * @param string $extendOrderId
+     * @throws \Exception
+     */
+    public function cancel($extendOrderId)
+    {
+        if (!$extendOrderId) {
+            throw new \Exception('Extend Order id is empty');
+        }
+        $url = $this->apiUrl . sprintf(self::CANCEL_ORDER_ENDPOINT, $extendOrderId);
+
+        $orderData = ['orderId' => $extendOrderId];
+
+        $orderResponse = $this->orderResponseFactory->create();
+        try {
+            $response = $this->connector->call(
+                $url,
+                "POST",
+                [
+                    'Accept' => 'application/json; version=2022-02-01',
+                    'Content-Type' => 'application/json',
+                    self::ACCESS_TOKEN_HEADER => $this->apiKey,
+                    'X-Idempotency-Key' => $this->getUuid4()
+                ],
+                $orderData
+            );
+
+            $responseBody = $this->processResponse($response);
+            $orderResponse->setData($responseBody);
+
+            if ($response->getStatus() == self::STATUS_CODE_SUCCESS) {
+                $this->logger->info('Order was canceled successfully. OrderApiID: ' . $orderResponse->getId());
+            } else {
+                $this->logger->error(__('Order cancelation was failed.'));
+            }
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage());
+        }
+
+        return $orderResponse;
     }
 }

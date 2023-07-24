@@ -36,4 +36,18 @@
                     table="extend_historical_orders" column="entity_id" referenceTable="sales_order"
                     referenceColumn="entity_id" onDelete="CASCADE"/>
     </table>
+    <table name="extend_order">
+        <column xsi:type="int" name="order_id" padding="10" identity="false" nullable="false" unsigned="true"
+                comment="Order Id"/>
+        <column xsi:type="varchar" length="40" name="extend_order_id" nullable="true" comment="Extend Order Id"/>
+        <constraint xsi:type="foreign" referenceId="EXTEND_ORDERS_SALES_ORDER_ENTITY_ID"
+                    table="extend_orders" column="order_id" referenceTable="sales_order"
+                    referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="EXTEND_ORDER_ORDER_ID">
+            <column name="order_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="EXTEND_ORDER_EXTEND_ORDER_ID">
+            <column name="extend_order_id"/>
+        </constraint>
+    </table>
 </schema>
