@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.2.2
+## version: 2.2.3
 
 ### Changelog:
 
 ---
+
+
+**2.2.3**
+
+Patch Release - Merge pull request #395 from helloextend/martin-bugfix07/24
+
+Bug Fix for 
+
+
+
 
 
 **2.2.2**

@@ -1,30 +1,30 @@
 {
-  "name": "extend/module-warranty",
-  "description": "Extend Module for Magento 2",
-  "version": "2.2.1",
-  "require": {
-    "php": "^7.3 || ^8.0",
-    "magento/magento2-base": "2.3.* || 2.4.*"
-  },
-  "type": "magento2-module",
-  "license": [
-    "OSL-3.0",
-    "AFL-3.0"
-  ],
-  "authors": [
-    {
-      "name": "Extend, Inc.",
-      "email": "magento@extend.com",
-      "homepage": "https://www.extend.com",
-      "role": "Support"
-    }
-  ],
-  "autoload": {
-    "files": [
-      "registration.php"
+    "name": "extend/module-warranty",
+    "description": "Extend Module for Magento 2",
+    "version": "2.2.3",
+    "require": {
+        "php": "^7.3 || ^8.0",
+        "magento/magento2-base": "2.3.* || 2.4.*"
+    },
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
     ],
-    "psr-4": {
-      "Extend\\Warranty\\": ""
+    "authors": [
+        {
+            "name": "Extend, Inc.",
+            "email": "magento@extend.com",
+            "homepage": "https://www.extend.com",
+            "role": "Support"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Extend\\Warranty\\": ""
+        }
     }
-  }
 }
