@@ -1,4 +1,4 @@
-import re, sys
+import re, sys, json
 import xml.etree.ElementTree as ET
 
 # fetch type of upgrade code from bash arguments
@@ -26,6 +26,9 @@ branch_changelog_file_name = root_path + 'branch_changelog.md'
 
 # xml_file_name dictates where XML file is located
 xml_file_name = './etc/config.xml'
+
+# json_file_name dictates where XML file is located
+json_file_name = 'composer.json'
 
 # updateMajorVersion(Lines) updates the Major version x.0.0
 def updateMajorVersion(Lines) :
@@ -158,6 +161,20 @@ def processXML(version):
     # write data back to file
     tree.write(xml_file_name)
 
+# processJSON(versiion) takes version input and writes to the config.xml
+def processJSON(version):
+    # read JSON file
+    j_file = open('composer.json')
+
+    j_obj = json.load(j_file)
+
+    j_obj['version'] = version
+
+    j_obj = json.dumps(j_obj, indent=4)
+
+    with open(json_file_name, 'w') as outfile:
+        outfile.write(j_obj)
+
 # writeToFile(version) takes in version from update functions and writes it to the version file
 def writeToFile(contents, filename) :
     file1 = open(filename, 'w')
@@ -214,6 +231,7 @@ else :
     # 4. Write the update to the changelog file
     # 5. Clear the branch changelog file
     # 6. Update the XML version
+    # 7. Update the composer.json version
 
     changelog_file_lines = readFile(changelog_file_name)
 
@@ -226,3 +244,6 @@ else :
     writeToFile([], branch_changelog_file_name)
 
     processXML(version_to_write)
+
+    processJSON(version_to_write)
+
