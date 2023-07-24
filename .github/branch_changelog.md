@@ -1,3 +1,5 @@
+SEINT-1701 Updated highest PHP version to 8.2
+
 Merge pull request #391 from helloextend/EX-484
 
 [EX-484] [M2] Pass 'price' and 'category' parameters & values to the …
