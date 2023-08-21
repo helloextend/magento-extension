@@ -71,7 +71,8 @@ define([
                 var swatchesElem = this.options.isInProductView ?
                     $('[data-role=swatch-options]', this.mainWrap) :
                     $('[data-role^=swatch-option-]', this.mainWrap);
-                var swatchRenderer = swatchesElem.data('mageSwatchRenderer');
+		
+                var swatchRenderer = swatchesElem.data('mageSwatchRenderer') ? swatchesElem.data('mageSwatchRenderer') : swatchesElem.data('mage-SwatchRenderer');
 
                 if (swatchRenderer) {
                     var selectedProducts = swatchRenderer._CalcProducts();
