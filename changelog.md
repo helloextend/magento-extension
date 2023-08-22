@@ -1,10 +1,29 @@
 # Extend Magento2 Changelog
 
-## version: 2.2.3
+## version: 2.2.4
 
 ### Changelog:
 
 ---
+
+
+**2.2.4**
+
+Patch Release merge pull request #397 from develop to master
+
+PR for configurable product fix to master
+
+fix bug for configurable products
+
+mageSwatchRenderer is only for m2.4.3 and below
+mage-SwatchRenderer is for m2.4.4 and above
+
+Merge pull request #396 from helloextend/master
+
+08.07.23 Master to Develop
+
+
+
 
 
 **2.2.3**
