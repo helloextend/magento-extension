@@ -2,7 +2,7 @@
     /**
      * Extend Warranty
      *
-     * @author      Extend Magento Team <magento@guidance.com>
+     * @author      Extend Magento Team <magento@extend.com>
      * @category    Extend
      * @package     Warranty
      * @copyright   Copyright (c) 2023 Extend Inc. (https://www.extend.com/)
