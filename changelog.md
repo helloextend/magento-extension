@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.2.4
+## version: 2.2.5
 
 ### Changelog:
 
 ---
+
+
+**2.2.5**
+
+Patch Release - Merge pull request #399 from helloextend/2.2.5-merge
+
+addresses an issue in the admin when creating an order for a warranty only item and check/money order payment method is disabled.
+
+
+
 
 
 **2.2.4**
