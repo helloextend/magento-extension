@@ -9,7 +9,7 @@
 
 **2.2.4**
 
-Patch Release merge pull request #397 from develop to master
+Patch Release merge pull request #397 from develop to master.
 
 PR for configurable product fix to master
 
