@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.2.5
+## version: 2.2.6
 
 ### Changelog:
 
 ---
+
+
+**2.2.6**
+
+Patch Release - Merge pull request #400 from helloextend/JM-EE-Admin-fix
+
+Update sales_order_create_index.xml
+
+
+
 
 
 **2.2.5**
