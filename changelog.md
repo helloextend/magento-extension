@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.2.6
+## version: 2.2.7
 
 ### Changelog:
 
 ---
+
+
+**2.2.7**
+
+Patch Release - Merge pull request #401 from helloextend/227prep
+
+Update Orders.php
+
+
+
 
 
 **2.2.6**
