@@ -290,6 +290,7 @@ class Orders
             $extendOrder = false;
         }
 
+        
         if ($extendOrder){
             $this->getOrderRequest($order->getStoreId())
             ->cancel($extendOrder->getExtendOrderId());
