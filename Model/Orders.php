@@ -284,12 +284,16 @@ class Orders
             $extendOrder = $this->extendOrderRepository->get($order->getId());
         } catch (NoSuchEntityException $e) {
             $this->logger->info(__("Extend Order %1 was not found", $order->getId()));
+            $extendOrder = false;
         } catch (Exception $e) {
             throw new LocalizedException(__('Order cancelation was failed:' . $e->getMessage()));
+            $extendOrder = false;
         }
 
-        $this->getOrderRequest($order->getStoreId())
+        if ($extendOrder){
+            $this->getOrderRequest($order->getStoreId())
             ->cancel($extendOrder->getExtendOrderId());
+        }
     }
 
     /**
