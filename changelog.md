@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.2.7
+## version: 2.2.8
 
 ### Changelog:
 
 ---
+
+
+**2.2.8**
+
+Patch Release - Merge pull request #402 from helloextend/202401-Hyva-backwards-compatibility
+
+hyva compatibiliy PR
+
+
+
 
 
 **2.2.7**
