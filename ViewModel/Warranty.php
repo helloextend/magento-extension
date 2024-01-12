@@ -399,6 +399,26 @@ class Warranty implements ArgumentInterface
         $relationSku = $this->warrantyRelation->getOfferOrderItemSku($orderItem);
         return !empty($this->warrantyRelation->getWarrantyByRelationSku($relationSku));
     }
+    
+    /**
+     * Check does quote have warranty item for the item
+     * Kept for backwards compatibility with Hyva module
+     *
+     * @param string $sku
+     * @return bool
+     */
+    public function isWarrantyInQuote(string $sku): bool
+    {
+        try {
+            $quote = $this->checkoutSession->getQuote();
+        } catch (LocalizedException $exception) {
+            $quote = null;
+        }
+        if ($quote) {
+            $hasWarranty = $this->hasWarranty($quote, $sku);
+        }
+        return $hasWarranty ?? false;
+    }
 
     /**
      * Check does later orders have warranty item for the item
