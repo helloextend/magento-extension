@@ -249,9 +249,11 @@ class WarrantyRelation
     {
         $order = $warrantyOrderItem->getOrder();
 
-        foreach ($order->getAllItems() as $item) {
-            if ($this->isWarrantyRelatedToOrderItem($warrantyOrderItem, $item)) {
-                return $item;
+        if ($order){
+            foreach ($order->getAllItems() as $item) {
+                if ($this->isWarrantyRelatedToOrderItem($warrantyOrderItem, $item)) {
+                    return $item;
+                }
             }
         }
 
