@@ -71,6 +71,16 @@ class InvoiceObserver implements ObserverInterface
     {
         $event = $observer->getEvent();
         $invoice = $event->getInvoice();
+
+        /**
+         * Ideally we would respond to 'sales_order_invoice_pay', but there are some merchants which have plugins
+         * that create an invoice payment prior to the order existing in the database. This requires us to listen to
+         * 'sales_order_invoice_save_after' and check if the invoice was paid before we continue.
+         */
+        if (!$invoice->wasPayCalled()) {
+            return;
+        }
+
         $order = $invoice->getOrder();
 
         $storeId = $order->getStoreId();
