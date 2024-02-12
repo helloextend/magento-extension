@@ -52,12 +52,12 @@ class Logger extends Monolog
      * @param array $context
      * @return bool
      */
-    public function addRecord($level, $message, array $context = []): bool
+    public function addRecord($level, $message, array $context = [], $datetime = null): bool
     {
         if (!$this->dataHelper->isExtendEnabled() || !$this->dataHelper->isLoggingEnabled()) {
             return false;
         }
 
-        return parent::addRecord($level, $message, $context);
+        return parent::addRecord($level, $message, $context, $datetime);
     }
 }
