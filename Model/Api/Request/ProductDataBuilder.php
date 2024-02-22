@@ -266,7 +266,7 @@ class ProductDataBuilder
                 $names = [];
                 foreach ($pathIds as $id) {
                     if (isset($parentCategories[$id]) && $parentCategories[$id]->getName()) {
-                        $names[] = $parentCategories[$id]->getName();
+                        $names[] = $this->sanitizeCategoryName($parentCategories[$id]->getName());
                     }
                 }
                 $categories[] = implode(self::DELIMITER_CATEGORY, $names);
@@ -274,6 +274,34 @@ class ProductDataBuilder
         }
 
         return implode(',', $categories);
+    }
+
+    /**
+     * Returns sanitized value for payload
+     *
+     * @param string|null $theString
+     * @return string|null
+     */
+    private function sanitizeCategoryName(?string $theString): ?string
+    {
+        if (!$theString)
+            return null;
+
+        // Use a regular expression to find HTML-encoded sections (e.g., %25)
+        $encodedSectionRegex = '/%[0-9A-Fa-f]{2}/';
+
+        // Decode HTML-encoded values using a callback function
+        $decodedString = preg_replace_callback($encodedSectionRegex, function($match) {
+            return urldecode($match[0]);
+        }, $theString);
+
+        // Replace remaining breaking characters
+        $resultString = str_replace('%', 'pct ', $decodedString);
+        $resultString = str_replace('?', '.', $resultString);
+        $resultString = str_replace('#', '.', $resultString);
+        $resultString = str_replace('&', 'and ', $resultString);
+
+        return $resultString;
     }
 
     /**
