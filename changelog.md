@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.2.8
+## version: 2.3.0
 
 ### Changelog:
 
 ---
+
+
+**2.3.0**
+
+Minor Release - Merge pull request #404 from helloextend/CategoryFix
+
+Minor Release - account for url breaking characters
+
+
+
 
 
 **2.2.8**
