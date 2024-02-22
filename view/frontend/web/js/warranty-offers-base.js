@@ -79,7 +79,7 @@ define([
                 return decodeURIComponent(match);
             });
 
-            // replace breaking characters with something non breaking
+            // replace breaking characters
             var theSanitizedString = decodedString.replace(/%/g, "pct ").replace(/\?/g, ".").replace(/#/g, ".").replace(/&/g, "and");
 
             return theSanitizedString;
