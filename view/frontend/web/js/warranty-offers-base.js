@@ -31,7 +31,7 @@ define([
 
             Extend.buttons.render(this.element.get(0), {
                 referenceId: this.options.productSku,
-                category: this.options.productInfo.category,
+                category: this.sanitizeValue(this.options.productInfo.category),
                 price:this.options.productInfo.price
             });
         },
@@ -47,7 +47,7 @@ define([
 
             Extend.buttons.renderSimpleOffer(this.element.get(0), {
                 referenceId: this.options.productSku,
-                category: this.options.productInfo.category,
+                category: this.sanitizeValue(this.options.productInfo.category),
                 price:this.options.productInfo.price,
                 onAddToCart: function (data) {
                     var warranty = data.plan;
@@ -61,7 +61,30 @@ define([
                 }
             });
         },
+        
+        /**
+         * Returns sanitized value for payload
+         * @param {String} theString
+         * @return {string|null}
+         */
+        sanitizeValue: function (theString ) {
+            if (!theString)
+                return;
 
+            // Use a regular expression to find HTML-encoded sections (e.g., %25)
+            var encodedSectionRegex = /%[0-9A-Fa-f]{2}/g;
+
+            // Replace each HTML-encoded section with its decoded equivalent
+            var decodedString = theString.replace(encodedSectionRegex, function(match) {
+                return decodeURIComponent(match);
+            });
+
+            // replace breaking characters
+            var theSanitizedString = decodedString.replace(/%/g, "pct ").replace(/\?/g, ".").replace(/#/g, ".").replace(/&/g, "and");
+
+            return theSanitizedString;
+        },
+        
         /**
          * Returns current warranty offers block instance
          *
@@ -86,7 +109,7 @@ define([
                 let activeProduct = {
                     referenceId:productSku,
                     price: product.price,
-                    category: product.category
+                    category: this.sanitizeValue(product.category)
                 };
                 component.setActiveProduct(activeProduct);
             }
@@ -108,7 +131,7 @@ define([
             Extend.modal.open({
                 referenceId: productSku,
                 price:productInfo.price,
-                category:productInfo.category,
+                category: this.sanitizeValue(productInfo.category),
                 onClose: closeCallback.bind(this)
             });
         },
