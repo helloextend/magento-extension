@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.0
+## version: 2.3.1
 
 ### Changelog:
 
 ---
+
+
+**2.3.1**
+
+Patch Release - Merge pull request #405 from helloextend/add_product_by_sku
+
+Patch Release - Update sales_order_create_load_block_data.xml
+
+
+
 
 
 **2.3.0**
