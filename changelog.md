@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.1
+## version: 2.3.2
 
 ### Changelog:
 
 ---
+
+
+**2.3.2**
+
+Patch Release : Merge pull request #406 from helloextend/admin_order_fix
+
+Patch Release : admin layout fix for admin create order
+
+
+
 
 
 **2.3.1**
