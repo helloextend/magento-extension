@@ -14,10 +14,10 @@
     <body>
 
         <referenceBlock name="data">
-            <block class="Magento\Backend\Block\Template" name="additional_area_extend" template="Magento_Sales::order/create/abstract.phtml"/>
+            <block class="Magento\Backend\Block\Template" name="head.additional" template="Magento_Sales::order/create/abstract.phtml"/>
         </referenceBlock>
 
-        <referenceBlock  name="additional_area">
+        <referenceBlock  name="head.additional">
             <block class="Extend\Warranty\Block\Adminhtml\Order\Create\Installation"
                    name="extend.warranty.js"
                    template="Extend_Warranty::installation.phtml">
