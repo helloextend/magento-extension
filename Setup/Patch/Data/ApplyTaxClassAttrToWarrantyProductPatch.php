@@ -30,6 +30,17 @@ class ApplyTaxClassAttrToWarrantyProductPatch implements DataPatchInterface, Pat
     protected $moduleDataSetup;
 
     /**
+     * /var EavSetupFactory
+     */
+    protected $taxSetupFactory;
+    protected $eavSetupFactory;
+
+    /**
+     * /var LoggerInterface
+     */
+    protected $logger;
+    
+    /**
      * @param ModuleDataSetupInterface $moduleDataSetup
      * @param EavSetupFactory $taxSetupFactory
      * @param LoggerInterface $logger
