@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.2
+## version: 2.3.3
 
 ### Changelog:
 
 ---
+
+
+**2.3.3**
+
+Merge pull request #407 from helloextend/M247-CSP-admin-bug-fix
+
+Patch Release : Update extend-js.phtml
+
+
+
 
 
 **2.3.2**
