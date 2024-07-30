@@ -7,6 +7,10 @@
  * @package     Warranty
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
+
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+/** @var SecureHtmlRenderer $secureRenderer */
+
 /** @var \Extend\Warranty\Block\Adminhtml\Order\Create\Installation $block */
 /** @var \Extend\Warranty\ViewModel\Installation $viewModel */
 $viewModel = $block->getData('viewModel');
@@ -16,8 +20,11 @@ $currentStoreId = $block->getCurrentStore();
 <?php if ($viewModel->isExtendEnabled($currentStoreId)): ?>
     <?php $jsonConfig = $viewModel->getJsonConfig($currentStoreId); ?>
     <?php if ($jsonConfig): ?>
-        <script>
-            Extend.config(<?=/* @noEscape */ $viewModel->getJsonConfig($currentStoreId) ?>);
-        </script>
+        <?php
+        $scriptString = <<<EOT
+        Extend.config({$viewModel->getJsonConfig($currentStoreId)});
+        EOT;
+        echo $secureRenderer->renderTag('script', [], $scriptString, false);
+        ?>
     <?php endif; ?>
 <?php endif; ?>
