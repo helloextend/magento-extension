@@ -15,6 +15,7 @@ $viewModel = $block->getData('viewModel');
     <?php $jsonConfig = $viewModel->getJsonConfig(); ?>
     <?php if ($jsonConfig): ?>
         <?php $libUrl = str_replace('.js', '', $viewModel->getJsMode()); ?>
+        <!-- hash_002 -->
         <script>
             require.config({
                 paths: {
