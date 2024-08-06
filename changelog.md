@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.4
+## version: 2.3.5
 
 ### Changelog:
 
 ---
+
+
+**2.3.5**
+
+Patch Release : Merge pull request #409 from helloextend/M247-CSP-bugfix_2
+
+added CSP rules for magento 2.4.7
+
+
+
 
 
 **2.3.4**
