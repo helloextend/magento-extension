@@ -10,16 +10,21 @@
 /** @var \Magento\Framework\View\Element\Template $block */
 /** @var \Extend\Warranty\ViewModel\Installation $viewModel */
 $viewModel = $block->getData('viewModel');
+
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+/** @var SecureHtmlRenderer $secureRenderer */
+
 ?>
 <?php if ($viewModel->isExtendEnabled()): ?>
     <?php $jsonConfig = $viewModel->getJsonConfig(); ?>
     <?php if ($jsonConfig): ?>
         <?php $libUrl = str_replace('.js', '', $viewModel->getJsMode()); ?>
         <!-- hash_002 -->
-        <script>
+        <?php
+        $scriptString = <<<EOT
             require.config({
                 paths: {
-                    'extendSdk': '<?= $block->escapeJs($libUrl) ?>'
+                    'extendSdk': '{$block->escapeJs($libUrl)}'
                 },
                 config: {
                     mixins: {
@@ -34,18 +39,21 @@ $viewModel = $block->getData('viewModel');
             });
 
             require(['extendSdk'], function(Extend) {
-                //<![CDATA[
-                Extend.config(<?= /* @noEscape */ $jsonConfig ?>);
+                Extend.config({$jsonConfig});
                 window.Extend = Extend;
-
-                <?php $integrationConfig = $viewModel->getIntegrationJsonConfig(); ?>
-                <?php if ($integrationConfig && !empty($integrationConfig)): ?>
-                window.Extend.integration = <?= /* @noEscape */ $integrationConfig ?>
-                <?php endif; ?>
-                //]]>
+        EOT;
+        $integrationConfig = $viewModel->getIntegrationJsonConfig();
+        if ($integrationConfig && !empty($integrationConfig)):
+            $scriptString .= <<<EOT
+                window.Extend.integration = {$integrationConfig};
+            EOT;
+        endif;
+        $scriptString .= <<<EOT
             });
-        </script>
+        EOT;
 
+        echo $secureRenderer->renderTag('script', [], $scriptString, false);
+        ?>
         <?php if ($block->getTrackingEnabled()): ?>
         <script type="text/x-magento-init">
         {

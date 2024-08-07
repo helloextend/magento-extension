@@ -10,18 +10,23 @@
 /**
  * @var \Extend\Warranty\Block\Tracking $block
  */
+
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+/** @var SecureHtmlRenderer $secureRenderer */
+
 ?>
 
 <?php if ($block->getTrackingEnabled()): ?>
     <?php $cartTotal = $block->getCartTotal(); ?>
-    <!-- hash_001 -->
-    <script>
-        require(['Extend_Warranty/js/extendtrk/actions', 'extendSdk'], function(actions) {
-            //<![CDATA[
-            actions.trackCheckoutSuccess({
-                cartTotal: <?= $block->escapeJs($cartTotal) ?>
+    <?php
+    $scriptString = <<<EOT
+    require(['Extend_Warranty/js/extendtrk/actions', 'extendSdk'], function(actions) {
+        actions.trackCheckoutSuccess({
+            cartTotal: {$block->escapeJs($cartTotal)}
             });
-            //]]>
         });
-    </script>
+
+    EOT;
+    echo $secureRenderer->renderTag('script', [], $scriptString, false);
+    ?>
 <?php endif; ?>

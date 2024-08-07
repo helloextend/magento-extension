@@ -8,6 +8,8 @@
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
  */
 
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+/** @var SecureHtmlRenderer $secureRenderer */
 
 /** @var \Extend\Warranty\Block\Adminhtml\Order\View\Items\Renderer\LeadOfferRenderer $block */
 /** @var Extend\Warranty\ViewModel\Warranty $viewModel */
@@ -29,25 +31,25 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
 </td>
 
 <?php if ($viewModel->showLeadOffer($item)):?>
-    <script>
-        require(['jquery',
+     <?php
+    $scriptString = <<<EOT
+    require(['jquery',
                 'mage/url',
                 'Magento_Ui/js/modal/alert',
                 'domReady!'
             ], function($, urlBuilder, alert) {
-            const $elem = $('#extend-offer-<?= $block->escapeHtmlAttr($warrantyUniqueID) ?>');
-            Extend.buttons.renderSimpleOffer($elem.get(0), {
-                referenceId: '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>',
+            const elem = $('#extend-offer-{$block->escapeHtmlAttr($warrantyUniqueID)}');
+            Extend.buttons.renderSimpleOffer(elem.get(0), {
+                referenceId: '{$viewModel->getProductSkuByOrderItem($item)}',
                 onAddToCart: function (opts) {
-
-                    const plan = opts.plan;
+                                    const plan = opts.plan;
                     if (plan) {
-                        let url      = "<?= /* @noEscape */ $block->getUrl('extend/warranty/leads') ?>";
-                        let leadToken = "<?= /* @noEscape */ implode(", ", $leadToken); ?>";
-                        let order = "<?= /* @noEscape */ $block->getOrder()->getId();?>";
-                        let qty = "<?= /* @noEscape */ $viewModel->getLeftLeadsQty($item); ?>";
-                        plan.product = '<?= /* @noEscape */ $viewModel->getProductSkuByOrderItem($item) ?>';
-                        plan.qty = '<?= /* @noEscape */ $viewModel->getLeftLeadsQty($item); ?>';
+                        let url      = "{$block->getUrl('extend/warranty/leads')}";
+                        let leadToken = "{implode(", ", $leadToken)}";
+                        let order = "{$block->getOrder()->getId()}";
+                        let qty = "{$viewModel->getLeftLeadsQty($item)}";
+                        plan.product = '{$viewModel->getProductSkuByOrderItem($item)}';
+                        plan.qty = '{$viewModel->getLeftLeadsQty($item)}';
 
                         $.post(url, {
                             order: order,
@@ -70,7 +72,7 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
             });
 
             let updateTimer = window.setInterval(() => {
-                const iframe = $elem.find('iframe:visible').get(0);
+                const iframe = elem.find('iframe:visible').get(0);
                 const iframeDoc = iframe ? (iframe.contentDocument || iframe.contentWindow.document) : null;
 
                 if (iframeDoc && iframeDoc.readyState === 'complete') {
@@ -79,5 +81,7 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
                 }
             }, 100);
         });
-    </script>
+    EOT;
+    echo $secureRenderer->renderTag('script', [], $scriptString, false);
+    ?>
 <?php endif; ?>
