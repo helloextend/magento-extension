@@ -18,6 +18,13 @@
                 <value
                     id="helloextend-static-assets_s3_amazonaws_com"
                     type="host">https://helloextend-static-assets.s3.amazonaws.com</value>
+                <value
+                    id="extendcoreoffer-demo"
+                    type="host">https://extendcoreoffersdemo-offersthemelogobucketeb21afa-19jnurg0a0o17.s3.amazonaws.com</value>
+                <value
+                    id="extendoffer-modaldemo"
+                    type="host">https://s3.amazonaws.com</value>
+
             </values>
         </policy>
         <policy id="style-src">
@@ -33,8 +40,6 @@
         <policy id="script-src">
             <values>
                 <value id="*_helloextend_com" type="host">https://*.helloextend.com</value>
-                <value id="hash_001" type="hash" algorithm="sha256">KZHlBYblIYP4tX324FVPX46za0oJoKk21aOj3W9FsXM=</value>
-                <value id="hash_002" type="hash" algorithm="sha256">QuHysN6c/5qe4aMDS5vmHINfpyGvbZj91l1plBH8Tsg=</value>
             </values>
         </policy>
         <policy id="connect-src">

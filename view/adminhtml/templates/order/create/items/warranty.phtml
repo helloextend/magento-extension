@@ -1,8 +1,12 @@
 <?php
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+/** @var SecureHtmlRenderer $secureRenderer */
+
 if ($_item = $block->getItem()):
     $_product = $_item->getProduct();
 
     $quote = $_item->getQuote();
+
 
     /** @var Extend\Warranty\ViewModel\Warranty $inCartViewModel */
     $inCartViewModel = $block->getData('viewModel');
@@ -21,19 +25,23 @@ if ($_item = $block->getItem()):
                     $_item->getId() ?>"></div>
                 </td>
             </tr>
-            <script>
+
+            <?php
+            $scriptString = <<<EOT
                 require(['jquery', 'Magento_Ui/js/modal/alert'], function ($, alert) {
-                    Extend.buttons.renderSimpleOffer('#extend-offer-<?= /* @noEscape */ $_item->getId() ?>', {
-                        referenceId: '<?= /* @noEscape */ $inCartViewModel->getProductSkuByQuoteItem($_item) ?>',
+                    Extend.buttons.renderSimpleOffer('#extend-offer-{$_item->getId()}', {
+                        referenceId: '{$inCartViewModel->getProductSkuByQuoteItem($_item)}',
                         onAddToCart: function (opts) {
 
                             const plan = opts.plan;
                             if (plan) {
-                                let parentId = "<?= /* @noEscape */ $_item->getOptionByCode('simple_product') ?
-                                    $_item->getProductId() : '' ?>";
-                                let url = "<?= /* @noEscape */ $block->getUrl('extend/warranty/add') ?>";
-                                plan.product = '<?= /* @noEscape */ $inCartViewModel->getProductSkuByQuoteItem($_item) ?>';
-                                plan.secondary_sku = '<?= /* @noEscape */ $inCartViewModel->getRelationSkuByQuoteItem($_item) ?>';
+                EOT;
+            $parentId = $_item->getOptionByCode('simple_product') ? $_item->getProductId() : '';
+            $scriptString .= <<<EOT
+                                let parentId = "{$parentId}";
+                                let url = "{$block->getUrl('extend/warranty/add')}";
+                                plan.product = '{$inCartViewModel->getProductSkuByQuoteItem($_item)}';
+                                plan.secondary_sku = '{$inCartViewModel->getRelationSkuByQuoteItem($_item)}';
 
                                 $.post(url, {
                                     warranty: plan,
@@ -47,11 +55,13 @@ if ($_item = $block->getItem()):
                                         });
                                     }
                                 });
-                            }
+                           } //if plan
                         }
                     });
                 });
-            </script>
+            EOT;
+            echo $secureRenderer->renderTag('script', [], $scriptString, false);
+            ?>
             </tbody>
         <?php endif; ?>
     <?php endif; ?>

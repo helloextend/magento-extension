@@ -10,6 +10,9 @@
 /* @var Magento\Sales\Block\Adminhtml\Items\Column\Name $block */
 /* @var Extend\Warranty\ViewModel\Warranty $viewModel */
 $viewModel = $block->getViewModel();
+
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+/** @var SecureHtmlRenderer $secureRenderer */
 ?>
 
 <?php if ($_item = $block->getItem()): ?>
@@ -65,23 +68,26 @@ $viewModel = $block->getViewModel();
                             <span id="<?= /* @noEscape */ $id; ?>">
                                 <?= $block->escapeHtml($_option['remainder']) ?>
                             </span>
-                            <script>
+                            <?php
+                            $scriptString = <<<EOT
                                 require(['prototype'], function(){
-                                    $('<?= /* @noEscape */ $id; ?>').hide();
-                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseover', function(){
-                                        $('<?= /* @noEscape */ $id; ?>').show();
+                                    $('{$id}').hide();
+                                    $('{$id}').up().observe('mouseover', function(){
+                                        $('{$id}').show();
                                     });
-                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseover', function(){
-                                        $('<?= /* @noEscape */ $dots; ?>').hide();
+                                    $(''{$id}').up().observe('mouseover', function(){
+                                        $('{$dots}').hide();
                                     });
-                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseout',  function(){
-                                        $('<?= /* @noEscape */ $id; ?>').hide();
+                                    $('{$id}').up().observe('mouseout',  function(){
+                                        $('{$id}').hide();
                                     });
-                                    $('<?= /* @noEscape */ $id; ?>').up().observe('mouseout',  function(){
-                                        $('<?= /* @noEscape */ $dots; ?>').show();
+                                    $('{$id}').up().observe('mouseout',  function(){
+                                        $('{$dots}').show();
                                     });
                                 });
-                            </script>
+                            EOT;
+                            echo $secureRenderer->renderTag('script', [], $scriptString, false);
+                            ?>
                         <?php endif; ?>
                     <?php endif; ?>
                 </dd>

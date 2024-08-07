@@ -1,3 +1,9 @@
+<?php
+    use Magento\Framework\View\Helper\SecureHtmlRenderer;
+    /** @var SecureHtmlRenderer $secureRenderer */
+
+?>
+
 <div id="popup-modal" style="display: none;">
     <p>Are you sure you want to refund <span id="refund-amount-validation-text"></span>?</p>
     <input type="hidden" id="refund-amount-validation-cache" value="0">
@@ -8,18 +14,19 @@
     <div id="partial-contracts-list"></div>
     <span id="partial-select-all" class="select">Select/Unselect All</span>
 </div>
+<?php
+    $scriptString = <<<EOT
+        require(['jquery'], function($){
+            $('span#partial-select-all').on('click', function(e) {
 
-
-<script>
-    require(['jquery'], function($){
-        $('span#partial-select-all').on('click', function(e) {
-
-            if ($('span#partial-select-all').hasClass("selected")) {
-                $("div#popup-modal-partial>div#partial-contracts-list input").prop("checked", false);
-            } else {
-                $("div#popup-modal-partial>div#partial-contracts-list input").prop("checked", true);
-            }
-            $(this).toggleClass("selected")
+                if ($('span#partial-select-all').hasClass("selected")) {
+                    $("div#popup-modal-partial>div#partial-contracts-list input").prop("checked", false);
+                } else {
+                    $("div#popup-modal-partial>div#partial-contracts-list input").prop("checked", true);
+                }
+                $(this).toggleClass("selected")
+            });
         });
-    });
-</script>
+    EOT;
+    echo $secureRenderer->renderTag('script', [], $scriptString, false);
+?>

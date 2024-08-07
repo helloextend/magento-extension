@@ -21,7 +21,7 @@ define(
                     $('body').trigger('processStop');
                     alert({
                         title: $.mage.__('Refund Successful'),
-                        content: $.mage.__('The request was successfully complete.'),
+                        content: $.mage.__('The request was successfully completed.'),
                         actions: {
                             always: function(){
                                 location.reload();
@@ -50,7 +50,6 @@ define(
                 validation: true
             })
                 .done(function (data) {
-                    console.log("Validate Done >");
 
                     if (data.amountValidated > 0) {
                         $('#refund-amount-validation-cache').val(data.amountValidated);
