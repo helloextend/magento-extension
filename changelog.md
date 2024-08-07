@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.5
+## version: 2.3.6
 
 ### Changelog:
 
 ---
+
+
+**2.3.6**
+
+Patch Release : Merge pull request #410 from helloextend/CSP-m247_fix
+
+Patch Release : converted all remaining script tags to to heredoc+securerenderer
+
+
+
 
 
 **2.3.5**
