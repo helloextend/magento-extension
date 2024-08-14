@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.7
+## version: 2.3.8
 
 ### Changelog:
 
 ---
+
+
+**2.3.8**
+
+Patch Release : Merge pull request #412 from helloextend/Parent_Order_Post_Purchase
+
+Patch Release : Allow tracking of Parent Order when purchasing from a Lead Token
+
+
+
 
 
 **2.3.7**
