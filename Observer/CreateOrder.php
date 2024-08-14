@@ -24,6 +24,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Exception;
 use Extend\Warranty\Model\CreateContract as WarrantyContractCreate;
+use \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
 
 /**
  * Class CreateLead
@@ -68,19 +69,28 @@ class CreateOrder implements ObserverInterface
     private $warrantyContractCreate;
 
     /**
+     * OrderItemCollectionFactory
+     *
+     * @var Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory
+     */
+    protected $orderItemCollectionFactory;
+
+    /**
      * CreateLead constructor
      *
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param ExtendOrder $extendOrder
      * @param DataHelper $dataHelper
      * @param LoggerInterface $logger
+     * @param \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory $orderItemCollectionFactory
      */
     public function __construct(
         OrderItemRepositoryInterface $orderItemRepository,
         ExtendOrder                  $extendOrder,
         DataHelper                   $dataHelper,
         LoggerInterface              $logger,
-        WarrantyContractCreate       $warrantyContractCreate
+        WarrantyContractCreate       $warrantyContractCreate,
+        \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory                        $orderItemCollectionFactory
     )
     {
         $this->orderItemRepository = $orderItemRepository;
@@ -88,6 +98,8 @@ class CreateOrder implements ObserverInterface
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
         $this->warrantyContractCreate = $warrantyContractCreate;
+        $this->orderItemCollectionFactory = $orderItemCollectionFactory;
+
     }
 
     /**
@@ -157,6 +169,16 @@ class CreateOrder implements ObserverInterface
                 $leadToken[] = $warrantyItem->getProductOptionByCode('info_buyRequest')['leadToken'];
                 if (!empty($leadToken)) {
                     $warrantyItem->setLeadToken(json_encode($leadToken));
+
+                    // Set parent order id by finding an existing sales_order_item record with same lead_token  and type not warranty
+                    $orderItemCollectionCreateOrder = $this->orderItemCollectionFactory->create();
+                    $orderItemCollectionCreateOrder->addFieldToFilter('product_type', ['neq' => 'warranty']);
+                    $orderItemCollectionCreateOrder->addFieldToFilter('lead_token', ['like' => '%'.str_replace('"', "",  $leadToken[0]).'%' ] );
+                    $existingOrderItem = $orderItemCollectionCreateOrder->getFirstItem();
+                    if ($existingOrderItem && $existingOrderItem->getId()) {
+                        $parentOrderId = $existingOrderItem->getOrderId();
+                        $warrantyItem->setExtendParentOrderId($parentOrderId);
+                    }
                 }
             }
         } catch (Exception $exception) {

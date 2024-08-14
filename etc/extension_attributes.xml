@@ -3,7 +3,7 @@
 /**
  * Extend Warranty
  *
- * @author      Extend Magento Team <magento@guidance.com>
+ * @author      Extend Magento Team <magento@extend.com>
  * @category    Extend
  * @package     Warranty
  * @copyright   Copyright (c) 2021 Extend Inc. (https://www.extend.com/)
@@ -21,6 +21,7 @@
         <attribute code="refund" type="boolean" />
         <attribute code="lead_token" type="string" />
         <attribute code="plan_type" type="string" />
+        <attribute code="parent_order_id" type="string" />
     </extension_attributes>
     <extension_attributes for="Magento\Quote\Api\Data\CartItemInterface">
         <attribute code="lead_token" type="string" />

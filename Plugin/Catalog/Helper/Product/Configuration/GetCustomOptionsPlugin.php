@@ -13,6 +13,7 @@ namespace Extend\Warranty\Plugin\Catalog\Helper\Product\Configuration;
 use Magento\Catalog\Helper\Product\Configuration;
 use Magento\Catalog\Model\Product\Configuration\Item\ItemInterface;
 use Extend\Warranty\Model\Product\Type;
+use Magento\Sales\Api\OrderRepositoryInterface;
 
 /**
  * Class GetCustomOptionsPlugin
@@ -29,6 +30,23 @@ class GetCustomOptionsPlugin
      * @param ItemInterface $item
      * @return array
      */
+
+    /**
+     * @var OrderRepositoryInterface
+     */
+    protected $orderRepository;
+
+    /**
+     * Constructor
+     *
+     * @param OrderRepositoryInterface $orderRepository
+     */
+    public function __construct(OrderRepositoryInterface $orderRepository)
+    {
+        $this->orderRepository = $orderRepository;
+    }
+
+
     public function afterGetCustomOptions(Configuration $subject, array $result, ItemInterface $item): array
     {
         $product = $item->getProduct();
@@ -61,6 +79,19 @@ class GetCustomOptionsPlugin
                 $customOptions[] = [
                     'label' => __($termLabel),
                     'value' => $optionValue,
+                ];
+            }
+
+            //Custom option parent order ID (this is displayed in the cart, so use Increment ID)
+            $parentOrderIdOption = $product->getCustomOption(Type::ASSOCIATED_PARENT_ORDER_ID);
+            if ($parentOrderIdOption && $parentOrderIdOption->getValue()) {
+                $parentOrderId      = (int) $parentOrderIdOption->getValue();
+                $order              = $this->orderRepository->get($parentOrderId);
+                $incrementId        = $order->getIncrementId();
+                $parentOrderLabel   = Type::PARENT_ORDER_LABEL;
+                $customOptions[]    = [
+                    'label' => __($parentOrderLabel),
+                    'value' => $incrementId,
                 ];
             }
 

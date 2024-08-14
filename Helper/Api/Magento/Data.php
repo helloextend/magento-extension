@@ -15,6 +15,7 @@ use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\Data\OrderItemExtensionFactory;
+use Magento\Sales\Api\Data\OrderItemExtensionInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Model\Order\Item;
 
@@ -36,6 +37,7 @@ class Data extends AbstractHelper
     public const WARRANTY_TERM      = 'warranty_term';
     public const LEAD_TOKEN         = 'lead_token';
     public const PLAN_TYPE          = 'plan_type';
+    public const PARENT_ORDER_ID    = 'parent_order_id';
 
     /**
      * Order Extension Attributes Factory

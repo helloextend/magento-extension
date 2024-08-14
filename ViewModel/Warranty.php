@@ -38,6 +38,7 @@ use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Sales\Model\Order\Item;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
 
 /**
  * Class Warranty
@@ -129,6 +130,11 @@ class Warranty implements ArgumentInterface
     protected $helper;
 
     /**
+     * @var OrderRepositoryInterface
+     */
+    protected $orderRepository;
+
+    /**
      * Warranty constructor
      *
      * @param DataHelper $dataHelper
@@ -144,6 +150,7 @@ class Warranty implements ArgumentInterface
      * @param AdminSession $adminSession
      * @param LeadInfo $leadInfo
      * @param WarrantyRelation $warrantyRelation
+     * @param OrderRepositoryInterface $orderRepository
      */
     public function __construct(
         DataHelper                   $dataHelper,
@@ -159,7 +166,8 @@ class Warranty implements ArgumentInterface
         AdminSession                 $adminSession,
         LeadInfo                     $leadInfo,
         WarrantyRelation             $warrantyRelation,
-        ExtendHelper                 $helper
+        ExtendHelper                 $helper,
+        OrderRepositoryInterface     $orderRepository
     )
     {
         $this->dataHelper = $dataHelper;
@@ -176,6 +184,7 @@ class Warranty implements ArgumentInterface
         $this->adminSession = $adminSession;
         $this->leadInfo = $leadInfo;
         $this->warrantyRelation = $warrantyRelation;
+        $this->orderRepository = $orderRepository;
     }
 
     /**
@@ -399,7 +408,7 @@ class Warranty implements ArgumentInterface
         $relationSku = $this->warrantyRelation->getOfferOrderItemSku($orderItem);
         return !empty($this->warrantyRelation->getWarrantyByRelationSku($relationSku));
     }
-    
+
     /**
      * Check does quote have warranty item for the item
      * Kept for backwards compatibility with Hyva module
@@ -655,5 +664,15 @@ class Warranty implements ArgumentInterface
                 ? $category->getName()
                 : \Extend\Warranty\Model\Api\Request\ProductDataBuilder::NO_CATEGORY_DEFAULT_VALUE
         ];
+    }
+
+    public function getOrderIncrementId($orderId = null){
+        if ($orderId){
+            $order = $this->orderRepository->get($orderId);
+            $incrementId = $order->getIncrementId();
+            if ($incrementId){
+                return $incrementId;
+            }
+        }
     }
 }

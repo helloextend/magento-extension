@@ -4,6 +4,7 @@
     <table name="sales_order_item">
         <column xsi:type="mediumtext" name="contract_id" nullable="true" comment="Extend Contract Id"/>
         <column xsi:type="mediumtext" name="lead_token" nullable="true" comment="Extend Lead Token"/>
+        <column xsi:type="int" name="extend_parent_order_id"  nullable="true" unsigned="true" comment="Extend Parent Order ID"/>
     </table>
     <table name="extend_warranty_contract_create">
         <column xsi:type="int" name="id" identity="true" nullable="false" unsigned="true" comment="ID"/>
