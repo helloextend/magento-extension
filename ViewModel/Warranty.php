@@ -645,7 +645,7 @@ class Warranty implements ArgumentInterface
         /** @var Collection $categoryCollection */
         $categoryCollection = $product->getCategoryCollection();
         $categoryCollection->addAttributeToSelect('name');
-        $categoryCollection->addIsActiveFilter();
+        $categoryCollection->addFieldToFilter('is_active', 1);
         $categoryCollection->addAttributeToSort('created_at', 'desc');
         $category = $categoryCollection->getFirstItem();
 
