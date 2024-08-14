@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.6
+## version: 2.3.7
 
 ### Changelog:
 
 ---
+
+
+**2.3.7**
+
+Merge pull request #411 from helloextend/Category_Permission_Fix
+
+Patch Release : Update Warranty.php
+
+
+
 
 
 **2.3.6**
