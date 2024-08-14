@@ -16,6 +16,7 @@ use Magento\Catalog\Model\Product;
 use Extend\Warranty\Helper\Data;
 use Magento\Framework\Exception\LocalizedException;
 use \Magento\Framework\Exception\NoSuchEntityException;
+use \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
 
 /**
  * Class Type
@@ -40,14 +41,16 @@ class Type extends AbstractType
     public const LEAD_TOKEN = 'lead_token';
     public const BUY_REQUEST = 'info_buyRequest';
     public const SECONDARY_SKU = 'secondary_sku';
+    public const ASSOCIATED_PARENT_ORDER_ID = 'parent_order_id';
 
     /**
      * Custom option labels
      */
     public const ASSOCIATED_PRODUCT_LABEL = 'SKU';
-
     public const ASSOCIATED_PRODUCT_NAME_LABEL = 'Name';
     public const TERM_LABEL = 'Term';
+    public const PARENT_ORDER_LABEL = 'Parent Order';
+
 
     /**
      * Warranty Helper
@@ -57,9 +60,16 @@ class Type extends AbstractType
     protected $helper;
 
     /**
-     * Type constructor.
+     * OrderItemCollectionFactory
      *
+     * @var Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory
+     */
+    protected $orderItemCollectionFactory;
+
+    /**
+     * Type constructor.
      * @param Product\Option $catalogProductOption
+     * @param \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory $orderItemCollectionFactory
      * @param \Magento\Eav\Model\Config $eavConfig
      * @param Product\Type $catalogProductType
      * @param \Magento\Framework\Event\ManagerInterface $eventManager
@@ -72,7 +82,9 @@ class Type extends AbstractType
      * @param \Magento\Framework\Serialize\Serializer\Json|null $serializer
      */
     public function __construct(
+
         \Magento\Catalog\Model\Product\Option              $catalogProductOption,
+        \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory                        $orderItemCollectionFactory,
         \Magento\Eav\Model\Config                          $eavConfig,
         \Magento\Catalog\Model\Product\Type                $catalogProductType,
         \Magento\Framework\Event\ManagerInterface          $eventManager,
@@ -86,6 +98,7 @@ class Type extends AbstractType
     )
     {
         $this->helper = $helper;
+        $this->orderItemCollectionFactory = $orderItemCollectionFactory;
         parent::__construct(
             $catalogProductOption,
             $eavConfig,
@@ -170,6 +183,23 @@ class Type extends AbstractType
 
         if ($buyRequest->hasData('leadToken')) {
             $product->addCustomOption(self::LEAD_TOKEN, $buyRequest->getData('leadToken'));
+
+            // Add parent order only if type = warranty and leadToken is set
+            // Find an existing sales_order_item record with lead_token matching and type is not warranty
+
+            $orderItemCollection = $this->orderItemCollectionFactory->create();
+            $orderItemCollection->addFieldToFilter('product_type', ['neq' => 'warranty']);
+            $orderItemCollection->addFieldToFilter('lead_token', ['like' =>'%'.$buyRequest->getData('leadToken').'%'] );
+            $existingOrderItem = $orderItemCollection->getFirstItem();
+            if ($existingOrderItem && $existingOrderItem->getId()) {
+                $parentOrderId = $existingOrderItem->getOrderId();
+            } else {
+                $parentOrderId = null;
+            }
+
+            if ($parentOrderId){
+                $product->addCustomOption(self::ASSOCIATED_PARENT_ORDER_ID, $parentOrderId);
+            }
         }
 
         if ($this->_isStrictProcessMode($processMode)) {
@@ -212,6 +242,10 @@ class Type extends AbstractType
 
         if ($leadToken = $product->getCustomOption(self::LEAD_TOKEN)) {
             $options[self::LEAD_TOKEN] = $leadToken->getValue();
+        }
+
+        if ($parentOrder = $product->getCustomOption(self::ASSOCIATED_PARENT_ORDER_ID)) {
+            $options[self::ASSOCIATED_PARENT_ORDER_ID] = $parentOrder->getValue();
         }
 
         return $options;
