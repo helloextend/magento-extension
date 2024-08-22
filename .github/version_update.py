@@ -245,5 +245,6 @@ else :
 
     processXML(version_to_write)
 
-    processJSON(version_to_write)
+    # 08/22/2024 - Commented out ProcessJSON() due to issues with Packagist
+    # processJSON(version_to_write)
 
