@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.8
+## version: 2.3.9
 
 ### Changelog:
 
 ---
+
+
+**2.3.9**
+
+Patch Release : Merge pull request #413 from helloextend/PackagistFix
+
+Patch Release : Update composer.json
+
+
+
 
 
 **2.3.8**
