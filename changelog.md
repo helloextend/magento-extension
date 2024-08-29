@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.9
+## version: 2.3.10
 
 ### Changelog:
 
 ---
+
+
+**2.3.10**
+
+Patch Release : Merge pull request #414 from helloextend/Bundle_product_Sync_price
+
+Patch Release : Update ProductDataBuilder.php
+
+
+
 
 
 **2.3.9**
