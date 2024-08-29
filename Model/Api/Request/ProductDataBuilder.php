@@ -25,6 +25,9 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Catalog\Model\Product\Type;
+use Exception;
+use Magento\Bundle\Model\Product\Price as BundlePrice;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class ProductDataBuilder
@@ -107,6 +110,18 @@ class ProductDataBuilder
     private $_isSpecialPriceSyncEnabled = [];
 
     /**
+     * @var BundlePrice
+     */
+    private $bundlePrice;
+
+    /**
+     * Logger Model
+     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * ProductDataBuilder constructor
      *
      * @param CategoryRepositoryInterface $categoryRepository
@@ -117,6 +132,8 @@ class ProductDataBuilder
      * @param OptionProvider $optionProvider
      * @param StoreManagerInterface $storeManager
      * @param Type $catalogProductType
+     * @param BundlePrice $bundlePrice
+     * @param LoggerInterface $logger
      */
     public function __construct(
         CategoryRepositoryInterface $categoryRepository,
@@ -126,7 +143,9 @@ class ProductDataBuilder
         ProductResourceModel        $productResourceModel,
         OptionProvider              $optionProvider,
         StoreManagerInterface       $storeManager,
-        Type                        $catalogProductType
+        Type                        $catalogProductType,
+        BundlePrice                 $bundlePrice,
+        LoggerInterface             $logger
     )
     {
         $this->categoryRepository = $categoryRepository;
@@ -137,6 +156,8 @@ class ProductDataBuilder
         $this->optionProvider = $optionProvider;
         $this->storeManager = $storeManager;
         $this->catalogProductType = $catalogProductType;
+        $this->bundlePrice = $bundlePrice;
+        $this->logger = $logger;
     }
 
     /**
@@ -208,21 +229,78 @@ class ProductDataBuilder
      * @param ProductInterface $product
      * @param $scopeType
      * @param $scopeId
-     * @return float|null
+     * @return float|int|null
      */
     public function calculateSyncProductPrice(
         ProductInterface $product,
                          $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
                          $scopeId = null
-    ) {
-        $price = $product->getPrice();
-        $specialPricesEnabled = $this->_getIsSpecialPricesSyncEnabled($scopeType, $scopeId);
-        $specialPrice = $this->catalogProductType->priceFactory($product->getTypeId())->getFinalPrice(1, $product);
-        if ($specialPricesEnabled && (float)$specialPrice < (float)$price) {
-            $price = $specialPrice;
-        }
+    ): float|int|null
+    {
+        $specialPricesEnabled   = $this->_getIsSpecialPricesSyncEnabled($scopeType, $scopeId);
 
-        return $price;
+        // retrieve price logic differs for bundled items
+
+        if ($product->getTypeId() !== 'bundle') {
+            $price          = $product->getPrice();
+            $specialPrice   = $this->catalogProductType->priceFactory($product->getTypeId())->getFinalPrice(1, $product);
+
+            if ($specialPricesEnabled && (float)$specialPrice < (float)$price) {
+                $price      = $specialPrice;
+            }
+            return $price;
+        }else{
+            // bundled products
+            try {
+                $bundleTotalPrice = 0;
+                $bundlePriceCalc = $this->bundlePrice->getTotalBundleItemsPrice($product);
+                $bundleOptions = $product->getTypeInstance()->getOptionsCollection($product);
+
+                // Get selection collection (the products associated with the bundle)
+                $selections = $product->getTypeInstance()->getSelectionsCollection(
+                    $bundleOptions->getAllIds(),
+                    $product
+                )->addAttributeToSelect('is_default'); // Include 'is_default' attribute
+
+                // Group selections by option ID
+                $selectionsByOption = [];
+                foreach ($selections as $selection) {
+                    $selectionsByOption[$selection->getOptionId()][] = $selection;
+                }
+
+                // Iterate over each option and sum the prices of the default selections
+                foreach ($bundleOptions as $option) {
+                    if (isset($selectionsByOption[$option->getId()])) {
+                        foreach ($selectionsByOption[$option->getId()] as $selection) {
+                            if ($selection->getData('is_default')) {
+                                $bundleTotalPrice += $selection->getFinalPrice();
+                            }
+                        }
+                    }
+                }
+
+                if ($bundlePriceCalc == 0 && $bundleTotalPrice == 0) {
+                    return 0.01;
+                }
+
+                // Return the lowest non-zero value
+                if ($bundlePriceCalc == 0) {
+                    return $bundleTotalPrice;
+                }
+                if ($bundleTotalPrice == 0) {
+                    return $bundlePriceCalc;
+                }
+
+                return min($bundlePriceCalc, $bundleTotalPrice);
+
+            } catch (\Exception $exception){
+
+                $this->logger->error('Could not retrieve bundle prices because of the following error: ');
+                $this->logger->error($exception->getMessage());
+
+                return 0.01;
+            }
+        }
     }
 
     /**
