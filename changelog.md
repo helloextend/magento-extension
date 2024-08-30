@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.11
+## version: 2.3.12
 
 ### Changelog:
 
 ---
+
+
+**2.3.12**
+
+Merge pull request #415 from helloextend/PUE_order_details_frontend
+
+Patch Release: Add warranty item details
+
+
+
 
 
 **2.3.11**
