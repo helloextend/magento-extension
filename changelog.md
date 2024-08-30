@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.10
+## version: 2.3.11
 
 ### Changelog:
 
 ---
+
+
+**2.3.11**
+
+Patch Release: Add warranty item details
+
+in the frontend, the Warranty Item was lacking details. this patch brings the warranty details and the parent order ID if present for PUE orders
+
+
+
 
 
 **2.3.10**
