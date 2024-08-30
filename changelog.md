@@ -1,10 +1,25 @@
 # Extend Magento2 Changelog
 
-## version: 2.3.10
+## version: 2.4.0
 
 ### Changelog:
 
 ---
+
+
+**2.4.0**
+
+Minor Release: implementation of Oauth
+
+Make sure to go to your merchant portal (demo and prod) and generate the corresponding  Client ID and Client Secret.
+(go to merchant portal, click on integrations  > New Api integration > give a name to your set of keys
+Then you will have Client ID and Client Secret)
+
+The API Key will then be generated automatically and has a lifetime of 3 hours.
+Opening the admin settings Store / Configuration / Extend / Store View will show the current age of the token and will refresh it automatically if needed.
+
+
+
 
 
 **2.3.10**
