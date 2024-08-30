@@ -9,11 +9,48 @@
  */
 
 /** @var $block \Magento\Framework\View\Element\Template */
+
+/** @var \Extend\Warranty\ViewModel\Warranty $viewModel */
+    $viewModel = $block->getData('viewModel');
 ?>
 
 <?php
-$_item = $block->getItem();
-$block->getChildBlock('order.item.warranty')->setItem($_item);
-?>
 
-<?= $block->getChildHtml('', false);
+    $_item = $block->getItem();
+    $block->getChildBlock('order.item.warranty')->setItem($_item);
+
+    if ($_item->getProductType()=='warranty'){
+
+        $_productOptions = $_item->getProductOptions();
+        $_planId = isset($_productOptions["warranty_id"]) ? $_productOptions["warranty_id"] : '';
+        $_parentSku= isset($_productOptions["associated_product"]) ? $_productOptions["associated_product"] : '';
+        $_contractID = $viewModel->unserialize($_item->getContractId()) ?? [];
+        $_contractID = is_array($_contractID) ? $_contractID : [$_contractID];
+
+        $_refunded = (isset($_productOptions["refund"]) && true == $_productOptions["refund"])
+            ? "-- All refunded --" : '';
+
+        //retrieve Parent Order ID if present
+        $currentOrderId     = $_item->getOrderId();
+        $parentOrderId      = isset($_productOptions["parent_order_id"]) ? $_productOptions["parent_order_id"] : null;
+        $incrementId        = $parentOrderId ? $viewModel->getOrderIncrementId($parentOrderId) : null;
+?>
+        <div class="product-warranty-block">
+
+                    <?php if (empty($_refunded) && $_contractID): ?>
+                        <span><?= $block->escapeHtml(__('Contract ID'))?>: </span>
+                        <?= /* @noEscape */ implode(", ", $_contractID); ?>
+                    <?php else: ?>
+                        <?= $block->escapeHtml($_refunded); ?>
+                    <?php endif; ?>
+                    <br /><span><?= /* @noEscape */ $block->escapeHtml(__('Plan ID'))?>: </span><?= /* @noEscape */ $_planId ?>
+                    <br /><span><?= /* @noEscape */ $block->escapeHtml(__('Associated SKU'))?>: </span><?= /* @noEscape */ $_parentSku ?>
+
+        </div>
+<?php
+            if ($parentOrderId && ($parentOrderId <> $currentOrderId) && $incrementId) {
+                echo " Parent Order: <a href='". $block->getUrl('sales/order/view', ['order_id' => $parentOrderId])."'>".$incrementId."</a>";
+            }
+    }
+?>
+<?=  $block->getChildHtml('', false);
