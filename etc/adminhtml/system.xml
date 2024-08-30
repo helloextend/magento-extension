@@ -192,7 +192,7 @@
                         <![CDATA[
                              Unique identifier for your store on the Extend platform.
                              Go to <a href="https://merchants.extend.com">your Extend merchant dashboard</a>
-                             to find your StoreID and then paste of type it here.
+                             to find your StoreID and then paste or type it here.
                         ]]>
                     </comment>
                     <depends>
@@ -211,7 +211,47 @@
                     <comment>
                         <![CDATA[
                             Access token which is required for all API communications between your Magento store and
-                            the Extend platform. You can view and manage your API Key on
+                            the Extend platform. Will be populated automatically after you enter Client ID and Client Secret.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="warranty/authentication/auth_mode">1</field>
+                    </depends>
+                    <disabled>1</disabled>
+                </field>
+                <field id="client_id"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="55"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="0">
+                    <label>Client ID</label>
+                    <comment>
+                        <![CDATA[
+                             Unique identifier for your store on the Extend platform.
+                             Go to <a href="https://merchants.extend.com">your Extend merchant dashboard</a>
+                             to find your Client ID and then paste or type it here.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="warranty/authentication/auth_mode">1</field>
+                    </depends>
+                </field>
+                <field id="client_secret"
+                       translate="label comment"
+                       type="password"
+                       sortOrder="56"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="0">
+                    <label>Client Secret</label>
+                    <comment>
+                        <![CDATA[
+                            Client Secret which is required for all API communications between your Magento store and
+                            the Extend platform. You can view and manage your credentials on
                             <a href="https://merchants.extend.com">your Extend merchant dashboard</a>.
                         ]]>
                     </comment>
@@ -232,7 +272,7 @@
                         <![CDATA[
                              Unique identifier for your store on the Extend platform.
                              Go to <a href="https://demo.merchants.extend.com">your Extend merchant dashboard</a>
-                             to find your StoreID and then paste of type it here.
+                             to find your StoreID and then paste or type it here.
                         ]]>
                     </comment>
                     <depends>
@@ -246,12 +286,52 @@
                        showInDefault="1"
                        showInWebsite="1"
                        showInStore="1"
-                       canRestore="0">
+                       canRestore="0"
+                       >
                     <label>SandBox API Key</label>
                     <comment>
                         <![CDATA[
                             Access token which is required for all API communications between your Magento store and
-                            the Extend platform. You can view and manage your API Key on
+                            the Extend Sandbox platform. Will be populated automatically after you enter Client ID and Client Secret.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="warranty/authentication/auth_mode">0</field>
+                    </depends>
+                </field>
+                <field id="sandbox_client_id"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="55"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="0">
+                    <label>SandBox Client ID</label>
+                    <comment>
+                        <![CDATA[
+                             Unique identifier for your store on the Extend platform.
+                             Go to <a href="https://demo.merchants.extend.com">your Extend merchant dashboard</a>
+                             to find your Client ID and then paste or type it here.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="warranty/authentication/auth_mode">0</field>
+                    </depends>
+                </field>
+                <field id="sandbox_client_secret"
+                       translate="label comment"
+                       type="password"
+                       sortOrder="56"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="0">
+                    <label>SandBox Client Secret</label>
+                    <comment>
+                        <![CDATA[
+                            Client Secret which is required for all API communications between your Magento store and
+                            the Extend platform. You can view and manage your credentials on
                             <a href="https://demo.merchants.extend.com">your Extend merchant dashboard</a>.
                         ]]>
                     </comment>
@@ -272,9 +352,41 @@
                         <![CDATA[
                                 Unique name for your store on the Extend platform. Go to
                                 <a href="https://merchants.extend.com">your Extend merchant dashboard</a>
-                                to find your StoreName and then paste of type it here.
+                                to find your StoreName and then paste or type it here.
                             ]]>
                     </comment>
+                </field>
+                <field id="sandbox_token_age"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="80"
+                       showInDefault="0"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="0">
+                    <label>Current Sandbox Api Key:</label>
+                    <comment>Sandbox Api Key / Access Token expires after 3hours. Value refreshes upon saving settings or automatically when required.</comment>
+                    <depends>
+                        <field id="enable">1</field>
+                        <field id="warranty/authentication/auth_mode">0</field>
+                    </depends>
+                    <frontend_model>Extend\Warranty\Block\System\Config\Authentication\CommentSandbox</frontend_model>
+                </field>
+                <field id="token_age"
+                       translate="label comment"
+                       type="text"
+                       sortOrder="80"
+                       showInDefault="0"
+                       showInWebsite="1"
+                       showInStore="1"
+                       canRestore="0">
+                    <label>Current Api Key:</label>
+                    <comment>Api Key / Access Token expires after 3hours. Value refreshes upon saving settings or automatically when required.</comment>
+                    <depends>
+                        <field id="enable">1</field>
+                        <field id="warranty/authentication/auth_mode">1</field>
+                    </depends>
+                    <frontend_model>Extend\Warranty\Block\System\Config\Authentication\Comment</frontend_model>
                 </field>
             </group>
 

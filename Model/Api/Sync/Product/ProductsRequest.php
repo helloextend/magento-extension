@@ -146,4 +146,22 @@ class ProductsRequest extends AbstractRequest
 
         return $isConnectionSuccessful;
     }
+
+    /**
+     * Check if Oauth connection successful
+     *
+     * @return bool
+     */
+    public function isOauthConnectionSuccessful($storeId, $accessToken, $url): bool
+    {
+        $endpoint = $url.'stores/'.$storeId.'/products';
+        $headers = array('Content-Type' => 'application/json',
+                         'Accept' => 'application/json; version=latest',
+                         self::ACCESS_TOKEN_HEADER => "$accessToken"
+        );
+        $response = $this->connector->call($endpoint,'GET', $headers);
+
+        $isOauthConnectionSuccessful = $response->isSuccessful();
+        return $isOauthConnectionSuccessful;
+    }
 }

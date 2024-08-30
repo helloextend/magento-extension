@@ -1,0 +1,26 @@
+<?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+
+/**
+ * @var \Extend\Warranty\Block\System\Config\Authentication\Comment $block
+ */
+
+$scopeData = $block->getScopeData();
+$tokenAge = $block->getTokenAge();
+?>
+<div class="extend-token-age-comment-container">
+    <div class="token-age-info">
+        <p id="token-age-msg">
+            <span id="token-age">
+                <?= /* @noEscape */ $tokenAge ? $tokenAge: 'Api Key age will be shown after saving credentials first'; ?>
+            </span>
+        </p>
+    </div>
+</div>

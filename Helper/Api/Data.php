@@ -18,6 +18,8 @@ use Magento\Config\Model\ResourceModel\Config as ConfigResource;
 use Magento\Framework\App\Cache\Manager as CacheManager;
 use Magento\Framework\App\Cache\Type\Config;
 use Extend\Warranty\Model\Config\Source\AuthMode;
+use Extend\Warranty\Api\ConnectorInterface;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 
 /**
  * Class Data
@@ -45,6 +47,12 @@ class Data extends AbstractHelper
     public const WARRANTY_AUTHENTICATION_API_URL_XML_PATH = 'warranty/authentication/api_url';
     public const WARRANTY_AUTHENTICATION_SANDBOX_API_URL_XML_PATH = 'warranty/authentication/sandbox_api_url';
     public const WARRANTY_AUTHENTICATION_STORE_NAME = 'warranty/authentication/store_name';
+    public const WARRANTY_AUTHENTICATION_CLIENT_ID_XML_PATH = 'warranty/authentication/client_id';
+    public const WARRANTY_AUTHENTICATION_SANDBOX_CLIENT_ID_XML_PATH = 'warranty/authentication/sandbox_client_id';
+    public const WARRANTY_AUTHENTICATION_CLIENT_SECRET_XML_PATH = 'warranty/authentication/client_secret';
+    public const WARRANTY_AUTHENTICATION_SANDBOX_CLIENT_SECRET_XML_PATH = 'warranty/authentication/sandbox_client_secret';
+    public const WARRANTY_AUTHENTICATION_OAUTH_TOKEN_DATE_XML_PATH = 'warranty/authentication/oauth_token_date';
+    public const WARRANTY_AUTHENTICATION_SANDBOX_OAUTH_TOKEN_DATE_XML_PATH = 'warranty/authentication/sandbox_oauth_token_date';
 
     /**
      * Contracts settings
@@ -127,19 +135,38 @@ class Data extends AbstractHelper
     private $cacheManager;
 
     /**
-     * Data constructor
+     * Connector Interface
      *
+     * @var ConnectorInterface
+     */
+    protected $connector;
+
+    /**
+     * Json Serializer Model
+     *
+     * @var JsonSerializer
+     */
+    protected $jsonSerializer;
+
+    /**
+     * Data constructor
+     * @param JsonSerializer $jsonSerializer
      * @param Context $context
      * @param ModuleListInterface $moduleList
      * @param ConfigResource $configResource
      * @param CacheManager $cacheManager
      */
     public function __construct(
+        JsonSerializer     $jsonSerializer,
+        ConnectorInterface $connector,
         Context $context,
         ModuleListInterface $moduleList,
         ConfigResource $configResource,
         CacheManager $cacheManager
+
     ) {
+        $this->jsonSerializer = $jsonSerializer;
+        $this->connector = $connector;
         $this->moduleList = $moduleList;
         $this->configResource = $configResource;
         $this->cacheManager = $cacheManager;
@@ -203,6 +230,45 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Check if Extend in Oauth mode
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return bool
+     */
+    public function isExtendOauthEnabled(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        if ($this->isExtendLive($scopeType, $scopeId)){
+            //live
+            $clientId = (string)$this->scopeConfig->getValue(
+                self::WARRANTY_AUTHENTICATION_CLIENT_ID_XML_PATH,
+                $scopeType,
+                $scopeId
+            );
+            $clientSecret = (string)$this->scopeConfig->getValue(
+                self::WARRANTY_AUTHENTICATION_CLIENT_SECRET_XML_PATH,
+                $scopeType,
+                $scopeId
+            );
+        }else{
+            //sandbox
+            $clientId = (string)$this->scopeConfig->getValue(
+                self::WARRANTY_AUTHENTICATION_SANDBOX_CLIENT_ID_XML_PATH,
+                $scopeType,
+                $scopeId
+            );
+            $clientSecret = (string)$this->scopeConfig->getValue(
+                self::WARRANTY_AUTHENTICATION_SANDBOX_CLIENT_SECRET_XML_PATH,
+                $scopeType,
+                $scopeId
+            );
+        }
+
+        return ($clientId && $clientSecret) ? true : false;
+    }
+    /**
      * Get store ID
      *
      * @param string $scopeType
@@ -230,10 +296,185 @@ class Data extends AbstractHelper
         string $scopeType = ScopeInterface::SCOPE_STORES,
         $scopeId = null
     ) {
-        $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_API_KEY_XML_PATH
-            : self::WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH;
+        $scopeType = ScopeInterface::SCOPE_STORES;
+        if ($this->isExtendOauthEnabled($scopeType, $scopeId)){
+            
+            //build ApiKey based on Oauth
+            if ($this->isExtendLive($scopeType, $scopeId)){
+                //live
+                $clientId = (string)$this->scopeConfig->getValue(
+                    self::WARRANTY_AUTHENTICATION_CLIENT_ID_XML_PATH,
+                    $scopeType,
+                    $scopeId
+                );
+                $clientSecret = (string)$this->scopeConfig->getValue(
+                    self::WARRANTY_AUTHENTICATION_CLIENT_SECRET_XML_PATH,
+                    $scopeType,
+                    $scopeId
+                );
+                $oauthTokenDate = (string)$this->scopeConfig->getValue(
+                    self::WARRANTY_AUTHENTICATION_OAUTH_TOKEN_DATE_XML_PATH,
+                    $scopeType,
+                    $scopeId
+                );
+                $apiKey = (string)$this->scopeConfig->getValue(
+                    self::WARRANTY_AUTHENTICATION_API_KEY_XML_PATH,
+                          $scopeType,
+                          $scopeId);
+                $apiUrl = (string)$this->scopeConfig->getValue(
+                    self::WARRANTY_AUTHENTICATION_API_URL_XML_PATH,
+                          $scopeType,
+                          $scopeId);
+            }else {
+                //sandbox
+                $clientId = (string)$this->scopeConfig->getValue(
+                    self::WARRANTY_AUTHENTICATION_SANDBOX_CLIENT_ID_XML_PATH,
+                    $scopeType,
+                    $scopeId
+                );
+                $clientSecret = (string)$this->scopeConfig->getValue(
+                    self::WARRANTY_AUTHENTICATION_SANDBOX_CLIENT_SECRET_XML_PATH,
+                    $scopeType,
+                    $scopeId
+                );
+                $oauthTokenDate = (string)$this->scopeConfig->getValue(
+                    self::WARRANTY_AUTHENTICATION_SANDBOX_OAUTH_TOKEN_DATE_XML_PATH,
+                    $scopeType,
+                    $scopeId
+                );
+                $apiKey = (string)$this->scopeConfig->getValue(
+                    self::WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH,
+                          $scopeType,
+                          $scopeId);
+                $apiUrl = (string)$this->scopeConfig->getValue(
+                    self::WARRANTY_AUTHENTICATION_SANDBOX_API_URL_XML_PATH,
+                          $scopeType,
+                          $scopeId);
+            }
+            // return stored ApiKey if time is still below 3hr+15m
+            if ($apiKey && ($oauthTokenDate && ((time() - $oauthTokenDate)  < 9900))) {
+                return $apiKey;
+            }else {
+                // retrieve new token
+                $url = $apiUrl . 'auth/oauth/token';
+
+                $headers = array('Content-Type' => 'application/json', 'Accept' => 'application/json; version=latest');
+                $data =  array(
+                                        'grant_type'       => 'client_credentials',
+                                        'client_id'        => $clientId,
+                                        'client_secret'    => $clientSecret,
+                                        'client_assertion' => 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+                                    );
+                $response = $this->connector->call($url, "POST", $headers, $data);
+
+                $responseBody = [];
+                $responseBodyJson = $response->getBody();
+                $responseBody = $this->jsonSerializer->unserialize($responseBodyJson);
+
+                if (array_key_exists('access_token', $responseBody)) {
+                    // update token and oauthtoken date
+                    $apiKey = (string)$responseBody['access_token'];
+                    if ($this->isExtendLive($scopeType, $scopeId)){
+                        $this->configResource->saveConfig(self::WARRANTY_AUTHENTICATION_API_KEY_XML_PATH,
+                                                          $apiKey, $scopeType, (int)$scopeId);
+
+                        $this->configResource->saveConfig(self::WARRANTY_AUTHENTICATION_OAUTH_TOKEN_DATE_XML_PATH,
+                                                          time(), $scopeType, (int)$scopeId);
+
+                    }else{
+                        $this->configResource->saveConfig(self::WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH,
+                                                          $apiKey, $scopeType, (int)$scopeId);
+
+                        $this->configResource->saveConfig(self::WARRANTY_AUTHENTICATION_SANDBOX_OAUTH_TOKEN_DATE_XML_PATH,
+                                                          time(), $scopeType, (int)$scopeId);
+                    }
+                    $this->cacheManager->clean([Config::TYPE_IDENTIFIER]);
+                } else {
+                    $apiKey = null;
+                }
+                return $apiKey;
+            }
+        }else{
+            //use Long Live Token
+            $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_API_KEY_XML_PATH
+                : self::WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH;
+
+            return (string)$this->scopeConfig->getValue($path, $scopeType, $scopeId);
+        }
+
+    }
+
+    /**
+     * Get Client ID
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getClientId(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_CLIENT_ID_XML_PATH
+            : self::WARRANTY_AUTHENTICATION_SANDBOX_CLIENT_ID_XML_PATH;
 
         return (string)$this->scopeConfig->getValue($path, $scopeType, $scopeId);
+    }
+
+    /**
+     * Get Client Secret
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getClientSecret(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        $path = $this->isExtendLive($scopeType, $scopeId) ? self::WARRANTY_AUTHENTICATION_CLIENT_SECRET_XML_PATH
+            : self::WARRANTY_AUTHENTICATION_SANDBOX_CLIENT_SECRET_XML_PATH;
+
+        return (string)$this->scopeConfig->getValue($path, $scopeType, $scopeId);
+    }
+
+    /**
+     * Get Access Token Age
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getTokenAge(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        $path =  self::WARRANTY_AUTHENTICATION_OAUTH_TOKEN_DATE_XML_PATH;
+        return (string)$this->scopeConfig->getValue(
+            $path,
+            $scopeType,
+            $scopeId
+        );
+    }
+
+    /**
+     * Get Access Token Age Sandbox
+     *
+     * @param string $scopeType
+     * @param int|string|null $scopeId
+     * @return string
+     */
+    public function getTokenAgeSandBox(
+        string $scopeType = ScopeInterface::SCOPE_STORES,
+               $scopeId = null
+    ) {
+        $path = self::WARRANTY_AUTHENTICATION_SANDBOX_OAUTH_TOKEN_DATE_XML_PATH;
+
+        return (string)$this->scopeConfig->getValue(
+            $path,
+            $scopeType,
+            $scopeId
+        );
     }
 
     /**
@@ -727,4 +968,5 @@ class Data extends AbstractHelper
             $scopeId
         );
     }
+
 }

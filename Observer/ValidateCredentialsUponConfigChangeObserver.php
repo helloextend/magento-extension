@@ -111,22 +111,37 @@ class ValidateCredentialsUponConfigChangeObserver implements ObserverInterface
         $apiUrl = $this->dataHelper->getApiUrl($scopeType, $scopeId);
         $storeId = $this->dataHelper->getStoreId($scopeType, $scopeId);
         $apiKey = $this->dataHelper->getApiKey($scopeType, $scopeId);
+        $clientId = $this->dataHelper->getClientId($scopeType, $scopeId);
+        $clientSecret = $this->dataHelper->getClientSecret($scopeType, $scopeId);
 
-        try {
-            $this->apiProductModel->setConfig($apiUrl, $storeId, $apiKey);
-            if ($this->apiProductModel->isConnectionSuccessful()) {
+        if ($clientId && $clientSecret && $apiKey){
+            // try Oauth
+            if ($this->apiProductModel->isOauthConnectionSuccessful($storeId, $apiKey, $apiUrl )) {
                 $this->messageManager->addSuccessMessage(__('Extend is now enabled in your store.'));
-                $this->messageManager->addSuccessMessage(__('Connection to Extend API is successful.'));
+                $this->messageManager->addSuccessMessage(__('Connection to Extend Oauth is successful.'));
             } else {
+                $this->messageManager->addErrorMessage(
+                    __('Unable to connect to Extend Oauth with the credentials provided.')
+                );
+            }
+        }else {
+            //not Oauth, use Long Live Token
+            try {
+                $this->apiProductModel->setConfig($apiUrl, $storeId, $apiKey);
+                if ($this->apiProductModel->isConnectionSuccessful()) {
+                    $this->messageManager->addSuccessMessage(__('Extend is now enabled in your store.'));
+                    $this->messageManager->addSuccessMessage(__('Connection to Extend API is successful.'));
+                } else {
+                    $this->messageManager->addErrorMessage(
+                        __('Unable to connect to Extend API with the credentials provided.')
+                    );
+                }
+            } catch (LocalizedException $exception) {
                 $this->messageManager->addErrorMessage(
                     __('Unable to connect to Extend API with the credentials provided.')
                 );
+                $this->messageManager->addErrorMessage($exception->getMessage());
             }
-        } catch (LocalizedException $exception) {
-            $this->messageManager->addErrorMessage(
-                __('Unable to connect to Extend API with the credentials provided.')
-            );
-            $this->messageManager->addErrorMessage($exception->getMessage());
         }
     }
 
