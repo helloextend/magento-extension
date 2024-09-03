@@ -365,7 +365,7 @@
                        showInStore="1"
                        canRestore="0">
                     <label>Current Sandbox Api Key:</label>
-                    <comment>Sandbox Api Key / Access Token expires after 3hours. Value refreshes upon saving settings or automatically when required.</comment>
+                    <comment>Sandbox Api Key / Access Token expires after 3 hours. Value refreshes upon saving settings or automatically when required.</comment>
                     <depends>
                         <field id="enable">1</field>
                         <field id="warranty/authentication/auth_mode">0</field>
@@ -381,7 +381,7 @@
                        showInStore="1"
                        canRestore="0">
                     <label>Current Api Key:</label>
-                    <comment>Api Key / Access Token expires after 3hours. Value refreshes upon saving settings or automatically when required.</comment>
+                    <comment>Api Key / Access Token expires after 3 hours. Value refreshes upon saving settings or automatically when required.</comment>
                     <depends>
                         <field id="enable">1</field>
                         <field id="warranty/authentication/auth_mode">1</field>
