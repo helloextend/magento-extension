@@ -12,7 +12,6 @@ use Magento\Config\Model\ResourceModel\Config as ConfigResource;
 
 class InstallData implements InstallDataInterface
 {
-    //protected $configWriter;
     protected $scopeConfig;
     protected $storeManager;
     /**
