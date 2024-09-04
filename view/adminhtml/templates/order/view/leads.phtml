@@ -32,6 +32,7 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
 
 <?php if ($viewModel->showLeadOffer($item)):?>
      <?php
+    $leadTokenString = implode(", ", $leadToken);
     $scriptString = <<<EOT
     require(['jquery',
                 'mage/url',
@@ -45,7 +46,7 @@ $warrantyUniqueID = 'order' . $item->getOrderId() . '-' . $item->getId();
                                     const plan = opts.plan;
                     if (plan) {
                         let url      = "{$block->getUrl('extend/warranty/leads')}";
-                        let leadToken = "{implode(", ", $leadToken)}";
+                        let leadToken = "{$leadTokenString}";
                         let order = "{$block->getOrder()->getId()}";
                         let qty = "{$viewModel->getLeftLeadsQty($item)}";
                         plan.product = '{$viewModel->getProductSkuByOrderItem($item)}';
