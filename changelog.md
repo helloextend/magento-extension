@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.5.0
+## version: 2.5.1
 
 ### Changelog:
 
 ---
+
+
+**2.5.1**
+
+Patch Release: Merge pull request #417 from helloextend/leads_fix_092024
+
+Patch Release: Update leads.phtml
+
+
+
 
 
 **2.5.0**
