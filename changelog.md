@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.4.0
+## version: 2.5.0
 
 ### Changelog:
 
 ---
+
+
+**2.5.0**
+
+Merge pull request #416 from helloextend/Oauth_implementation
+
+Minor Release: implementation of Oauth
+
+
+
 
 
 **2.4.0**
