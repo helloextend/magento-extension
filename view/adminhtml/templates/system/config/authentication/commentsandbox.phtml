@@ -1,0 +1,26 @@
+<?php
+/**
+ * Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Warranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+
+/**
+ * @var \Extend\Warranty\Block\System\Config\Authentication\CommentSandbox $block
+ */
+
+$scopeData = $block->getScopeData();
+$tokenAgeSandbox = $block->getTokenAgeSandbox();
+?>
+<div class="extend-token-age-sandbox-comment-container">
+    <div class="token-age-sandbox-info">
+        <p id="token-age-sandbox-msg">
+            <span id="token-age-sandbox">
+                <?= /* @noEscape */ $tokenAgeSandbox ? $tokenAgeSandbox : 'Sandbox Api Key age will be shown after saving credentials first'; ?>
+            </span>
+        </p>
+    </div>
+</div>

@@ -136,7 +136,7 @@ abstract class AbstractRequest implements RequestInterface
      * @param Response $response
      * @return array
      */
-    protected function processResponse(
+    public function processResponse(
         Response $response,
                  $logResponse = true
     ): array
