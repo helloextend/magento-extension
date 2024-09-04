@@ -232,7 +232,7 @@
                         <![CDATA[
                              Unique identifier for your store on the Extend platform.
                              Go to <a href="https://merchants.extend.com">your Extend merchant dashboard</a>
-                             to find your Client ID and then paste or type it here.
+                             to find your Client ID and then paste or type it here. View the <a href="https://docs.extend.com/reference/authentication">reference documentation</a>.
                         ]]>
                     </comment>
                     <depends>
@@ -312,7 +312,7 @@
                         <![CDATA[
                              Unique identifier for your store on the Extend platform.
                              Go to <a href="https://demo.merchants.extend.com">your Extend merchant dashboard</a>
-                             to find your Client ID and then paste or type it here.
+                             to find your Client ID and then paste or type it below. View the <a href="https://docs.extend.com/reference/authentication">reference documentation</a>.
                         ]]>
                     </comment>
                     <depends>
