@@ -22,6 +22,26 @@ Opening the admin settings Store / Configuration / Extend / Store View will show
 
 
 
+**2.3.12**
+
+Merge pull request #415 from helloextend/PUE_order_details_frontend
+
+Patch Release: Add warranty item details
+
+
+
+
+
+**2.3.11**
+
+Patch Release: Add warranty item details
+
+in the frontend, the Warranty Item was lacking details. this patch brings the warranty details and the parent order ID if present for PUE orders
+
+
+
+
+
 **2.3.10**
 
 Patch Release : Merge pull request #414 from helloextend/Bundle_product_Sync_price
