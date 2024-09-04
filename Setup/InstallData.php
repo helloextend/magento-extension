@@ -12,8 +12,16 @@ use Magento\Config\Model\ResourceModel\Config as ConfigResource;
 
 class InstallData implements InstallDataInterface
 {
+    /**
+     * @var ScopeConfigInterface
+     */
     protected $scopeConfig;
+
+    /**
+     * @var StoreManagerInterface
+     */
     protected $storeManager;
+
     /**
      * Config Resource Model
      *
@@ -29,7 +37,11 @@ class InstallData implements InstallDataInterface
     public const WARRANTY_AUTHENTICATION_API_KEY_XML_PATH = 'warranty/authentication/api_key';
     public const WARRANTY_AUTHENTICATION_SANDBOX_API_KEY_XML_PATH = 'warranty/authentication/sandbox_api_key';
 
-
+    /**
+     * @param ScopeConfigInterface $scopeConfig
+     * @param StoreManagerInterface $storeManager
+     * @param ConfigResource $configResource
+     */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManager,
