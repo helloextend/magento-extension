@@ -216,8 +216,8 @@
                     </comment>
                     <depends>
                         <field id="warranty/authentication/auth_mode">1</field>
-                    </depends>
-                    <disabled>1</disabled>
+		    </depends>
+		    <frontend_model>Extend\Warranty\Block\System\Config\Field\Readonlyfield</frontend_model>
                 </field>
                 <field id="client_id"
                        translate="label comment"
@@ -297,7 +297,8 @@
                     </comment>
                     <depends>
                         <field id="warranty/authentication/auth_mode">0</field>
-                    </depends>
+		    </depends>
+		    <frontend_model>Extend\Warranty\Block\System\Config\Field\Readonlyfield</frontend_model>
                 </field>
                 <field id="sandbox_client_id"
                        translate="label comment"
