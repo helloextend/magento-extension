@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.5.1
+## version: 2.5.2
 
 ### Changelog:
 
 ---
+
+
+**2.5.2**
+
+Patch Release : Merge pull request #418 from helloextend/fix_system_xml
+
+Patch Release : fixed read only field in system settings
+
+
+
 
 
 **2.5.1**
