@@ -1,10 +1,20 @@
 # Extend Magento2 Changelog
 
-## version: 2.5.2
+## version: 2.5.3
 
 ### Changelog:
 
 ---
+
+
+**2.5.3**
+
+Patch Release : Merge pull request #419 from helloextend/PUE_Order_details_parent_order
+
+PUE orders update the parent order item with warranty orders
+
+
+
 
 
 **2.5.2**
