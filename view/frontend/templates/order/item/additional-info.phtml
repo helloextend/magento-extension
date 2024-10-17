@@ -18,10 +18,9 @@
 
     $_item = $block->getItem();
     $block->getChildBlock('order.item.warranty')->setItem($_item);
+    $_productOptions = $_item->getProductOptions();
 
     if ($_item->getProductType()=='warranty'){
-
-        $_productOptions = $_item->getProductOptions();
         $_planId = isset($_productOptions["warranty_id"]) ? $_productOptions["warranty_id"] : '';
         $_parentSku= isset($_productOptions["associated_product"]) ? $_productOptions["associated_product"] : '';
         $_contractID = $viewModel->unserialize($_item->getContractId()) ?? [];
@@ -51,6 +50,19 @@
             if ($parentOrderId && ($parentOrderId <> $currentOrderId) && $incrementId) {
                 echo " Parent Order: <a href='". $block->getUrl('sales/order/view', ['order_id' => $parentOrderId])."'>".$incrementId."</a>";
             }
+    }else{
+
+        // product is not a warranty item. check if there is a warranty purchased tied to it
+        $currentOrderId         = $_item->getOrderId();
+        $warrantyOrderId        = $_productOptions["info_buyRequest"]["extend_warranty_order_id"] ?? null;
+       // $warrantyIncrementId    = $warrantyOrderId ? $viewModel->getOrderIncrementId($warrantyOrderId) : null;
+
+        if ($warrantyOrderId && is_array($warrantyOrderId) && ($warrantyOrderId <> $currentOrderId)) {
+            echo "Warranty Order ID :";
+                    foreach ($warrantyOrderId as $warrantyOrder ) {
+                        echo "<br><a href='" . $block->getUrl('sales/order/view', ['order_id' => $warrantyOrder]) . "'>" . $viewModel->getOrderIncrementId($warrantyOrder) . "</a>";
+                    }
+        }
     }
 ?>
 <?=  $block->getChildHtml('', false);
