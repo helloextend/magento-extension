@@ -58,6 +58,23 @@ use Magento\Framework\View\Helper\SecureHtmlRenderer;
                 <br /><br/><span><?= /* @noEscape */ $block->escapeHtml(__('Parent Order ID'))?>: </span><?= /* @noEscape */ $incrementId ?>
             <?php endif; ?>
         </div>
+        <!-- if not a warranty but PUE order information is present -->
+        <?php else: ?>
+        <?php
+            $_productOptions = $_item->getProductOptions();
+            $warrantyOrderId      = $_productOptions["info_buyRequest"]["extend_warranty_order_id"] ?? null;
+            if ($warrantyOrderId && is_array($warrantyOrderId)){
+                ?>
+                <div class="product-warranty-block">
+                    <br /><span> <?php echo "Warranty Order ID :";
+                    foreach ($warrantyOrderId as $warrantyOrder ) {
+                        echo "<br><a href='" . $block->getUrl('sales/order/view', ['order_id' => $warrantyOrder]) . "'>" . $viewModel->getOrderIncrementId($warrantyOrder) . "</a>";
+                    }
+                    ?>
+                </div>
+        <?php }  ?>
+
+
     <?php endif; ?>
 
     <?php if ($block->getOrderOptions()): ?>

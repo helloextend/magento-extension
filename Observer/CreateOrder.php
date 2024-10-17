@@ -25,6 +25,9 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Exception;
 use Extend\Warranty\Model\CreateContract as WarrantyContractCreate;
 use \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory as OrderItemCollectionFactory;
+use Extend\Warranty\Helper\Api\Magento\Data;
+use Magento\Sales\Api\OrderRepositoryInterface;
+
 
 /**
  * Class CreateLead
@@ -39,6 +42,13 @@ class CreateOrder implements ObserverInterface
      * @var OrderItemRepositoryInterface
      */
     private $orderItemRepository;
+
+    /**
+     * Order  Repository Model
+     *
+     * @var OrderRepositoryInterface
+     */
+    private $orderRepository;
 
     /**
      * ExtendOrder Model
@@ -79,21 +89,28 @@ class CreateOrder implements ObserverInterface
      * CreateLead constructor
      *
      * @param OrderItemRepositoryInterface $orderItemRepository
+     * @param OrderRepositoryInterface $orderRepository
      * @param ExtendOrder $extendOrder
      * @param DataHelper $dataHelper
      * @param LoggerInterface $logger
+     * @param WarrantyContractCreate $warrantyContractCreate
      * @param \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory $orderItemCollectionFactory
+     *
      */
+
     public function __construct(
         OrderItemRepositoryInterface $orderItemRepository,
+        OrderRepositoryInterface     $orderRepository,
         ExtendOrder                  $extendOrder,
         DataHelper                   $dataHelper,
         LoggerInterface              $logger,
         WarrantyContractCreate       $warrantyContractCreate,
         \Magento\Sales\Model\ResourceModel\Order\Item\CollectionFactory                        $orderItemCollectionFactory
+
     )
     {
         $this->orderItemRepository = $orderItemRepository;
+        $this->orderRepository = $orderRepository;
         $this->extendOrder = $extendOrder;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
@@ -127,7 +144,6 @@ class CreateOrder implements ObserverInterface
         ) {
             return;
         }
-
 
         /** @var OrderItemInterface $orderItem */
         foreach ($order->getAllItems() as $orderItem) {
@@ -179,10 +195,44 @@ class CreateOrder implements ObserverInterface
                         $parentOrderId = $existingOrderItem->getOrderId();
                         $warrantyItem->setExtendParentOrderId($parentOrderId);
                     }
+
+                    // Find the parent order, find the item and add the current order ID as a custom option
+                    // goal = be able to identify the warranty order from the original order without a warranty item
+
+                    $original_order = $this->orderRepository->get($existingOrderItem->getOrderId());
+
+                    foreach ($original_order->getAllItems() as $item) {
+                        if ($item->getSku() === $existingOrderItem->getSku() && $item->getQuoteItemId() == $existingOrderItem->getQuoteItemId()) {
+                            $this->updateOrderItemBuyRequest($item,   $warrantyItem->getOrderId());
+                        }
+                    }
                 }
             }
         } catch (Exception $exception) {
             $this->logger->error('Error during lead saving. ' . $exception->getMessage());
         }
     }
+
+    protected function updateOrderItemBuyRequest( $item, $value)
+    {
+        $buyRequest = $item->getProductOptionByCode('info_buyRequest');
+        if (!$buyRequest) {
+           return;
+        }
+
+        if (!key_exists('extend_warranty_order_id', $buyRequest) || !is_array($buyRequest['extend_warranty_order_id'])){
+            $buyRequest['extend_warranty_order_id']  = array();
+        }
+
+        // Add the "extend_warranty_order_id" to the buy request.
+        $buyRequest['extend_warranty_order_id'][] = $value;
+
+        // Save the updated buy request back to the item.
+        $item->setProductOptions(array_merge(
+                                     $item->getProductOptions(),
+                                     ['info_buyRequest' => $buyRequest]
+                                 ));
+        $item->save();
+    }
+
 }
