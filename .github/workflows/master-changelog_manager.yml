@@ -9,7 +9,7 @@ on:
 jobs:
   create-release:
     if: (contains( github.event.head_commit.message, 'major release') || contains( github.event.head_commit.message,'minor release') || contains( github.event.head_commit.message, 'patch release'))
-    runs-on: ubuntu-latest
+    runs-on: blacksmith
     steps:     
      - name: Checkout Code
        uses: actions/checkout@v2

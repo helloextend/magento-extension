@@ -9,7 +9,7 @@ on:
 jobs:
   update-branch-changelog:
     if: ${{ github.event.head_commit.id != github.event.before && github.event.created != true }} 
-    runs-on: ubuntu-latest
+    runs-on: blacksmith
     steps:     
      - name: Checkout Code
        uses: actions/checkout@v2
