@@ -1,0 +1,16 @@
+name: Run Migration
+description: 'Run a repository migration, to apply multi-repo updates'
+on:
+  workflow_dispatch:
+    inputs:
+      migration_id:
+        description: 'teamName/migrationName'
+        required: true
+        type: string
+
+jobs:
+  run-migration:
+    uses: helloextend/repo-sitioner/.github/workflows/run-migration.yml@main
+    with:
+      migration_id: ${{ inputs.migration_id }}
+    secrets: inherit
