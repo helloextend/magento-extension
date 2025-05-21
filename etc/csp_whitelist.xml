@@ -24,7 +24,9 @@
                 <value
                     id="extendoffer-modaldemo"
                     type="host">https://s3.amazonaws.com</value>
-
+                <value
+                    id="extendcoreoffer-prod"
+                    type="host">https://extendcoreoffersprod-offersthemelogobucketeb21afa-1lr7le13dvgtp.s3.amazonaws.com</value>
             </values>
         </policy>
         <policy id="style-src">
