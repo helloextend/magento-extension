@@ -280,6 +280,10 @@ class ProductDataBuilder
                 }
 
                 if ($bundlePriceCalc == 0 && $bundleTotalPrice == 0) {
+                    if ($product->getPriceType()==1 && $product->getPrice()>0 ) { 
+                        return $product->getPrice();
+                    }
+                    
                     return 0.01;
                 }
 
