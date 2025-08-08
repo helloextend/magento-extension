@@ -12,12 +12,26 @@
 namespace Extend\Warranty\Block\Adminhtml\Order\Create;
 
 use Magento\Backend\Block\Template;
-use Magento\Directory\Helper\Data as DirectoryHelper;
-use Magento\Framework\Json\Helper\Data as JsonHelper;
 
 class Installation extends Template
 {
-    public function getCurrentStore(){
-        return $this->getRequest()->getPost('store_id');
+    /**
+     * @var \Magento\Backend\Model\Session\Quote
+     */
+
+    private $quote;
+
+    public function __construct(
+        \Magento\Backend\Block\Template\Context $context,
+        \Magento\Backend\Model\Session\Quote $quote,
+        array $data = []
+    ){
+        $this->quote = $quote;
+        parent::__construct($context, $data);
+    }
+
+    public function getCurrentStore()
+    {
+        return $this->quote->getStoreId();
     }
 }
