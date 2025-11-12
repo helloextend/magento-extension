@@ -413,10 +413,10 @@ class Warranty implements ArgumentInterface
      * Check does quote have warranty item for the item
      * Kept for backwards compatibility with Hyva module
      *
-     * @param int $productId
+     * @param int $quoteItemId
      * @return bool
      */
-    public function isWarrantyInQuote(int $productId): bool
+    public function isWarrantyInQuote(int $quoteItemId): bool
     {
         try {
             $quote = $this->checkoutSession->getQuote();
@@ -424,7 +424,7 @@ class Warranty implements ArgumentInterface
             $quote = null;
         }
         if ($quote) {
-            $hasWarranty = $this->hasWarranty($quote, $productId);
+            $hasWarranty = $this->hasWarranty($quote, $quoteItemId);
         }
         return $hasWarranty ?? false;
     }
