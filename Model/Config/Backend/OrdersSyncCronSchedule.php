@@ -50,8 +50,8 @@ class OrdersSyncCronSchedule extends Value
         ScopeConfigInterface $config,
         TypeListInterface $cacheTypeList,
         Helper $helper,
-        AbstractResource $resource = null,
-        AbstractDb $resourceCollection = null,
+        ?AbstractResource $resource = null,
+        ?AbstractDb $resourceCollection = null,
         array $data = []
     ) {
         $this->helper = $helper;

@@ -193,7 +193,7 @@ class Warranty implements ArgumentInterface
      *
      * @return bool
      */
-    public function isExtendEnabled(int $storeId = null): bool
+    public function isExtendEnabled(?int $storeId = null): bool
     {
         $result = false;
 

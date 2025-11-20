@@ -70,7 +70,7 @@ class CreateContracts extends Command
         DataHelper $dataHelper,
         ContractCreateProcess $contractCreateProcess,
         LoggerInterface $logger,
-        string $name = null
+        ?string $name = null
     ) {
         $this->appState = $appState;
         $this->dataHelper = $dataHelper;

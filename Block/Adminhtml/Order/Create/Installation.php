@@ -23,7 +23,7 @@ class Installation extends Template
 
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
-        \Magento\Backend\Model\Session\Quote $quote = null,
+        ?\Magento\Backend\Model\Session\Quote $quote = null,
         array $data = []
     ){
         $this->quote =  $quote ?? \Magento\Framework\App\ObjectManager::getInstance()

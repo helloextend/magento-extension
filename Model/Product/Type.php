@@ -94,7 +94,7 @@ class Type extends AbstractType
         \Psr\Log\LoggerInterface                           $logger,
         ProductRepositoryInterface                         $productRepository,
         Data                                               $helper,
-        \Magento\Framework\Serialize\Serializer\Json       $serializer = null
+        ?\Magento\Framework\Serialize\Serializer\Json       $serializer = null
     )
     {
         $this->helper = $helper;
