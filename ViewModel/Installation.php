@@ -155,10 +155,6 @@ class Installation implements ArgumentInterface
             } catch (InvalidArgumentException $exception) {
                 $jsonConfig = '';
             }
-
-            if (isset($config['region'])){
-                unset($config['region']);
-            }
         }
 
         return $jsonConfig;
@@ -263,7 +259,7 @@ class Installation implements ArgumentInterface
      *
      * @return string
      */
-    private function getRegion($storeId = null): string
+    private function getRegion($storeId = null): ?string
     {
         return null;
         /* 
