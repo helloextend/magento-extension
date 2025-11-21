@@ -259,13 +259,19 @@ class Installation implements ArgumentInterface
      *
      * @return string
      */
-    private function getRegion($storeId = null): string
+    private function getRegion($storeId = null): ?string
     {
+        return null;
+        /* 
+         * Removed Nov. 2025 if the payload has a region (form the store) , it overrides the customer's region.
+         * This bypasses the location filtering. let the API determine the region based on the customer.
+
         return (string)$this->scopeConfig->getValue(
             \Magento\Config\Model\Config\Backend\Admin\Custom::XML_PATH_GENERAL_COUNTRY_DEFAULT,
             ScopeInterface::SCOPE_STORES,
             $storeId
         );
+        */
     }
 
     /**
