@@ -60,7 +60,7 @@ class ResetProductSyncFlag extends Command
         AppState $appState,
         FlagManager $flagManager,
         LoggerInterface $logger,
-        string $name = null
+        ?string $name = null
     ) {
         $this->appState = $appState;
         $this->flagManager = $flagManager;

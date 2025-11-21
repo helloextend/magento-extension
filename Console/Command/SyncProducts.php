@@ -88,7 +88,7 @@ class SyncProducts extends Command
         FlagManager $flagManager,
         ProductSyncProcess $productSyncProcess,
         LoggerInterface $logger,
-        string $name = null
+        ?string $name = null
     ) {
         parent::__construct($name);
         $this->appState = $appState;

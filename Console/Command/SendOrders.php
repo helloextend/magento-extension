@@ -104,7 +104,7 @@ class SendOrders extends Command
         HistoricalOrdersSyncProcess $sendHistoricalOrders,
         GetAfterDate                $getAfterDate,
         LoggerInterface             $logger,
-        string                      $name = null
+        ?string                      $name = null
     ) {
         parent::__construct($name);
         $this->appState = $appState;

@@ -193,7 +193,7 @@ class Warranty implements ArgumentInterface
      *
      * @return bool
      */
-    public function isExtendEnabled(int $storeId = null): bool
+    public function isExtendEnabled(?int $storeId = null): bool
     {
         $result = false;
 
@@ -493,7 +493,7 @@ class Warranty implements ArgumentInterface
      * @param $storeId
      * @return bool
      */
-    public function isOrderOffersEnabled($storeId = null): bool
+    public function isOrderOffersEnabled(?string $storeId = null): bool
     {
         return $this->dataHelper->isOrderOffersEnabled($storeId);
     }
@@ -666,7 +666,7 @@ class Warranty implements ArgumentInterface
         ];
     }
 
-    public function getOrderIncrementId($orderId = null){
+    public function getOrderIncrementId(string|int|null $orderId = null){
         if ($orderId){
             $order = $this->orderRepository->get($orderId);
             $incrementId = $order->getIncrementId();

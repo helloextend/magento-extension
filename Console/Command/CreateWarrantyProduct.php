@@ -86,7 +86,7 @@ class CreateWarrantyProduct extends Command
         LoggerInterface            $logger,
         ResourceProductFactory     $resourceProductFactory,
         StoreManagerInterface      $storeManager,
-        string                     $name = null
+        ?string                     $name = null
     ) {
         parent::__construct($name);
         $this->productRepository = $productRepository;
