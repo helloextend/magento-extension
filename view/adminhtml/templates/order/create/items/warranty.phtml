@@ -11,6 +11,8 @@ if ($_item = $block->getItem()):
     /** @var Extend\Warranty\ViewModel\Warranty $inCartViewModel */
     $inCartViewModel = $block->getData('viewModel');
     $productType = $_product->getTypeId();
+    $rawPrice = (float)$_item->getPrice();
+    $priceInCents = (float)number_format($rawPrice, 2, '', '');
 
     ?>
 
@@ -30,7 +32,7 @@ if ($_item = $block->getItem()):
             $scriptString = <<<EOT
                 require(['jquery', 'Magento_Ui/js/modal/alert'], function ($, alert) {
                     Extend.buttons.renderSimpleOffer('#extend-offer-{$_item->getId()}', {
-                        referenceId: '{$inCartViewModel->getProductSkuByQuoteItem($_item)}',
+                        referenceId: '{$inCartViewModel->getProductSkuByQuoteItem($_item)}', price: {$priceInCents},
                         onAddToCart: function (opts) {
 
                             const plan = opts.plan;
