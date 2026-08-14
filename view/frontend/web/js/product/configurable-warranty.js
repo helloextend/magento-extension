@@ -57,6 +57,13 @@ define([
                 return;
 
             var productSku = this._getWarrantyProductSku();
+
+            // the parent SKU is not rendered for configurable products on the PLP, so a
+            // non-swatch selection leaves us without a SKU to price the offer with
+            if (!productSku && !this.options.isInProductView) {
+                productSku = this._getSelectedConfigurableSku();
+            }
+
             var price = this._getVariationPrice(productSku);
 
             // keeps the interstitial modal on the price of the selected variation
@@ -109,14 +116,30 @@ define([
                     }
                 }
             } else if (this.options.isInProductView) {
-                var selectedId = $('input[name=selected_configurable_option]', this.mainWrap).val();
-                if (selectedId && selectedId !== '') {
-                    var spConfig = this.addToCartForm.data('mageConfigurable').options.spConfig;
-                    selectedSku = spConfig && spConfig.skus ? spConfig.skus[selectedId] : null;
-                }
+                selectedSku = this._getSelectedConfigurableSku();
             }
 
             return selectedSku ? selectedSku : this.options.productSku;
+        },
+
+        /**
+         * Returns the SKU of the currently selected configurable option, `null` when
+         * nothing is selected or the configurable widget is unavailable
+         *
+         * @protected
+         * @return {String|null}
+         */
+        _getSelectedConfigurableSku: function () {
+            var selectedId = $('input[name=selected_configurable_option]', this.mainWrap).val();
+
+            if (!selectedId || selectedId === '') {
+                return null;
+            }
+
+            var configurable = this.addToCartForm.data('mageConfigurable');
+            var spConfig = configurable ? configurable.options.spConfig : null;
+
+            return spConfig && spConfig.skus && spConfig.skus[selectedId] ? spConfig.skus[selectedId] : null;
         }
     });
 
