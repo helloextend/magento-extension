@@ -33,6 +33,9 @@ $isConfigurable = $productType === \Magento\ConfigurableProduct\Model\Product\Ty
                 "productSku": "<?= $isSimple ? $block->escapeJs($_product->getData('sku')) : '' ?>",
                 "buttonEnabled": false,
                 "productInfo": <?= json_encode($viewModel->getProductInfo($_product)); ?>,
+                <?php if ($isConfigurable): ?>
+                "variationPrices": <?= $viewModel->getVariationPricesJson($_product); ?>,
+                <?php endif; ?>
                 "modalEnabled": true,
                 "insertionPoint": "div.product-item-actions",
                 "insertionLogic": "append",

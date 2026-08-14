@@ -22,6 +22,7 @@ define([
             productSku: null,
             buttonEnabled: true,
             modalEnabled: false,
+            variationPrices: {},
             blockClass: 'product-warranty-offers',
             insertionPoint: 'div.actions',
             insertionLogic: 'before',
@@ -52,11 +53,44 @@ define([
          * @param {Event} event - The event arguments
          */
         _onOptionsChanged: function (event) {
-            if (!this.options.buttonEnabled)
+            if (!this.options.buttonEnabled && !this.options.modalEnabled)
                 return;
 
             var productSku = this._getWarrantyProductSku();
-            this.warrantyBlock.extendWarrantyOffers('updateActiveProduct', productSku);
+
+            // the parent SKU is not rendered for configurable products on the PLP, so a
+            // non-swatch selection leaves us without a SKU to price the offer with
+            if (!productSku && !this.options.isInProductView) {
+                productSku = this._getSelectedConfigurableSku();
+            }
+
+            var price = this._getVariationPrice(productSku);
+
+            // keeps the interstitial modal on the price of the selected variation
+            if (price !== null) {
+                this.options.productInfo.price = price;
+            }
+
+            if (this.options.buttonEnabled) {
+                this.warrantyBlock.extendWarrantyOffers('updateActiveProduct', productSku, price);
+            }
+        },
+
+        /**
+         * Returns the offer price of the given variation, `null` when it is unknown
+         *
+         * Variation prices are rendered server side, so special, catalog rule and
+         * customer group prices of the child product are all taken into account.
+         *
+         *
+         * @protected
+         * @param {String} productSku
+         * @return {Number|null}
+         */
+        _getVariationPrice: function (productSku) {
+            var prices = this.options.variationPrices || {};
+
+            return productSku && prices.hasOwnProperty(productSku) ? prices[productSku] : null;
         },
 
         /**
@@ -82,14 +116,30 @@ define([
                     }
                 }
             } else if (this.options.isInProductView) {
-                var selectedId = $('input[name=selected_configurable_option]', this.mainWrap).val();
-                if (selectedId && selectedId !== '') {
-                    var spConfig = this.addToCartForm.data('mageConfigurable').options.spConfig;
-                    selectedSku = spConfig && spConfig.skus ? spConfig.skus[selectedId] : null;
-                }
+                selectedSku = this._getSelectedConfigurableSku();
             }
 
             return selectedSku ? selectedSku : this.options.productSku;
+        },
+
+        /**
+         * Returns the SKU of the currently selected configurable option, `null` when
+         * nothing is selected or the configurable widget is unavailable
+         *
+         * @protected
+         * @return {String|null}
+         */
+        _getSelectedConfigurableSku: function () {
+            var selectedId = $('input[name=selected_configurable_option]', this.mainWrap).val();
+
+            if (!selectedId || selectedId === '') {
+                return null;
+            }
+
+            var configurable = this.addToCartForm.data('mageConfigurable');
+            var spConfig = configurable ? configurable.options.spConfig : null;
+
+            return spConfig && spConfig.skus && spConfig.skus[selectedId] ? spConfig.skus[selectedId] : null;
         }
     });
 

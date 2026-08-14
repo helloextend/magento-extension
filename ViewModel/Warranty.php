@@ -21,7 +21,9 @@ use Extend\Warranty\Model\Offers as OfferModel;
 use Extend\Warranty\Model\Config\Source\ProductPagePlacement;
 use Magento\Backend\Model\Auth\Session as AdminSession;
 use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Category\Collection;
+use Magento\Catalog\Pricing\Price\FinalPrice;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\ConfigurableProduct\Api\LinkManagementInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
@@ -649,7 +651,7 @@ class Warranty implements ArgumentInterface
 
     public function getProductInfo($product)
     {
-        $price = $product->getFinalPrice();
+        $price = $this->getOfferPrice($product);
 
         /** @var Collection $categoryCollection */
         $categoryCollection = $product->getCategoryCollection();
@@ -664,6 +666,68 @@ class Warranty implements ArgumentInterface
                 ? $category->getName()
                 : \Extend\Warranty\Model\Api\Request\ProductDataBuilder::NO_CATEGORY_DEFAULT_VALUE
         ];
+    }
+
+    /**
+     * Retrieve the price the storefront renders for the product
+     *
+     * The price info registry resolves special prices, catalog price rules and
+     * customer group / tier prices for the current session, which is what the PDP
+     * price block displays. Product::getFinalPrice() without a qty argument skips
+     * tier prices entirely - and customer group prices are stored as tier price
+     * rows - so it reports the base or special price to Extend instead.
+     *
+     * getValue() is used rather than getAmount()->getValue() to keep the price
+     * excluding tax, consistent with the rest of the offer payload.
+     *
+     * @param ProductInterface $product
+     * @return float
+     */
+    public function getOfferPrice($product): float
+    {
+        try {
+            if (method_exists($product, 'getPriceInfo')) {
+                $finalPrice = $product->getPriceInfo()->getPrice(FinalPrice::PRICE_CODE);
+                if ($finalPrice) {
+                    return (float)$finalPrice->getValue();
+                }
+            }
+        } catch (Exception $e) {
+            // price info is unavailable for this product, fall back to the price model
+        }
+
+        // the qty argument is required, otherwise tier and group prices are ignored
+        return (float)$product->getFinalPrice(1);
+    }
+
+    /**
+     * Offer prices of each variation of a configurable product, keyed by child SKU
+     *
+     * Passed to the PDP widget so the offer can be re-priced when the shopper
+     * switches variation - children carry their own special and customer group
+     * prices, and the parent price is only the lowest of them.
+     *
+     *
+     * @param ProductInterface $product
+     * @return string
+     */
+    public function getVariationPricesJson($product): string
+    {
+        $prices = [];
+
+        if ($product instanceof Product && $product->getTypeId() === Configurable::TYPE_CODE) {
+            $typeInstance = $product->getTypeInstance();
+
+            if ($typeInstance instanceof Configurable) {
+                foreach ($typeInstance->getSalableUsedProducts($product) as $childProduct) {
+                    $prices[$childProduct->getSku()] = $this->helper->formatPrice(
+                        $this->getOfferPrice($childProduct)
+                    );
+                }
+            }
+        }
+
+        return $this->jsonSerializer->serialize($prices);
     }
 
     public function getOrderIncrementId(string|int|null $orderId = null){
