@@ -98,17 +98,21 @@ define([
          * Updates warranty offers product
          *
          * @param {String} productSku - new product SKU
+         * @param {Number|null} price - price of the new product, the price of the
+         *                              currently active product is kept when omitted
          */
-        updateActiveProduct: function (productSku) {
+        updateActiveProduct: function (productSku, price) {
             var component = this.getButtonInstance();
             if (!component)
                 return;
 
             var product = component.getActiveProduct() || { id: '' };
-            if (product.id !== productSku) {
+            var newPrice = (price === undefined || price === null) ? product.price : price;
+
+            if (product.id !== productSku || product.price !== newPrice) {
                 let activeProduct = {
                     referenceId:productSku,
-                    price: product.price,
+                    price: newPrice,
                     category: this.sanitizeValue(product.category)
                 };
                 component.setActiveProduct(activeProduct);

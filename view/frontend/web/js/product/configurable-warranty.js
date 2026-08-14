@@ -22,6 +22,7 @@ define([
             productSku: null,
             buttonEnabled: true,
             modalEnabled: false,
+            variationPrices: {},
             blockClass: 'product-warranty-offers',
             insertionPoint: 'div.actions',
             insertionLogic: 'before',
@@ -52,11 +53,37 @@ define([
          * @param {Event} event - The event arguments
          */
         _onOptionsChanged: function (event) {
-            if (!this.options.buttonEnabled)
+            if (!this.options.buttonEnabled && !this.options.modalEnabled)
                 return;
 
             var productSku = this._getWarrantyProductSku();
-            this.warrantyBlock.extendWarrantyOffers('updateActiveProduct', productSku);
+            var price = this._getVariationPrice(productSku);
+
+            // keeps the interstitial modal on the price of the selected variation
+            if (price !== null) {
+                this.options.productInfo.price = price;
+            }
+
+            if (this.options.buttonEnabled) {
+                this.warrantyBlock.extendWarrantyOffers('updateActiveProduct', productSku, price);
+            }
+        },
+
+        /**
+         * Returns the offer price of the given variation, `null` when it is unknown
+         *
+         * Variation prices are rendered server side, so special, catalog rule and
+         * customer group prices of the child product are all taken into account.
+         *
+         *
+         * @protected
+         * @param {String} productSku
+         * @return {Number|null}
+         */
+        _getVariationPrice: function (productSku) {
+            var prices = this.options.variationPrices || {};
+
+            return productSku && prices.hasOwnProperty(productSku) ? prices[productSku] : null;
         },
 
         /**
